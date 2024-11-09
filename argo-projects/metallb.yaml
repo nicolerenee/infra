@@ -16,3 +16,4 @@ spec:
     server: '*'
   sourceRepos:
   - https://metallb.github.io/metallb
+  - https://github.com/nicolerenee/k8s-state.git
