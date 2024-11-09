@@ -1,0 +1,14 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "reviewers": [
+    "@nicolerenee3810",
+  ],
+  "extends": [
+    "config:recommended",
+  ],
+  "argocd": {
+    "fileMatch": [
+      "clusters/*/apps/.*\\.yaml",
+    ],
+  },
+}
