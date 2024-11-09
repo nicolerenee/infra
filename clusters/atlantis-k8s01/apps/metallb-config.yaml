@@ -9,7 +9,7 @@ spec:
     namespace: metallb
   project: metallb
   source:
-    path: clusters/configs/metallb
+    path: clusters/atlantis-k8s01/configs/metallb
     repoURL: https://github.com/nicolerenee/k8s-state.git
     targetRevision: HEAD
   syncPolicy:
