@@ -16,7 +16,7 @@ spec:
       releaseName: cert-manager
       values: |
         crds:
-          enabled true
+          enabled: true
           keep: true
         global:
           leaderElection:
