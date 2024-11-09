@@ -15,16 +15,10 @@ spec:
     helm:
       releaseName: rook-ceph-cluster
       values: |
-        monitoring:
-          enabled: false
         toolbox:
           enabled: true
         ingress:
           dashboard: {}
-        # TODO: REMOVE - Temporary until fully migrated until new cluster.
-        cephClusterSpec:
-          mon:
-            count: 1
   syncPolicy:
     syncOptions:
     - CreateNamespace=true
