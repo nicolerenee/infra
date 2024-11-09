@@ -20,7 +20,7 @@ spec:
         controller:
           replicaCount: 2
           ingressClassResource:
-            name: nginx-public
+            name: nginx-tailscale
             enabled: true
             default: true
             controllerValue: "k8s.freckle.family/ingress-tailscale"
