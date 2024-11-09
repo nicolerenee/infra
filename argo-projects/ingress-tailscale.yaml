@@ -1,0 +1,18 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: '1'
+  name: ingress-tailscale
+  namespace: argo
+spec:
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  destinations:
+  - name: '*'
+    namespace: ingress-tailscale
+    server: '*'
+  sourceRepos:
+  - https://kubernetes.github.io/ingress-nginx
