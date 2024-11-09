@@ -14,11 +14,7 @@ spec:
     targetRevision: 0.14.8
     helm:
       releaseName: metallb
-      values: |
-        speaker:
-          frr:
-            image:
-              tag: 8.5.2
+      # values: |
   syncPolicy:
     # automated:
     #   selfHeal: true
