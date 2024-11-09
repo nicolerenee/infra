@@ -3,14 +3,14 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: apps
-  namespace: argocd
+  namespace: argo
 spec:
   syncPolicy:
     automated:
       selfHeal: true
   destination:
-    namespace: argocd
-    name: den1-k8s01
+    namespace: argo
+    name: atlantis-k8s01
   project: apps
   source:
     path: argo-apps

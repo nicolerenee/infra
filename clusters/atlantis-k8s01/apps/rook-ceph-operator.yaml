@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: rook-ceph-operator-den1-k8s01
-  namespace: argocd
+  name: rook-ceph-operator-atlantis-k8s01
+  namespace: argo
 spec:
   destination:
-    name: den1-k8s01
+    name: atlantis-k8s01
     namespace: rook-ceph
   project: rook-ceph
   source:
     repoURL: https://charts.rook.io/release
     chart: rook-ceph
-    targetRevision: 1.8.2
+    targetRevision: 1.15.5
     helm:
       releaseName: rook-ceph
       values: |

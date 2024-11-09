@@ -2,17 +2,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: den1-k8s01-apps
-  namespace: argocd
+  name: atlantis-k8s01-apps
+  namespace: argo
 spec:
   syncPolicy:
     automated:
       selfHeal: true
   destination:
-    namespace: argocd
-    name: den1-k8s01
+    namespace: argo
+    name: atlantis-k8s01
   project: apps
   source:
-    path: clusters/den1-k8s01/apps
+    path: clusters/atlantis-k8s01/apps
     repoURL: https://github.com/nicolerenee/k8s-state.git
     targetRevision: HEAD

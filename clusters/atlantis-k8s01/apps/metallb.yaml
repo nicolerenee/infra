@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: metallb-den1-k8s01
-  namespace: argocd
+  name: metallb-atlantis-k8s01
+  namespace: argo
 spec:
   destination:
-    name: den1-k8s01
+    name: atlantis-k8s01
     namespace: metallb
   project: metallb
   source:
@@ -16,7 +16,9 @@ spec:
       releaseName: metallb
       values: |
         speaker:
-          enabled: false
+          frr:
+            image:
+              tag: 8.5.2
         configInline:
           address-pools:
           - name: internal
@@ -24,15 +26,15 @@ spec:
             auto-assign: true
             addresses:
             - 172.26.10.0/24
-          - name: public
+          - name: public-pool
             protocol: bgp
             auto-assign: false
             addresses:
-            - 72.18.145.240/28
+            - 72.18.145.242/31
             - 2607:fc88:200:4f0:2:1::/112
   syncPolicy:
-    automated:
-      selfHeal: true
-      prune: true
+    # automated:
+    #   selfHeal: true
+    #   prune: true
     syncOptions:
     - CreateNamespace=true

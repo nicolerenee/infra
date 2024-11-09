@@ -5,13 +5,13 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: '1'
   name: authentik
-  namespace: argocd
+  namespace: argo
 spec:
   clusterResourceWhitelist:
   - group: '*'
     kind: '*'
   destinations:
-  - name: den1-k8s01
+  - name: atlantis-k8s01
     namespace: authentik
   sourceRepos:
   - https://charts.goauthentik.io

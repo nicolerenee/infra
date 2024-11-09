@@ -5,7 +5,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: '1'
   name: cert-manager
-  namespace: argocd
+  namespace: argo
 spec:
   clusterResourceWhitelist:
   - group: '*'

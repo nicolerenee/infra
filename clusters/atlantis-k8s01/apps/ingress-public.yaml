@@ -1,27 +1,27 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: ingress-nginx-den1-k8s01
-  namespace: argocd
+  name: ingress-public-atlantis-k8s01
+  namespace: argo
 spec:
   destination:
-    name: den1-k8s01
-    namespace: ingress-nginx
-  project: ingress-nginx
+    name: atlantis-k8s01
+    namespace: ingress-public
+  project: ingress-public
   source:
     repoURL: https://kubernetes.github.io/ingress-nginx
     chart: ingress-nginx
     targetRevision: 4.0.13
     helm:
-      releaseName: ingress-nginx
+      releaseName: ingress-public
       values: |
         controller:
-          replicaCount: 3
+          replicaCount: 2
           ingressClassResource:
-            name: nginx
+            name: nginx-public
             enabled: true
-            default: true
-            controllerValue: "k8s.freckle.tech/ingress-nginx"
+            default: false
+            controllerValue: "k8s.freckle.family/ingress-public"
           resources:
             requests:
               cpu: 500m
@@ -39,11 +39,11 @@ spec:
               - IPv4
               - IPv6
             externalTrafficPolicy: Local
-            annotations:
-              metallb.universe.tf/address-pool: public
+            # annotations:
+            #   metallb.universe.tf/address-pool: public
   syncPolicy:
-    automated:
-      selfHeal: true
-      prune: true
+    # automated:
+    #   selfHeal: true
+    #   prune: true
     syncOptions:
     - CreateNamespace=true

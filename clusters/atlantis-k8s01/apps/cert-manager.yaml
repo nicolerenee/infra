@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cert-manager-den1-k8s01
-  namespace: argocd
+  name: cert-manager-atlantis-k8s01
+  namespace: argo
 spec:
   destination:
-    name: den1-k8s01
+    name: atlantis-k8s01
     namespace: cert-manager
   project: cert-manager
   source:
     repoURL: https://charts.jetstack.io
     chart: cert-manager
-    targetRevision: 1.6.1
+    targetRevision: 1.12.2
     helm:
       releaseName: cert-manager
       values: |
@@ -21,8 +21,8 @@ spec:
             # Override the namespace used to store the ConfigMap for leader election
             namespace: "cert-manager"
   syncPolicy:
-    automated:
-      selfHeal: true
-      prune: true
+    # automated:
+    #   selfHeal: true
+    #   prune: true
     syncOptions:
     - CreateNamespace=true
