@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tailscale-operator-atlantis-k8s01
+  namespace: argo
+spec:
+  destination:
+    name: atlantis-k8s01
+    namespace: tailscale
+  project: tailscale
+  source:
+    repoURL: https://pkgs.tailscale.com/helmcharts
+    chart: tailscale-operator
+    targetRevision: 1.76.1
+    helm:
+      releaseName: tailscale-operator
+  syncPolicy:
+    # automated:
+    #   selfHeal: true
+    #   prune: true
+    syncOptions:
+    - CreateNamespace=true
