@@ -13,7 +13,9 @@ spec:
     chart: ingress-nginx
     targetRevision: 4.0.13
     helm:
-      releaseName: ingress-public
+      fullnameOverride: ingress-public
+      nameOverride: ingress-public
+
       values: |
         controller:
           replicaCount: 2
