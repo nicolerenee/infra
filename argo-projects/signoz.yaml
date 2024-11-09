@@ -1,0 +1,17 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: '1'
+  name: signoz
+  namespace: argo
+spec:
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  destinations:
+  - name: atlantis-k8s01
+    namespace: signoz
+  sourceRepos:
+  - https://charts.signoz.io

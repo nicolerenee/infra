@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: signoz-atlantis-k8s01
+  namespace: argo
+spec:
+  destination:
+    name: atlantis-k8s01
+    namespace: signoz
+  project: signoz
+  source:
+    repoURL: https://charts.signoz.io
+    chart: signoz
+    targetRevision: 0.54.2
+    helm:
+      releaseName: signoz
+      values: |
+        frontend:
+          ingress:
+            enabled: true
+            annotations:
+              cert-manager.io/cluster-issuer: "letsencrypt-frecklefamily"
+            ingressClassName: "nginx-tailscale"
+            hosts:
+              - host: signoz.freckle.systems
+                paths:
+                  - path: /
+                    pathType: Prefix
+                    port: 3301
+            tls:
+              - secretName: signoz-tls
+                hosts:
+                  - signoz.freckle.systems
+
+  syncPolicy:
+    # automated:
+    #   selfHeal: true
+    #   prune: true
+    syncOptions:
+    - CreateNamespace=true
