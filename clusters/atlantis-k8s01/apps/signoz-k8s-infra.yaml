@@ -13,7 +13,7 @@ spec:
     chart: k8s-infra
     targetRevision: 0.11.18
     helm:
-      releaseName: signoz
+      releaseName: k8s-infra
       values: |
         global:
           clusterName: "atlantis-k8s01"
