@@ -28,21 +28,19 @@ spec:
             requests:
               cpu: 500m
               memory: 200Mi
-          # publishService:
-          #   enabled: true
           metrics:
             enabled: true
             # serviceMonitor:
               # enabled: true
           service:
             type: LoadBalancer
-            ipFamilyPolicy: PreferDualStack
-            ipFamilies:
-              - IPv4
-              - IPv6
+            # ipFamilyPolicy: PreferDualStack
+            # ipFamilies:
+            #   - IPv4
+            #   - IPv6
             externalTrafficPolicy: Local
-            # annotations:
-            #   metallb.universe.tf/address-pool: public
+            annotations:
+              metallb.universe.tf/address-pool: public-pool
   syncPolicy:
     # automated:
     #   selfHeal: true
