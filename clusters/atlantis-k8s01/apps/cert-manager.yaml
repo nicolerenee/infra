@@ -15,7 +15,9 @@ spec:
     helm:
       releaseName: cert-manager
       values: |
-        installCRDs: true
+        crds:
+          enabled true
+          keep: true
         global:
           leaderElection:
             # Override the namespace used to store the ConfigMap for leader election
