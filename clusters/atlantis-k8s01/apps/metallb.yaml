@@ -19,19 +19,6 @@ spec:
           frr:
             image:
               tag: 8.5.2
-        configInline:
-          address-pools:
-          - name: internal
-            protocol: bgp
-            auto-assign: true
-            addresses:
-            - 172.26.10.0/24
-          - name: public-pool
-            protocol: bgp
-            auto-assign: false
-            addresses:
-            - 72.18.145.242/31
-            - 2607:fc88:200:4f0:2:1::/112
   syncPolicy:
     # automated:
     #   selfHeal: true
