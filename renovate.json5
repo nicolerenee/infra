@@ -8,7 +8,7 @@
   ],
   "argocd": {
     "fileMatch": [
-      "clusters/*/apps/.*\\.yaml",
+      "clusters/.*/apps/.*\\.yaml",
     ],
   },
 }
