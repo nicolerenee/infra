@@ -9,6 +9,10 @@
   "argocd": {
     "fileMatch": [
       "clusters/.*/apps/.*\\.yaml",
+    ],
+  },
+  "kubernetes": {
+    "fileMatch": [
       "manifests/.*/.*\\.yaml",
     ],
   },
