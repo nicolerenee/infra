@@ -44,8 +44,8 @@ spec:
 
         # replace kube-proxy
         kubeProxyReplacement: true
-        k8sServiceHost: 172.26.3.6
-        k8sServicePort: 6443
+        k8sServiceHost: localhost
+        k8sServicePort: 7445
 
         # enable IPv6
         ipv6:
