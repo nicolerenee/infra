@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cilium-atlantis-k8s01
+  namespace: argo
+spec:
+  destination:
+    name: atlantis-k8s01
+    namespace: kube-system
+  project: cilium
+  source:
+    repoURL: https://helm.cilium.io/
+    chart: cilium
+    targetRevision: 1.16.3
+    helm:
+      releaseName: cilium
+      values: |
+        ipam:
+          mode: kubernetes
+
+        # requires for talos
+        securityContext:
+          capabilities:
+            ciliumAgent:
+              - CHOWN
+              - KILL
+              - NET_ADMIN
+              - NET_RAW
+              - IPC_LOCK
+              - SYS_ADMIN
+              - SYS_RESOURCE
+              - DAC_OVERRIDE
+              - FOWNER
+              - SETGID
+              - SETUID
+            cleanCiliumState:
+              - NET_ADMIN
+              - SYS_ADMIN
+              - SYS_RESOURCE
+        cgroup:
+          autoMount:
+            enabled: false
+          hostRoot: /sys/fs/cgroup
+
+        # replace kube-proxy
+        kubeProxyReplacement: true
+        k8sServiceHost: 172.26.3.6
+        k8sServicePort: 6443
+
+        # enable IPv6
+        ipv6:
+          enabled: true
+
+        # change requires for tailscale operator (https://tailscale.com/kb/1236/kubernetes-operator#cilium-in-kube-proxy-replacement-mode)
+        socketLB:
+          hostNamespaceOnly: true
+  syncPolicy:
+    # automated:
+    #   selfHeal: true
+    #   prune: true
