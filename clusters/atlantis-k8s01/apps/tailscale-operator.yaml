@@ -14,6 +14,9 @@ spec:
     targetRevision: 1.76.6
     helm:
       releaseName: tailscale-operator
+      values: |
+        proxyConfig:
+          defaultProxyClass: default
   syncPolicy:
     # automated:
     #   selfHeal: true
