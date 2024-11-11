@@ -16,7 +16,7 @@ spec:
       releaseName: rook-ceph
       values: |
         monitoring:
-          enabled: false
+          enabled: true
   syncPolicy:
     syncOptions:
     - CreateNamespace=true

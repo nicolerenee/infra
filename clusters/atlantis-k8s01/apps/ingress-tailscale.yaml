@@ -30,8 +30,8 @@ spec:
               memory: 200Mi
           metrics:
             enabled: true
-            # serviceMonitor:
-            #   enabled: true
+            serviceMonitor:
+              enabled: true
           service:
             type: LoadBalancer
             loadBalancerClass: tailscale
