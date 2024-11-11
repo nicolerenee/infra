@@ -15,6 +15,8 @@ spec:
     helm:
       releaseName: rook-ceph-cluster
       values: |
+        monitoring:
+          enabled: true
         toolbox:
           enabled: true
         ingress:
