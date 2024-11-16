@@ -10,7 +10,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./clusters/atlantis-k8s01/apps/ingress/nginx-external
+  path: ./apps/nginx-external
   prune: true
   sourceRef:
     kind: GitRepository
