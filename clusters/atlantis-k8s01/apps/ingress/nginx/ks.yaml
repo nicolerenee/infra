@@ -14,7 +14,7 @@ spec:
   prune: false
   sourceRef:
     kind: GitRepository
-    name: home-kubernetes
+    name: k8s-state
   wait: false
   interval: 30m
   timeout: 5m
