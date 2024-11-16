@@ -2,7 +2,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: ingress-public
+  name: nginx-external
   namespace: ingress
 spec:
   interval: 10m
@@ -14,17 +14,17 @@ spec:
         kind: HelmRepository
         name: ingress-nginx
         namespace: ingress
-    install:
-      remediation:
-        retries: 3
-    upgrade:
-      cleanupOnFail: true
-      remediation:
-        strategy: rollback
-        retries: 3
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
   values:
-    fullnameOverride: ingress-public
-    nameOverride: ingress-public
+    fullnameOverride: nginx-external
+    nameOverride: nginx-external
     controller:
       replicaCount: 2
       ingressClassResource:
