@@ -13,6 +13,6 @@ spec:
     name: atlantis-k8s01
   project: apps
   source:
-    path: clusters/atlantis-k8s01/apps
+    path: clusters-argo/atlantis-k8s01/apps
     repoURL: https://github.com/nicolerenee/k8s-state.git
     targetRevision: HEAD
