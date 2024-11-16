@@ -1,0 +1,23 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: nginx-external
+  namespace: ingress
+spec:
+  values:
+    fullnameOverride: nginx-external
+    nameOverride: nginx-external
+    controller:
+      ingressClassResource:
+        name: external
+        controllerValue: "k8s.io/ingress/external"
+      service:
+        type: LoadBalancer
+        # ipFamilyPolicy: PreferDualStack
+        # ipFamilies:
+        #   - IPv4
+        #   - IPv6
+        externalTrafficPolicy: Local
+        annotations:
+          metallb.universe.tf/address-pool: public-pool
