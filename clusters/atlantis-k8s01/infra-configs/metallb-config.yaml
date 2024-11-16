@@ -1,0 +1,39 @@
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: public-pool
+  namespace: metallb
+spec:
+  addresses:
+  - 72.18.145.242/31
+  # - 2607:fc88:200:4f0:2:1::/112
+
+---
+
+apiVersion: metallb.io/v1beta1
+kind: BGPAdvertisement
+metadata:
+  name: local
+  namespace: metallb
+
+---
+apiVersion: metallb.io/v1beta2
+kind: BGPPeer
+metadata:
+  name: core01a
+  namespace: metallb
+spec:
+  myASN: 64590
+  peerASN: 64567
+  peerAddress: 172.26.3.2
+---
+apiVersion: metallb.io/v1beta2
+kind: BGPPeer
+metadata:
+  name: core01b
+  namespace: metallb
+spec:
+  myASN: 64590
+  peerASN: 64567
+  peerAddress: 172.26.3.3
