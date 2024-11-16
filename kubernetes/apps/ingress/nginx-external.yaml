@@ -1,0 +1,52 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ingress-public
+  namespace: ingress
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: ingress-nginx
+      version: 4.11.3
+      sourceRef:
+        kind: HelmRepository
+        name: ingress-nginx
+        namespace: ingress
+    install:
+      remediation:
+        retries: 3
+    upgrade:
+      cleanupOnFail: true
+      remediation:
+        strategy: rollback
+        retries: 3
+  values:
+    fullnameOverride: ingress-public
+    nameOverride: ingress-public
+    controller:
+      replicaCount: 2
+      ingressClassResource:
+        name: external
+        enabled: true
+        default: false
+        controllerValue: "k8s.io/external"
+      resources:
+        requests:
+          cpu: 100m
+        limits:
+          memory: 500Mi
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+      service:
+        type: LoadBalancer
+        # ipFamilyPolicy: PreferDualStack
+        # ipFamilies:
+        #   - IPv4
+        #   - IPv6
+        externalTrafficPolicy: Local
+        annotations:
+          metallb.universe.tf/address-pool: public-pool
