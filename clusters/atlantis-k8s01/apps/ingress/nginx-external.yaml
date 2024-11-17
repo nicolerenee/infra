@@ -7,6 +7,8 @@ metadata:
   namespace: flux-system
 spec:
   targetNamespace: ingress
+  dependsOn:
+    - name: cert-manager
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
