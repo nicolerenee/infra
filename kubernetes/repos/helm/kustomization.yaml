@@ -11,3 +11,4 @@ resources:
   - metallb.yaml
   - onepassword-connect.yaml
   - prometheus-community.yaml
+  - tailscale.yaml
