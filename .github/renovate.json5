@@ -10,7 +10,7 @@
     ":semanticCommitType(chore)",
     "docker:enableMajor",
     ":timezone(America/Chicago)",
-    "github>nicolerenee/infra/.github/renovate/commitMessage.json5"
+    "github>nicolerenee/infra//.github/renovate/commitMessage.json5"
   ],
   "flux": {
     "fileMatch": [
