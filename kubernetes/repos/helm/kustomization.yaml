@@ -6,6 +6,7 @@ namespace: flux-system
 resources:
   - 1password-connect.yaml
   - cilium.yaml
+  - external-secrets.yaml
   - ingress-nginx.yaml
   - jetstack.yaml
   - metallb.yaml
