@@ -29,7 +29,7 @@ spec:
       ingressClassResource:
         enabled: true
         default: true
-        name: tailnet
+        name: tailscale
         controllerValue: "k8s.io/ingress/tailscale"
       resources:
         requests:
