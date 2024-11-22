@@ -2,9 +2,7 @@
 # yaml-language-server: $schema=https://json.schemastore.org/kustomization
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: flux-system
 resources:
-  - ./1password-connect.yaml
-  - ./ingress-nginx.yaml
-  - ./jetstack.yaml
-  - ./metallb.yaml
+  - namespace.yaml
+  - ks.yaml
+  - config.yaml
