@@ -4,9 +4,11 @@ resources:
   # Install flux-system components first
   - flux-system
   - ../repos
+  # setup prometheus CRDs before anything else since other charts need it
+  - observability/base
   - kube-system
-  # TODO: prometheus CRDs need to be installed first since cert manager uses them
   # TODO: install 1password and external secrets
   - external-secrets
   - cert-manager
   - metallb
+  - ingress
