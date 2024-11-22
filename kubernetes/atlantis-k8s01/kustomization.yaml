@@ -3,3 +3,5 @@ kind: Kustomization
 resources:
   # Install flux-system components first
   - flux-system
+  # TODO: prometheus CRDs need to be installed first since cert manager uses them
+  - cert-manager
