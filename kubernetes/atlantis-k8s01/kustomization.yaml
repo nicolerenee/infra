@@ -8,7 +8,7 @@ resources:
   - observability/base
   - kube-system
   # TODO: install 1password and external secrets
-  - external-secrets
+  - external-secrets/kustomization.yaml
   - cert-manager
   - metallb
   - ingress
