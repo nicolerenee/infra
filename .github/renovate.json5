@@ -5,6 +5,12 @@
   ],
   "extends": [
     "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":semanticCommitType(chore)",
+    "docker:enableMajor",
+    ":timezone(America/Chicago)",
+    "github>nicolerenee/infra/.github/renovate/commitMessage.json5"
   ],
   "flux": {
     "fileMatch": [
