@@ -6,14 +6,19 @@
   "extends": [
     "config:recommended",
   ],
-  "argocd": {
+  "flux": {
     "fileMatch": [
-      "clusters/.*/apps/.*\\.yaml",
+      "(^|/)kubernetes/.+\\.ya?ml$"
+    ],
+  },
+  "helm-values": {
+    "fileMatch": [
+      "(^|/)kubernetes/.+\\.ya?ml$"
     ],
   },
   "kubernetes": {
     "fileMatch": [
-      "manifests/.*/.*\\.yaml",
+      "(^|/)kubernetes/.+\\.ya?ml$"
     ],
   },
 }
