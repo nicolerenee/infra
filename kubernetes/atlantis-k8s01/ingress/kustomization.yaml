@@ -5,4 +5,4 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - nginx-public.yaml
-  - nginx-tailnet/ks.yaml
+  - nginx-tailscale/ks.yaml
