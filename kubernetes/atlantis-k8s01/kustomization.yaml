@@ -7,8 +7,7 @@ resources:
   # setup prometheus CRDs before anything else since other charts need it
   - observability/base
   - kube-system
-  # TODO: install 1password and external secrets
-  - external-secrets/kustomization.yaml
+  - external-secrets
   - cert-manager
   - metallb
   - ingress
