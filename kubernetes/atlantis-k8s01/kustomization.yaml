@@ -4,6 +4,7 @@ resources:
   # Install flux-system components first
   - flux-system
   - ../repos
+  - external-secrets
   # TODO: prometheus CRDs need to be installed first since cert manager uses them
   # TODO: install 1password and external secrets
   - cert-manager
