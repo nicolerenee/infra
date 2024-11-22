@@ -22,11 +22,15 @@ spec:
       strategy: rollback
       retries: 3
   values:
+    fullnameOverride: nginx-public
+    nameOverride: nginx-public
     controller:
       replicaCount: 2
       ingressClassResource:
         enabled: true
         default: false
+        name: external
+        controllerValue: "k8s.io/ingress/public"
       resources:
         requests:
           cpu: 100m
@@ -36,3 +40,10 @@ spec:
         enabled: true
         serviceMonitor:
           enabled: true
+      service:
+        type: LoadBalancer
+        # ipFamilyPolicy: PreferDualStack
+        # ipFamilies:
+        #   - IPv4
+        #   - IPv6
+        externalTrafficPolicy: Local
