@@ -4,7 +4,6 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: cert-manager
-  namespace: cert-manager
 spec:
   interval: 30m
   chart:
@@ -27,10 +26,6 @@ spec:
     crds:
       enabled: true
       keep: true
-    global:
-      leaderElection:
-        # Override the namespace used to store the ConfigMap for leader election
-        namespace: "cert-manager"
     prometheus:
       enabled: true
       servicemonitor:
