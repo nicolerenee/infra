@@ -175,7 +175,7 @@ spec:
       enabled: true
       annotations:
         cert-manager.io/cluster-issuer: "letsencrypt-production"
-      ingressClassName: internal
+      ingressClassName: nginx-tailscale
       hosts:
         - grafana.atlantis.freckle.systems
       tls:
