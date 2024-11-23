@@ -10,8 +10,6 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  dependsOn:
-    - name: observability-base
   path: ./kubernetes/atlantis-k8s01/rook-ceph/operator
   prune: false # never delete rook, that would result in data loss
   sourceRef:
