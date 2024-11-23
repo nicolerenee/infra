@@ -13,3 +13,4 @@ resources:
   - tailscale
   - ingress
   - rook-ceph
+  - observability
