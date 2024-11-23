@@ -29,8 +29,8 @@ spec:
       ingressClassResource:
         enabled: true
         default: true
-        name: tailscale
-        controllerValue: "k8s.io/ingress/tailscale"
+        name: nginx-tailscale
+        controllerValue: "k8s.io/ingress/nginx-tailscale"
       resources:
         requests:
           cpu: 100m
