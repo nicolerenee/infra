@@ -6,6 +6,7 @@ namespace: flux-system
 resources:
   - cilium.yaml
   - external-secrets.yaml
+  - grafana.yaml
   - ingress-nginx.yaml
   - jetstack.yaml
   - metallb.yaml
