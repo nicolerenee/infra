@@ -12,3 +12,4 @@ resources:
   - metallb
   - tailscale
   - ingress
+  - rook-ceph
