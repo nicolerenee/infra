@@ -30,6 +30,7 @@ spec:
       namespace: observability
   values:
     loki:
+      auth_enabled: false
       analytics:
         reporting_enabled: false
       commonConfig:
@@ -54,6 +55,8 @@ spec:
         delete_request_store: filesystem
       ruler:
         enable_api: true
+      storage:
+        type: filesystem
 
     minio:
       enabled: false
@@ -92,14 +95,3 @@ spec:
       replicas: 0
     bloomGateway:
       replicas: 0
-    ingress:
-      enabled: true
-      annotations:
-        cert-manager.io/cluster-issuer: "letsencrypt-production"
-      ingressClassName: nginx-tailscale
-      hosts:
-        - grafana.atlantis.freckle.systems
-      tls:
-        - secretName: grafana-tls
-          hosts:
-            - grafana.atlantis.freckle.systems
