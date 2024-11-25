@@ -11,10 +11,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: prometheus-operator-crds
-      namespace: observability
     - name: external-secrets
-      namespace: external-secrets
   path: ./kubernetes/atlantis-k8s01/external-dns/external-dns
   prune: true
   sourceRef:
