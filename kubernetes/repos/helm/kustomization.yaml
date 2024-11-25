@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: flux-system
 resources:
   - cilium.yaml
+  - external-dns.yaml
   - external-secrets.yaml
   - grafana.yaml
   - ingress-nginx.yaml
