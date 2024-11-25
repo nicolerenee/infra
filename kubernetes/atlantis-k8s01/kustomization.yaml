@@ -9,6 +9,7 @@ resources:
   - kube-system
   - external-secrets
   - cert-manager
+  - external-dns
   - metallb
   - tailscale
   - ingress
