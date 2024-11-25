@@ -34,10 +34,10 @@ spec:
     datasources:
       datasources.yaml:
         apiVersion: 1
-        # deleteDatasources:
-        # - { name: Alertmanager, orgId: 1 }
-        # - { name: Loki, orgId: 1 }
-        # - { name: Prometheus, orgId: 1 }
+        deleteDatasources:
+          - { name: Alertmanager, orgId: 1 }
+          - { name: Loki, orgId: 1 }
+          - { name: Prometheus, orgId: 1 }
         datasources:
           - name: Prometheus
             type: prometheus
@@ -47,13 +47,13 @@ spec:
             jsonData:
               timeInterval: 1m
             isDefault: true
-          # - name: Loki
-          #   type: loki
-          #   uid: loki
-          #   access: proxy
-          #   url: http://loki-headless.observability.svc.cluster.local:3100
-          #   jsonData:
-          #     maxLines: 250
+          - name: Loki
+            type: loki
+            uid: loki
+            access: proxy
+            url: http://loki-headless.observability.svc.cluster.local:3100
+            jsonData:
+              maxLines: 250
           - name: Alertmanager
             type: alertmanager
             uid: alertmanager
