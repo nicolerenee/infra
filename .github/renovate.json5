@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "reviewers": [
-    "@nicolerenee3810",
+    "@nicolerenee",
   ],
   "extends": [
     "config:recommended",
