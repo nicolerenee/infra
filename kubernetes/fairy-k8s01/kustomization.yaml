@@ -7,7 +7,7 @@ resources:
   # setup prometheus CRDs before anything else since other charts need it
   # - observability/base
   # - kube-system
-  - device-plugin.yaml
+  - generic-device-plugin.yaml
   # - external-secrets
   # - cert-manager
   # - external-dns
