@@ -3,11 +3,14 @@ kind: Kustomization
 resources:
   # Install flux-system components first
   - flux-system
+  # Sync namespaces
+  - namespaces
+  # Sync repos
   - ../repos
   # setup prometheus CRDs before anything else since other charts need it
+  # TODO: convert all these
   - observability/base
   - kube-system
-  - external-secrets
   - cert-manager
   - external-dns
   - metallb
