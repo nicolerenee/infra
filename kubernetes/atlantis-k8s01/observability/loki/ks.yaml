@@ -11,7 +11,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: external-secrets-stores
+    - name: onepassword-connect-store
   path: ./kubernetes/atlantis-k8s01/observability/loki
   prune: true
   sourceRef:
