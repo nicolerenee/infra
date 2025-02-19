@@ -10,6 +10,8 @@ spec:
   interval: 30s
   retryInterval: 1m
   timeout: 5m
+  dependsOn:
+    - name: generic-device-plugin
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app

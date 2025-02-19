@@ -8,15 +8,14 @@ resources:
   # setup prometheus CRDs before anything else since other charts need it
   # - observability/base
   # - kube-system
+  - external-secrets.yaml
   - generic-device-plugin.yaml
   - onepassword-connect.yaml
-  - external-secrets.yaml
+  - onepassword-connect-store.yaml
   - tailscale-operator.yaml
-  # - external-secrets
   # - cert-manager
   # - external-dns
   # - metallb
-  # - tailscale
   # - ingress
   # - rook-ceph
   # - observability
