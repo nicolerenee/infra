@@ -25,6 +25,8 @@ spec:
   values:
     operatorConfig:
       hostname: k8s-operator
+      defaultTags:
+      - "tag:k8s-operator"
     apiServerProxyConfig:
       mode: "true"
     ingressClass:
