@@ -16,7 +16,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./apps/tailscale-operator
+  path: ./apps/tailscale-operator/operator
   prune: true
   wait: true
   patches:
@@ -27,6 +27,13 @@ spec:
         - op: replace
           path: /spec/values/operatorConfig/hostname
           value: fairy-k8s01
+    - target:
+        kind: HelmRelease
+        name: tailscale-operator
+      patch: |-
+        - op: replace
+          path: /spec/values/proxyConfig/defaultTags
+          value: tag:fairy-k8s01
     - target:
         kind: ExternalSecret
         name: operator-oauth
@@ -41,3 +48,27 @@ spec:
         - op: replace
           path: /spec/data/1/remoteRef/key
           value: tailscale-fairy-k8s01-operator
+
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app tailscale-operator-proxy
+  namespace: flux-system
+spec:
+  targetNamespace: tailscale
+  interval: 30s
+  retryInterval: 1m
+  timeout: 5m
+  dependsOn:
+    - name: tailscale-operator
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./apps/tailscale-operator/proxyclass
+  prune: true
+  wait: true
