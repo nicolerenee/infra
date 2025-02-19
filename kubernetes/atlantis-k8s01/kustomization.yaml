@@ -15,3 +15,6 @@ resources:
   - ingress
   - rook-ceph
   - observability
+  # Start moving to new deployments that define dependencies, this list should be sorted by name
+  - external-secrets.yaml
+  - onepassword-connect.yaml
