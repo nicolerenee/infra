@@ -24,7 +24,7 @@ spec:
         kind: HelmRelease
         name: tailscale-operator
       patch: |-
-        - op: add
+        - op: replace
           path: /spec/values/operatorConfig/hostname
           value: fairy-k8s01
     - target:

@@ -23,6 +23,8 @@ spec:
       strategy: rollback
       retries: 3
   values:
+    operatorConfig:
+      hostname: k8s-operator
     apiServerProxyConfig:
       mode: "true"
     ingressClass:
