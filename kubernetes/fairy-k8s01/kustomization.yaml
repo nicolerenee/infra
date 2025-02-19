@@ -11,7 +11,6 @@ resources:
   - external-secrets.yaml
   - generic-device-plugin.yaml
   - onepassword-connect.yaml
-  - onepassword-connect-store.yaml
   - tailscale-operator.yaml
   # - cert-manager
   # - external-dns
