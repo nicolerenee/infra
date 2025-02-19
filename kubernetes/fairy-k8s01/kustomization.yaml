@@ -3,11 +3,14 @@ kind: Kustomization
 resources:
   # Install flux-system components first
   - flux-system
+  - namespaces
   - ../repos
   # setup prometheus CRDs before anything else since other charts need it
   # - observability/base
   # - kube-system
   - generic-device-plugin.yaml
+  - onepassword-connect.yaml
+  - external-secrets.yaml
   # - external-secrets
   # - cert-manager
   # - external-dns
