@@ -25,5 +25,3 @@ spec:
   values:
     connect:
       serviceType: ClusterIP
-    operatorConfig:
-      hostname: k8s-operator
