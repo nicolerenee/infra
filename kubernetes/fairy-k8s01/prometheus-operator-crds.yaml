@@ -11,9 +11,10 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   path: ./apps/prometheus-operator-crds
-  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
   interval: 30s
+  retryInterval: 1m
   timeout: 5m
+  prune: true

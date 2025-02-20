@@ -7,9 +7,6 @@ metadata:
   namespace: flux-system
 spec:
   targetNamespace: tailscale
-  interval: 30s
-  retryInterval: 1m
-  timeout: 5m
   dependsOn:
     - name: generic-device-plugin
     - name: onepassword-connect-store
@@ -20,6 +17,9 @@ spec:
     kind: GitRepository
     name: flux-system
   path: ./apps/tailscale-operator/operator
+  interval: 30s
+  retryInterval: 1m
+  timeout: 5m
   prune: true
   wait: true
   patches:
@@ -68,9 +68,6 @@ metadata:
   namespace: flux-system
 spec:
   targetNamespace: tailscale
-  interval: 30s
-  retryInterval: 1m
-  timeout: 5m
   dependsOn:
     - name: tailscale-operator
   commonMetadata:
@@ -80,5 +77,8 @@ spec:
     kind: GitRepository
     name: flux-system
   path: ./apps/tailscale-operator/proxyclass
+  interval: 30s
+  retryInterval: 1m
+  timeout: 5m
   prune: true
   wait: true

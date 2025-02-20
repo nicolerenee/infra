@@ -7,9 +7,6 @@ metadata:
   namespace: flux-system
 spec:
   targetNamespace: kube-system
-  interval: 30s
-  retryInterval: 1m
-  timeout: 5m
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
@@ -17,5 +14,8 @@ spec:
     kind: GitRepository
     name: flux-system
   path: ./apps/generic-device-plugin
+  interval: 30s
+  retryInterval: 1m
+  timeout: 5m
   prune: true
   wait: true
