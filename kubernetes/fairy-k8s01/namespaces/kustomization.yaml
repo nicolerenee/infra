@@ -3,4 +3,5 @@ kind: Kustomization
 resources:
 - external-secrets.yaml
 - observability.yaml
+- rook-ceph.yaml
 - tailscale.yaml

@@ -13,6 +13,7 @@ resources:
   - generic-device-plugin.yaml
   - onepassword-connect.yaml
   - prometheus-operator-crds.yaml
+  - rook-ceph.yaml
   - tailscale-operator.yaml
   # - cert-manager
   # - external-dns

@@ -1,0 +1,65 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app rook-ceph
+  namespace: flux-system
+spec:
+  targetNamespace: rook-ceph
+  dependsOn:
+    - name: prometheus-operator-crds
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  path: ./kubernetes/atlantis-k8s01/rook-ceph/operator
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  interval: 2m
+  retryInterval: 1m
+  timeout: 30m
+  prune: true
+  wait: true
+
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app rook-ceph-cluster
+  namespace: flux-system
+spec:
+  targetNamespace: rook-ceph
+  dependsOn:
+    - name: rook-ceph
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  path: ./kubernetes/atlantis-k8s01/rook-ceph/cluster
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  interval: 2m
+  retryInterval: 1m
+  timeout: 30m
+  prune: true
+  wait: true
+
+  patches:
+    - target:
+        kind: HelmRelease
+        name: tailscale-operator
+      patch: |-
+        - op: add
+          path: /spec/values/cephClusterSpec
+          value:
+            mgr:
+              count: 1
+            mon:
+              count: 1
+        - op: add
+          path: /spec/values/cephBlockPools/0/spec/replicated
+          value:
+            size: 1
+            requireSafeReplicaSize: false
