@@ -12,6 +12,7 @@ spec:
   timeout: 5m
   dependsOn:
     - name: generic-device-plugin
+    - name: onepassword-connect-store
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
