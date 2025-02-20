@@ -49,7 +49,7 @@ spec:
   patches:
     - target:
         kind: HelmRelease
-        name: tailscale-operator
+        name: rook-ceph-cluster
       patch: |-
         - op: add
           path: /spec/values/cephClusterSpec
