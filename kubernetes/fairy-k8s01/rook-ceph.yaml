@@ -12,7 +12,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./kubernetes/atlantis-k8s01/rook-ceph/operator
+  path: ./app/rook-ceph/operator
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -36,7 +36,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./kubernetes/atlantis-k8s01/rook-ceph/cluster
+  path: ./app/rook-ceph/cluster
   sourceRef:
     kind: GitRepository
     name: flux-system
