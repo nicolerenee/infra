@@ -8,9 +8,11 @@ resources:
   # setup prometheus CRDs before anything else since other charts need it
   # - observability/base
   # - kube-system
+  - cilium.yaml
   - external-secrets.yaml
   - generic-device-plugin.yaml
   - onepassword-connect.yaml
+  - prometheus-operator-crds.yaml
   - tailscale-operator.yaml
   # - cert-manager
   # - external-dns
