@@ -58,8 +58,9 @@ spec:
               count: 1
             mon:
               count: 1
+        - op: replace
+          path: /spec/values/cephBlockPools/0/spec/replicated/size
+          value: 1
         - op: add
-          path: /spec/values/cephBlockPools/0/spec/replicated
-          value:
-            size: 1
-            requireSafeReplicaSize: false
+          path: /spec/values/cephBlockPools/0/spec/replicated/requireSafeReplicaSize
+          value: false

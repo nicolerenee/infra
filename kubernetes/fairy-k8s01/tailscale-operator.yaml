@@ -30,17 +30,9 @@ spec:
         - op: replace
           path: /spec/values/operatorConfig/hostname
           value: fairy-k8s01
-    - target:
-        kind: HelmRelease
-        name: tailscale-operator
-      patch: |-
         - op: replace
           path: /spec/values/operatorConfig/defaultTags
           value: tag:fairy-k8s01-operator
-    - target:
-        kind: HelmRelease
-        name: tailscale-operator
-      patch: |-
         - op: replace
           path: /spec/values/proxyConfig/defaultTags
           value: tag:fairy-k8s01
@@ -51,10 +43,6 @@ spec:
         - op: replace
           path: /spec/data/0/remoteRef/key
           value: tailscale-fairy-k8s01-operator
-    - target:
-        kind: ExternalSecret
-        name: operator-oauth
-      patch: |-
         - op: replace
           path: /spec/data/1/remoteRef/key
           value: tailscale-fairy-k8s01-operator
