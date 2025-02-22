@@ -30,7 +30,7 @@ spec:
             memory: "64Mi"
             cpu: "100m"
       initContainers:
-      - name: copy password file
+      - name: copy-password
         image: eclipse-mosquitto:2.0.20
         command:
         - 'cp'
