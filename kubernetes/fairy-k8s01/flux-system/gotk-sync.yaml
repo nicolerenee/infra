@@ -21,7 +21,7 @@ metadata:
 spec:
   interval: 10m0s
   path: ./kubernetes/fairy-k8s01
-  prune: true
+  prune: false
   sourceRef:
     kind: GitRepository
     name: flux-system
