@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - cilium.yaml
+  - external-secrets.yaml
+  - generic-device-plugin.yaml
+  - onepassword-connect.yaml
+  - prometheus-operator-crds.yaml
+  - rook-ceph.yaml
+  - tailscale-operator.yaml
