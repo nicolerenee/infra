@@ -6,7 +6,7 @@ metadata:
   name: &app infrastructure
   namespace: flux-system
 spec:
-  targetNamespace: kube-system
+  targetNamespace: flux-system
   commonMetadata:
     labels:
       infra.nicole.dev/part-of: *app
