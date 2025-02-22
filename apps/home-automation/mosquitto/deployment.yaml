@@ -30,21 +30,26 @@ spec:
             memory: "64Mi"
             cpu: "100m"
       initContainers:
-      - name: hash-passwords
+      - name: copy password file
         image: eclipse-mosquitto:2.0.20
         command:
         - 'cp'
         - '/mosquitto/password-secret/password.txt'
         - '/mosquitto/password/password.txt'
-        - '&&'
+        volumeMounts:
+        - name: password
+          mountPath: "/mosquitto/password/"
+        - name: password-secret
+          mountPath: "/mosquitto/password-secret/"
+      - name: hash-passwords
+        image: eclipse-mosquitto:2.0.20
+        command:
         - 'mosquitto_passwd'
         - '-U'
         - '/mosquitto/password/password.txt'
         volumeMounts:
         - name: password
           mountPath: "/mosquitto/password/"
-        - name: password-secret
-          mountPath: "/mosquitto/password-secret/" # <-- change the mount path not to overwrite your .jar
       volumes:
       - name: config
         configMap:
