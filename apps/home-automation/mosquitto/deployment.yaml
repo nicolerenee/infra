@@ -36,6 +36,6 @@ spec:
       - name: data
         persistentVolumeClaim:
           claimName: mosquitto-data
-      - name: secret
-        configMap:
+      - name: password
+        secret:
           name: mosquitto-password
