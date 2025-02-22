@@ -38,4 +38,4 @@ spec:
           claimName: mosquitto-data
       - name: password
         secret:
-          name: mosquitto-password
+          secretName: mosquitto-password
