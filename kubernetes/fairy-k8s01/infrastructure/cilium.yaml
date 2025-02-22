@@ -12,7 +12,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./apps/cilium
+  path: ./apps/infrastructure/cilium
   prune: true
   sourceRef:
     kind: GitRepository

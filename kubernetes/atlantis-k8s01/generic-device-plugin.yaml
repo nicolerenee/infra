@@ -16,6 +16,6 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./apps/generic-device-plugin
+  path: ./apps/infrastructure/generic-device-plugin
   prune: true
   wait: true

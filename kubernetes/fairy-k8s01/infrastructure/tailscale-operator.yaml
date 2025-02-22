@@ -16,7 +16,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./apps/tailscale-operator/operator
+  path: ./apps/infrastructure/tailscale-operator/operator
   interval: 30s
   retryInterval: 1m
   timeout: 5m
@@ -64,7 +64,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./apps/tailscale-operator/proxyclass
+  path: ./apps/infrastructure/tailscale-operator/proxyclass
   interval: 30s
   retryInterval: 1m
   timeout: 5m

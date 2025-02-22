@@ -13,7 +13,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./apps/generic-device-plugin
+  path: ./apps/infrastructure/generic-device-plugin
   interval: 30s
   retryInterval: 1m
   timeout: 5m
