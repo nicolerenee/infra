@@ -36,7 +36,7 @@ spec:
               {{ .zwavejs_user | toString }}:{{ .zwavejs_pass | toString }}
 
         - op: replace
-          path: /spec/data/
+          path: /spec/data
           value:
             - secretKey: ha_user
               remoteRef:
