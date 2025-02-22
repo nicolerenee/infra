@@ -1,0 +1,33 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app rtl915
+  namespace: flux-system
+spec:
+  targetNamespace: home-automation
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./apps/home-automation/rtl_433/rtl915
+  dependsOn:
+    - name: mosquitto
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true
+  patches:
+    - target:
+        kind: ExternalSecret
+      patch: |-
+        - op: replace
+          path: /spec/data/0/remoteRef/key
+          value: mqtt-fairy-house-rtl915
+        - op: replace
+          path: /spec/data/1/remoteRef/key
+          value: mqtt-fairy-house-rtl915

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rtl-mqtt-autodiscovery-scripts
+data:
+  run.sh: |
+    #!/bin/bash
+
+    wget https://raw.githubusercontent.com/merbanan/rtl_433/refs/tags/24.10/examples/rtl_433_mqtt_hass.py
+    pip install \
+        --no-cache-dir \
+        --prefer-binary \
+        paho-mqtt==1.6.1 \
+
+    python3 -u rtl_433_mqtt_hass.py -H $MQTT_HOST -u $MQTT_USERNAME -P $MQTT_PASSWORD

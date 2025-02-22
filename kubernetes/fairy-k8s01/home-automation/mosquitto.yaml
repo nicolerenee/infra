@@ -1,0 +1,80 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app mosquitto
+  namespace: flux-system
+spec:
+  targetNamespace: home-automation
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./apps/home-automation/mosquitto
+  dependsOn:
+    - name: onepassword-connect-store
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true
+  patches:
+    - target:
+        kind: ExternalSecret
+      patch: |-
+        - op: replace
+          path: /spec/target/template/data
+          value:
+            password.txt: |
+              {{ .ha_user | toString }}:{{ .ha_pass | toString }}
+              {{ .ha_addon_user | toString }}:{{ .ha_addon_pass | toString }}
+              {{ .rtl_915_user | toString }}:{{ .rtl_915_pass | toString }}
+              {{ .rtl_autodiscovery_user | toString }}:{{ .rtl_autodiscovery_pass | toString }}
+              {{ .zwavejs_user | toString }}:{{ .zwavejs_pass | toString }}
+
+        - op: replace
+          path: /spec/data/
+          value:
+            - secretKey: ha_user
+              remoteRef:
+                key: mqtt-fairy-house-homeassistant
+                property: username
+            - secretKey: ha_pass
+              remoteRef:
+                key: mqtt-fairy-house-homeassistant
+                property: password
+            - secretKey: ha_addon_user
+              remoteRef:
+                key: mqtt-fairy-house-hass-addons
+                property: username
+            - secretKey: ha_addon_pass
+              remoteRef:
+                key: mqtt-fairy-house-hass-addons
+                property: password
+            - secretKey: rtl_915_user
+              remoteRef:
+                key: mqtt-fairy-house-rtl915
+                property: username
+            - secretKey: rtl_915_pass
+              remoteRef:
+                key: mqtt-fairy-house-rtl915
+                property: password
+            - secretKey: rtl_autodiscovery_user
+              remoteRef:
+                key: mqtt-fairy-house-rtl-autodiscovery
+                property: username
+            - secretKey: rtl_autodiscovery_pass
+              remoteRef:
+                key: mqtt-fairy-house-rtl-autodiscovery
+                property: password
+            - secretKey: zwavejs_user
+              remoteRef:
+                key: mqtt-fairy-house-zwavejs
+                property: username
+            - secretKey: zwavejs_pass
+              remoteRef:
+                key: mqtt-fairy-house-zwavejs
+                property: password

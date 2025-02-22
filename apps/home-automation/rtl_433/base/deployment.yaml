@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rtl
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+    spec:
+      containers:
+      - name: rtl
+        image: ghcr.io/hertzg/rtl_433_docker:24.10-debian
+        args:
+          - -c
+          - /etc/rtl_433/rtl_433.conf
+          - -F
+          - mqtt://$(MOSQUITTO_SERVICE_HOST):$(MOSQUITTO_SERVICE_PORT),user=$(MQTT_USERNAME),pass=$(MQTT_PASSWORD),retain=1,devices=rtl_433/$(FREQUENCY)/devices[/type][/model][/subtype][/channel][/id],events=rtl_433/$(FREQUENCY)/events,states=rtl_433/$(FREQUENCY)/states
+          - -f
+          - $(FREQUENCY)Mhz
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+            squat.ai/dvb-t: "1"
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+            squat.ai/dvb-t: "1"
+        volumeMounts:
+        - mountPath: /etc/rtl_433/
+          name: config

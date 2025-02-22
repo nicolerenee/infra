@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mosquitto
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  template:
+    spec:
+      containers:
+      - name: mosquitto
+        image: eclipse-mosquitto:2.0.20
+        ports:
+        - containerPort: 1883
+        - containerPort: 9001
+        volumeMounts:
+        - mountPath: /mosquitto/config/
+          name: config
+        - mountPath: /mosquitto/data/
+          name: data
+        - mountPath: /mosquitto/password/
+          name: password
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "1"
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+      volumes:
+      - name: config
+        configMap:
+          name: mosquitto-config
+      - name: data
+        persistentVolumeClaim:
+          claimName: mosquitto-data
+      - name: secret
+        configMap:
+          name: mosquitto-password

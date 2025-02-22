@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rtl-mqtt-autodiscovery
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  template:
+    spec:
+      containers:
+      - name: rtl-mqtt-autodiscovery
+        image: python:3
+        command:
+          - /bin/bash
+          - /scripts/run.sh
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+        volumeMounts:
+        - mountPath: /scripts
+          name: scripts
+      volumes:
+      - name: scripts
+        configMap:
+          name: rtl-mqtt-autodiscovery-scripts

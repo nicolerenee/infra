@@ -1,0 +1,34 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namePrefix: rtl915-
+
+labels:
+  - includeSelectors: true
+    pairs:
+      app.kubernetes.io/name: rtl915
+
+components:
+  - ../base
+
+patches:
+  - target:
+      kind: Deployment
+    patch: |
+      - op: add
+        path: /spec/template/spec/containers/0/env
+        value:
+          - name: MQTT_USERNAME
+            valueFrom:
+              secretKeyRef:
+                key: username
+                name: rtl915-mqtt-creds
+          - name: MQTT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: rtl915-mqtt-creds
+          - name: FREQUENCY
+            value: "915"

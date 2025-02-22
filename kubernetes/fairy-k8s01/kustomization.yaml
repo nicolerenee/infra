@@ -21,3 +21,4 @@ resources:
   # - ingress
   # - rook-ceph
   # - observability
+  - home-automation

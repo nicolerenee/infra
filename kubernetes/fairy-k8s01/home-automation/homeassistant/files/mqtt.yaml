@@ -1,0 +1,131 @@
+sensor:
+  - name: Battery
+    device_class: battery
+    unit_of_measurement: '%'
+    value_template: '{{ float(value) * 100 }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Fineoffset-WS90/32434/battery_ok
+    unique_id: Ecowitt-WS90-32434-Battery
+    device:
+      identifiers:
+        - Ecowitt-WS90-32434
+      model: WS90
+      manufacturer: Ecowitt
+      name: Weather Station
+  - name: Battery mV
+    device_class: voltage
+    unit_of_measurement: mV
+    value_template: '{{ float(value) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Fineoffset-WS90/32434/battery_mV
+    unique_id: Ecowitt-WS90-32434-mV
+    device:
+      identifiers:
+        - Ecowitt-WS90-32434
+  - name: Supercap V
+    device_class: voltage
+    unit_of_measurement: V
+    value_template: '{{ float(value) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Fineoffset-WS90/32434/supercap_V
+    unique_id: Ecowitt-WS90-32434-V
+    device:
+      identifiers:
+        - Ecowitt-WS90-32434
+  - name: Temperature
+    device_class: temperature
+    unit_of_measurement: °C
+    value_template: '{{ value|float|round(1) }}'
+    state_class: measurement
+    state_topic: rtl_433/915/devices/Fineoffset-WS90/32434/temperature_C
+    unique_id: Ecowitt-WS90-32434-Temp
+    device:
+      identifiers:
+        - Ecowitt-WS90-32434
+  - name: Humidity
+    device_class: humidity
+    unit_of_measurement: '%'
+    value_template: '{{ value|float }}'
+    state_class: measurement
+    state_topic: rtl_433/915/devices/Fineoffset-WS90/32434/humidity
+    unique_id: Ecowitt-WS90-32434-H
+    device:
+      identifiers:
+        - Ecowitt-WS90-32434
+  - name: Wind Direction
+    unit_of_measurement: °
+    value_template: '{{ value|float }}'
+    state_class: measurement
+    state_topic: rtl_433/915/devices/Fineoffset-WS90/32434/wind_dir_deg
+    unique_id: Ecowitt-WS90-32434-WD
+    device:
+      identifiers:
+        - Ecowitt-WS90-32434
+  - name: Wind Average
+    device_class: wind_speed
+    unit_of_measurement: km/h
+    value_template: '{{ (float(value|float) * 3.6) | round(2) }}'
+    state_class: measurement
+    state_topic: rtl_433/915/devices/Fineoffset-WS90/32434/wind_avg_m_s
+    unique_id: Ecowitt-WS90-32434-WS
+    device:
+      identifiers:
+        - Ecowitt-WS90-32434
+  - name: Wind Max
+    device_class: wind_speed
+    unit_of_measurement: km/h
+    value_template: '{{ (float(value|float) * 3.6) | round(2) }}'
+    state_class: measurement
+    state_topic: rtl_433/915/devices/Fineoffset-WS90/32434/wind_max_m_s
+    unique_id: Ecowitt-WS90-32434-GS
+    device:
+      identifiers:
+        - Ecowitt-WS90-32434
+  - name: UV Index
+    unit_of_measurement: UV Index
+    value_template: '{{ value|float|round(1) }}'
+    state_class: measurement
+    state_topic: rtl_433/915/devices/Fineoffset-WS90/32434/uvi
+    unique_id: Ecowitt-WS90-32434-uvi
+    device:
+      identifiers:
+        - Ecowitt-WS90-32434
+  - name: Outside Luminance
+    device_class: illuminance
+    unit_of_measurement: lx
+    value_template: '{{ value|int }}'
+    state_class: measurement
+    state_topic: rtl_433/915/devices/Fineoffset-WS90/32434/light_lux
+    unique_id: Ecowitt-WS90-32434-lux
+    device:
+      identifiers:
+        - Ecowitt-WS90-32434
+  - name: Rain Total
+    device_class: precipitation
+    unit_of_measurement: mm
+    value_template: '{{ value|float|round(2) }}'
+    state_class: total_increasing
+    state_topic: rtl_433/915/devices/Fineoffset-WS90/32434/rain_mm
+    unique_id: Ecowitt-WS90-32434-RT
+    device:
+      identifiers:
+        - Ecowitt-WS90-32434
+
+  # - name: SCMplus Consumption Value
+  #   value_template: '{{ value|int }}'
+  #   state_class: total_increasing
+  #   state_topic: rtl_433/915/devices/Neptune-R900/1831418589/consumption
+  #   unique_id: Neptune-R900-1831418589-consumption
+  #   device:
+  #     identifiers:
+  #       - Neptune-R900-1831418589
+  #     model: Neptune-R900
+  #     manufacturer: rtl_433
+  #     name: Neptune-R900-1831418589
+
+
+
+# wh31b-1-179 ==== laundry room

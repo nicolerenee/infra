@@ -1,0 +1,20 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+labels:
+  - includeSelectors: true
+    pairs:
+      app.kubernetes.io/name: mosquitto
+
+configMapGenerator:
+  - name: mosquitto-config
+    files:
+      - mosquitto.conf=files/mosquitto.conf
+
+resources:
+  - externalsecret.yaml
+  - pvc.yaml
+  - deployment.yaml
+  - service.yaml

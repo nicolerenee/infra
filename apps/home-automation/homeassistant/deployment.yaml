@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homeassistant
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  template:
+    spec:
+      hostNetwork: true
+      containers:
+      - name: homeassistant
+        image: ghcr.io/home-assistant/home-assistant:2025.2.4
+        ports:
+          - name: http
+            containerPort: 8123
+        resources:
+          limits:
+            memory: "8Gi"
+            cpu: "4"
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+          - mountPath: /config
+            name: homeassistant-config
+      restartPolicy: Always
+      volumes:
+        - name: homeassistant-config
+          persistentVolumeClaim:
+            claimName: homeassistant-config

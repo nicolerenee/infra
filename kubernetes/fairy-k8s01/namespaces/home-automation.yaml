@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: home-automation
+  labels:
+    # TODO: remove host networking on HA so this can be removed
+    pod-security.kubernetes.io/enforce: privileged
