@@ -13,7 +13,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./kubernetes/fairy-k8s01/home-automation/homeasisstant
+  path: ./kubernetes/fairy-k8s01/home-automation/homeassistant
   dependsOn:
     - name: mosquitto
   interval: 2m

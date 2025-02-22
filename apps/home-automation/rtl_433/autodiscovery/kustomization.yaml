@@ -9,5 +9,6 @@ labels:
       app.kubernetes.io/name: rtl-mqtt-autodiscovery
 
 resources:
+  - externalsecret.yaml
   - script.yaml
   - deployment.yaml
