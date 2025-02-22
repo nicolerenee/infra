@@ -5,5 +5,5 @@ resources:
   - flux-system
   - namespaces
   - ../repos
-  - infrastructure.yaml
+  - infrastructure
   - home-automation
