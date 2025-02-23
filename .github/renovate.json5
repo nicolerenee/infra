@@ -1,33 +1,22 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "reviewers": [
-    "@nicolerenee",
-  ],
-  "extends": [
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  reviewers: ["@nicolerenee"],
+  extends: [
     "config:recommended",
     ":dependencyDashboard",
     ":semanticCommits",
     ":semanticCommitType(chore)",
     "docker:enableMajor",
     ":timezone(America/Chicago)",
-    "github>nicolerenee/infra//.github/renovate/commitMessage.json5"
+    "github>nicolerenee/infra//.github/renovate/commitMessage.json5",
   ],
-  "flux": {
-    "fileMatch": [
-      "(^|/)apps/.+\\.ya?ml$"
-      "(^|/)kubernetes/.+\\.ya?ml$"
-    ],
+  flux: {
+    fileMatch: ["(^|/)apps/.+\\.ya?ml$", "(^|/)kubernetes/.+\\.ya?ml$"],
   },
   "helm-values": {
-    "fileMatch": [
-      "(^|/)apps/.+\\.ya?ml$"
-      "(^|/)kubernetes/.+\\.ya?ml$"
-    ],
+    fileMatch: ["(^|/)apps/.+\\.ya?ml$", "(^|/)kubernetes/.+\\.ya?ml$"],
   },
-  "kubernetes": {
-    "fileMatch": [
-      "(^|/)apps/.+\\.ya?ml$"
-      "(^|/)kubernetes/.+\\.ya?ml$"
-    ],
+  kubernetes: {
+    fileMatch: ["(^|/)apps/.+\\.ya?ml$", "(^|/)kubernetes/.+\\.ya?ml$"],
   },
 }
