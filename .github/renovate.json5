@@ -18,6 +18,6 @@
   },
   kubernetes: {
     fileMatch: ["(^|/)apps/.+\\.ya?ml$", "(^|/)kubernetes/.+\\.ya?ml$"],
-    ignorePaths: ["(^|/)kubernetes/.+/flux-system/.+\\.ya?ml$"],
+    ignorePaths: ["kubernetes/**/flux-system/**"],
   },
 }
