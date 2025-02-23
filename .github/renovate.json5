@@ -14,16 +14,19 @@
   ],
   "flux": {
     "fileMatch": [
+      "(^|/)apps/.+\\.ya?ml$"
       "(^|/)kubernetes/.+\\.ya?ml$"
     ],
   },
   "helm-values": {
     "fileMatch": [
+      "(^|/)apps/.+\\.ya?ml$"
       "(^|/)kubernetes/.+\\.ya?ml$"
     ],
   },
   "kubernetes": {
     "fileMatch": [
+      "(^|/)apps/.+\\.ya?ml$"
       "(^|/)kubernetes/.+\\.ya?ml$"
     ],
   },
