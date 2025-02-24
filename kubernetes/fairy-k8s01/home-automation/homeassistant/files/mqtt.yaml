@@ -113,7 +113,188 @@ sensor:
     device:
       identifiers:
         - Ecowitt-WS90-32434
+  - name: rssi
+    device_class: signal_strength
+    unit_of_measurement: dB
+    value_template: '{{ value|float|round(2) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Fineoffset-WS90/32434/rssi
+    unique_id: Ecowitt-WS90-32434-rssi
+    device:
+      identifiers:
+        - Ecowitt-WS90-32434
+  - name: snr
+    device_class: signal_strength
+    unit_of_measurement: dB
+    value_template: '{{ value|float|round(2) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Fineoffset-WS90/32434/snr
+    unique_id: Ecowitt-WS90-32434-snr
+    device:
+      identifiers:
+        - Ecowitt-WS90-32434
+  - name: noise
+    device_class: signal_strength
+    unit_of_measurement: dB
+    value_template: '{{ value|float|round(2) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Fineoffset-WS90/32434/noise
+    unique_id: Ecowitt-WS90-32434-noise
+    device:
+      identifiers:
+        - Ecowitt-WS90-32434
+  #
+  # Deep Freezer (AmbientWeather-WH31B/8/161/)
+  #
+  - name: Battery
+    device_class: battery
+    unit_of_measurement: '%'
+    value_template: '{{ float(value) * 100 }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/AmbientWeather-WH31B/8/161/battery_ok
+    unique_id: Ecowitt-WH31B-Deep-Freezer-Battery
+    device:
+      identifiers:
+        - Ecowitt-WH31B-Deep-Freezer
+      model: WH31B
+      manufacturer: Ecowitt
+      name: Deep Freezer Thermometer
+  - name: Temperature
+    device_class: temperature
+    unit_of_measurement: °C
+    value_template: '{{ value|float|round(1) }}'
+    state_class: measurement
+    state_topic: rtl_433/915/devices/AmbientWeather-WH31B/8/161/temperature_C
+    unique_id: Ecowitt-WH31B-Deep-Freezer-Temp
+    device:
+      identifiers:
+        - Ecowitt-WH31B-Deep-Freezer
+  - name: Humidity
+    device_class: humidity
+    unit_of_measurement: '%'
+    value_template: '{{ value|float }}'
+    state_class: measurement
+    state_topic: rtl_433/915/devices/AmbientWeather-WH31B/8/161/humidity
+    unique_id: Ecowitt-WH31B-Deep-Freezer-H
+    device:
+      identifiers:
+        - Ecowitt-WH31B-Deep-Freezer
+  - name: rssi
+    device_class: signal_strength
+    unit_of_measurement: dB
+    value_template: '{{ value|float|round(2) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/AmbientWeather-WH31B/8/161/rssi
+    unique_id: Ecowitt-WH31B-Deep-Freezer-rssi
+    device:
+      identifiers:
+        - Ecowitt-WH31B-Deep-Freezer
+  - name: snr
+    device_class: signal_strength
+    unit_of_measurement: dB
+    value_template: '{{ value|float|round(2) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/AmbientWeather-WH31B/8/161/snr
+    unique_id: Ecowitt-WH31B-Deep-Freezer-snr
+    device:
+      identifiers:
+        - Ecowitt-WH31B-Deep-Freezer
+  - name: noise
+    device_class: signal_strength
+    unit_of_measurement: dB
+    value_template: '{{ value|float|round(2) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/AmbientWeather-WH31B/8/161/noise
+    unique_id: Ecowitt-WH31B-Deep-Freezer-noise
+    device:
+      identifiers:
+        - Ecowitt-WH31B-Deep-Freezer
+  #
+  # Laundry Room (AmbientWeather-WH31B/1/179/)
+  #
 
+  #
+  # Plant Sensor - 0E8079 (Fineoffset-WH51/0e8079/)
+  #
+  - name: Battery
+    device_class: battery
+    unit_of_measurement: '%'
+    value_template: '{{ ((float(value) * 99)|round(0)) + 1 }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Fineoffset-WH51/0e8079/battery_ok
+    unique_id: Ecowitt-WH51-0E8079-Battery
+    device:
+      identifiers:
+        - Ecowitt-WH51-0E8079
+      model: WH51
+      manufacturer: Ecowitt
+      name: 0E8079
+  - name: Battery mV
+    device_class: voltage
+    unit_of_measurement: mV
+    value_template: '{{ float(value) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Fineoffset-WH51/0e8079/battery_mV
+    unique_id: Ecowitt-WH51-0E8079-mV
+    device:
+      identifiers:
+        - Ecowitt-WH51-0E8079
+  - name: Moisture
+    device_class: moisture
+    unit_of_measurement: '%'
+    value_template: '{{ value|float }}'
+    state_class: measurement
+    state_topic: rtl_433/915/devices/Fineoffset-WH51/0e8079/moisture
+    unique_id: Ecowitt-WH51-0E8079-M
+    device:
+      identifiers:
+        - Ecowitt-WH51-0E8079
+  - name: rssi
+    device_class: signal_strength
+    unit_of_measurement: dB
+    value_template: '{{ value|float|round(2) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Fineoffset-WH51/0e8079/rssi
+    unique_id: Ecowitt-WH51-0E8079-rssi
+    device:
+      identifiers:
+        - Ecowitt-WH51-0E8079
+  - name: snr
+    device_class: signal_strength
+    unit_of_measurement: dB
+    value_template: '{{ value|float|round(2) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Fineoffset-WH51/0e8079/snr
+    unique_id: Ecowitt-WH51-0E8079-snr
+    device:
+      identifiers:
+        - Ecowitt-WH51-0E8079
+  - name: noise
+    device_class: signal_strength
+    unit_of_measurement: dB
+    value_template: '{{ value|float|round(2) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Fineoffset-WH51/0e8079/noise
+    unique_id: Ecowitt-WH51-0E8079-noise
+    device:
+      identifiers:
+        - Ecowitt-WH51-0E8079
+
+  #
+  # Water Meter (not sure this is mine yet)
+  #
   # - name: SCMplus Consumption Value
   #   value_template: '{{ value|int }}'
   #   state_class: total_increasing
@@ -125,7 +306,3 @@ sensor:
   #     model: Neptune-R900
   #     manufacturer: rtl_433
   #     name: Neptune-R900-1831418589
-
-
-
-# wh31b-1-179 ==== laundry room
