@@ -8,6 +8,7 @@ metadata:
 spec:
   targetNamespace: kube-system
   dependsOn:
+    - name: cert-manager
     - name: node-feature-discovery-rules
   commonMetadata:
     labels:
