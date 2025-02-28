@@ -9,8 +9,10 @@ resources:
   - external-secrets.yaml
   - grafana.yaml
   - ingress-nginx.yaml
+  - intel.yaml
   - jetstack.yaml
   - metallb.yaml
+  - node-feature-discovery.yaml
   - onepassword-connect.yaml
   - prometheus-community.yaml
   - rook.yaml
