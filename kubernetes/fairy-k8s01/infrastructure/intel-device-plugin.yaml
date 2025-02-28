@@ -7,6 +7,8 @@ metadata:
   namespace: flux-system
 spec:
   targetNamespace: kube-system
+  dependsOn:
+    - name: node-feature-discovery
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
