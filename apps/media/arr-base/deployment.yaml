@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: arr
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  template:
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - name: arr
+        image: sentinel
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: TZ
+            value: America/Chicago
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        resources:
+          limits:
+            cpu: "4"
+            memory: 10Gi
+          requests:
+            cpu: "1"
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 3000
+          runAsGroup: 3000
+        startupProbe: &probe
+          httpGet:
+            port: http
+            path: /ping
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 1
+          failureThreshold: 3
+        livenessProbe: *probe
+        readinessProbe: *probe
+        volumeMounts:
+        - mountPath: /config
+          name: config
+        - mountPath: /tmp
+          name: tmp
+      securityContext:
+        fsGroup: 3000
+        fsGroupChangePolicy: OnRootMismatch
+        supplementalGroups:
+        - 3000
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: arr-config
+      - name: tmp
+        emptyDir: {}

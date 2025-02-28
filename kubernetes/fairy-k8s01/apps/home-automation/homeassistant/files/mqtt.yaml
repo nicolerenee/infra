@@ -293,16 +293,51 @@ sensor:
         - Ecowitt-WH51-0E8079
 
   #
-  # Water Meter (not sure this is mine yet)
+  # Water Meter (Neptune-R900/1576157088)
   #
-  # - name: SCMplus Consumption Value
-  #   value_template: '{{ value|int }}'
-  #   state_class: total_increasing
-  #   state_topic: rtl_433/915/devices/Neptune-R900/1831418589/consumption
-  #   unique_id: Neptune-R900-1831418589-consumption
-  #   device:
-  #     identifiers:
-  #       - Neptune-R900-1831418589
-  #     model: Neptune-R900
-  #     manufacturer: rtl_433
-  #     name: Neptune-R900-1831418589
+  - name: Consumption Value
+    value_template: '{{ float(value) / 100 | round(2) }}'
+    device_class: water
+    unit_of_measurement: gal
+    state_class: total_increasing
+    state_topic: rtl_433/915/devices/Neptune-R900/1576157088/consumption
+    unique_id: Neptune-R900-1576157088-consumption
+    device:
+      identifiers:
+        - Neptune-R900-1576157088
+      model: Neptune R900
+      manufacturer: Neptune
+      name: Neptune-R900-1576157088
+  - name: rssi
+    device_class: signal_strength
+    unit_of_measurement: dB
+    value_template: '{{ value|float|round(2) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Neptune-R900/1576157088/rssi
+    unique_id: Neptune-R900-1576157088-rssi
+    device:
+      identifiers:
+        - Neptune-R900-1576157088
+  - name: snr
+    device_class: signal_strength
+    unit_of_measurement: dB
+    value_template: '{{ value|float|round(2) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Neptune-R900/1576157088/snr
+    unique_id: Neptune-R900-1576157088-snr
+    device:
+      identifiers:
+        - Neptune-R900-1576157088
+  - name: noise
+    device_class: signal_strength
+    unit_of_measurement: dB
+    value_template: '{{ value|float|round(2) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Neptune-R900/1576157088/noise
+    unique_id: Neptune-R900-1576157088-noise
+    device:
+      identifiers:
+        - Neptune-R900-1576157088

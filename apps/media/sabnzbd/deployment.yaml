@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sabnzbd
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  template:
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - name: sabnzbd
+        image: "ghcr.io/onedr0p/sabnzbd:4.4.0@sha256:d2dbde184900504bf3636d2df74e466e223d6b2474b4d21a58c72eadfffa7e99"
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: TZ
+            value: America/Chicago
+          - name: SABNZBD__PORT
+            value: "80"
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        resources:
+          limits:
+            cpu: "4"
+            memory: 10Gi
+          requests:
+            cpu: "1"
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 3000
+          runAsGroup: 3000
+        startupProbe: &probe
+          httpGet:
+            path: /api?mode=version
+            port: http
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 1
+          failureThreshold: 3
+        livenessProbe: *probe
+        readinessProbe: *probe
+        volumeMounts:
+        - mountPath: /config
+          name: config
+        - mountPath: /tmp
+          name: tmp
+      securityContext:
+        fsGroup: 3000
+        fsGroupChangePolicy: OnRootMismatch
+        supplementalGroups:
+        - 3000
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: sabnzbd-config
+      - name: tmp
+        emptyDir: {}

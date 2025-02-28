@@ -6,5 +6,4 @@ resources:
   - namespaces
   - ../repos
   - infrastructure
-  - home-automation
-  - media
+  - apps

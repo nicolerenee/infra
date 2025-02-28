@@ -1,0 +1,40 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# base already includes arr in name
+namePrefix: prowl
+
+labels:
+  - includeSelectors: true
+    pairs:
+      app.kubernetes.io/name: prowlarr
+
+components:
+  - ../arr-base
+
+images:
+  - name: sentinel
+    newName: ghcr.io/onedr0p/prowlarr
+    newTag: 1.31.2.4975@sha256:f1c8615cab30b98b2a71254ceafea5b99fa8000d71276df3347cb230e9e5af01
+
+patches:
+  - target:
+      kind: Deployment
+    patch: |
+      - op: add
+        path: /spec/template/spec/containers/0/env/0
+        value:
+          name: PROWLARR__SERVER__PORT
+          value: "80"
+      - op: add
+        path: /spec/template/spec/containers/0/env/0
+        value:
+          name: PROWLARR__AUTH__METHOD
+          value: External
+      - op: add
+        path: /spec/template/spec/containers/0/env/0
+        value:
+          name: PROWLARR__AUTH__REQUIRED
+          value: DisabledForLocalAddresses

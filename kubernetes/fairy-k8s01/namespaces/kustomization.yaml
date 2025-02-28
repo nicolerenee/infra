@@ -2,9 +2,12 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 - cert-manager.yaml
+- external-dns.yaml
 - external-secrets.yaml
+- golink.yaml
 - home-automation.yaml
 - media.yaml
+- nginx-tailscale
 - observability.yaml
 - rook-ceph.yaml
 - tailscale.yaml

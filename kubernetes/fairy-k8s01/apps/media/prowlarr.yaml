@@ -1,0 +1,33 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app prowlarr
+  namespace: flux-system
+spec:
+  targetNamespace: media
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./apps/media/prowlarr
+  dependsOn:
+    - name: onepassword-connect-store
+    - name: tailscale-operator-proxy
+    - name: rook-ceph-cluster
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true
+  patches:
+    - target:
+        kind: Ingress
+      patch: |-
+        - op: add
+          path: /metadata/annotations
+          value:
+            tailscale.com/tags: "tag:fairy-k8s01,tag:media-mgmt"

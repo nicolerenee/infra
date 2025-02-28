@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: golink
+spec:
+  template:
+    spec:
+      securityContext:
+          fsGroup: 1000
+      containers:
+        - image: ghcr.io/tailscale/golink:main@sha256:db7c3693f30d23927a6bea3c63edd586596ad8186b2b3368593d72bd40b9ec92
+          name: golink
+          command:
+            - "/golink"
+          args:
+            - "-sqlitedb"
+            - "/home/nonroot/golink.db"
+          volumeMounts:
+            - name: data
+              mountPath: /home/nonroot
+          resources: {}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: golink-data
