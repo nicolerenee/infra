@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
 - external-secrets.yaml
 - home-automation.yaml
+- media.yaml
 - observability.yaml
 - rook-ceph.yaml
 - tailscale.yaml
