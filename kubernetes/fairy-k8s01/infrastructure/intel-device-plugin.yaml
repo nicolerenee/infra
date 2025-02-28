@@ -1,0 +1,45 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app intel-device-plugin-operator
+  namespace: flux-system
+spec:
+  targetNamespace: kube-system
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./apps/infrastructure/intel-device-plugin/operator
+  interval: 30s
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true
+
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app intel-device-plugin-gpu
+  namespace: flux-system
+spec:
+  targetNamespace: kube-system
+  dependsOn:
+    - name: intel-device-plugin-operator
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./apps/infrastructure/intel-device-plugin/gpu
+  interval: 30s
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true
