@@ -6,6 +6,7 @@ resources:
   - external-secrets.yaml
   - generic-device-plugin.yaml
   - intel-device-plugin.yaml
+  - nginx-tailscale.yaml
   - node-feature-discovery.yaml
   - onepassword-connect.yaml
   - prometheus-operator-crds.yaml
