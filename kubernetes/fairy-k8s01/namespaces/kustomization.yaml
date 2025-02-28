@@ -7,7 +7,7 @@ resources:
 - golink.yaml
 - home-automation.yaml
 - media.yaml
-- nginx-tailscale
+- nginx-tailscale.yaml
 - observability.yaml
 - rook-ceph.yaml
 - tailscale.yaml
