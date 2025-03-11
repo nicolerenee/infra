@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
       - name: mosquitto
-        image: eclipse-mosquitto:2.0.20
+        image: eclipse-mosquitto:2.0.21
         ports:
         - containerPort: 1883
         - containerPort: 9001
@@ -31,7 +31,7 @@ spec:
             cpu: "100m"
       initContainers:
       - name: copy-password
-        image: eclipse-mosquitto:2.0.20
+        image: eclipse-mosquitto:2.0.21
         command:
         - 'cp'
         - '/mosquitto/password-secret/password.txt'
@@ -42,7 +42,7 @@ spec:
         - name: password-secret
           mountPath: "/mosquitto/password-secret/"
       - name: hash-passwords
-        image: eclipse-mosquitto:2.0.20
+        image: eclipse-mosquitto:2.0.21
         command:
         - 'mosquitto_passwd'
         - '-U'
