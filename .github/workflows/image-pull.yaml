@@ -27,7 +27,7 @@ jobs:
   pull:
     if: ${{ needs.filter.outputs.changed-files != '[]' }}
     needs: filter
-    name: Extract & Pull ${{ matrix.cluster }}
+    name: Cluster
     strategy:
       matrix:
         cluster: ["atlantis-k8s01", "fairy-k8s01"]
