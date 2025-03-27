@@ -28,8 +28,9 @@ spec:
       strategy: rollback
       retries: 3
   values:
-    fullnameOverride: *app
-    provider: cloudflare
+    # fullnameOverride: *app
+    provider:
+       name: cloudflare
     domainFilters:
       - freckle.family
       - freckle.vision
