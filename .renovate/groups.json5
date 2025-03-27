@@ -1,0 +1,83 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  packageRules: [
+    {
+      description: "Actions Runner Controller Group",
+      groupName: "Actions Runner Controller",
+      matchDatasources: ["docker"],
+      matchPackageNames: [
+        "/gha-runner-scale-set-controller/",
+        "/gha-runner-scale-set/",
+      ],
+      group: {
+        commitMessageTopic: "{{{groupName}}}",
+      },
+    },
+    {
+      description: "Cert-Manager Group",
+      groupName: "Cert-Manager",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["/cert-manager/"],
+      group: {
+        commitMessageTopic: "{{{groupName}}}",
+      },
+    },
+    {
+      description: "Cilium Group",
+      groupName: "Cilium",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["/cilium/"],
+      group: {
+        commitMessageTopic: "{{{groupName}}}",
+      },
+    },
+    {
+      description: "CoreDNS Group",
+      groupName: "CoreDNS",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["/coredns/"],
+      group: {
+        commitMessageTopic: "{{{groupName}}}",
+      },
+    },
+    {
+      description: "External Secrets Operator Group",
+      groupName: "External Secrets Operator",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["/external-secrets/"],
+      group: {
+        commitMessageTopic: "{{{groupName}}}",
+      },
+    },
+    {
+      description: "Flux Operator Group",
+      groupName: "Flux Operator",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["/flux-operator/", "/flux-instance/"],
+      group: {
+        commitMessageTopic: "{{{groupName}}}",
+      },
+    },
+    {
+      description: "Intel Device Plugins Group",
+      groupName: "Intel-Device-Plugins",
+      matchDatasources: ["docker"],
+      matchPackageNames: [
+        "/intel-device-plugins-operator/",
+        "/intel-device-plugins-gpu/",
+      ],
+      group: {
+        commitMessageTopic: "{{{groupName}}}",
+      },
+    },
+    {
+      description: "Rook-Ceph Group",
+      groupName: "Rook-Ceph",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["/rook-ceph/", "/rook-ceph-cluster/"],
+      group: {
+        commitMessageTopic: "{{{groupName}}}",
+      },
+    },
+  ],
+}
