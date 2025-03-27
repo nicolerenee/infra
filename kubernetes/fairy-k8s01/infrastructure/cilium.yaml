@@ -25,9 +25,9 @@ spec:
         kind: HelmRelease
       patch: |-
         # Multus compatibility
-        - op: replace
+        - op: add
           path: /spec/values/cni/exclusive
           value: false
-        - op: replace
+        - op: add
           path: /spec/values/devices
           value: br0
