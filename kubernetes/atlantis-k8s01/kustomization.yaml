@@ -22,3 +22,4 @@ resources:
   - generic-device-plugin.yaml
   - onepassword-connect.yaml
   - tailscale-operator.yaml
+  - ../clusters/atlantis-k8s01/deploy
