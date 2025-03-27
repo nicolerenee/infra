@@ -341,3 +341,75 @@ sensor:
     device:
       identifiers:
         - Neptune-R900-1576157088
+
+  #
+  # Plant Sensor - 0E7BB3 (Fineoffset-WH51/0e7bb3/)
+  #
+  - name: Battery
+    device_class: battery
+    unit_of_measurement: '%'
+    value_template: '{{ ((float(value) * 99)|round(0)) + 1 }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Fineoffset-WH51/0e7bb3/battery_ok
+    unique_id: Ecowitt-WH51-0E7BB3-Battery
+    device:
+      identifiers:
+        - Ecowitt-WH51-0E7BB3
+      model: WH51
+      manufacturer: Ecowitt
+      name: 0E7BB3
+  - name: Battery mV
+    device_class: voltage
+    unit_of_measurement: mV
+    value_template: '{{ float(value) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Fineoffset-WH51/0e7bb3/battery_mV
+    unique_id: Ecowitt-WH51-0E7BB3-mV
+    device:
+      identifiers:
+        - Ecowitt-WH51-0E7BB3
+  - name: Moisture
+    device_class: moisture
+    unit_of_measurement: '%'
+    value_template: '{{ value|float }}'
+    state_class: measurement
+    state_topic: rtl_433/915/devices/Fineoffset-WH51/0e7bb3/moisture
+    unique_id: Ecowitt-WH51-0E7BB3-M
+    device:
+      identifiers:
+        - Ecowitt-WH51-0E7BB3
+  - name: rssi
+    device_class: signal_strength
+    unit_of_measurement: dB
+    value_template: '{{ value|float|round(2) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Fineoffset-WH51/0e7bb3/rssi
+    unique_id: Ecowitt-WH51-0E7BB3-rssi
+    device:
+      identifiers:
+        - Ecowitt-WH51-0E7BB3
+  - name: snr
+    device_class: signal_strength
+    unit_of_measurement: dB
+    value_template: '{{ value|float|round(2) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Fineoffset-WH51/0e7bb3/snr
+    unique_id: Ecowitt-WH51-0E7BB3-snr
+    device:
+      identifiers:
+        - Ecowitt-WH51-0E7BB3
+  - name: noise
+    device_class: signal_strength
+    unit_of_measurement: dB
+    value_template: '{{ value|float|round(2) }}'
+    state_class: measurement
+    entity_category: diagnostic
+    state_topic: rtl_433/915/devices/Fineoffset-WH51/0e7bb3/noise
+    unique_id: Ecowitt-WH51-0E7BB3-noise
+    device:
+      identifiers:
+        - Ecowitt-WH51-0E7BB3
