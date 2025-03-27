@@ -24,3 +24,10 @@ spec:
   targetNamespace: *namespace
   timeout: 5m
   wait: false
+  patches:
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: add
+          path: /spec/values/runnerGroup
+          value: atlantis-k8s01
