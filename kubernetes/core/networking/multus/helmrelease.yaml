@@ -25,7 +25,6 @@ spec:
       sourceRef:
         name: multus
         kind: HelmRepository
-        namespace: flux-system
   values:
     image:
       repository: ghcr.io/k8snetworkplumbingwg/multus-cni
