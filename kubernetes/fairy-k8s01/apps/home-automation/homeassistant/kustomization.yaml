@@ -14,4 +14,4 @@ configMapGenerator:
       - mqtt.conf=files/mqtt.yaml
 
 resources:
-  - ../../../../apps/home-automation/homeassistant
+  - ../../../../../apps/home-automation/homeassistant
