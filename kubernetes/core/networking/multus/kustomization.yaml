@@ -4,7 +4,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   # renovate: datasource=github-releases depName=k8snetworkplumbingwg/multus-cni
-  - https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/refs/tags/v4.1.4/deployments/multus-daemonset-thick.yml
+  - https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/refs/tags/v4.2.0/deployments/multus-daemonset-thick.yml
 patches:
   - target:
       kind: DaemonSet
