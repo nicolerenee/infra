@@ -26,8 +26,9 @@ spec:
       patch: |-
         # Multus compatibility
         - op: add
-          path: /spec/values/cni/exclusive
-          value: false
+          path: /spec/values/cni
+          value:
+            exclusive: false
         - op: add
           path: /spec/values/devices
           value: br0
