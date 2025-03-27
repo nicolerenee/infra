@@ -1,0 +1,45 @@
+---
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/source.toolkit.fluxcd.io/helmrepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: multus
+spec:
+  interval: 1h
+  timeout: 3m0s
+  url: https://angelnu.github.io/helm-charts/
+
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: multus
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: multus
+      version: 5.0.7
+      sourceRef:
+        name: multus
+        kind: HelmRepository
+  values:
+    image:
+      repository: ghcr.io/k8snetworkplumbingwg/multus-cni
+      tag: v4.1.4-thick@sha256:df8c2963d8356484a856d9949d2f0150ed1d430f5b0979fa041d04eb2bce6403
+    cni:
+      image:
+        repository: ghcr.io/home-operations/cni-plugins
+        tag: 1.6.2@sha256:078ddbb602860268c20c4fd3e31a047315f5b686545588de534aade7059a7764
+      paths:
+        config: /etc/cni/net.d
+        bin: /opt/cni/bin
+    resources:
+      requests:
+        cpu: 5m
+      limits:
+        memory: 512Mi
+    hostPaths:
+      netns: /var/run/netns
