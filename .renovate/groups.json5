@@ -73,7 +73,7 @@
     {
       description: "Rook-Ceph Group",
       groupName: "Rook-Ceph",
-      matchDatasources: ["docker"],
+      matchDatasources: ["helm"],
       matchPackageNames: ["/rook-ceph/", "/rook-ceph-cluster/"],
       group: {
         commitMessageTopic: "{{{groupName}}}",

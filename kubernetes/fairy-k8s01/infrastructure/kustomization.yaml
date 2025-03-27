@@ -2,14 +2,11 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - cert-manager.yaml
-  - cilium.yaml
   - external-secrets.yaml
   - generic-device-plugin.yaml
   - intel-device-plugin.yaml
-  - multus.yaml
   - nginx-tailscale.yaml
   - node-feature-discovery.yaml
   - onepassword-connect.yaml
   - prometheus-operator-crds.yaml
   - rook-ceph.yaml
-  - tailscale-operator.yaml

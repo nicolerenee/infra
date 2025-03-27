@@ -1,0 +1,37 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app cilium
+  namespace: &namespace kube-system
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: prometheus-operator-crds
+      namespace: flux-system
+  targetNamespace: *namespace
+  path: ./kubernetes/core/networking/cilium
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  interval: 1h
+  retryInterval: 2m
+  timeout: 5m
+  patches:
+    - target:
+        kind: HelmRelease
+      patch: |-
+        # Multus compatibility
+        - op: add
+          path: /spec/values/cni
+          value:
+            exclusive: false
+        # TODO: switch to bridge and enable this
+        # - op: add
+        #   path: /spec/values/devices
+        #   value: br0

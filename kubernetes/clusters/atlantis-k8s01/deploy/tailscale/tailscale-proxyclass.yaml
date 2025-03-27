@@ -3,20 +3,21 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app nginx-tailscale
+  name: &app tailscale-proxyclass
   namespace: flux-system
 spec:
-  targetNamespace: ingress
+  targetNamespace: tailscale
+  dependsOn:
+    - name: tailscale-operator
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  dependsOn:
-    - name: tailscale-operator
-      namespace: tailscale
-  path: ./kubernetes/atlantis-k8s01/ingress/nginx-tailscale
-  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
-  interval: 30m
+  path: ./kubernetes/core/networking/tailscale-operator/proxyclass
+  interval: 30s
+  retryInterval: 1m
   timeout: 5m
+  prune: true
+  wait: true

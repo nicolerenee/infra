@@ -25,3 +25,6 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
+  postBuild:
+    substitute:
+      CLUSTER_NAME: "atlantis-k8s01"

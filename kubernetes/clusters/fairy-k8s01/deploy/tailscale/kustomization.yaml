@@ -1,0 +1,20 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: tailscale
+components:
+  - ../../../../components/common
+resources:
+  - ./tailscale-operator.yaml
+  - ./tailscale-proxyclass.yaml
+patches:
+  - target:
+      kind: Namespace
+    patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          pod-security.kubernetes.io/audit: privileged
+          pod-security.kubernetes.io/enforce: privileged
+          pod-security.kubernetes.io/warn: privileged
