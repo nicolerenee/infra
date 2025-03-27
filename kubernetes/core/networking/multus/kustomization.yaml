@@ -3,8 +3,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
-  # renovate: datasource=github-releases depName=k3s-io/k3s
+  # renovate: datasource=github-releases depName=k8snetworkplumbingwg/multus-cni
   - https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/refs/tags/v4.1.4/deployments/multus-daemonset-thick.yml
 patches:
   - target:
@@ -19,6 +18,8 @@ patches:
         value:
           image: ghcr.io/home-operations/cni-plugins:1.6.2@sha256:078ddbb602860268c20c4fd3e31a047315f5b686545588de534aade7059a7764
           name: install-cni
+          securityContext:
+            privileged: true
           volumeMounts:
           - mountPath: /host/opt/cni/bin
             mountPropagation: Bidirectional

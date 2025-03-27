@@ -4,21 +4,23 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: &app cilium
-  namespace: flux-system
+  namespace: &namespace kube-system
 spec:
-  targetNamespace: kube-system
-  dependsOn:
-    - name: prometheus-operator-crds
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./apps/infrastructure/cilium
+  dependsOn:
+    - name: prometheus-operator-crds
+      namespace: flux-system
+  targetNamespace: *namespace
+  path: ./kubernetes/core/networking/cilium
   prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
-  interval: 30s
-  retryInterval: 1m
+    namespace: flux-system
+  interval: 1h
+  retryInterval: 2m
   timeout: 5m
   patches:
     - target:

@@ -10,7 +10,6 @@ resources:
   # setup prometheus CRDs before anything else since other charts need it
   # TODO: convert all these
   - observability/base
-  - kube-system
   - cert-manager
   - external-dns
   - metallb
@@ -21,5 +20,4 @@ resources:
   - external-secrets.yaml
   - generic-device-plugin.yaml
   - onepassword-connect.yaml
-  - tailscale-operator.yaml
   - ../clusters/atlantis-k8s01/deploy
