@@ -31,7 +31,7 @@ jobs:
       matrix:
         cluster: ["atlantis-k8s01", "fairy-k8s01"]
       fail-fast: false
-    uses: .github/workflows/image-pull-extract-pull.yaml
+    uses: ./.github/workflows/image-pull-extract-pull.yaml
     with:
       cluster: ${{ matrix.cluster }}
 
