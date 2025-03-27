@@ -9,12 +9,14 @@ spec:
   targetNamespace: tailscale
   dependsOn:
     - name: tailscale-operator
+      namespace: tailscale
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
   sourceRef:
     kind: GitRepository
     name: flux-system
+    namespace: flux-system
   path: ./kubernetes/core/networking/tailscale-operator/proxyclass
   interval: 30s
   retryInterval: 1m

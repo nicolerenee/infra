@@ -12,6 +12,7 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: tailscale-operator
+      namespace: tailscale
   path: ./apps/infrastructure/nginx-tailscale
   prune: true
   sourceRef:

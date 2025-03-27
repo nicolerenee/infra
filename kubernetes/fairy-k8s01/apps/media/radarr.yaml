@@ -17,6 +17,7 @@ spec:
   dependsOn:
     - name: onepassword-connect-store
     - name: tailscale-operator-proxy
+      namespace: tailscale
     - name: rook-ceph-cluster
   interval: 2m
   retryInterval: 1m
