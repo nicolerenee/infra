@@ -61,3 +61,17 @@ spec:
     # change required for tailscale operator (https://tailscale.com/kb/1236/kubernetes-operator#cilium-in-kube-proxy-replacement-mode)
     socketLB:
       hostNamespaceOnly: true
+
+    ## NOTE: Cilium can automatically kill and respawn pods upon ConfigMap updates or other resource changes
+    rollOutCiliumPods: true
+    operator:
+      rollOutPods: true
+
+    # agent resource limits
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "512Mi"
+      limits:
+        cpu: "2"
+        memory: "6Gi"
