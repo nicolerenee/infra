@@ -6,4 +6,5 @@ resources:
   - namespaces
   - ../repos
   - infrastructure
+  - ../clusters/fairy-k8s01/deploy
   - apps
