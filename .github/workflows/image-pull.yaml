@@ -66,18 +66,16 @@ jobs:
             --output json
             --output-file fairy-k8s-01-images.json
 
-      - name: Combine output
-        run: |
-          jq -s '.[0] * .[1]' atlantis-k8s-01-images.json fairy-k8s-01-images.json > images.json
-
       - name: Extract Images
         id: extract
         run: |
-          echo "${{ matrix.branch }}=$(jq --compact-output '.' images.json)" >> $GITHUB_OUTPUT
+          echo "${{ matrix.branch }}=$(jq --compact-output '.' atlantis-k8s-01-images.json)" >> $GITHUB_OUTPUT
+          echo "${{ matrix.branch }}=$(jq --compact-output '.' fairy-k8s-01-images.json)" >> $GITHUB_OUTPUT
 
           echo '## Branch ${{ matrix.branch }} images' >> $GITHUB_STEP_SUMMARY
           echo '```json' >> $GITHUB_STEP_SUMMARY
-          jq '.' images.json >> $GITHUB_STEP_SUMMARY
+          jq '.' atlantis-k8s-01-images.json >> $GITHUB_STEP_SUMMARY
+          jq '.' fairy-k8s-01-images.json >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
   diff:
