@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        cluster: ${{ needs.clusters.outputs.cluster-list }}
+        cluster: ${{ fromJSON(needs.clusters.outputs.cluster-list) }}
       fail-fast: false
     steps:
       - name: Checkout Pull Request Branch
