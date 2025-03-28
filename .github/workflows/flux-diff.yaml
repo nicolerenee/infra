@@ -87,33 +87,45 @@ jobs:
         id: diff
         run: |
           dyff between main.yaml pr.yaml > diff-results
-          if [ -s diff-results ]; then
-            echo "DIFF_HAS_CHANGES=true" >> $GITHUB_ENV
-            echo -e "### ${{ matrix.cluster }} Diff \n\n" > results
-            echo -e "\`\`\`\n" >> results
-            cat diff-results >> results
-            echo -e "\`\`\`\n" >> results
-          else
-            echo "DIFF_HAS_CHANGES=false" >> $GITHUB_ENV
-          fi
 
-      - if: ${{ env.DIFF_HAS_CHANGES == 'TRUE' }}
-        name: Generate Token
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo 'diff<<$EOF' >> $GITHUB_OUTPUT
+          cat diff.txt >> $GITHUB_OUTPUT
+          echo '$EOF' >> $GITHUB_OUTPUT
+
+          echo '### Diff' >> $GITHUB_STEP_SUMMARY
+          echo '```diff' >> $GITHUB_STEP_SUMMARY
+          cat diff.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Generate Token
         uses: actions/create-github-app-token@af35edadc00be37caa72ed9f3e6d5f7801bfdf09 # v1.11.7
         id: app-token
         with:
           app-id: ${{ vars.BOT_APP_ID }}
           private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
 
-      - if: ${{ env.DIFF_HAS_CHANGES == 'TRUE' }}
+      - if: ${{ steps.diff.outputs.diff != '' }}
         name: Add Comment
         uses: marocchino/sticky-pull-request-comment@52423e01640425a022ef5fd42c6fb5f633a02728 # v2.9.1
         with:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           header: ${{ github.event.pull_request.number }}/kubernetes-dyff/${{ matrix.cluster }}
-          path: results
-          # message: |
-          #   ${{ steps.collect.outputs.results }}
+          message: |
+            ### ${{ matrix.cluster }} Diff
+            ```diff
+            ${{ steps.diff.outputs.diff }}
+            ```
+
+      - if: ${{ steps.diff.outputs.diff != '' }}
+        name: Add Comment
+        uses: marocchino/sticky-pull-request-comment@52423e01640425a022ef5fd42c6fb5f633a02728 # v2.9.1
+        with:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          header: ${{ github.event.pull_request.number }}/kubernetes-dyff/${{ matrix.cluster }}
+          message: |
+            ### ${{ matrix.cluster }} Diff
+            No diff detected!
 
   success:
     if: ${{ !cancelled() }}
