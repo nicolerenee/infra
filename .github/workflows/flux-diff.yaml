@@ -88,7 +88,7 @@ jobs:
 
           if [ -s diff-results ]; then
             # The diff is not-empty.
-            echo -e "#### Diff for ${{ matrix.cluster }}\n" > diff-results
+            echo -e "#### Diff for ${{ matrix.cluster }}\n" > results
             echo -e "<details>" >> results
             echo -e "<summary>Diff for ${{ matrix.cluster}} summary</summary>" >> results
             # echo -e "```" >> results
