@@ -1,5 +1,5 @@
 ---
-name: Flux Local Dyff
+name: Flux Local Diff
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   filter:
-    name: Flux Local - Filter
+    name: Flux Local Diff - Filter
     runs-on: ubuntu-latest
     outputs:
       changed-files: ${{ steps.changed-files.outputs.changed_files }}
@@ -23,7 +23,7 @@ jobs:
   clusters:
     if: ${{ needs.filter.outputs.changed-files != '[]' }}
     needs: filter
-    name: Flux Local - Cluster List
+    name: Flux Local Diff - Cluster List
     runs-on: ubuntu-latest
     outputs:
       cluster-list: ${{ steps.list.outputs.clusters }}
@@ -38,7 +38,7 @@ jobs:
   diff:
     if: ${{ needs.filter.outputs.changed-files != '[]' }}
     needs: [filter, clusters]
-    name: Flux Local - Diff
+    name: Flux Local Diff - Diff
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -137,7 +137,7 @@ jobs:
   success:
     if: ${{ !cancelled() }}
     needs: ["diff"]
-    name: Flux Local - Success
+    name: Flux Local Diff - Success
     runs-on: ubuntu-latest
     steps:
       - name: Any jobs failed?
