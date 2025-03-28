@@ -88,13 +88,13 @@ jobs:
 
           if [ -s diff-results ]; then
             # The diff is not-empty.
-            echo -e "#### Diff for ${{ matrix.cluster }}\n" > results
-            echo -e "<details>" >> results
-            echo -e "<summary>Diff for ${{ matrix.cluster}} summary</summary>" >> results
-            # echo -e "```" >> results
+            echo -e "### Diff for ${{ matrix.cluster }}\n\n" > results
+            echo -e "<details>\n" >> results
+            echo -e "<summary>Diff for ${{ matrix.cluster}} summary</summary>\n" >> results
+            echo -e "```\n" >> results
             cat diff-results >> results
-            # echo -e "```" >> results
-            echo -e "</details>\n" >> results
+            echo -e "```\n" >> results
+            echo -e "</details>\n\n" >> results
           fi
 
       - name: Upload Diff
