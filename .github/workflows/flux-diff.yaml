@@ -91,7 +91,9 @@ jobs:
             echo -e "#### Diff for ${{ matrix.cluster }}\n" > diff-results
             echo -e "<details>" >> results
             echo -e "<summary>Diff for ${{ matrix.cluster}} summary</summary>" >> results
+            # echo -e "```" >> results
             cat diff-results >> results
+            # echo -e "```" >> results
             echo -e "</details>\n" >> results
           fi
 
@@ -115,7 +117,7 @@ jobs:
       - uses: actions/download-artifact@v4
       - id: collect
         run: |
-          results="$(cat */outcome)"
+          results="$(cat */results)"
           echo results=$results >> $GITHUB_OUTPUT
 
       - if: ${{ steps.collect.outputs.results != '' }}
