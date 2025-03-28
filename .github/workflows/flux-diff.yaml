@@ -86,16 +86,22 @@ jobs:
       - name: Generate Diff
         id: diff
         run: |
-          dyff between main.yaml pr.yaml > diff-results
+          dyff between main.yaml pr.yaml --output brief > diff-summary
+          dyff between main.yaml pr.yaml --output github > diff-results
+
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo 'summary<<$EOF' >> $GITHUB_OUTPUT
+          cat diff-summary >> $GITHUB_OUTPUT
+          echo '$EOF' >> $GITHUB_OUTPUT
 
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo 'diff<<$EOF' >> $GITHUB_OUTPUT
-          cat diff.txt >> $GITHUB_OUTPUT
+          cat diff-results >> $GITHUB_OUTPUT
           echo '$EOF' >> $GITHUB_OUTPUT
 
           echo '### Diff' >> $GITHUB_STEP_SUMMARY
           echo '```diff' >> $GITHUB_STEP_SUMMARY
-          cat diff.txt >> $GITHUB_STEP_SUMMARY
+          cat diff-results >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Generate Token
@@ -113,6 +119,7 @@ jobs:
           header: ${{ github.event.pull_request.number }}/kubernetes-dyff/${{ matrix.cluster }}
           message: |
             ### ${{ matrix.cluster }} Diff
+            ##### ${{ steps.diff.outputs.summary }}
             ```diff
             ${{ steps.diff.outputs.diff }}
             ```
