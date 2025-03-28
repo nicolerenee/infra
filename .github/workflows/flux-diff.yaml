@@ -123,7 +123,7 @@ jobs:
           message: |
             ### ${{ matrix.cluster }} Diff
 
-            Detected *${{ steps.diff.outputs.summary }}*
+            Detected ${{ steps.diff.outputs.summary }}
 
             ```diff
             ${{ steps.diff.outputs.diff }}
@@ -137,7 +137,8 @@ jobs:
           header: ${{ github.event.pull_request.number }}/kubernetes-dyff/${{ matrix.cluster }}
           message: |
             ### ${{ matrix.cluster }} Diff
-            No diff detected!
+
+            Detected no changes
 
   success:
     if: ${{ !cancelled() }}
