@@ -86,15 +86,15 @@ jobs:
       - name: Generate Diff
         id: diff
         run: |
-          dyff between -b main.yaml pr.yaml > diff-results
+          dyff between main.yaml pr.yaml > diff-results
           if [ -s diff-results ]; then
             echo "DIFF_HAS_CHANGES=true" >> $GITHUB_ENV
-            echo -e "### Diff for ${{ matrix.cluster }}\n\n" > results
+            echo -e "### ${{ matrix.cluster }} Diff \n\n" > results
             echo -e "<details>\n" >> results
             echo -e "<summary>Diff for ${{ matrix.cluster}} summary</summary>\n" >> results
-            echo -e "\```\n" >> results
+            echo -e "\`\`\`\n" >> results
             cat diff-results >> results
-            echo -e "\```\n" >> results
+            echo -e "\`\`\`\n" >> results
             echo -e "</details>\n\n" >> results
           else
             echo "DIFF_HAS_CHANGES=false" >> $GITHUB_ENV
