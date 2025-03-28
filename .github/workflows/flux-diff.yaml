@@ -26,7 +26,7 @@ jobs:
     name: Flux Local - Cluster List
     runs-on: ubuntu-latest
     outputs:
-      cluster-list: ${{ steps.list.outputs.cluters }}
+      cluster-list: ${{ steps.list.outputs.clusters }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - id: list
