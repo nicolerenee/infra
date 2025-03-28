@@ -63,7 +63,7 @@ jobs:
             build all
             --enable-helm
             --output pr.yaml
-            ./pull/kubernetes/${{ matrix.cluster }}/flux-system
+            /github/workspace/pull/kubernetes/${{ matrix.cluster }}/flux-system
 
       - name: Generate Manifests for Default Branch
         uses: docker://ghcr.io/allenporter/flux-local:v7.3.0
@@ -72,7 +72,7 @@ jobs:
             build all
             --enable-helm
             --output main.yaml
-            ./default/kubernetes/${{ matrix.cluster }}/flux-system
+            /github/workspace/default/kubernetes/${{ matrix.cluster }}/flux-system
 
       - name: Install dyff
         uses: jaxxstorm/action-install-gh-release@v1.10.0
@@ -104,6 +104,7 @@ jobs:
   comment:
     if: ${{ needs.filter.outputs.changed-files != '[]' }}
     needs: [filter, diff]
+    name: Flux Local - Publish Diff
     runs-on: ubuntu-latest
     permissions:
       contents: read
