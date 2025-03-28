@@ -87,14 +87,16 @@ jobs:
       - name: Generate Diff
         id: diff
         run: |
-          dyff between main.yaml pr.yaml --output brief > diff-summary
-          dyff between main.yaml pr.yaml --output github > diff-results
+          DYFFCMD=(
+          dyff between main.yaml pr.yaml
+          --exclude-regexp "/metadata/labels/app.kubernetes.io/version"
+          --exclude-regexp "/metadata/labels/helm.sh/chart"
+          )
 
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo 'summary<<$EOF' >> $GITHUB_OUTPUT
-          cat diff-summary >> $GITHUB_OUTPUT
-          echo '$EOF' >> $GITHUB_OUTPUT
+          summary=$("${DYFFCMD[@]}" --output brief)
+          echo summary="${summary//$'\n'/ }" >> $GITHUB_OUTPUT
 
+          "${DYFFCMD[@]}" --output github > diff-results
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo 'diff<<$EOF' >> $GITHUB_OUTPUT
           cat diff-results >> $GITHUB_OUTPUT
@@ -120,7 +122,9 @@ jobs:
           header: ${{ github.event.pull_request.number }}/kubernetes-dyff/${{ matrix.cluster }}
           message: |
             ### ${{ matrix.cluster }} Diff
-            ##### ${{ steps.diff.outputs.summary }}
+
+            Detected ${{ steps.diff.outputs.summary }}
+
             ```diff
             ${{ steps.diff.outputs.diff }}
             ```
@@ -133,7 +137,8 @@ jobs:
           header: ${{ github.event.pull_request.number }}/kubernetes-dyff/${{ matrix.cluster }}
           message: |
             ### ${{ matrix.cluster }} Diff
-            No diff detected!
+
+            Detected no changes
 
   success:
     if: ${{ !cancelled() }}
