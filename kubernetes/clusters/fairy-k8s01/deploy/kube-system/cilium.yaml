@@ -31,7 +31,6 @@ spec:
           path: /spec/values/cni
           value:
             exclusive: false
-        # TODO: switch to bridge and enable this
-        # - op: add
-        #   path: /spec/values/devices
-        #   value: br0
+        - op: add
+          path: /spec/values/devices
+          value: br0
