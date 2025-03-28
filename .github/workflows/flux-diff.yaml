@@ -87,9 +87,12 @@ jobs:
       - name: Generate Diff
         id: diff
         run: |
-          DYFFCMD='dyff between main.yaml pr.yaml \
-            --exclude-regexp "/metadata/labels/app.kubernetes.io/version" \
-            --exclude-regexp "/metadata/labels/helm.sh/chart"'
+          DYFFCMD=$(cat <<'EOF'
+            dyff between main.yaml pr.yaml
+            --exclude-regexp "/metadata/labels/app.kubernetes.io/version"
+            --exclude-regexp "/metadata/labels/helm.sh/chart"
+            EOF
+          )
 
           $DYFFCMD --output brief > diff-summary
           $DYFFCMD --output github > diff-results
