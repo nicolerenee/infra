@@ -61,7 +61,7 @@ jobs:
         with:
           args: >-
             build all
-            --enable-help
+            --enable-helm
             --output pr.yaml
             ./pull/kubernetes/${{ matrix.cluster }}/flux-system
 
@@ -70,7 +70,7 @@ jobs:
         with:
           args: >-
             build all
-            --enable-help
+            --enable-helm
             --output main.yaml
             ./default/kubernetes/${{ matrix.cluster }}/flux-system
 
