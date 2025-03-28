@@ -1,0 +1,149 @@
+---
+name: Flux Local Diff
+
+on:
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  filter:
+    name: Flux Local Diff - Filter
+    runs-on: ubuntu-latest
+    outputs:
+      changed-files: ${{ steps.changed-files.outputs.changed_files }}
+    steps:
+      - name: Get Changed Files
+        id: changed-files
+        uses: bjw-s-labs/action-changed-files@2cc35474e9d534ed0d743aa122fd142afbdaa0ad # v0.3.1
+        with:
+          patterns: |-
+            kubernetes/**/*
+            apps/**/*
+
+  clusters:
+    if: ${{ needs.filter.outputs.changed-files != '[]' }}
+    needs: filter
+    name: Flux Local Diff - Cluster List
+    runs-on: ubuntu-latest
+    outputs:
+      cluster-list: ${{ steps.list.outputs.clusters }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - id: list
+        name: Get Cluster List
+        working-directory: ./kubernetes/clusters
+        run: |
+          echo "clusters=$(ls -d * | jq --raw-input --slurp --compact-output 'split("\n")[:-1]')" >> ${GITHUB_OUTPUT}
+
+  diff:
+    if: ${{ needs.filter.outputs.changed-files != '[]' }}
+    needs: [filter, clusters]
+    name: Flux Local Diff - Diff
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    strategy:
+      matrix:
+        cluster: ${{ fromJSON(needs.clusters.outputs.cluster-list) }}
+      fail-fast: false
+    steps:
+      - name: Checkout Pull Request Branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: pull
+
+      - name: Checkout Default Branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: "${{ github.event.repository.default_branch }}"
+          path: default
+
+      - name: Generate Manifests for Pull Request Branch
+        uses: docker://ghcr.io/allenporter/flux-local:v7.3.0
+        with:
+          args: >-
+            build all
+            --enable-helm
+            --output pr.yaml
+            /github/workspace/pull/kubernetes/${{ matrix.cluster }}/flux-system
+
+      - name: Generate Manifests for Default Branch
+        uses: docker://ghcr.io/allenporter/flux-local:v7.3.0
+        with:
+          args: >-
+            build all
+            --enable-helm
+            --output main.yaml
+            /github/workspace/default/kubernetes/${{ matrix.cluster }}/flux-system
+
+      - name: Install dyff
+        uses: jaxxstorm/action-install-gh-release@v1.10.0
+        with:
+          repo: homeport/dyff
+          tag: v1.10.1
+
+      - name: Generate Diff
+        id: diff
+        run: |
+          dyff between main.yaml pr.yaml --output brief > diff-summary
+          dyff between main.yaml pr.yaml --output github > diff-results
+
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo 'summary<<$EOF' >> $GITHUB_OUTPUT
+          cat diff-summary >> $GITHUB_OUTPUT
+          echo '$EOF' >> $GITHUB_OUTPUT
+
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo 'diff<<$EOF' >> $GITHUB_OUTPUT
+          cat diff-results >> $GITHUB_OUTPUT
+          echo '$EOF' >> $GITHUB_OUTPUT
+
+          echo '### Diff' >> $GITHUB_STEP_SUMMARY
+          echo '```diff' >> $GITHUB_STEP_SUMMARY
+          cat diff-results >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Generate Token
+        uses: actions/create-github-app-token@af35edadc00be37caa72ed9f3e6d5f7801bfdf09 # v1.11.7
+        id: app-token
+        with:
+          app-id: ${{ vars.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
+
+      - if: ${{ steps.diff.outputs.diff != '' }}
+        name: Add Comment
+        uses: marocchino/sticky-pull-request-comment@52423e01640425a022ef5fd42c6fb5f633a02728 # v2.9.1
+        with:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          header: ${{ github.event.pull_request.number }}/kubernetes-dyff/${{ matrix.cluster }}
+          message: |
+            ### ${{ matrix.cluster }} Diff
+            ##### ${{ steps.diff.outputs.summary }}
+            ```diff
+            ${{ steps.diff.outputs.diff }}
+            ```
+
+      - if: ${{ steps.diff.outputs.diff == '' }}
+        name: Add Comment
+        uses: marocchino/sticky-pull-request-comment@52423e01640425a022ef5fd42c6fb5f633a02728 # v2.9.1
+        with:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          header: ${{ github.event.pull_request.number }}/kubernetes-dyff/${{ matrix.cluster }}
+          message: |
+            ### ${{ matrix.cluster }} Diff
+            No diff detected!
+
+  success:
+    if: ${{ !cancelled() }}
+    needs: ["diff"]
+    name: Flux Local Diff - Success
+    runs-on: ubuntu-latest
+    steps:
+      - name: Any jobs failed?
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: exit 1
+
+      - name: All jobs passed or skipped?
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
