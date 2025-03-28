@@ -78,7 +78,7 @@ jobs:
             /github/workspace/default/kubernetes/${{ matrix.cluster }}/flux-system
 
       - name: Install dyff
-        uses: jaxxstorm/action-install-gh-release@c5ead9a448b4660cf1e7866ee22e4dc56538031a # v1.10.0
+        uses: jaxxstorm/action-install-gh-release@4304621e8c48d66093a8a214af5d5b5bc3b3d943 # v2.0.0
         with:
           repo: homeport/dyff
           tag: v1.10.1
