@@ -87,8 +87,12 @@ jobs:
       - name: Generate Diff
         id: diff
         run: |
-          dyff between main.yaml pr.yaml --output brief > diff-summary
-          dyff between main.yaml pr.yaml --output github > diff-results
+          DYFFCMD='dyff between main.yaml pr.yaml \
+            --exclude-regexp "/metadata/labels/app.kubernetes.io/version" \
+            --exclude-regexp "/metadata/labels/helm.sh/chart"'
+
+          $DYFFCMD --output brief > diff-summary
+          $DYFFCMD --output github > diff-results
 
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo 'summary<<$EOF' >> $GITHUB_OUTPUT
