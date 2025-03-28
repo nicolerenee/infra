@@ -30,9 +30,9 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - id: list
+        name: Get Cluster List
         working-directory: ./kubernetes/clusters
         run: |
-          ls -d *
           echo "clusters=$(ls -d * | jq --raw-input --slurp --compact-output 'split("\n")[:-1]')" >> ${GITHUB_OUTPUT}
 
   diff:
@@ -40,6 +40,9 @@ jobs:
     needs: [filter, clusters]
     name: Flux Local - Diff
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     strategy:
       matrix:
         cluster: ${{ fromJSON(needs.clusters.outputs.cluster-list) }}
@@ -84,10 +87,8 @@ jobs:
         id: diff
         run: |
           dyff between -b main.yaml pr.yaml > diff-results
-          echo > results
-
           if [ -s diff-results ]; then
-            # The diff is not-empty.
+            echo "DIFF_HAS_CHANGES=true" >> $GITHUB_ENV
             echo  "### Diff for ${{ matrix.cluster }}\n\n" > results
             echo  "<details>\n" >> results
             echo  "<summary>Diff for ${{ matrix.cluster}} summary</summary>\n" >> results
@@ -95,33 +96,11 @@ jobs:
             cat diff-results >> results
             echo  "\`\`\`\n" >> results
             echo  "</details>\n\n" >> results
+          else
+            echo "DIFF_HAS_CHANGES=false" >> $GITHUB_ENV
           fi
 
-      - name: Upload Diff
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ hashFiles('results') }}
-          path: results
-
-  comment:
-    if: ${{ needs.filter.outputs.changed-files != '[]' }}
-    needs: [filter, diff]
-    name: Flux Local - Publish Diff
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    outputs:
-      results: ${{ steps.collect.outputs.results }}
-    steps:
-      - uses: actions/download-artifact@v4
-      - id: collect
-        name: Collect Results
-        run: |
-          results="$(cat */results)"
-          echo results=$results >> $GITHUB_OUTPUT
-
-      - if: ${{ steps.collect.outputs.results != '' }}
+      - if: ${{ env.DIFF_HAS_CHANGES == 'TRUE' }}
         name: Generate Token
         uses: actions/create-github-app-token@af35edadc00be37caa72ed9f3e6d5f7801bfdf09 # v1.11.7
         id: app-token
@@ -129,18 +108,19 @@ jobs:
           app-id: ${{ vars.BOT_APP_ID }}
           private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
 
-      - if: ${{ steps.collect.outputs.results != '' }}
+      - if: ${{ env.DIFF_HAS_CHANGES == 'TRUE' }}
         name: Add Comment
         uses: marocchino/sticky-pull-request-comment@52423e01640425a022ef5fd42c6fb5f633a02728 # v2.9.1
         with:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          header: ${{ github.event.pull_request.number }}/kubernetes-dyff
-          message: |
-            ${{ steps.collect.outputs.results }}
+          header: ${{ github.event.pull_request.number }}/kubernetes-dyff/${{ matrix.cluster }}
+          path: results
+          # message: |
+          #   ${{ steps.collect.outputs.results }}
 
   success:
     if: ${{ !cancelled() }}
-    needs: ["diff", "comment"]
+    needs: ["diff"]
     name: Flux Local - Success
     runs-on: ubuntu-latest
     steps:
