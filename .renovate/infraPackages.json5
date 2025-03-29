@@ -1,0 +1,45 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  packageRules: [
+    {
+      description: "don't group kubernetes upgrades",
+      matchFileNames: ["kubernetes/clusters/fairy-k8s01/**"]
+      matchPackageNames: ["ghcr.io/siderolabs/kubelet"],
+      additionalBranchPrefix: "fairy-k8s01-",
+      commitMessageSuffix: "(fairy-k8s01)",
+      commitMessageTopic: "kubernetes",
+      commitMessageAction: "upgrade",
+      separateMultipleMinor: true,
+    },
+    {
+      description: "don't group talos upgrades",
+      matchFileNames: ["kubernetes/clusters/fairy-k8s01/**"]
+      matchPackageNames: ["ghcr.io/siderolabs/installer"],
+      additionalBranchPrefix: "fairy-k8s01-",
+      commitMessageSuffix: "(fairy-k8s01)",
+      commitMessageTopic: "talos",
+      commitMessageAction: "upgrade",
+      separateMultipleMinor: true,
+    },
+    {
+      description: "don't group kubernetes upgrades",
+      matchFileNames: ["kubernetes/clusters/atlantis-k8s01/**"]
+      matchPackageNames: ["ghcr.io/siderolabs/kubelet"],
+      additionalBranchPrefix: "atlantis-k8s01-",
+      commitMessageSuffix: "(atlantis-k8s01)",
+      commitMessageTopic: "kubernetes",
+      commitMessageAction: "upgrade",
+      separateMultipleMinor: true,
+    },
+    {
+      description: "don't group talos upgrades",
+      matchFileNames: ["kubernetes/clusters/atlantis-k8s01/**"]
+      matchPackageNames: ["ghcr.io/siderolabs/installer"],
+      additionalBranchPrefix: "atlantis-k8s01-",
+      commitMessageSuffix: "(atlantis-k8s01)",
+      commitMessageTopic: "talos",
+      commitMessageAction: "upgrade",
+      separateMultipleMinor: true,
+    },
+  ],
+}
