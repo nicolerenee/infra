@@ -33,5 +33,13 @@
       matchDatasources: ["github-releases"],
       addLabels: ["renovate/github-release"],
     },
+    {
+      matchPackageNames: ["ghcr.io/siderolabs/kubelet"],
+      addLabels: ["renovate/infra/kubernetes"],
+    },
+    {
+      matchPackageNames: ["ghcr.io/siderolabs/installer"],
+      addLabels: ["renovate/infra/talos"],
+    },
   ],
 }

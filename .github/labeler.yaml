@@ -24,7 +24,7 @@ area/scripts:
       - any-glob-to-any-file: "scripts/**/*"
 area/talos:
   - changed-files:
-      - any-glob-to-any-file: "talos/**/*"
+      - any-glob-to-any-file: "kubernetes/clusters/*/talos/**/*"
 area/taskfile:
   - changed-files:
       - any-glob-to-any-file:
