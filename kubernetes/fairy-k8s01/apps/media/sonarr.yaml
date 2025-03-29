@@ -16,7 +16,7 @@ spec:
   path: ./apps/media/sonarr
   dependsOn:
     - name: onepassword-connect-store
-    - name: tailscale-operator-proxy
+    - name: tailscale-proxyclass
       namespace: tailscale
     - name: rook-ceph-cluster
   interval: 2m

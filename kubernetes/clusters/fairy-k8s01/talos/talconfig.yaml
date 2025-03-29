@@ -1,0 +1,123 @@
+---
+clusterName: fairy-k8s01
+talosVersion: ${TALOS_VERSION}
+kubernetesVersion: ${KUBERNETES_VERSION}
+endpoint: https://192.168.227.5:6443
+domain: cluster.local
+allowSchedulingOnMasters: true
+clusterPodNets:
+  - 10.244.0.0/16
+  - fd2b:ec92:e232::/48
+clusterSvcNets:
+  - 10.96.0.0/12
+  - fd2b:ec92:e230:1::/112
+cniConfig:
+  name: none
+
+nodes:
+  - hostname: fairy-compute01
+    ipAddress: 192.168.227.6
+    controlPlane: true
+    installDisk: /dev/sda
+
+    machineSpec:
+      mode: metal
+      arch: amd64
+      useUKI: true
+      secureboot: true
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/i915
+            - siderolabs/intel-ucode
+
+    networkInterfaces:
+      - interface: br0
+        bridge:
+          stp:
+            enabled: true
+          interfaces:
+            - enp3s0
+        addresses:
+          - 192.168.227.6/24
+          - fd80:0383:1a38::6/64
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 192.168.227.1
+            metric: 1024
+        vip:
+          ip: 192.168.227.5
+controlPlane:
+  nodeLabels: {}
+  patches:
+    # Cluster configuration
+    - |-
+      cluster:
+        etcd:
+          advertisedSubnets:
+            - 192.168.227.0/24
+          extraArgs:
+            listen-metrics-urls: "http://0.0.0.0:2381"
+        controllerManager:
+          extraArgs:
+            bind-address: 0.0.0.0
+            node-cidr-mask-size-ipv6: 64
+        scheduler:
+          extraArgs:
+            bind-address: 0.0.0.0
+        proxy:
+          disabled: true
+    -
+    # Disable search domain everywhere
+    - &disableSearchDomainPatch |-
+      machine:
+        network:
+          disableSearchDomain: true
+
+    # Set nameserver
+    - &nameServersPatch |-
+      machine:
+        network:
+          nameservers:
+            - 192.168.227.1
+
+    # Enable K8s Talos API Access
+    - |-
+      machine:
+        features:
+          kubernetesTalosAPIAccess:
+            enabled: true
+            allowedRoles:
+              - os:admin
+            allowedKubernetesNamespaces:
+              - actions-runner-system
+              - system-upgrade
+
+    # Machine patches to apply to all nodes
+    - &machinePatches |
+      machine:
+        install:
+          bootloader: true
+          wipe: true
+        systemDiskEncryption:
+          ephemeral: &fde
+            provider: luks2
+            keys:
+              - slot: 0
+                tpm: {}
+          state: *fde
+        kubelet:
+          nodeIP:
+            validSubnets:
+            - 192.168.227.0/24
+            - "fd80:0383:1a38::/64"
+          extraArgs:
+            allowed-unsafe-sysctls: net.ipv6.conf.net1.accept_ra_rt_info_max_plen
+            rotate-server-certificates: "true"
+
+worker:
+  patches:
+    - *disableSearchDomainPatch
+    - *nameServersPatch
+    - *machinePatches

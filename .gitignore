@@ -1,0 +1,6 @@
+.DS_Store
+.task
+
+/**/talos/clusterconfig/
+kubeconfig*
+talosconfig*
