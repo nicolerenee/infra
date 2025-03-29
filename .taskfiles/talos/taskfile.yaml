@@ -1,0 +1,53 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+
+vars:
+  TALOS_RESOURCES_DIR: "{{.ROOT_DIR}}/.taskfiles/talos/resources"
+  TALOS_DIR: "{{.CLUSTER_ROOT}}/talos"
+  SYSTEM_UPGRADE_YAML: "{{.CLUSTER_ROOT}}/deploy/system-upgrade/system-upgrade-controller-plans.yaml"
+
+tasks:
+  generate:
+    desc: Generate Talos machine configurations
+    dir: "{{.TALOS_DIR}}"
+    env:
+      VAULT: "Kubernetes"
+      CLUSTER: "{{.CLUSTER}}"
+      KUBERNETES_VERSION:
+        sh: yq '.spec.postBuild.substitute.KUBERNETES_VERSION | select(.)' {{.SYSTEM_UPGRADE_YAML}}
+      TALOS_VERSION:
+        sh: yq '.spec.postBuild.substitute.TALOS_VERSION | select(.)' {{.SYSTEM_UPGRADE_YAML}}
+    cmds:
+      - op run --env-file="{{.TALOS_RESOURCES_DIR}}/op.env" --
+        talhelper genconfig -s "{{.TALOS_RESOURCES_DIR}}/talsecret.yaml"
+    sources:
+      - "{{.TALOS_RESOURCES_DIR}}/talsecret.yaml"
+      - talconfig.yaml
+    generates:
+      - clusterconfig/*.yaml
+      - clusterconfig/talosconfig
+    preconditions: &clusterValidPrecondition
+      - &clusterExistsCheck sh: test -d "{{.TALOS_DIR}}"
+        msg: "cluster {{.CLUSTER}} does not exist in kubernetes/clusters"
+
+  apply-config:
+    desc: Apply Talos config on a node
+    dir: "{{.TALOS_DIR}}"
+    cmds:
+      - task: generate
+      - talhelper gencommand apply -n {{.node}} | bash
+    requires:
+      vars: ["node"]
+    preconditions: *clusterValidPrecondition
+
+  talosconfig:
+    desc: Get an updated version of talosconfig
+    dir: "{{.TALOS_DIR}}"
+    cmds:
+      - cp clusterconfig/talosconfig ~/.talos/config
+    requires:
+      vars: ["CLUSTER"]
+    sources:
+      - clusterconfig/talosconfig
+    preconditions: *clusterValidPrecondition

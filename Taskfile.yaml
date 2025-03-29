@@ -1,0 +1,16 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+
+vars:
+  KUBERNETES_ROOT: "{{.ROOT_DIR}}/kubernetes"
+  CLUSTER_ROOT: "{{.KUBERNETES_ROOT}}/clusters/{{.CLUSTER}}"
+
+includes:
+  talos: .taskfiles/talos/taskfile.yaml
+
+tasks:
+  default:
+    silent: true
+    cmds:
+      - task --list
