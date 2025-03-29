@@ -3,13 +3,12 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app tailscale-proxyclass
+  name: &app tailscale-routers
   namespace: &namespace tailscale
 spec:
   targetNamespace: *namespace
   dependsOn:
-    - name: tailscale-operator
-      namespace: tailscale
+    - name: tailscale-proxyclass
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
@@ -17,7 +16,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/core/networking/tailscale-operator/proxyclass
+  path: ./kubernetes/clusters/fairy-k8s01/deploy/tailscale/operator
   interval: 30s
   retryInterval: 1m
   timeout: 5m

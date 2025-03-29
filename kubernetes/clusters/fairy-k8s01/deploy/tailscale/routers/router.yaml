@@ -1,0 +1,8 @@
+apiVersion: tailscale.com/v1alpha1
+kind: Connector
+metadata:
+  name: fairy-ts-rtr
+  namespace: tailscale
+spec:
+  hostname: fairy-ts-rtr
+  exitNode: true
