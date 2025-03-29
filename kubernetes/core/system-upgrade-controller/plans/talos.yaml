@@ -20,6 +20,11 @@ spec:
   upgrade:
     image: ghcr.io/jfroy/tnu:0.4.1
     args:
-      - --node=$(SYSTEM_UPGRADE_NODE_NAME)
+      - --node=$(NODE_IP)
       - --tag=$(SYSTEM_UPGRADE_PLAN_LATEST_VERSION)
       - --powercycle
+    envs:
+      - name: NODE_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.hostIP
