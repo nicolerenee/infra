@@ -26,11 +26,17 @@ spec:
     - target:
         kind: HelmRelease
       patch: |-
-        # Multus compatibility
         - op: add
-          path: /spec/values/cni
+          path: /spec/values
           value:
-            exclusive: false
-        - op: add
-          path: /spec/values/devices
-          value: br0
+            bpf:
+              masquerade: true
+            cni:
+              exclusive: false
+            devices: br0
+            loadBalancer:
+              algorithm: maglev
+            nodePort:
+              enabled: false
+            operator:
+              replicas: 1
