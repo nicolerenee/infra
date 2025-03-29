@@ -27,6 +27,10 @@
   color: "027fa0"
 - name: renovate/helm
   color: "027fa0"
+- name: renovate/infra/kubernetes
+  color: "027fa0"
+- name: renovate/infra/talos
+  color: "027fa0"
 # Semantic Types
 - name: type/digest
   color: "ffeC19"
