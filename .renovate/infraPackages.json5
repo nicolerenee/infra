@@ -25,7 +25,7 @@
         "ghcr.io/siderolabs/installer",
       ],
       additionalBranchPrefix: "atlantis-k8s01-",
-      commitMessageSuffix: "(atlantis-k8s01)",
+      commitMessageSuffix: "on atlantis-k8s01",
     },
     {
       description: "seperate infra upgrades on fairy-k8s01",
@@ -35,7 +35,7 @@
         "ghcr.io/siderolabs/installer",
       ],
       additionalBranchPrefix: "fairy-k8s01-",
-      commitMessageSuffix: "(fairy-k8s01)",
+      commitMessageSuffix: "on fairy-k8s01",
     },
   ],
 }
