@@ -8,7 +8,6 @@
     "github>nicolerenee/infra//.renovate/autoMerge.json5",
     "github>nicolerenee/infra//.renovate/customManagers.json5",
     "github>nicolerenee/infra//.renovate/groups.json5",
-    "github>nicolerenee/infra//.renovate/infraPackages.json5",
     "github>nicolerenee/infra//.renovate/labels.json5",
     "github>nicolerenee/infra//.renovate/semanticCommits.json5",
     ":automergeBranch",
@@ -16,6 +15,8 @@
     ":dependencyDashboard",
     ":semanticCommits",
     ":timezone(America/Chicago)",
+    // the ordering for packageRules matter, this needs the highest priority
+    "github>nicolerenee/infra//.renovate/infraPackages.json5",
   ],
   dependencyDashboardTitle: "Renovate Dashboard 🤖",
   flux: {

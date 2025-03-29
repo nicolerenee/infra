@@ -8,3 +8,4 @@ components:
 resources:
   - ./cilium.yaml
   - ./multus.yaml
+  - ./node-feature-discovery.yaml
