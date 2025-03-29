@@ -2,7 +2,6 @@
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
   reviewers: ["@nicolerenee"],
   extends: [
-    "github>nicolerenee/infra//.renovate/infraPackages.json5",
     "config:recommended",
     "docker:enableMajor",
     "helpers:pinGitHubActionDigests",
@@ -16,6 +15,8 @@
     ":dependencyDashboard",
     ":semanticCommits",
     ":timezone(America/Chicago)",
+    // the ordering for packageRules matter, this needs the highest priority
+    "github>nicolerenee/infra//.renovate/infraPackages.json5",
   ],
   dependencyDashboardTitle: "Renovate Dashboard 🤖",
   flux: {
