@@ -79,16 +79,5 @@
         commitMessageTopic: "{{{groupName}}}",
       },
     },
-    {
-      description: "Kubernetes on fairy-k8s01",
-      groupName: "fairy-k8s01-k8s",
-      matchFileNames: ["kubernetes/clusters/fairy-k8s01/**"],
-      matchPackageNames: ["ghcr.io/siderolabs/kubelet"],
-      changelogUrl: "https://github.com/kubernetes/kubernetes",
-      group: {
-        commitMessageTopic: "kubernetes on fairy-k8s01",
-        commitMessageTopic: "",
-      },
-    },
   ],
 }

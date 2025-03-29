@@ -1,0 +1,21 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  packageRules: [
+    {
+      description: "don't group kubernetes upgrades",
+      matchPackageNames: ["ghcr.io/siderolabs/kubelet"],
+      additionalBranchPrefix: "{{parentDir}}-",
+      commitMessageSuffix: "({{{replace 'deploy/system-upgrade', '' (replace 'kubernetes/clusters' '' baseDir)}}})",
+      commitMessageTopic: "kubernetes",
+      commitMessageAction: "upgrade",
+    },
+    {
+      description: "don't group talos upgrades",
+      matchPackageNames: ["ghcr.io/siderolabs/installer"],
+      additionalBranchPrefix: "{{parentDir}}-",
+      commitMessageSuffix: "({{{replace 'deploy/system-upgrade', '' (replace 'kubernetes/clusters' '' baseDir)}}})",
+      commitMessageTopic: "talos",
+      commitMessageAction: "upgrade",
+    },
+  ],
+}
