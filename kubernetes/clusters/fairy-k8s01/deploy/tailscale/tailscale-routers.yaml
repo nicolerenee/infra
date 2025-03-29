@@ -16,7 +16,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/clusters/fairy-k8s01/deploy/tailscale/operator
+  path: ./kubernetes/clusters/fairy-k8s01/deploy/tailscale/routers
   interval: 30s
   retryInterval: 1m
   timeout: 5m
