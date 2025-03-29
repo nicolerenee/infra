@@ -1,0 +1,13 @@
+apiVersion: tailscale.com/v1alpha1
+kind: Connector
+metadata:
+  name: atlantis-ts-rtr
+  namespace: tailscale
+spec:
+  hostname: atlantis-ts-rtr
+  exitNode: true
+  subnetRouter:
+    advertiseRoutes:
+      - "172.20.0.0/20"
+      - "172.25.0.0/20"
+      - "172.26.0.0/20"

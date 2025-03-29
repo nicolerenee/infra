@@ -4,9 +4,9 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: &app tailscale-proxyclass
-  namespace: flux-system
+  namespace: &namespace tailscale
 spec:
-  targetNamespace: tailscale
+  targetNamespace: *namespace
   dependsOn:
     - name: tailscale-operator
       namespace: tailscale

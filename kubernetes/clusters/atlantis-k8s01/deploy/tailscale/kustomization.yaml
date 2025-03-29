@@ -8,6 +8,7 @@ components:
 resources:
   - ./tailscale-operator.yaml
   - ./tailscale-proxyclass.yaml
+  - ./tailscale-routers.yaml
 patches:
   - target:
       kind: Namespace
