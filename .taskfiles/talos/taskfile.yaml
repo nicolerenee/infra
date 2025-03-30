@@ -20,7 +20,7 @@ tasks:
         sh: yq '.spec.postBuild.substitute.TALOS_VERSION | select(.)' {{.SYSTEM_UPGRADE_YAML}}
     cmds:
       - op run --env-file="{{.TALOS_RESOURCES_DIR}}/op.env" --
-        talhelper genconfig -s "{{.TALOS_RESOURCES_DIR}}/talsecret.yaml"
+        talhelper genconfig -s "{{.TALOS_RESOURCES_DIR}}/talsecret.yaml" {{.CLI_ARGS}}
     sources:
       - "{{.TALOS_RESOURCES_DIR}}/talsecret.yaml"
       - talconfig.yaml

@@ -1,0 +1,166 @@
+---
+clusterName: atlantis-k8s01
+talosVersion: ${TALOS_VERSION}
+kubernetesVersion: ${KUBERNETES_VERSION}
+endpoint: https://172.26.3.16:6443
+domain: cluster.local
+allowSchedulingOnMasters: true
+clusterPodNets:
+  - 10.244.0.0/16
+  - fd2b:ec21:3ff2::/48
+clusterSvcNets:
+  - 10.96.0.0/12
+  - fd2b:ec21:3ff0:1::/112
+cniConfig:
+  name: none
+
+nodes:
+  - hostname: atlantis-compute01
+    ipAddress: 172.26.3.5
+    controlPlane: true
+    installDisk: /dev/nvme0n1
+
+    machineSpec: &compute01-machineSpec
+      mode: metal
+      arch: amd64
+    schematic: &compute01-schematic
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/i915
+            - siderolabs/intel-ucode
+
+    networkInterfaces:
+      - &compute01-bond0
+        interface: bond0
+        addresses:
+          - 172.26.3.5/24
+          - 2607:fc88:200:403:202:3333::801/64
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 172.26.3.1
+            metric: 1024
+          - network: ::/0
+            gateway: fe80::def
+            metric: 1024
+        bond:
+          deviceSelectors:
+            # Mellanox ConnectX 10GB adapter (enp#s0 and enp#s0d1 (1 on compute01, 2 on others))
+            - driver: "mlx4_core"
+              physical: true
+          mode: 802.3ad
+          xmitHashPolicy: layer3+4
+          lacpRate: fast
+          miimon: 100
+          updelay: 200
+          downdelay: 200
+        mtu: 1500
+        dhcp: false
+
+  - hostname: atlantis-compute02
+    ipAddress: 172.26.3.6
+    controlPlane: true
+    installDisk: /dev/nvme0n1
+    networkInterfaces:
+      - <<: *compute01-bond0
+        addresses:
+          - 172.26.3.6/24
+          - 2607:fc88:200:403:202:3333::802/64
+
+  - hostname: atlantis-compute03
+    ipAddress: 172.26.3.7
+    controlPlane: true
+    installDisk: /dev/nvme0n1
+    networkInterfaces:
+      - <<: *compute01-bond0
+        addresses:
+          - 172.26.3.7/24
+          - 2607:fc88:200:403:202:3333::803/64
+
+  - hostname: atlantis-compute04
+    ipAddress: 172.26.3.8
+    controlPlane: false
+    installDisk: /dev/nvme0n1
+    networkInterfaces:
+      - <<: *compute01-bond0
+        addresses:
+          - 172.26.3.8/24
+          - 2607:fc88:200:403:202:3333::804/64
+
+  - hostname: atlantis-compute05
+    ipAddress: 172.26.3.9
+    controlPlane: false
+    installDisk: /dev/nvme0n1
+    networkInterfaces:
+      - <<: *compute01-bond0
+        addresses:
+          - 172.26.3.9/24
+          - 2607:fc88:200:403:202:3333::805/64
+
+controlPlane:
+  nodeLabels: {}
+  patches:
+    # Cluster configuration
+    - |-
+      cluster:
+        etcd:
+          extraArgs:
+            listen-metrics-urls: "http://0.0.0.0:2381"
+        controllerManager:
+          extraArgs:
+            bind-address: 0.0.0.0
+            node-cidr-mask-size-ipv6: 64
+        scheduler:
+          extraArgs:
+            bind-address: 0.0.0.0
+        proxy:
+          disabled: true
+
+    # Disable search domain everywhere
+    - &disableSearchDomainPatch |-
+      machine:
+        network:
+          disableSearchDomain: true
+
+    # Set nameserver
+    - &nameServersPatch |-
+      machine:
+        network:
+          nameservers:
+            - 1.1.1.1
+            - 1.0.0.1
+
+    # Enable K8s Talos API Access
+    - |-
+      machine:
+        features:
+          kubernetesTalosAPIAccess:
+            enabled: true
+            allowedRoles:
+              - os:admin
+            allowedKubernetesNamespaces:
+              - actions-runner-system
+              - system-upgrade
+
+    # Enable VIP on control plane nodes
+    - |-
+      - op: add
+        path: /machine/network/interfaces/0/vip
+        value:
+          ip: 172.26.3.16
+
+    # Machine patches to apply to all nodes
+    - &machinePatches |
+      machine:
+        install:
+          bootloader: true
+          wipe: true
+        time:
+          servers:
+          - time.cloudflare.com
+
+worker:
+  patches:
+    - *disableSearchDomainPatch
+    - *nameServersPatch
+    - *machinePatches
