@@ -68,7 +68,7 @@ controlPlane:
             bind-address: 0.0.0.0
         proxy:
           disabled: true
-    -
+
     # Disable search domain everywhere
     - &disableSearchDomainPatch |-
       machine:
@@ -114,7 +114,6 @@ controlPlane:
             - "fd80:0383:1a38::/64"
           extraArgs:
             allowed-unsafe-sysctls: net.ipv6.conf.net1.accept_ra_rt_info_max_plen
-            rotate-server-certificates: "true"
 
 worker:
   patches:
