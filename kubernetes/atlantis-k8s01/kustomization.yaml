@@ -18,6 +18,5 @@ resources:
   - observability
   # Start moving to new deployments that define dependencies, this list should be sorted by name
   - external-secrets.yaml
-  - generic-device-plugin.yaml
   - onepassword-connect.yaml
   - ../clusters/atlantis-k8s01/deploy

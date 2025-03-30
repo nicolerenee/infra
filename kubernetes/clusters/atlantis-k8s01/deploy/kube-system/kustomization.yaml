@@ -7,5 +7,7 @@ components:
   - ../../../../components/common
 resources:
   - ./cilium.yaml
+  - ./generic-device-plugin.yaml
+  - ./intel-device-plugin.yaml
   - ./multus.yaml
   - ./node-feature-discovery.yaml

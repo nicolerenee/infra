@@ -10,6 +10,7 @@ vars:
 tasks:
   generate:
     desc: Generate Talos machine configurations
+    label: talos-generate-{{.CLUSTER}}
     dir: "{{.TALOS_DIR}}"
     env:
       VAULT: "Kubernetes"
@@ -27,6 +28,8 @@ tasks:
     generates:
       - clusterconfig/*.yaml
       - clusterconfig/talosconfig
+    requires:
+      vars: ["CLUSTER"]
     preconditions: &clusterValidPrecondition
       - &clusterExistsCheck sh: test -d "{{.TALOS_DIR}}"
         msg: "cluster {{.CLUSTER}} does not exist in kubernetes/clusters"

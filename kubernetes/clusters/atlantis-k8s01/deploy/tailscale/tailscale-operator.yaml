@@ -9,7 +9,7 @@ spec:
   targetNamespace: *namespace
   dependsOn:
     - name: generic-device-plugin
-      namespace: flux-system
+      namespace: kube-system
     - name: onepassword-connect-store
       namespace: flux-system
   commonMetadata:
