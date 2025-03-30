@@ -15,7 +15,7 @@ spec:
       name: *app
       namespace: *namespace
   interval: 1h
-  path: ./kubernetes/apps/actions-runner-controller/app
+  path: ./kubernetes/deploy/apps/actions-runner-controller/app
   prune: true
   retryInterval: 2m
   sourceRef:

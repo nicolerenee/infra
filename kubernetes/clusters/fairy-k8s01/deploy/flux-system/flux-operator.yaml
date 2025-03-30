@@ -10,7 +10,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   targetNamespace: *namespace
-  path: ./kubernetes/core/flux/operator
+  path: ./kubernetes/deploy/core/flux/operator
   prune: true
   sourceRef:
     kind: GitRepository
