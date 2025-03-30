@@ -1,6 +1,10 @@
-## Kubernetes State
+# Nicole's Infra Repo (aka gitops)
 
-### What is all of this?
+**WARNING:** This repo is undergoing major changes. The `kubernetes` and `apps`
+directory are the current iteration and are under going major restructuring.
+
+## What is all of this?
+
 This repo contains files that help build out my kubernetes cluster that I run in
 my home lab. There are a lot of components in here, but if you are looking to
 run this yourself these are some places to start.
