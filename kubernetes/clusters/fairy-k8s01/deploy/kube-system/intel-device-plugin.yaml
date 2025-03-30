@@ -3,44 +3,49 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app node-feature-discovery
+  name: &app intel-device-plugin-operator
   namespace: &namespace kube-system
 spec:
+  targetNamespace: *namespace
+  dependsOn:
+    - name: cert-manager
+      namespace: flux-system
+    - name: node-feature-discovery-rules
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  interval: 1h
-  path: ./kubernetes/deploy/core/devices/node-feature-discovery/controller
-  prune: true
-  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  targetNamespace: *namespace
+  path: ./kubernetes/deploy/core/devices/intel-device-plugin/operator
+  interval: 30s
+  retryInterval: 1m
   timeout: 5m
+  prune: true
   wait: true
+
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app node-feature-discovery-rules
+  name: &app intel-device-plugin-gpu
   namespace: &namespace kube-system
 spec:
+  targetNamespace: *namespace
+  dependsOn:
+    - name: intel-device-plugin-operator
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  dependsOn:
-    - name: node-feature-discovery
-  interval: 1h
-  path: ./kubernetes/deploy/core/devices/node-feature-discovery/rules
-  prune: true
-  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  targetNamespace: *namespace
+  path: ./kubernetes/deploy/core/devices/intel-device-plugin/gpu
+  interval: 30s
+  retryInterval: 1m
   timeout: 5m
+  prune: true
   wait: true
