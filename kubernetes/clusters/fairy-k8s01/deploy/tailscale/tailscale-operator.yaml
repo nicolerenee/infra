@@ -19,7 +19,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/core/networking/tailscale-operator/operator
+  path: ./kubernetes/deploy/core/networking/tailscale-operator/operator
   interval: 30s
   retryInterval: 1m
   timeout: 5m

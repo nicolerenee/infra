@@ -12,7 +12,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./kubernetes/apps/nginx-public
+  path: ./kubernetes/deploy/apps/nginx-public
   prune: true
   sourceRef:
     kind: GitRepository

@@ -12,7 +12,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./kubernetes/apps/cert-manager
+  path: ./kubernetes/deploy/apps/cert-manager
   prune: true
   sourceRef:
     kind: GitRepository

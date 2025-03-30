@@ -13,7 +13,7 @@ spec:
     - name: prometheus-operator-crds
       namespace: flux-system
   targetNamespace: *namespace
-  path: ./kubernetes/core/networking/cilium
+  path: ./kubernetes/deploy/core/networking/cilium
   prune: true
   sourceRef:
     kind: GitRepository

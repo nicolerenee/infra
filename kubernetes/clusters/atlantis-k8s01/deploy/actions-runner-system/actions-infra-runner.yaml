@@ -14,7 +14,7 @@ spec:
       namespace: *namespace
   interval: 1h
   # TODO: this should be made generic so we can create different runners via patches
-  path: ./kubernetes/apps/actions-runner-controller/runners/infra
+  path: ./kubernetes/deploy/apps/actions-runner-controller/runners/infra
   prune: true
   retryInterval: 2m
   sourceRef:

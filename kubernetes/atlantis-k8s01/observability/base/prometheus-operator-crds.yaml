@@ -10,7 +10,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./kubernetes/apps/prometheus-operator-crds
+  path: ./kubernetes/deploy/apps/prometheus-operator-crds
   prune: true
   sourceRef:
     kind: GitRepository
