@@ -11,57 +11,57 @@ spec:
     spec:
       automountServiceAccountToken: false
       containers:
-      - name: sabnzbd
-        image: "ghcr.io/onedr0p/sabnzbd:4.4.1@sha256:36674664a94760ae934c09b1d97546a3e79a0f110edda88085e74778c26d68e3"
-        imagePullPolicy: IfNotPresent
-        env:
-          - name: TZ
-            value: America/Chicago
-          - name: SABNZBD__PORT
-            value: "80"
-        ports:
-        - containerPort: 80
-          name: http
-          protocol: TCP
-        resources:
-          limits:
-            cpu: "4"
-            memory: 10Gi
-          requests:
-            cpu: "1"
-            memory: 1Gi
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          capabilities:
-            drop:
-            - ALL
-          runAsNonRoot: true
-          runAsUser: 3000
-          runAsGroup: 3000
-        startupProbe: &probe
-          httpGet:
-            path: /api?mode=version
-            port: http
-          initialDelaySeconds: 0
-          periodSeconds: 10
-          timeoutSeconds: 1
-          failureThreshold: 3
-        livenessProbe: *probe
-        readinessProbe: *probe
-        volumeMounts:
-        - mountPath: /config
-          name: config
-        - mountPath: /tmp
-          name: tmp
+        - name: sabnzbd
+          image: "ghcr.io/home-operations/sabnzbd:4.4.1@sha256:36674664a94760ae934c09b1d97546a3e79a0f110edda88085e74778c26d68e3"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TZ
+              value: America/Chicago
+            - name: SABNZBD__PORT
+              value: "80"
+          ports:
+            - containerPort: 80
+              name: http
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "4"
+              memory: 10Gi
+            requests:
+              cpu: "1"
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 3000
+            runAsGroup: 3000
+          startupProbe: &probe
+            httpGet:
+              path: /api?mode=version
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 1
+            failureThreshold: 3
+          livenessProbe: *probe
+          readinessProbe: *probe
+          volumeMounts:
+            - mountPath: /config
+              name: config
+            - mountPath: /tmp
+              name: tmp
       securityContext:
         fsGroup: 3000
         fsGroupChangePolicy: OnRootMismatch
         supplementalGroups:
-        - 3000
+          - 3000
       volumes:
-      - name: config
-        persistentVolumeClaim:
-          claimName: sabnzbd-config
-      - name: tmp
-        emptyDir: {}
+        - name: config
+          persistentVolumeClaim:
+            claimName: sabnzbd-config
+        - name: tmp
+          emptyDir: {}
