@@ -16,8 +16,8 @@ components:
 
 images:
   - name: sentinel
-    newName: ghcr.io/onedr0p/radarr
-    newTag: 5.20.1.9773@sha256:4fa8fc7dcf3b38dbed279125330a8b9bd7be6e68e317e685089d3b03774aeeab
+    newName: ghcr.io/home-operations/radarr
+    newTag: 5.20.1.9773@sha256:407eb673a46134648c991bb7727b1b788897a181eb9234376105dd763c2b8406
 
 patches:
   - target:
