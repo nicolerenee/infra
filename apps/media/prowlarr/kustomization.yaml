@@ -17,7 +17,7 @@ components:
 images:
   - name: sentinel
     newName: ghcr.io/home-operations/prowlarr
-    newTag: 1.32.2.4987@sha256:77f6b6850d6191f68d2d2d4d21655b103acc5c6f6243d8cb62bb75888499b78a
+    newTag: 1.33.1.4997@sha256:3bb878cf5d447934f4f3848315f3cf393bdc269eee9f823df34e06768a55ddb3
 
 patches:
   - target:
