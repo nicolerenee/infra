@@ -17,7 +17,7 @@ components:
 images:
   - name: sentinel
     newName: ghcr.io/home-operations/sonarr
-    newTag: 4.0.14.2938@sha256:f82e69b2d290877b89c2bcae9928df7ed74e05ab3cba905ecaeced85f4f1f2c6
+    newTag: 4.0.14.2938@sha256:acd5416ab9c36d017687820a32f09d09a4e25a5754aa5ebeae2e7c63d7609c13
 
 patches:
   - target:
