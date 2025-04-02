@@ -18,6 +18,7 @@
     // the ordering for packageRules matter, this needs the highest priority
     "github>nicolerenee/infra//.renovate/infraPackages.json5",
   ],
+  rebaseWhen: "behind-base-branch",
   dependencyDashboardTitle: "Renovate Dashboard 🤖",
   flux: {
     fileMatch: ["(^|/)apps/.+\\.ya?ml$", "(^|/)kubernetes/.+\\.ya?ml$"],
