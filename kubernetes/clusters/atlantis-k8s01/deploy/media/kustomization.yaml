@@ -7,3 +7,4 @@ components:
   - ../../../../components/common
 resources:
   - ./radarr.yaml
+  - ./sonarr.yaml
