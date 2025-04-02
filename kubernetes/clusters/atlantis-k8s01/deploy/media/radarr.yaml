@@ -1,0 +1,71 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app radarr
+  namespace: &namespace media
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: rook-ceph-cluster
+      namespace: flux-system
+  interval: 1h
+  path: ./kubernetes/deploy/apps/radarr
+  prune: true
+  retryInterval: 2m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: *namespace
+  timeout: 5m
+  wait: false
+  patches:
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: add
+          path: /spec/values/ingress
+          value:
+            app:
+              enabled: true
+              className: nginx-tailscale
+              annotations:
+                cert-manager.io/cluster-issuer: letsencrypt-frecklefamily
+              hosts:
+                - host: radarr.freckle.vision
+                  paths:
+                    - path: /
+                      pathType: Prefix
+                      service:
+                        name: radarr
+                        port: 80
+              tls:
+                - hosts:
+                    - freckle.vision
+                    - '*.freckle.vision'
+                  secretName: freckle-vision-tls
+
+        - op: replace
+          path: /spec/values/persistence/config/size
+          value: 100Gi
+
+        - op: replace
+          path: /spec/values/persistence/media
+          value:
+            existingClaim: store01-media
+            globalMounts:
+              - path: /store01
+
+        - op: replace
+          path: /spec/values/defaultPodOptions/securityContext/runAsUser
+          value: 943
+        - op: replace
+          path: /spec/values/defaultPodOptions/securityContext/runAsGroup
+          value: 943
+        - op: replace
+          path: /spec/values/defaultPodOptions/securityContext/fsGroup
+          value: 943
