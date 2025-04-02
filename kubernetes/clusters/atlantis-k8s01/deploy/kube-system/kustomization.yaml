@@ -11,3 +11,4 @@ resources:
   - ./intel-device-plugin.yaml
   - ./multus.yaml
   - ./node-feature-discovery.yaml
+  - ./reloader.yaml
