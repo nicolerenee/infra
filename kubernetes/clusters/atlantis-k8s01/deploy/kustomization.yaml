@@ -4,5 +4,6 @@ resources:
   - ./actions-runner-system
   - ./flux-system
   - ./kube-system
+  - ./media
   - ./system-upgrade
   - ./tailscale
