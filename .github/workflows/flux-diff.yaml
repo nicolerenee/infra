@@ -124,6 +124,8 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           header: ${{ github.event.pull_request.number }}/kubernetes-dyff/${{ matrix.cluster }}
+          hide: true
+          hide_classify: "OUTDATED"
           message: |
             ### ${{ matrix.cluster }} Diff
 
@@ -139,10 +141,8 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           header: ${{ github.event.pull_request.number }}/kubernetes-dyff/${{ matrix.cluster }}
-          message: |
-            ### ${{ matrix.cluster }} Diff
-
-            Detected no changes
+          hide: true
+          hide_classify: "OUTDATED"
 
   success:
     if: ${{ !cancelled() }}
