@@ -37,3 +37,6 @@ spec:
       strategy: rollback
       retries: 3
   values: {}
+  valuesFrom:
+    - kind: ConfigMap
+      name: cert-manager-values
