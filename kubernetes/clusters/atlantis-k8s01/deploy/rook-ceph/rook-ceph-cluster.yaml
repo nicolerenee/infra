@@ -3,21 +3,22 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app external-secrets
-  namespace: &namespace external-secrets
+  name: &app rook-ceph-cluster
+  namespace: &namespace rook-ceph
 spec:
+  targetNamespace: *namespace
+  dependsOn:
+    - name: rook-ceph
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  dependsOn:
-    - name: onepassword-connect
-  targetNamespace: *namespace
-  path: ./kubernetes/deploy/core/secrets/external-secrets
-  prune: true
-  wait: true
+  path: ./kubernetes/deploy/core/storage/rook-ceph/cluster
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  interval: 1h
-  timeout: 5m
+  interval: 2m
+  retryInterval: 1m
+  timeout: 30m
+  prune: false
+  wait: true

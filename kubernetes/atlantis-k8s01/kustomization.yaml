@@ -10,7 +10,6 @@ resources:
   - observability/base
   - metallb
   - ingress
-  - rook-ceph
   - observability
   # Start moving to new deployments that define dependencies, this list should be sorted by name
   - ../clusters/atlantis-k8s01/deploy
