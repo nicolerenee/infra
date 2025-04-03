@@ -15,7 +15,8 @@ spec:
     name: flux-system
   path: ./apps/golink
   dependsOn:
-    - name: onepassword-connect-store
+    - name: onepassword-store
+      namespace: external-secrets
   interval: 2m
   retryInterval: 1m
   timeout: 5m

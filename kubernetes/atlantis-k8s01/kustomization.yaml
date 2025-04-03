@@ -3,20 +3,14 @@ kind: Kustomization
 resources:
   # Install flux-system components first
   - flux-system
-  # Sync namespaces
-  - namespaces
   # Sync repos
   - ../repos
   # setup prometheus CRDs before anything else since other charts need it
   # TODO: convert all these
   - observability/base
-  - cert-manager
-  - external-dns
   - metallb
   - ingress
   - rook-ceph
   - observability
   # Start moving to new deployments that define dependencies, this list should be sorted by name
-  - external-secrets.yaml
-  - onepassword-connect.yaml
   - ../clusters/atlantis-k8s01/deploy

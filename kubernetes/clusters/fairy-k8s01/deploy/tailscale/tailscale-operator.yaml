@@ -10,8 +10,8 @@ spec:
   dependsOn:
     - name: generic-device-plugin
       namespace: kube-system
-    - name: onepassword-connect-store
-      namespace: flux-system
+    - name: onepassword-store
+      namespace: external-secrets
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app

@@ -2,6 +2,9 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ./actions-runner-system
+  - ./cert-manager
+  - ./external-dns
+  - ./external-secrets
   - ./flux-system
   - ./kube-system
   - ./media
