@@ -8,6 +8,7 @@ resources:
   - ./flux-system
   - ./kube-system
   - ./media
+  - ./observability
   - ./rook-ceph
   - ./system-upgrade
   - ./tailscale

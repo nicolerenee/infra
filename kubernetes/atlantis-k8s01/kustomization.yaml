@@ -5,9 +5,7 @@ resources:
   - flux-system
   # Sync repos
   - ../repos
-  # setup prometheus CRDs before anything else since other charts need it
   # TODO: convert all these
-  - observability/base
   - metallb
   - ingress
   - observability
