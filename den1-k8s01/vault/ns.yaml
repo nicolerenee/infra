@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: vault
-  labels:
-    freckle.tech/namespace: vault
-    freckle.tech/tool: vault
