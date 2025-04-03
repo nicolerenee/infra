@@ -7,5 +7,6 @@ resources:
   - ./external-secrets
   - ./flux-system
   - ./kube-system
+  - ./rook-ceph
   - ./system-upgrade
   - ./tailscale

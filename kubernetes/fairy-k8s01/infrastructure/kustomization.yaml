@@ -3,4 +3,3 @@ kind: Kustomization
 resources:
   - nginx-tailscale.yaml
   - prometheus-operator-crds.yaml
-  - rook-ceph.yaml
