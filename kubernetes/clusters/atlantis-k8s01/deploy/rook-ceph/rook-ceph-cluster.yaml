@@ -27,6 +27,5 @@ spec:
         kind: HelmRelease
         name: rook-ceph-cluster
       patch: |-
-        - op: replace
+        - op: remove
           path: /spec/values/cephClusterSpec/storage/encryptedDevice
-          value: false
