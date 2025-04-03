@@ -9,7 +9,7 @@ spec:
   targetNamespace: *namespace
   dependsOn:
     - name: cert-manager
-      namespace: flux-system
+      namespace: cert-manager
     - name: node-feature-discovery-rules
   commonMetadata:
     labels:

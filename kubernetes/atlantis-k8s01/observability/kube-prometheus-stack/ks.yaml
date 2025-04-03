@@ -11,7 +11,8 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: onepassword-connect-store
+    - name: onepassword-store
+      namespace: external-secrets
   path: ./kubernetes/atlantis-k8s01/observability/kube-prometheus-stack
   prune: true
   sourceRef:

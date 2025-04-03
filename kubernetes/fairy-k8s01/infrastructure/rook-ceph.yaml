@@ -19,7 +19,7 @@ spec:
   interval: 2m
   retryInterval: 1m
   timeout: 30m
-  prune: true
+  prune: false
   wait: true
 
 ---
@@ -43,7 +43,7 @@ spec:
   interval: 2m
   retryInterval: 1m
   timeout: 30m
-  prune: true
+  prune: false
   wait: true
 
   patches:
