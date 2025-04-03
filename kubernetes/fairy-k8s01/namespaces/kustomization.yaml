@@ -5,4 +5,3 @@ resources:
   - home-automation.yaml
   - media.yaml
   - nginx-tailscale.yaml
-  - observability.yaml

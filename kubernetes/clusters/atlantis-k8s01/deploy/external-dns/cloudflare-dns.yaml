@@ -13,7 +13,7 @@ spec:
     - name: external-secrets
       namespace: external-secrets
     - name: prometheus-operator-crds
-      namespace: flux-system
+      namespace: observability
   targetNamespace: *namespace
   path: ./kubernetes/deploy/core/networking/cloudflare-dns
   prune: true

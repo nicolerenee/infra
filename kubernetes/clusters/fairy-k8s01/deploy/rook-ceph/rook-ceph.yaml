@@ -9,7 +9,7 @@ spec:
   targetNamespace: *namespace
   dependsOn:
     - name: prometheus-operator-crds
-      namespace: flux-system
+      namespace: observability
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
