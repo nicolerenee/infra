@@ -1,0 +1,13 @@
+---
+fullnameOverride: "vm-operator-crds"
+
+crds:
+  enabled: true
+  # plain == false results in CRDs being rendered as templates which allows them to be upgraded
+  plain: false
+  cleanup:
+    enabled: false
+# serviceMonitor:
+#   enabled: false
+#   # -- Creates `VMServiceScrape` if `true` and `ServiceMonitor` otherwise. Make sure [Prometheus Operator CRDs](https://artifacthub.io/packages/helm/prometheus-community/prometheus-operator-crds) are installed if it's set to `false`
+#   vm: true

@@ -7,6 +7,8 @@ components:
   - ../../../../components/common
 resources:
   - ./prometheus-operator-crds.yaml
+  # - ./vm-operator-crds.yaml Disabled, using embedded crds since release isn't public
+  - ./vm-k8s-stack.yaml
 patches:
   - target:
       kind: Namespace
