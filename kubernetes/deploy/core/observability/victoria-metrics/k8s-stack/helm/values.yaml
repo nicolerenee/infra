@@ -32,7 +32,7 @@ defaultDashboards:
   defaultTimezone: utc
   grafanaOperator:
     # -- Create dashboards as CRDs (requires grafana-operator to be installed)
-    enabled: true
+    enabled: false
     spec:
       instanceSelector:
         matchLabels:
