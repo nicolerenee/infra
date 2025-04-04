@@ -21,16 +21,32 @@ jobs:
         uses: bjw-s-labs/action-changed-files@b1144fc772fca235a50902c7bb6cc431cc7d8e27 # v0.3.2
         with:
           patterns: |-
+            .github/workflows/flux-local.yaml
             kubernetes/**/*
             apps/**/*
 
-  pull:
+  clusters:
     if: ${{ needs.filter.outputs.changed-files != '[]' }}
     needs: filter
+    name: Flux Local - Cluster List
+    runs-on: ubuntu-latest
+    outputs:
+      cluster-list: ${{ steps.list.outputs.clusters }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - id: list
+        name: Get Cluster List
+        working-directory: ./kubernetes/clusters
+        run: |
+          echo "clusters=$(ls -d * | jq --raw-input --slurp --compact-output 'split("\n")[:-1]')" >> ${GITHUB_OUTPUT}
+
+  pull:
+    if: ${{ needs.filter.outputs.changed-files != '[]' }}
+    needs: [filter, clusters]
     name: Cluster
     strategy:
       matrix:
-        cluster: ["atlantis-k8s01", "fairy-k8s01"]
+        cluster: ${{ fromJSON(needs.clusters.outputs.cluster-list) }}
       fail-fast: false
     uses: ./.github/workflows/image-pull-extract-pull.yaml
     with:
