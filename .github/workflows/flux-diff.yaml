@@ -97,6 +97,9 @@ jobs:
           --exclude-regexp "/metadata/labels/helm.sh/chart"
           --exclude-regexp "/metadata/annotations/config.kubernetes.io/index"
           --exclude-regexp "/metadata/annotations/internal.config.kubernetes.io/index"
+          # during local generation we generate a new ca cert everytime so ignore these fields
+          --exclude-regexp "webhooks.*.victoriametrics.com.clientConfig.caBundle"
+          --exclude "spec.template.metadata.annotations.checksum/secret"
           )
 
           summary=$("${DYFFCMD[@]}" --output brief)
