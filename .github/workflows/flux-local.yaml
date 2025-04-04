@@ -48,7 +48,7 @@ jobs:
     steps:
       - name: Setup Flux CLI
         uses: fluxcd/flux2/action@v2.2.2
-      - uses: allenporter/flux-local/action/test@4.3.1
+      - uses: allenporter/flux-local/action/test@7.3.0
         with:
           path: kubernetes/${{ matrix.cluster }}/flux-system
           enable-helm: true
