@@ -5,7 +5,7 @@ kind: Kustomization
 resources:
   - helmrelease.yaml
 configMapGenerator:
-  - name: vm-values
+  - name: vm-k8s-stack-values
     files:
       - values.yaml=./helm/values.yaml
 configurations:
