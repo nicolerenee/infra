@@ -12,7 +12,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: sabnzbd
-          image: "ghcr.io/home-operations/sabnzbd:4.5.0@sha256:9892fb7cd246b64de151f9200e0882d558b19808f9157f37c4d74b13fa29857b"
+          image: "ghcr.io/home-operations/sabnzbd:4.5.0@sha256:2bf66d50132f1524067919a5b58215b18b1d9f30155c0008888e20fa609321ef"
           imagePullPolicy: IfNotPresent
           env:
             - name: TZ
