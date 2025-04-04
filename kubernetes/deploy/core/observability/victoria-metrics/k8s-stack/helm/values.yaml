@@ -4,8 +4,10 @@ fullnameOverride: "vm"
 # -- VictoriaMetrics Operator dependency chart configuration. More values can be found [here](https://docs.victoriametrics.com/helm/victoriametrics-operator#parameters). Also checkout [here](https://docs.victoriametrics.com/operator/vars) possible ENV variables to configure operator behaviour
 victoria-metrics-operator:
   enabled: true
+  # don't deploy crds, they are deployed by operator-crds chart
   crds:
     enabled: false
+    plain: false
   # serviceMonitor:
   #   enabled: true
   operator:
