@@ -66,6 +66,7 @@ jobs:
           args: >-
             build all
             --enable-helm
+            --skip-kinds VMAlert,VMRule
             --output pr.yaml
             /github/workspace/pull/kubernetes/${{ matrix.cluster }}/flux-system
 
@@ -75,6 +76,7 @@ jobs:
           args: >-
             build all
             --enable-helm
+            --skip-kinds VMAlert,VMRule
             --output main.yaml
             /github/workspace/default/kubernetes/${{ matrix.cluster }}/flux-system
 
@@ -124,8 +126,6 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           header: ${{ github.event.pull_request.number }}/kubernetes-dyff/${{ matrix.cluster }}
-          hide: true
-          hide_classify: "OUTDATED"
           message: |
             ### ${{ matrix.cluster }} Diff
 

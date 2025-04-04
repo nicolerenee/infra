@@ -9,6 +9,9 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  dependsOn:
+    - name: prometheus-operator-crds
+    - name: vm-operator-crds
   targetNamespace: *namespace
   path: ./kubernetes/deploy/core/observability/victoria-metrics/k8s-stack
   prune: true
