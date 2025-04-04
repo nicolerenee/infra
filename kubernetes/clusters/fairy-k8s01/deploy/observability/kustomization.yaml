@@ -7,7 +7,7 @@ components:
   - ../../../../components/common
 resources:
   - ./prometheus-operator-crds.yaml
-  # - ./vm-operator-crds.yaml Disabled, using embedded crds since release isn't public
+  - ./vm-operator-crds.yaml
   - ./vm-k8s-stack.yaml
 patches:
   - target:
@@ -16,6 +16,4 @@ patches:
       - op: add
         path: /metadata/labels
         value:
-          pod-security.kubernetes.io/audit: privileged
           pod-security.kubernetes.io/enforce: privileged
-          pod-security.kubernetes.io/warn: privileged
