@@ -3,18 +3,16 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app vm-k8s-stack
+  name: &app grafana-instance
   namespace: &namespace observability
 spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: prometheus-operator-crds
-    - name: vm-operator-crds
-    - name: grafana-operator
+    - name: grafana-instance
   targetNamespace: *namespace
-  path: ./kubernetes/deploy/core/observability/victoria-metrics/k8s-stack
+  path: ./kubernetes/deploy/core/observability/grafana/instance
   prune: true
   sourceRef:
     kind: GitRepository
