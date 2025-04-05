@@ -4,6 +4,7 @@ metadata:
   name: atlantis-ts-rtr
   namespace: tailscale
 spec:
+  proxyClass: tailscale-tun
   hostname: atlantis-ts-rtr
   exitNode: true
   subnetRouter:

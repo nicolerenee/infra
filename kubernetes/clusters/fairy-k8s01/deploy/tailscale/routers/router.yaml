@@ -4,5 +4,6 @@ metadata:
   name: fairy-ts-rtr
   namespace: tailscale
 spec:
+  proxyClass: tailscale-tun
   hostname: fairy-ts-rtr
   exitNode: true
