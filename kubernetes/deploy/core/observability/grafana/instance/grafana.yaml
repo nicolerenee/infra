@@ -20,13 +20,13 @@ spec:
       auto_sign_up: "True"
       enabled: "True"
       enable_login_token: "True"
-      headers: "Name:X-WebAuth-Name"
+      headers: "Name:Tailscale-User-Name"
       header_property: "username"
-      header_name: "X-WebAuth-User"
+      header_name: "Tailscale-User-Login"
 
   ingress:
     spec:
-      ingressClassName: nginx
+      ingressClassName: tailscale
       rules:
         - host: grafana-${CLUSTER_NAME}
           http:

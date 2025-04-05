@@ -1,0 +1,16 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: vl-datasource
+spec:
+  datasource:
+    access: proxy
+    type: victoriametrics-logs-datasource
+    name: victorialogs
+    url: http://victoria-logs-server:9428
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  plugins:
+    - name: victoriametrics-logs-datasource
+      version: "0.14.3"
