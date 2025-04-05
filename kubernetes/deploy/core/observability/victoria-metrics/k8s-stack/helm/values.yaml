@@ -71,12 +71,42 @@ grafana:
       - hosts:
           - grafana-${CLUSTER_NAME}
 
+kubeControllerManager:
+  enabled: true
+  vmScrape:
+    spec:
+      jobLabel: jobLabel
+      namespaceSelector:
+        matchNames:
+          - kube-system
+      endpoints:
+        - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+          port: http-metrics
+          scheme: https
+          tlsConfig:
+            # caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            # don't check cert since talos isn't using the k8s CA for this
+            insecureSkipVerify: true
+
 kubeEtcd:
   enabled: false
 
 kubeScheduler:
-  # -- Enable KubeScheduler metrics scraping
   enabled: true
+  vmScrape:
+    spec:
+      jobLabel: jobLabel
+      namespaceSelector:
+        matchNames:
+          - kube-system
+      endpoints:
+        - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+          port: http-metrics
+          scheme: https
+          tlsConfig:
+            # caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            # don't check cert since talos isn't using the k8s CA for this
+            insecureSkipVerify: true
 
 kubeProxy:
   enabled: false
