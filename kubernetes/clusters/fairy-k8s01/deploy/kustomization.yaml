@@ -6,7 +6,9 @@ resources:
   - ./external-dns
   - ./external-secrets
   - ./flux-system
+  - ./golink
   - ./kube-system
+  - ./nginx-tailscale
   - ./observability
   - ./rook-ceph
   - ./system-upgrade

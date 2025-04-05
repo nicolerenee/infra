@@ -2,9 +2,8 @@
 # yaml-language-server: $schema=https://json.schemastore.org/kustomization
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: flux-system
+namespace: nginx-ingress
+components:
+  - ../../../../components/common
 resources:
-  - grafana.yaml
-  - ingress-nginx.yaml
-  - metallb.yaml
-  - prometheus-community.yaml
+  - ./nginx-ingress.yaml

@@ -4,19 +4,20 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: &app golink
-  namespace: flux-system
+  namespace: &namespace golink
 spec:
-  targetNamespace: golink
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  path: ./apps/golink
   dependsOn:
     - name: onepassword-store
       namespace: external-secrets
+  path: ./kubernetes/deploy/apps/golink
+  targetNamespace: *namespace
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
   interval: 2m
   retryInterval: 1m
   timeout: 5m

@@ -4,20 +4,21 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: &app nginx-tailscale
-  namespace: flux-system
+  namespace: &namespace nginx-tailscale
 spec:
-  targetNamespace: nginx-tailscale
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: tailscale-operator
       namespace: tailscale
-  path: ./apps/infrastructure/nginx-tailscale
+  targetNamespace: *namespace
+  path: ./kubernetes/deploy/core/networking/nginx-tailscale
   prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
+    namespace: flux-system
   interval: 30m
   timeout: 5m
   patches:
@@ -26,4 +27,4 @@ spec:
       patch: |-
         - op: replace
           path: /spec/values/controller/service/annotations/tailscale.com~1hostname
-          value: fairy-k8s01-ingress
+          value: atlantis-k8s01-ingress
