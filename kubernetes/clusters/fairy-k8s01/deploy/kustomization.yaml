@@ -7,7 +7,9 @@ resources:
   - ./external-secrets
   - ./flux-system
   - ./golink
+  - ./home-automation
   - ./kube-system
+  - ./media
   - ./nginx-tailscale
   - ./observability
   - ./rook-ceph
