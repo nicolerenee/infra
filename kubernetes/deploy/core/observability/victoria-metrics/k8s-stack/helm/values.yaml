@@ -8,8 +8,6 @@ victoria-metrics-operator:
   crds:
     enabled: false
     plain: false
-  # serviceMonitor:
-  #   enabled: true
   operator:
     # -- Enables ownership reference for converted prometheus-operator objects,
     # it will remove corresponding victoria-metrics objects in case of deletion prometheus one.
@@ -39,8 +37,14 @@ vmsingle:
       - hosts:
           - vm-${CLUSTER_NAME}
 
-vmcluster:
-  enabled: false
+defaultDashboards:
+  enabled: true
+  grafanaOperator:
+    enabled: false
+
+defaultDatasources:
+  grafanaOperator:
+    enabled: true
 
 alertmanager:
   enabled: true
@@ -57,19 +61,8 @@ alertmanager:
       - hosts:
           - alertmgr-${CLUSTER_NAME}
 
-# -- Grafana dependency chart configuration. For possible values refer [here](https://github.com/grafana/helm-charts/tree/main/charts/grafana#configuration)
 grafana:
-  enabled: true
-  plugins:
-    - victoriametrics-metrics-datasource
-  ingress:
-    enabled: true
-    ingressClassName: tailscale
-    hosts:
-      - grafana-${CLUSTER_NAME}
-    tls:
-      - hosts:
-          - grafana-${CLUSTER_NAME}
+  enabled: false
 
 kubeControllerManager:
   enabled: true

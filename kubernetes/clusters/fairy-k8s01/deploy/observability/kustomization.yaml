@@ -6,6 +6,7 @@ namespace: observability
 components:
   - ../../../../components/common
 resources:
+  - ./grafana-operator.yaml
   - ./prometheus-operator-crds.yaml
   - ./victoria-logs.yaml
   - ./vm-operator-crds.yaml
