@@ -10,7 +10,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: grafana-instance
+    - name: grafana-operator
   targetNamespace: *namespace
   path: ./kubernetes/deploy/core/observability/grafana/instance
   prune: true

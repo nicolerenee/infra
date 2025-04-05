@@ -10,6 +10,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
+    - name: grafana-operator
     - name: vm-operator-crds
   targetNamespace: *namespace
   path: ./kubernetes/deploy/core/observability/victoria-logs
