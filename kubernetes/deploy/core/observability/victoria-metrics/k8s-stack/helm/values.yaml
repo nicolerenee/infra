@@ -40,7 +40,11 @@ vmsingle:
 defaultDashboards:
   enabled: true
   grafanaOperator:
-    enabled: false
+    enabled: true
+
+grafana:
+  enabled: false
+  forceDeployDatasource: true
 
 defaultDatasources:
   grafanaOperator:
@@ -60,9 +64,6 @@ alertmanager:
     tls:
       - hosts:
           - alertmgr-${CLUSTER_NAME}
-
-grafana:
-  enabled: false
 
 kubeControllerManager:
   enabled: true
