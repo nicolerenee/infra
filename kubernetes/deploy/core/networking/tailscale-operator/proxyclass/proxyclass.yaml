@@ -3,15 +3,15 @@ kind: ProxyClass
 metadata:
   name: tailscale-tun
 spec:
+  metrics:
+    enable: true
+    serviceMonitor:
+      enable: true
   statefulSet:
     pod:
       nodeSelector:
         beta.kubernetes.io/os: "linux"
       tailscaleContainer:
-        metrics:
-          enable: true
-          serviceMonitor:
-            enable: true
         resources:
           limits:
             squat.ai/tun: "1"
