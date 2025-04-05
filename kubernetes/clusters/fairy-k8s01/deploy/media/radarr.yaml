@@ -3,17 +3,18 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app sabnzbd
-  namespace: flux-system
+  name: &app radarr
+  namespace: &namespace media
 spec:
-  targetNamespace: media
+  targetNamespace: *namespace
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./apps/media/sabnzbd
+    namespace: flux-system
+  path: ./apps/media/radarr
   dependsOn:
     - name: onepassword-store
       namespace: external-secrets
@@ -31,26 +32,14 @@ spec:
         kind: Deployment
       patch: |-
         - op: add
-          path: /spec/template/spec/containers/0/env/0
-          value:
-            name: SABNZBD__HOST_WHITELIST_ENTRIES
-            value: >-
-              sabnzbd,
-              sabnzbd.media,
-              sabnzbd.media.svc,
-              sabnzbd.media.svc.cluster,
-              sabnzbd.media.svc.cluster.local,
-              sabnzbd.hummingbird-perch.ts.net
-        - op: add
           path: /spec/template/spec/containers/0/volumeMounts/0
           value:
-            name: downloads
-            mountPath: /store01/vault01/downloads/sabnzbd
-            subPath: downloads/sabnzbd
+            name: store01-vault01
+            mountPath: /store01/vault01
         - op: add
           path: /spec/template/spec/volumes/0
           value:
-            name: downloads
+            name: store01-vault01
             persistentVolumeClaim:
               claimName: store01-vault01-media
     - target:
