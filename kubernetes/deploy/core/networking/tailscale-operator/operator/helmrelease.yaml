@@ -45,7 +45,7 @@ spec:
     apiServerProxyConfig:
       mode: "true"
     ingressClass:
-      enabled: false
+      enabled: true
     proxyConfig:
       defaultProxyClass: tailscale-tun
       defaultTags: tag:k8s
