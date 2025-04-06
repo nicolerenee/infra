@@ -37,7 +37,7 @@ spec:
               TZ: Etc/UTC
             envFrom:
               - secretRef:
-                  name: radarr-secrets
+                  name: sonarr-secrets
             ports:
               - containerPort: *port
                 name: http
