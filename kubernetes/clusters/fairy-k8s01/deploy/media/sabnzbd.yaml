@@ -57,7 +57,7 @@ spec:
                     - sabnzbd
 
         - op: replace
-          path: /spec/values/controllers/sabnzbd/env/SABNZBD__HOST_WHITELIST_ENTRIES
+          path: /spec/values/controllers/sabnzbd/containers/app/env/SABNZBD__HOST_WHITELIST_ENTRIES
           value: >-
             sabnzbd,
             sabnzbd.media,
