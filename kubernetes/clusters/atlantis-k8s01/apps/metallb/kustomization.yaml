@@ -2,16 +2,12 @@
 # yaml-language-server: $schema=https://json.schemastore.org/kustomization
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: observability
+namespace: metallb
 components:
   - ../../../../components/common
 resources:
-  - ./grafana-operator.yaml
-  - ./grafana-instance.yaml
-  - ./prometheus-operator-crds.yaml
-  - ./victoria-logs.yaml
-  - ./vm-operator-crds.yaml
-  - ./vm-k8s-stack.yaml
+  - ./metallb.yaml
+  - ./config.yaml
 patches:
   - target:
       kind: Namespace
@@ -19,4 +15,6 @@ patches:
       - op: add
         path: /metadata/labels
         value:
+          pod-security.kubernetes.io/audit: privileged
           pod-security.kubernetes.io/enforce: privileged
+          pod-security.kubernetes.io/warn: privileged
