@@ -14,7 +14,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./apps/media/sabnzbd
+  path: ./kubernetes/deploy/apps/media/sabnzbd
   dependsOn:
     - name: onepassword-store
       namespace: external-secrets
@@ -27,6 +27,11 @@ spec:
   timeout: 5m
   prune: true
   wait: true
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: cluster-info
+        optional: false
   patches:
     - target:
         kind: HelmRelease
@@ -52,7 +57,7 @@ spec:
                     - sabnzbd
 
         - op: replace
-          path: /spec/values/controllers/sabnzbd/env/SABNZBD__HOST_WHITELIST_ENTRIES
+          path: /spec/values/controllers/sabnzbd/containers/app/env/SABNZBD__HOST_WHITELIST_ENTRIES
           value: >-
             sabnzbd,
             sabnzbd.media,
