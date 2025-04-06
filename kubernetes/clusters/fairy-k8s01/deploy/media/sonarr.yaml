@@ -14,7 +14,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./apps/media/sonarr
+  path: ./kubernetes/deploy/apps/sonarr
   dependsOn:
     - name: onepassword-store
       namespace: external-secrets
@@ -29,23 +29,45 @@ spec:
   wait: true
   patches:
     - target:
-        kind: Deployment
+        kind: HelmRelease
       patch: |-
         - op: add
-          path: /spec/template/spec/containers/0/volumeMounts/0
+          path: /spec/values/ingress
           value:
-            name: store01-vault01
-            mountPath: /store01/vault01
-        - op: add
-          path: /spec/template/spec/volumes/0
+            app:
+              enabled: true
+              annotations:
+                tailscale.com/tags: "tag:fairy-k8s01,tag:media-mgmt"
+              className: tailscale
+              hosts:
+                - host: sonarr
+                  paths:
+                    - path: /
+                      pathType: Prefix
+                      service:
+                        name: sonarr
+                        port: 80
+              tls:
+                - hosts:
+                    - sonarr
+
+        - op: replace
+          path: /spec/values/persistence/config/size
+          value: 30Gi
+
+        - op: replace
+          path: /spec/values/persistence/media
           value:
-            name: store01-vault01
-            persistentVolumeClaim:
-              claimName: store01-vault01-media
-    - target:
-        kind: Ingress
-      patch: |-
-        - op: add
-          path: /metadata/annotations
-          value:
-            tailscale.com/tags: "tag:fairy-k8s01,tag:media-mgmt"
+            existingClaim: store01-vault01
+            globalMounts:
+              - path: /store01/vault01
+
+        - op: replace
+          path: /spec/values/defaultPodOptions/securityContext/runAsUser
+          value: 3000
+        - op: replace
+          path: /spec/values/defaultPodOptions/securityContext/runAsGroup
+          value: 3000
+        - op: replace
+          path: /spec/values/defaultPodOptions/securityContext/fsGroup
+          value: 3000
