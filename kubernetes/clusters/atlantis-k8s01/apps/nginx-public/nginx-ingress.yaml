@@ -25,6 +25,6 @@ spec:
     - target:
         kind: HelmRelease
       patch: |-
-        - op: replace
+        - op: add
           path: /spec/values/controller/service/annotations/metallb.universe.tf~1address-pool
           value: public-pool
