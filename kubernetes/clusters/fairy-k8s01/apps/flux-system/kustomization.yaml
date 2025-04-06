@@ -3,7 +3,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: flux-system
-# components:
-# - ../../../../components/common
+components:
+  - ../../../../components/common
 resources:
+  - ./flux-instance.yaml
   - ./flux-operator.yaml

@@ -41,7 +41,7 @@ jobs:
           args: >-
             get cluster
             --all-namespaces
-            --path /github/workspace/kubernetes/${{ inputs.cluster }}/flux-system
+            --path /github/workspace/kubernetes/clusters/${{ inputs.cluster }}/flux
             --enable-images
             --only-images
             --output json
