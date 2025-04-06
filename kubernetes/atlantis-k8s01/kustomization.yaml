@@ -3,11 +3,5 @@ kind: Kustomization
 resources:
   # Install flux-system components first
   - flux-system
-  # Sync repos
-  - ../repos
-  # TODO: convert all these
-  - metallb
-  - ingress
-  - observability
   # Start moving to new deployments that define dependencies, this list should be sorted by name
   - ../clusters/atlantis-k8s01/apps
