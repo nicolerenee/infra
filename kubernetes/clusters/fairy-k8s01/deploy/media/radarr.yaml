@@ -27,6 +27,11 @@ spec:
   timeout: 5m
   prune: true
   wait: true
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: cluster-info
+        optional: false
   patches:
     - target:
         kind: HelmRelease
