@@ -35,6 +35,9 @@ spec:
               SONARR__SERVER__PORT: &port 80
               SONARR__UPDATE__BRANCH: develop
               TZ: Etc/UTC
+            envFrom:
+              - secretRef:
+                  name: radarr-secrets
             ports:
               - containerPort: *port
                 name: http
@@ -77,9 +80,9 @@ spec:
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
+        runAsUser: 3000
+        runAsGroup: 3000
+        fsGroup: 3000
         fsGroupChangePolicy: OnRootMismatch
     service:
       app:

@@ -54,10 +54,34 @@ spec:
             name: downloads
             persistentVolumeClaim:
               claimName: store01-vault01-media
+
     - target:
-        kind: Ingress
+        kind: HelmRelease
       patch: |-
         - op: add
-          path: /metadata/annotations
+          path: /spec/values/ingress
           value:
-            tailscale.com/tags: "tag:fairy-k8s01,tag:media-mgmt"
+            app:
+              enabled: true
+              annotations:
+                tailscale.com/tags: "tag:fairy-k8s01,tag:media-mgmt"
+              className: tailscale
+              hosts:
+                - host: sabnzbd
+                  paths:
+                    - path: /
+                      pathType: Prefix
+                      service:
+                        name: sabnzbd
+                        port: 80
+              tls:
+                - hosts:
+                    - sonarr
+
+        - op: replace
+          path: /spec/values/persistence/media
+          value:
+            existingClaim: store01-vault01-media
+            globalMounts:
+              - path: /store01/vault01/downloads/sabnzbd
+                subPath: downloads/sabnzbd
