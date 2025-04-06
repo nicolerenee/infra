@@ -7,6 +7,7 @@ components:
   - ../../../../components/common
 resources:
   - ./cilium.yaml
+  - ./gateway-api-crds.yaml
   - ./generic-device-plugin.yaml
   - ./intel-device-plugin.yaml
   - ./multus.yaml

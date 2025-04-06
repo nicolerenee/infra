@@ -52,3 +52,7 @@ resources:
   limits:
     cpu: "2"
     memory: "6Gi"
+
+# enable gateway api support
+gatewayAPI:
+  enabled: true
