@@ -57,6 +57,7 @@ spec:
           enabled: true
       service:
         type: LoadBalancer
+        annotations: {}
         # ipFamilyPolicy: PreferDualStack
         # ipFamilies:
         #   - IPv4
