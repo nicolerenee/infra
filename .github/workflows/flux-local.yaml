@@ -2,6 +2,7 @@
 name: Flux Local
 
 on:
+  merge_group:
   pull_request:
     branches: ["main"]
 

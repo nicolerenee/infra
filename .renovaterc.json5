@@ -10,7 +10,6 @@
     "github>nicolerenee/infra//.renovate/groups.json5",
     "github>nicolerenee/infra//.renovate/labels.json5",
     "github>nicolerenee/infra//.renovate/semanticCommits.json5",
-    ":automergeBranch",
     ":disableRateLimiting",
     ":dependencyDashboard",
     ":semanticCommits",
@@ -18,7 +17,10 @@
     // the ordering for packageRules matter, this needs the highest priority
     "github>nicolerenee/infra//.renovate/infraPackages.json5",
   ],
-  rebaseWhen: "behind-base-branch",
+  automergeType: "pr",
+  prCreation: "immediate",
+  rebaseWhen: "conflicted",
+  platformAutomerge: true,
   dependencyDashboardTitle: "Renovate Dashboard 🤖",
   flux: {
     fileMatch: ["(^|/)apps/.+\\.ya?ml$", "(^|/)kubernetes/.+\\.ya?ml$"],

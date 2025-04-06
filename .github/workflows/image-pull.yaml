@@ -2,6 +2,7 @@
 name: Image Pull
 
 on:
+  merge_group:
   pull_request:
     branches: ["main"]
 
