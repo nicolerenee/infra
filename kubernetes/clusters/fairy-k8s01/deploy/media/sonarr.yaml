@@ -14,7 +14,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/deploy/apps/sonarr
+  path: ./kubernetes/deploy/apps/media/sonarr
   dependsOn:
     - name: onepassword-store
       namespace: external-secrets
@@ -50,10 +50,6 @@ spec:
               tls:
                 - hosts:
                     - sonarr
-
-        - op: replace
-          path: /spec/values/persistence/config/size
-          value: 30Gi
 
         - op: replace
           path: /spec/values/persistence/media

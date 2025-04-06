@@ -29,35 +29,42 @@ spec:
   wait: true
   patches:
     - target:
-        kind: Deployment
+        kind: HelmRelease
       patch: |-
         - op: add
-          path: /spec/template/spec/containers/0/env/0
+          path: /spec/values/ingress
           value:
-            name: SABNZBD__HOST_WHITELIST_ENTRIES
-            value: >-
-              sabnzbd,
-              sabnzbd.media,
-              sabnzbd.media.svc,
-              sabnzbd.media.svc.cluster,
-              sabnzbd.media.svc.cluster.local,
-              sabnzbd.hummingbird-perch.ts.net
-        - op: add
-          path: /spec/template/spec/containers/0/volumeMounts/0
+            app:
+              enabled: true
+              annotations:
+                tailscale.com/tags: "tag:fairy-k8s01,tag:media-mgmt"
+              className: tailscale
+              hosts:
+                - host: sabnzbd
+                  paths:
+                    - path: /
+                      pathType: Prefix
+                      service:
+                        name: sabnzbd
+                        port: 80
+              tls:
+                - hosts:
+                    - sabnzbd
+
+        - op: replace
+          path: /spec/values/controllers/sabnzbd/env/SABNZBD__HOST_WHITELIST_ENTRIES
+          value: >-
+            sabnzbd,
+            sabnzbd.media,
+            sabnzbd.media.svc,
+            sabnzbd.media.svc.cluster,
+            sabnzbd.media.svc.cluster.local,
+            sabnzbd.hummingbird-perch.ts.net
+
+        - op: replace
+          path: /spec/values/persistence/media
           value:
-            name: downloads
-            mountPath: /store01/vault01/downloads/sabnzbd
-            subPath: downloads/sabnzbd
-        - op: add
-          path: /spec/template/spec/volumes/0
-          value:
-            name: downloads
-            persistentVolumeClaim:
-              claimName: store01-vault01-media
-    - target:
-        kind: Ingress
-      patch: |-
-        - op: add
-          path: /metadata/annotations
-          value:
-            tailscale.com/tags: "tag:fairy-k8s01,tag:media-mgmt"
+            existingClaim: store01-vault01-media
+            globalMounts:
+              - path: /store01/vault01/downloads/sabnzbd
+                subPath: downloads/sabnzbd
