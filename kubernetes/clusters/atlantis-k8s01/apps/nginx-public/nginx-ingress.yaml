@@ -3,15 +3,12 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app nginx-tailscale
-  namespace: &namespace nginx-tailscale
+  name: &app nginx-public
+  namespace: &namespace nginx-public
 spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  dependsOn:
-    - name: tailscale-operator
-      namespace: tailscale
   targetNamespace: *namespace
   path: ./kubernetes/deploy/core/networking/nginx-public
   prune: true
