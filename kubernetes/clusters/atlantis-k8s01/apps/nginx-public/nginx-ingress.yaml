@@ -1,0 +1,27 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app nginx-public
+  namespace: &namespace nginx-public
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  targetNamespace: *namespace
+  path: ./kubernetes/deploy/core/networking/nginx-public
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  interval: 30m
+  timeout: 5m
+  patches:
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: add
+          path: /spec/values/controller/service/annotations/metallb.universe.tf~1address-pool
+          value: public-pool

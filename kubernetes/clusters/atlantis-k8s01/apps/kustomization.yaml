@@ -8,6 +8,7 @@ resources:
   - ./flux-system
   - ./kube-system
   - ./media
+  - ./nginx-public
   - ./nginx-tailscale
   - ./observability
   - ./rook-ceph
