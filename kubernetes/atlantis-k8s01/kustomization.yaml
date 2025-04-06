@@ -10,4 +10,4 @@ resources:
   - ingress
   - observability
   # Start moving to new deployments that define dependencies, this list should be sorted by name
-  - ../clusters/atlantis-k8s01/deploy
+  - ../clusters/atlantis-k8s01/apps
