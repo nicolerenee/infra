@@ -6,12 +6,12 @@ namespace: observability
 components:
   - ../../../../components/common
 resources:
-  - ./grafana-operator.yaml
-  - ./grafana-instance.yaml
+  # - ./grafana-operator.yaml
+  # - ./grafana-instance.yaml
   - ./prometheus-operator-crds.yaml
-  - ./victoria-logs.yaml
-  - ./vm-operator-crds.yaml
-  - ./vm-k8s-stack.yaml
+  # - ./victoria-logs.yaml
+  # - ./vm-operator-crds.yaml
+  # - ./vm-k8s-stack.yaml
 patches:
   - target:
       kind: Namespace
