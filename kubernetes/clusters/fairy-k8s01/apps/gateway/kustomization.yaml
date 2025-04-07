@@ -2,15 +2,9 @@
 # yaml-language-server: $schema=https://json.schemastore.org/kustomization
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: kube-system
+namespace: gateway
 components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
-  - ./cilium.yaml
-  - ./cilium-gw-config.yaml
-  - ./generic-device-plugin.yaml
-  - ./intel-device-plugin.yaml
-  - ./multus.yaml
-  - ./node-feature-discovery.yaml
-  - ./reloader.yaml
+  - ./gateways.yaml
