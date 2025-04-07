@@ -12,7 +12,6 @@ spec:
   dependsOn:
     - name: prometheus-operator-crds
       namespace: observability
-    - name: gateway-api-crds
   targetNamespace: *namespace
   path: ./kubernetes/deploy/core/networking/cilium
   prune: true
