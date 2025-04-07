@@ -1,7 +1,0 @@
-nameReference:
-  - kind: Deployment
-    fieldSpecs:
-      - kind: Ingress
-        path: spec/tls/hosts
-      - kind: Ingress
-        path: spec/rules/host
