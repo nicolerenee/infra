@@ -27,6 +27,9 @@ spec:
     - target:
         kind: HelmRelease
       patch: |-
+        - op: remove
+          path: /spec/values/route
+
         - op: add
           path: /spec/values/ingress
           value:

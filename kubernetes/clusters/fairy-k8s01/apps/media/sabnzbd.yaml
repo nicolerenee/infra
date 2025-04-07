@@ -33,26 +33,6 @@ spec:
     - target:
         kind: HelmRelease
       patch: |-
-        - op: add
-          path: /spec/values/ingress
-          value:
-            app:
-              enabled: true
-              annotations:
-                tailscale.com/tags: "tag:fairy-k8s01,tag:media-mgmt"
-              className: tailscale
-              hosts:
-                - host: sabnzbd
-                  paths:
-                    - path: /
-                      pathType: Prefix
-                      service:
-                        name: sabnzbd
-                        port: 80
-              tls:
-                - hosts:
-                    - sabnzbd
-
         - op: replace
           path: /spec/values/controllers/sabnzbd/containers/app/env/SABNZBD__HOST_WHITELIST_ENTRIES
           value: >-
@@ -61,7 +41,7 @@ spec:
             sabnzbd.media.svc,
             sabnzbd.media.svc.cluster,
             sabnzbd.media.svc.cluster.local,
-            sabnzbd.hummingbird-perch.ts.net
+            sabnzbd.${CLUSTER_DOMAIN}
 
         - op: replace
           path: /spec/values/persistence/media
