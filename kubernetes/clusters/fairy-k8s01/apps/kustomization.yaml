@@ -6,6 +6,7 @@ resources:
   - ./external-dns
   - ./external-secrets
   - ./flux-system
+  - ./gateway
   - ./golink
   - ./home-automation
   - ./kube-system
