@@ -33,26 +33,6 @@ spec:
     - target:
         kind: HelmRelease
       patch: |-
-        - op: add
-          path: /spec/values/ingress
-          value:
-            app:
-              enabled: true
-              annotations:
-                tailscale.com/tags: "tag:fairy-k8s01,tag:media-mgmt"
-              className: tailscale
-              hosts:
-                - host: radarr
-                  paths:
-                    - path: /
-                      pathType: Prefix
-                      service:
-                        name: radarr
-                        port: 80
-              tls:
-                - hosts:
-                    - radarr
-
         - op: replace
           path: /spec/values/persistence/media
           value:
