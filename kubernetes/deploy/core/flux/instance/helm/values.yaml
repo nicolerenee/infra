@@ -15,7 +15,7 @@ instance:
     url: https://github.com/nicolerenee/infra.git
     ref: refs/heads/main
     # path: kubernetes/clusters/${CLUSTER_NAME}/flux
-    interval: 1h
+    interval: 5m
   commonMetadata:
     labels:
       app.kubernetes.io/name: flux

@@ -1,0 +1,15 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cluster-domain-tls
+spec:
+  secretName: cluster-domain-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "${CLUSTER_DOMAIN}"
+  dnsNames:
+    - "${CLUSTER_DOMAIN}"
+    - "*.${CLUSTER_DOMAIN}"

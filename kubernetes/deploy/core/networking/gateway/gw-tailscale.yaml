@@ -1,0 +1,32 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.networking.k8s.io/gateway_v1.json
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gw-tailscale
+
+spec:
+  gatewayClassName: cilium-tailscale
+  infrastructure:
+    annotations:
+      tailscale.com/hostname: ${CLUSTER_NAME:=cluster}-gw
+      tailscale.com/tags: "tag:${CLUSTER_NAME:=k8s}"
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      hostname: "*.${CLUSTER_DOMAIN}"
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.${CLUSTER_DOMAIN}"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        certificateRefs:
+          - kind: Secret
+            name: cluster-domain-tls
