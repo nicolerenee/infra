@@ -5,6 +5,8 @@ kind: Kustomization
 metadata:
   name: &app cert-issuers
   namespace: &namespace cert-manager
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
 spec:
   commonMetadata:
     labels:

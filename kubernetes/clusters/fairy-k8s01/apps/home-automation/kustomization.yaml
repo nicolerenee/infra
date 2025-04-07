@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: home-automation
 components:
   - ../../../../components/common
+  - ../../../../components/flux-post-build-variables
 resources:
   # disabled for now
   # - homeassistant.yaml

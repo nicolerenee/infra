@@ -37,7 +37,7 @@ spec:
               TZ: Etc/UTC
             envFrom:
               - secretRef:
-                  name: sonarr-secrets
+                  name: sonarr
             ports:
               - containerPort: *port
                 name: http

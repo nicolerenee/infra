@@ -37,7 +37,7 @@ spec:
               TZ: Etc/UTC
             envFrom:
               - secretRef:
-                  name: radarr-secrets
+                  name: radarr
             ports:
               - containerPort: *port
                 name: http

@@ -5,5 +5,6 @@ kind: Kustomization
 namespace: nginx-tailscale
 components:
   - ../../../../components/common
+  - ../../../../components/flux-post-build-variables
 resources:
   - ./nginx-ingress.yaml

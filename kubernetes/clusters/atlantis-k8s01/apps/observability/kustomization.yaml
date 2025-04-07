@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: observability
 components:
   - ../../../../components/common
+  - ../../../../components/flux-post-build-variables
 resources:
   - ./grafana-operator.yaml
   - ./grafana-instance.yaml

@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: tailscale
 components:
   - ../../../../components/common
+  - ../../../../components/flux-post-build-variables
 resources:
   - ./tailscale-operator.yaml
   - ./tailscale-proxyclass.yaml

@@ -39,13 +39,13 @@ spec:
       retries: 3
   values:
     operatorConfig:
-      hostname: k8s-operator
+      hostname: ${CLUSTER_NAME:=k8s-operator}
       defaultTags:
-        - "tag:k8s-operator"
+        - "tag:${CLUSTER_NAME:=k8s-operator}"
     apiServerProxyConfig:
       mode: "true"
     ingressClass:
       enabled: true
     proxyConfig:
       defaultProxyClass: tailscale-tun
-      defaultTags: tag:k8s
+      defaultTags: "tag:${CLUSTER_NAME:=k8s}"

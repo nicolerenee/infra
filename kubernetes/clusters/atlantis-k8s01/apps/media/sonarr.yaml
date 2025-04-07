@@ -23,11 +23,6 @@ spec:
   targetNamespace: *namespace
   timeout: 5m
   wait: false
-  postBuild:
-    substituteFrom:
-      - kind: ConfigMap
-        name: cluster-info
-        optional: false
   patches:
     - target:
         kind: HelmRelease

@@ -5,5 +5,7 @@ kind: Kustomization
 namespace: cert-manager
 components:
   - ../../../../components/common
+  - ../../../../components/flux-post-build-variables
 resources:
   - ./cert-manager.yaml
+  - ./issuers.yaml

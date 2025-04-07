@@ -5,6 +5,8 @@ kind: Kustomization
 metadata:
   name: &app vm-k8s-stack
   namespace: &namespace observability
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
 spec:
   commonMetadata:
     labels:
@@ -23,8 +25,3 @@ spec:
   interval: 30s
   retryInterval: 1m
   timeout: 5m
-  postBuild:
-    substituteFrom:
-      - kind: ConfigMap
-        name: cluster-info
-        optional: false

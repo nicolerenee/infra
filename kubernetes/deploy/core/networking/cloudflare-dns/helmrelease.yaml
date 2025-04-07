@@ -56,8 +56,8 @@ spec:
       - name: CF_API_TOKEN
         valueFrom:
           secretKeyRef:
-            name: &secret cloudflare-dns-secret
-            key: api-token
+            name: &secret cloudflare-dns-token
+            key: api_token
     txtOwnerId: "${CLUSTER_NAME}"
     txtPrefix: k8s-
     policy: sync
