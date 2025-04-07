@@ -5,6 +5,8 @@ kind: Kustomization
 metadata:
   name: &app sabnzbd
   namespace: &namespace media
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
 spec:
   targetNamespace: *namespace
   commonMetadata:
@@ -27,11 +29,6 @@ spec:
   timeout: 5m
   prune: true
   wait: true
-  postBuild:
-    substituteFrom:
-      - kind: ConfigMap
-        name: cluster-info
-        optional: false
   patches:
     - target:
         kind: HelmRelease

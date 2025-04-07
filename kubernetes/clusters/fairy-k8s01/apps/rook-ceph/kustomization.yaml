@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: rook-ceph
 components:
   - ../../../../components/common
+  - ../../../../components/flux-post-build-variables
 resources:
   - ./rook-ceph.yaml
   - ./rook-ceph-cluster.yaml

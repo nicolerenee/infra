@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: actions-runner-system
 components:
   - ../../../../components/common
+  - ../../../../components/flux-post-build-variables
 resources:
   - ./actions-runner-controller.yaml
   - ./actions-infra-runner.yaml

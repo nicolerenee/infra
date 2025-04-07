@@ -19,3 +19,5 @@ spec:
   postBuild:
     substitute:
       CLUSTER_NAME: "fairy-k8s01"
+      CLUSTER_ROOT_DOMAIN: "freckle.systems"
+      CLUSTER_DOMAIN: "fairy.freckle.systems"

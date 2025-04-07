@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: flux-system
 components:
   - ../../../../components/common
+  - ../../../../components/flux-post-build-variables
 resources:
   - ./flux-instance.yaml
   - ./flux-operator.yaml

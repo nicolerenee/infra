@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: infra-info-cluster
+data:
+  CLUSTER_NAME: "${CLUSTER_NAME}"
+  CLUSTER_DOMAIN: "${CLUSTER_DOMAIN}"
+  CLUSTER_ROOT_DOMAIN: "${CLUSTER_ROOT_DOMAIN}"

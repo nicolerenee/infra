@@ -35,9 +35,9 @@ spec:
               PROWLARR__SERVER__PORT: &port 80
               PROWLARR__UPDATE__BRANCH: develop
               TZ: Etc/UTC
-            # envFrom:
-            #   - secretRef:
-            #       name: prowlarr-secrets
+            envFrom:
+              - secretRef:
+                  name: prowlarr
             ports:
               - containerPort: *port
                 name: http
@@ -90,7 +90,24 @@ spec:
         ports:
           app:
             port: *port
-
+    ingress:
+      app:
+        enabled: true
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-production
+        className: nginx-tailscale
+        hosts:
+          - host: prowlarr.${CLUSTER_DOMAIN}
+            paths:
+              - path: /
+                pathType: Prefix
+                service:
+                  name: prowlarr
+                  port: 80
+        tls:
+          - hosts:
+              - "*.${CLUSTER_DOMAIN}"
+            secretName: cluster-domain-tls
     persistence:
       config:
         enabled: true

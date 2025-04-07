@@ -33,7 +33,7 @@ spec:
               TZ: Etc/UTC
             envFrom:
               - secretRef:
-                  name: sabnzbd-secrets
+                  name: sabnzbd
             ports:
               - containerPort: *port
                 name: http

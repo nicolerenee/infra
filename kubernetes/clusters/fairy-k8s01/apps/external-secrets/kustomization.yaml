@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: external-secrets
 components:
   - ../../../../components/common
+  - ../../../../components/flux-post-build-variables
 resources:
   - ./external-secrets.yaml
   - ./onepassword-connect.yaml

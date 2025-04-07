@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: media
 components:
   - ../../../../components/common
+  - ../../../../components/flux-post-build-variables
 resources:
   - prowlarr.yaml
   - radarr.yaml

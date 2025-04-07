@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: system-upgrade
 components:
   - ../../../../components/common
+  - ../../../../components/flux-post-build-variables
 resources:
   - ./system-upgrade-controller.yaml
   - ./system-upgrade-controller-plans.yaml

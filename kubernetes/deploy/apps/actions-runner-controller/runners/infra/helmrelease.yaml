@@ -32,7 +32,7 @@ spec:
       retries: 3
   values:
     githubConfigUrl: https://github.com/nicolerenee/infra
-    githubConfigSecret: infra-runner-secret
+    githubConfigSecret: infra-runner
     minRunners: 1
     maxRunners: 3
     containerMode:
