@@ -5,7 +5,6 @@ kind: Kustomization
 metadata:
   name: &app prowlarr
   namespace: &namespace media
-
 spec:
   targetNamespace: *namespace
   commonMetadata:
@@ -15,7 +14,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./apps/media/prowlarr
+  path: ./kubernetes/deploy/apps/media/prowlarr
   dependsOn:
     - name: onepassword-store
       namespace: external-secrets
@@ -28,11 +27,31 @@ spec:
   timeout: 5m
   prune: true
   wait: true
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: cluster-info
+        optional: false
   patches:
     - target:
-        kind: Ingress
+        kind: HelmRelease
       patch: |-
         - op: add
-          path: /metadata/annotations
+          path: /spec/values/ingress
           value:
-            tailscale.com/tags: "tag:fairy-k8s01,tag:media-mgmt"
+            app:
+              enabled: true
+              annotations:
+                tailscale.com/tags: "tag:fairy-k8s01,tag:media-mgmt"
+              className: tailscale
+              hosts:
+                - host: prowlarr
+                  paths:
+                    - path: /
+                      pathType: Prefix
+                      service:
+                        name: prowlarr
+                        port: 80
+              tls:
+                - hosts:
+                    - prowlarr
