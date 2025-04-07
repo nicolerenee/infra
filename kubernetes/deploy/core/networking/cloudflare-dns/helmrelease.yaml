@@ -51,8 +51,8 @@ spec:
       - gateway-httproute
       - gateway-grpcroute
       - gateway-tlsroute
-      - gateway-tcproute
-      - gateway-udproute
+      # - gateway-tcproute
+      # - gateway-udproute
 
     provider:
       name: cloudflare
