@@ -8,6 +8,7 @@ components:
 resources:
   - prowlarr.yaml
   - radarr.yaml
+  - recyclarr.yaml
   - sabnzbd.yaml
   - sonarr.yaml
   - vault01-store01.yaml
