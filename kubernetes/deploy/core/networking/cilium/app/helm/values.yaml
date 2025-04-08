@@ -2,6 +2,42 @@
 ipam:
   mode: kubernetes
 
+loadBalancer:
+  algorithm: maglev
+nodePort:
+  enabled: false
+bpf:
+  masquerade: true
+cni:
+  exclusive: false
+
+# enable gateway api support
+gatewayAPI:
+  enabled: true
+
+# replace kube-proxy
+kubeProxyReplacement: true
+k8sServiceHost: localhost
+k8sServicePort: 7445
+
+# enable IPv6
+ipv6:
+  enabled: true
+
+## cilium can automatically kill and respawn pods upon ConfigMap updates or other resource changes
+rollOutCiliumPods: true
+operator:
+  rollOutPods: true
+
+# agent resource limits
+resources:
+  requests:
+    cpu: "100m"
+    memory: "512Mi"
+  limits:
+    cpu: "2"
+    memory: "6Gi"
+
 # required for talos
 securityContext:
   capabilities:
@@ -26,33 +62,6 @@ cgroup:
     enabled: false
   hostRoot: /sys/fs/cgroup
 
-# replace kube-proxy
-kubeProxyReplacement: true
-k8sServiceHost: localhost
-k8sServicePort: 7445
-
-# enable IPv6
-ipv6:
-  enabled: true
-
 # change required for tailscale operator (https://tailscale.com/kb/1236/kubernetes-operator#cilium-in-kube-proxy-replacement-mode)
 socketLB:
   hostNamespaceOnly: true
-
-## cilium can automatically kill and respawn pods upon ConfigMap updates or other resource changes
-rollOutCiliumPods: true
-operator:
-  rollOutPods: true
-
-# agent resource limits
-resources:
-  requests:
-    cpu: "100m"
-    memory: "512Mi"
-  limits:
-    cpu: "2"
-    memory: "6Gi"
-
-# enable gateway api support
-gatewayAPI:
-  enabled: true

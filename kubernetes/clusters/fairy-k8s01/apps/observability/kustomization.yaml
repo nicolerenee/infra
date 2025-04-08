@@ -8,7 +8,7 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - ./grafana-operator.yaml
-  - ./grafana-instance.yaml
+  - ./grafana.yaml
   - ./prometheus-operator-crds.yaml
   - ./victoria-logs.yaml
   - ./vm-operator-crds.yaml
