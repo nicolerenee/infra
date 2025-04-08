@@ -28,14 +28,6 @@ vmsingle:
       resources:
         requests:
           storage: 40Gi
-  ingress:
-    enabled: true
-    ingressClassName: tailscale
-    hosts:
-      - vm-${CLUSTER_NAME}
-    tls:
-      - hosts:
-          - vm-${CLUSTER_NAME}
 
 defaultDashboards:
   enabled: true
@@ -53,17 +45,7 @@ defaultDatasources:
 alertmanager:
   enabled: true
   spec:
-    externalURL: "https://alertmgr-${CLUSTER_NAME}.hummingbird-perch.ts.net"
-
-  # -- (object) Alertmanager ingress configuration
-  ingress:
-    enabled: true
-    ingressClassName: tailscale
-    hosts:
-      - alertmgr-${CLUSTER_NAME}
-    tls:
-      - hosts:
-          - alertmgr-${CLUSTER_NAME}
+    externalURL: "https://alertmanager.${CLUSTER_DOMAIN}"
 
 kubeControllerManager:
   enabled: true
