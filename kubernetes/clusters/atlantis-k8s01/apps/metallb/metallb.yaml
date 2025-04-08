@@ -10,7 +10,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   interval: 1h
-  path: ./kubernetes/deploy/core/networking/metallb
+  path: ./kubernetes/apps/networking/metallb
   prune: true
   retryInterval: 2m
   sourceRef:

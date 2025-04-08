@@ -15,7 +15,7 @@ spec:
     - name: rook-ceph-cluster
       namespace: rook-ceph
   interval: 1h
-  path: ./kubernetes/deploy/apps/media/radarr
+  path: ./kubernetes/apps/media/radarr
   prune: true
   retryInterval: 2m
   sourceRef:

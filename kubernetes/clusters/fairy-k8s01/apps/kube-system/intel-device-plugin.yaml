@@ -18,7 +18,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/deploy/core/devices/intel-device-plugin/operator
+  path: ./kubernetes/apps/devices/intel-device-plugin/operator
   interval: 30s
   retryInterval: 1m
   timeout: 5m
@@ -43,7 +43,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/deploy/core/devices/intel-device-plugin/gpu
+  path: ./kubernetes/apps/devices/intel-device-plugin/gpu
   interval: 30s
   retryInterval: 1m
   timeout: 5m

@@ -10,7 +10,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./kubernetes/deploy/core/observability/prometheus-operator-crds
+  path: ./kubernetes/apps/observability/prometheus-operator-crds
   sourceRef:
     kind: GitRepository
     name: flux-system

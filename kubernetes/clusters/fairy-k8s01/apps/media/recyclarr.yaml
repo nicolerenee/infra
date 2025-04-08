@@ -16,7 +16,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/deploy/apps/media/recyclarr
+  path: ./kubernetes/apps/media/recyclarr
   dependsOn:
     - name: onepassword-store
       namespace: external-secrets

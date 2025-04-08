@@ -10,7 +10,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   interval: 1h
-  path: ./kubernetes/deploy/core/devices/node-feature-discovery/controller
+  path: ./kubernetes/apps/devices/node-feature-discovery/controller
   prune: true
   retryInterval: 2m
   sourceRef:
@@ -34,7 +34,7 @@ spec:
   dependsOn:
     - name: node-feature-discovery
   interval: 1h
-  path: ./kubernetes/deploy/core/devices/node-feature-discovery/rules
+  path: ./kubernetes/apps/devices/node-feature-discovery/rules
   prune: true
   retryInterval: 2m
   sourceRef:

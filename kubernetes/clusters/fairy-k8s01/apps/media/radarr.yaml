@@ -16,7 +16,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/deploy/apps/media/radarr
+  path: ./kubernetes/apps/media/radarr
   dependsOn:
     - name: onepassword-store
       namespace: external-secrets

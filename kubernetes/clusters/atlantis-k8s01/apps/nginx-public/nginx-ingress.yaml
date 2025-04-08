@@ -10,7 +10,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   targetNamespace: *namespace
-  path: ./kubernetes/deploy/core/networking/nginx-public
+  path: ./kubernetes/apps/networking/nginx-public
   prune: true
   sourceRef:
     kind: GitRepository

@@ -13,7 +13,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./kubernetes/deploy/core/storage/rook-ceph/operator
+  path: ./kubernetes/apps/storage/rook-ceph/operator
   sourceRef:
     kind: GitRepository
     name: flux-system

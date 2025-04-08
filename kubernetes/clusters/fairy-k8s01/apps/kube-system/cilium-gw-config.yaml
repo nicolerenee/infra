@@ -10,7 +10,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   targetNamespace: *namespace
-  path: ./kubernetes/deploy/core/networking/cilium/gateway-config
+  path: ./kubernetes/apps/networking/cilium/gateway-config
   prune: true
   sourceRef:
     kind: GitRepository
