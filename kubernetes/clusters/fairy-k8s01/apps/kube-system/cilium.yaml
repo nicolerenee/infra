@@ -29,14 +29,8 @@ spec:
         - op: add
           path: /spec/values
           value:
-            bpf:
-              masquerade: true
             cni:
               exclusive: false
             devices: br0
-            loadBalancer:
-              algorithm: maglev
-            nodePort:
-              enabled: false
             operator:
               replicas: 1
