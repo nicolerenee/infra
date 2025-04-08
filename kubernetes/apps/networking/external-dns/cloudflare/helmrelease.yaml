@@ -3,7 +3,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: OCIRepository
 metadata:
-  name: cloudflare-dns
+  name: external-dns-cloudflare
 spec:
   interval: 5m
   layerSelector:
@@ -22,12 +22,12 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app cloudflare-dns
+  name: &app external-dns-cloudflare
 spec:
   interval: 30m
   chartRef:
     kind: OCIRepository
-    name: cloudflare-dns
+    name: external-dns-cloudflare
   dependsOn:
     - name: prometheus-operator-crds
       namespace: observability
@@ -65,7 +65,7 @@ spec:
       - name: CF_API_TOKEN
         valueFrom:
           secretKeyRef:
-            name: &secret cloudflare-dns-token
+            name: &secret external-dns-cloudflare-token
             key: api_token
     txtOwnerId: "${CLUSTER_NAME}"
     txtPrefix: k8s-

@@ -7,4 +7,4 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
-  - ./cloudflare-dns.yaml
+  - ./cloudflare.yaml
