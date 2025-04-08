@@ -1,0 +1,130 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app jellyfin
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      jellyfin:
+        replicas: 1
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/jellyfin/jellyfin
+              tag: 10.10.6@sha256:2aa67ae3eff5384ade5a5675a61ca487e9e1a510312289ac80076837ebeda8c8
+            env:
+              JELLYFIN_PublishedServerUrl: https://{{ .Release.Name }}.${CLUSTER_DOMAIN}
+              TZ: America/Chicago
+            ports:
+              - containerPort: 8096
+                name: http
+              - containerPort: 7359
+                protocol: UDP
+                name: discovery
+            probes:
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: http
+                  initialDelaySeconds: 0
+                  timeoutSeconds: 1
+                  # this gives us 150s (5*30) to start then liveness and readiness checks begin
+                  periodSeconds: 5
+                  failureThreshold: 30
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: http
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              limits:
+                cpu: 8
+                memory: 10Gi
+                gpu.intel.com/i915: 1
+              requests:
+                cpu: 1
+                memory: 1Gi
+                gpu.intel.com/i915: 1
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 3000
+        runAsGroup: 3000
+        fsGroup: 3000
+        fsGroupChangePolicy: OnRootMismatch
+        supplementalGroups:
+          - 44
+    service:
+      app:
+        controller: jellyfin
+        ports:
+          http:
+            port: 8096
+          discovery:
+            port: 7359
+            protocol: UDP
+    route:
+      ts-cluster:
+        hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
+        parentRefs:
+          - name: gw-tailscale
+            namespace: gateway
+            sectionName: https
+        rules:
+          - backendRefs:
+              - name: *app
+                port: 8096
+    persistence:
+      config:
+        enabled: true
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 100Gi
+        retain: true
+      cache:
+        enabled: true
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 100Gi
+        retain: true
+      tmp:
+        type: emptyDir
+        globalMounts:
+          - path: /tmp
+      transcode:
+        type: emptyDir
+        globalMounts:
+          - path: /transcode
+      media:
+        type: emptyDir
+        globalMounts:
+          - path: /media
