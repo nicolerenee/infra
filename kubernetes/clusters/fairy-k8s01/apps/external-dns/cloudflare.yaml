@@ -3,7 +3,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app cloudflare-dns
+  name: &app external-dns-cloudflare
   namespace: &namespace external-dns
   labels:
     infra.freckle.systems/post-build-variables: enabled
@@ -17,7 +17,7 @@ spec:
     - name: prometheus-operator-crds
       namespace: observability
   targetNamespace: *namespace
-  path: ./kubernetes/apps/networking/cloudflare-dns
+  path: ./kubernetes/apps/networking/external-dns/cloudflare
   prune: true
   sourceRef:
     kind: GitRepository
