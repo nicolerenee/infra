@@ -65,7 +65,7 @@ spec:
             type: prometheus
             uid: victoriametrics
             access: proxy
-            url: http://vmsingle-vm.observability.svc.cluster.local:8492
+            url: http://vmsingle-vm.observability.svc.cluster.local:8429
             isDefault: true
           - name: VictoriaLogs
             type: victoriametrics-logs-datasource
