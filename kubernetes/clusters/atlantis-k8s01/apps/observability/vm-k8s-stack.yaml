@@ -16,7 +16,7 @@ spec:
     - name: vm-operator-crds
     - name: grafana-operator
   targetNamespace: *namespace
-  path: ./kubernetes/deploy/core/observability/victoria-metrics/k8s-stack
+  path: ./kubernetes/apps/observability/victoria-metrics/k8s-stack
   prune: true
   sourceRef:
     kind: GitRepository

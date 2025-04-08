@@ -12,7 +12,7 @@ spec:
   dependsOn:
     - name: flux-operator
   targetNamespace: *namespace
-  path: ./kubernetes/deploy/core/flux/instance
+  path: ./kubernetes/apps/flux/instance
   prune: false
   sourceRef:
     kind: GitRepository

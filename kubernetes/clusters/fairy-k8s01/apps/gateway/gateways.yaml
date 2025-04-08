@@ -12,7 +12,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   targetNamespace: *namespace
-  path: ./kubernetes/deploy/core/networking/gateway
+  path: ./kubernetes/apps/networking/gateway
   prune: true
   sourceRef:
     kind: GitRepository

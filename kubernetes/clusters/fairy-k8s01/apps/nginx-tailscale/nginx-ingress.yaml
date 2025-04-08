@@ -13,7 +13,7 @@ spec:
     - name: tailscale-operator
       namespace: tailscale
   targetNamespace: *namespace
-  path: ./kubernetes/deploy/core/networking/nginx-tailscale
+  path: ./kubernetes/apps/networking/nginx-tailscale
   prune: true
   sourceRef:
     kind: GitRepository

@@ -12,7 +12,7 @@ spec:
   dependsOn:
     - name: onepassword-store
       namespace: external-secrets
-  path: ./kubernetes/deploy/apps/golink
+  path: ./kubernetes/apps/golink
   targetNamespace: *namespace
   sourceRef:
     kind: GitRepository

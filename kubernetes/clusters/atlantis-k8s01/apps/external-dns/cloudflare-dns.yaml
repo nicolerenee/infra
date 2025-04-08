@@ -17,7 +17,7 @@ spec:
     - name: prometheus-operator-crds
       namespace: observability
   targetNamespace: *namespace
-  path: ./kubernetes/deploy/core/networking/cloudflare-dns
+  path: ./kubernetes/apps/networking/cloudflare-dns
   prune: true
   sourceRef:
     kind: GitRepository

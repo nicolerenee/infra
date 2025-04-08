@@ -12,7 +12,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./kubernetes/deploy/core/storage/rook-ceph/cluster
+  path: ./kubernetes/apps/storage/rook-ceph/cluster
   sourceRef:
     kind: GitRepository
     name: flux-system

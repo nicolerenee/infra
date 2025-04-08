@@ -14,7 +14,7 @@ spec:
   dependsOn:
     - name: grafana-operator
   targetNamespace: *namespace
-  path: ./kubernetes/deploy/core/observability/grafana/instance
+  path: ./kubernetes/apps/observability/grafana/instance
   prune: true
   sourceRef:
     kind: GitRepository

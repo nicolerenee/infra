@@ -14,7 +14,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/deploy/core/devices/generic-device-plugin
+  path: ./kubernetes/apps/devices/generic-device-plugin
   interval: 30s
   retryInterval: 1m
   timeout: 5m
