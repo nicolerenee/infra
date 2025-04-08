@@ -28,4 +28,4 @@ spec:
         kind: Grafana
       patch: |
         - op: remove
-          path: /spec/values/ingress
+          path: /spec/ingress
