@@ -63,6 +63,8 @@ spec:
               - mountPath: /var/run/secrets/talos.dev
                 name: talos
                 readOnly: true
+        securityContext:
+          fsGroup: 1001
         serviceAccountName: *name
         volumes:
           - name: talos
