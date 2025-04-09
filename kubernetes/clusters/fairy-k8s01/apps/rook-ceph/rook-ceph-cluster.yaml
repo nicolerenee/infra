@@ -42,3 +42,9 @@ spec:
         - op: add
           path: /spec/values/cephBlockPools/0/spec/replicated/requireSafeReplicaSize
           value: false
+        - op: add
+          path: /spec/values/cephFileSystems
+          value: []
+        - op: add
+          path: /spec/values/cephObjectStores
+          value: []
