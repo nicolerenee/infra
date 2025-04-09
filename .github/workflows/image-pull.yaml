@@ -51,7 +51,7 @@ jobs:
     uses: ./.github/workflows/image-pull-extract-pull.yaml
     with:
       cluster: ${{ matrix.cluster }}
-      runner: ubuntu-latest
+      runner: ${{ matrix.cluster }}-infra-runner
 
   success:
     if: ${{ !cancelled() }}

@@ -2,10 +2,9 @@
 # yaml-language-server: $schema=https://json.schemastore.org/kustomization
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: cert-manager
+namespace: spegel
 components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
-  - ./cert-manager.yaml
-  - ./issuers.yaml
+  - ./spegel.yaml
