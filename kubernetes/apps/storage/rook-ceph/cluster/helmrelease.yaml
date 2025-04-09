@@ -42,6 +42,11 @@ spec:
     toolbox:
       enabled: true
     cephClusterSpec:
+      cephConfig:
+        global: # below values must be a string (quote bools and ints)
+          bdev_enable_discard: "true"
+          bdev_async_discard_threads: "1"
+          osd_class_update_on_start: "false"
       storage:
         encryptedDevice: true
     # default values, remove once I don't need a single node cluster
