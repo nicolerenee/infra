@@ -1,0 +1,64 @@
+# Deployed manually on atlantis-k8s01, still needs to be taken over by flux
+# want a better database solution first though
+#
+# install/upgrade:
+#   helm upgrade --install netbox --devel oci://ghcr.io/netbox-community/netbox-chart/netbox --namespace netbox -f values.yaml
+#
+#
+# Pulled: ghcr.io/netbox-community/netbox-chart/netbox:5.0.59
+# Digest: sha256:ff941efefd081243aaab6a7bc12854cd9742ff1bf42b7a4c1dbc4d817376098e
+
+# superuser:
+# configure to generate password via external secrets and then use the existing file
+
+postgresql:
+  image:
+    tag: 16.1.0-debian-11-r25
+
+# Disable local persistence and use ceph object store
+persistence:
+  enabled: false
+
+storageBackend: storages.backends.s3boto3.S3Boto3Storage
+# Configuration for the storage backend can be provided using storageConfig.
+# Note these values are not stored securely. If the configuration must be
+# setup in a more secure way, a propor Secret can be used with extraEnvVarsSecret.
+storageConfig:
+  # AWS_ACCESS_KEY_ID: 'Key ID'
+  # AWS_SECRET_ACCESS_KEY: 'Secret'
+  AWS_STORAGE_BUCKET_NAME: netbox-10a4dc98-8e84-474b-bdc6-38182c5e0d84
+  AWS_S3_ENDPOINT_URL: http://rook-ceph-rgw-ceph-objectstore.rook-ceph.svc:80
+  # AWS_S3_REGION_NAME: atlantis-k8s01
+
+extraEnvVarsSecret: netbox-bucket
+
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-frecklefamily"
+  className: "nginx-tailscale"
+  hosts:
+    - host: netbox.freckle.systems
+      paths:
+        - /
+  tls:
+    - secretName: netbox-tls
+      hosts:
+        - netbox.freckle.systems
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 3
+    memory: 1024Mi
+
+worker:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 3
+      memory: 1024Mi

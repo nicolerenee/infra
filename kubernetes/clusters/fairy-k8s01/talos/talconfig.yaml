@@ -89,6 +89,7 @@ controlPlane:
           kubernetesTalosAPIAccess:
             enabled: true
             allowedRoles:
+              - os:reader
               - os:admin
             allowedKubernetesNamespaces:
               - actions-runner-system
@@ -97,6 +98,22 @@ controlPlane:
     # Machine patches to apply to all nodes
     - &machinePatches |
       machine:
+        features:
+          # Configures host DNS caching resolver.
+          hostDNS:
+            enabled: true
+            # Cilium update "broke" this so disabling it
+            # * https://github.com/cilium/cilium/issues/35153
+            # * https://github.com/siderolabs/talos/pull/9200
+            forwardKubeDNSToHost: false
+            resolveMemberNames: true
+        # Configure containerd for spegel
+        files:
+          - op: create
+            path: /etc/cri/conf.d/20-customization.part
+            content: |
+              [plugins."io.containerd.cri.v1.images"]
+                discard_unpacked_layers = false
         install:
           bootloader: true
           wipe: true
@@ -112,8 +129,20 @@ controlPlane:
             validSubnets:
             - 192.168.227.0/24
             - "fd80:0383:1a38::/64"
-          extraArgs:
-            allowed-unsafe-sysctls: net.ipv6.conf.net1.accept_ra_rt_info_max_plen
+          extraArgs: {}
+          extraConfig:
+            # Let IPv6 RAs through on 'net1' for thread announcements getting to HA additional NIC
+            allowedUnsafeSysctls:
+              - net.ipv6.conf.net1.accept_ra_rt_info_max_plen
+            # Make image cleanup more aggressive
+            imageMaximumGCAge: 168h # One week
+            imageGCHighThresholdPercent: 50 # Default is 85%
+            imageGCLowThresholdPercent: 20  # Default is 80%
+            # Equivalent of `rotate-server-certificates` arg, for one less thing
+            serverTLSBootstrap: true
+        time:
+          servers:
+          - time.cloudflare.com # leave it as cloudflare but the router will hijack this and respond
 
 worker:
   patches:

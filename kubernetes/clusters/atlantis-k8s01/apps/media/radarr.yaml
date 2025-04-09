@@ -29,31 +29,6 @@ spec:
     - target:
         kind: HelmRelease
       patch: |-
-        - op: remove
-          path: /spec/values/route
-
-        - op: add
-          path: /spec/values/ingress
-          value:
-            app:
-              enabled: true
-              className: nginx-tailscale
-              annotations:
-                cert-manager.io/cluster-issuer: letsencrypt-frecklefamily
-              hosts:
-                - host: radarr.freckle.vision
-                  paths:
-                    - path: /
-                      pathType: Prefix
-                      service:
-                        name: radarr
-                        port: 80
-              tls:
-                - hosts:
-                    - freckle.vision
-                    - '*.freckle.vision'
-                  secretName: freckle-vision-tls
-
         - op: replace
           path: /spec/values/persistence/config/size
           value: 100Gi

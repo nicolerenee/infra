@@ -84,8 +84,7 @@ jobs:
     if: ${{ needs.diff.outputs.images != '[]' }}
     needs: diff
     name: Image Pull - Pull Images
-    # runs-on: home-ops-runner
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     strategy:
       matrix:
         image: ${{ fromJSON(needs.diff.outputs.images) }}
@@ -102,11 +101,8 @@ jobs:
       #         gh attestation verify --owner home-operations oci://${{ matrix.image }} ;;
       #     esac
 
-      # - name: Install talosctl
-      #   run: curl -fsSL https://talos.dev/install | sh
+      - name: Install talosctl
+        run: curl -fsSL https://talos.dev/install | sh
 
-      # - name: Pull Image
-      #   run: talosctl --nodes $NODE image pull ${{ matrix.image }}
-
-      - name: pull image
-        run: docker pull ${{ matrix.image }}
+      - name: Pull Image
+        run: talosctl --nodes $NODE image pull ${{ matrix.image }}
