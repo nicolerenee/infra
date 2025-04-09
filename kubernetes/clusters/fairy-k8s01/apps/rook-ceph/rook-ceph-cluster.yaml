@@ -29,11 +29,12 @@ spec:
         name: rook-ceph-cluster
       patch: |-
         - op: add
-          path: /spec/values/cephClusterSpec
+          path: /spec/values/cephClusterSpec/mgr
           value:
-            mgr:
-              count: 1
-            mon:
+            count: 1
+        - op: add
+          path: /spec/values/cephClusterSpec/mon
+          value:
               count: 1
         - op: replace
           path: /spec/values/cephBlockPools/0/spec/replicated/size
