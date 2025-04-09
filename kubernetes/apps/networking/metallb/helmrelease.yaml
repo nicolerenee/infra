@@ -30,3 +30,10 @@ spec:
     remediation:
       strategy: rollback
       retries: 3
+  values:
+    prometheus:
+      rbacPrometheus: false
+      serviceMonitor:
+        enabled: true
+      prometheusRule:
+        enabled: true

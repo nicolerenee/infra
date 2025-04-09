@@ -38,10 +38,9 @@ spec:
   values:
     monitoring:
       enabled: true
+      createPrometheusRules: true
     toolbox:
       enabled: true
-    ingress:
-      dashboard: {}
     cephClusterSpec:
       storage:
         encryptedDevice: true

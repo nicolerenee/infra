@@ -34,6 +34,7 @@ spec:
     fullnameOverride: reloader
     reloader:
       enableHA: true
+      enableMetricsByNamespace: true
       deployment:
         replicas: 1
       readOnlyRootFileSystem: true
