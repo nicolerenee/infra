@@ -26,10 +26,3 @@ spec:
   targetNamespace: *namespace
   timeout: 5m
   wait: false
-  patches:
-    - target:
-        kind: HelmRelease
-      patch: |-
-        - op: add
-          path: /spec/values/runnerScaleSetName
-          value: atlantis-k8s01-infra-runner

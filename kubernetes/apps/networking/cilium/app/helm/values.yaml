@@ -8,12 +8,15 @@ nodePort:
   enabled: false
 bpf:
   masquerade: true
+  #TODO: update talos config and remove this
+  hostLegacyRouting: true
 cni:
   exclusive: false
 
 # enable gateway api support
 gatewayAPI:
   enabled: true
+  enableAlpn: true
 
 # replace kube-proxy
 kubeProxyReplacement: true
@@ -26,8 +29,29 @@ ipv6:
 
 ## cilium can automatically kill and respawn pods upon ConfigMap updates or other resource changes
 rollOutCiliumPods: true
-operator:
+envoy:
   rollOutPods: true
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+operator:
+  dashboards:
+    enabled: true
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  rollOutPods: true
+
+dashboards:
+  enabled: true
+prometheus:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    trustCRDsExist: true
 
 # agent resource limits
 resources:
