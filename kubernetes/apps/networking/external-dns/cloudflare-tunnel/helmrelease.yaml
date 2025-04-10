@@ -3,7 +3,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: OCIRepository
 metadata:
-  name: external-dns-cloudflare
+  name: external-dns-cloudflare-tunnel
 spec:
   interval: 5m
   layerSelector:
@@ -22,12 +22,12 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app external-dns-cloudflare
+  name: &app external-dns-cloudflare-tunnel
 spec:
   interval: 30m
   chartRef:
     kind: OCIRepository
-    name: external-dns-cloudflare
+    name: external-dns-cloudflare-tunnel
   dependsOn:
     - name: prometheus-operator-crds
       namespace: observability
@@ -46,16 +46,12 @@ spec:
   values:
     fullnameOverride: *app
     extraArgs:
-      - --gateway-name=gw-tailscale
-      - --gateway-name=gw-media-mgmt
+      - --cloudflare-proxied
+      - --gateway-name=gw-cf-tunnel
     sources:
-      - service
-      - ingress
+      - crd
       - gateway-httproute
-      - gateway-grpcroute
       - gateway-tlsroute
-      # - gateway-tcproute
-      # - gateway-udproute
 
     provider:
       name: cloudflare
@@ -63,15 +59,14 @@ spec:
       - freckle.family
       - freckle.vision
       - freckle.systems
-      - warehouse43.com
     env:
       - name: CF_API_TOKEN
         valueFrom:
           secretKeyRef:
             name: &secret external-dns-cloudflare-token
             key: api_token
-    txtOwnerId: "${CLUSTER_NAME}"
-    txtPrefix: k8s-
+    txtOwnerId: "${CLUSTER_NAME}-cftun"
+    txtPrefix: k8s-cftun.
     policy: sync
     securityContext:
       allowPrivilegeEscalation: false
