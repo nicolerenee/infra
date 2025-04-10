@@ -8,6 +8,7 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - ./cilium.yaml
+  - ./cilium-gw-config.yaml
   - ./generic-device-plugin.yaml
   - ./intel-device-plugin.yaml
   - ./multus.yaml
