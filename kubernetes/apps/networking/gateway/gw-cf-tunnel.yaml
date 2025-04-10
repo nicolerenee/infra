@@ -3,9 +3,12 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: gw-cf-tunnel
+  annotations:
+    external-dns.alpha.kubernetes.io/target: cf-tunnel.${CLUSTER_EXTERNAL_DOMAIN}
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
   labels:
     gateway.freckle.systems/dns: cloudflare-tunnel
+  name: gw-cf-tunnel
 
 spec:
   gatewayClassName: cilium-clusterip
