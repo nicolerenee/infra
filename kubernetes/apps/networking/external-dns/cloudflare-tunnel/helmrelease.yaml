@@ -63,7 +63,7 @@ spec:
       - name: CF_API_TOKEN
         valueFrom:
           secretKeyRef:
-            name: &secret external-dns-cloudflare-token
+            name: &secret external-dns-cloudflare-tunnel-token
             key: api_token
     txtOwnerId: "${CLUSTER_NAME}-cftun"
     txtPrefix: k8s-cftun.
