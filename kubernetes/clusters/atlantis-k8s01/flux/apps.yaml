@@ -21,3 +21,4 @@ spec:
       CLUSTER_NAME: "atlantis-k8s01"
       CLUSTER_DOMAIN: "atlantis.freckle.systems"
       CLUSTER_ROOT_DOMAIN: "freckle.systems"
+      CLUSTER_EXTERNAL_DOMAIN: "atlantis-ext.freckle.systems"

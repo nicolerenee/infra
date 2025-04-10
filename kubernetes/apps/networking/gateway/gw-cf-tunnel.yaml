@@ -6,23 +6,23 @@ metadata:
   name: gw-cf-tunnel
 
 spec:
-  gatewayClassName: cilium
+  gatewayClassName: cilium-clusterip
   listeners:
     - name: http
       protocol: HTTP
       port: 80
-      hostname: "*.${CLUSTER_DOMAIN}"
+      hostname: "*.${CLUSTER_EXTERNAL_DOMAIN}"
       allowedRoutes:
         namespaces:
           from: Same
     - name: https
       protocol: HTTPS
       port: 443
-      hostname: "*.${CLUSTER_DOMAIN}"
+      hostname: "*.${CLUSTER_EXTERNAL_DOMAIN}"
       allowedRoutes:
         namespaces:
           from: All
       tls:
         certificateRefs:
           - kind: Secret
-            name: cluster-domain-tls
+            name: cluster-external-domain-tls
