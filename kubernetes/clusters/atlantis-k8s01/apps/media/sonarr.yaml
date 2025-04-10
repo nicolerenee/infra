@@ -5,6 +5,8 @@ kind: Kustomization
 metadata:
   name: &app sonarr
   namespace: &namespace media
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
 spec:
   commonMetadata:
     labels:
