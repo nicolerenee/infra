@@ -1,6 +1,6 @@
 ---
 originRequest:
-  originServerName: cloudflare-tunnel.{$CLUSTER_DOMAIN}
+  originServerName: cloudflare-tunnel.${CLUSTER_DOMAIN}
 
 ingress:
   - service: &svc https://cilium-gateway-gw-cf-tunnel.gateways.svc.cluster.local
