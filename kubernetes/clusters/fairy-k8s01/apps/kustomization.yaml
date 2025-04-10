@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - ./actions-runner-system
   - ./cert-manager
+  - ./cloudflare-tunnel
   - ./external-dns
   - ./external-secrets
   - ./flux-system
