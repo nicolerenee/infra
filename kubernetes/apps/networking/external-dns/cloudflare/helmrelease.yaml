@@ -46,8 +46,7 @@ spec:
   values:
     fullnameOverride: *app
     extraArgs:
-      - --gateway-name=gw-tailscale
-      - --gateway-name=gw-media-mgmt
+      - --gateway-label-filter=gateway.freckle.systems/dns==cloudflare
     sources:
       - service
       - ingress

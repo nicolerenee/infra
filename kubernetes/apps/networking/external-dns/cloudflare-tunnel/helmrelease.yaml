@@ -48,6 +48,7 @@ spec:
     extraArgs:
       - --cloudflare-proxied
       - --gateway-name=gw-cf-tunnel
+      - --gateway-label-filter=gateway.freckle.systems/dns==cloudflare-tunnel
     sources:
       - crd
       - gateway-httproute
