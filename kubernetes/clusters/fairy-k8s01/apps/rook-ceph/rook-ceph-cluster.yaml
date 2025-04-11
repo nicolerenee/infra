@@ -29,9 +29,8 @@ spec:
         name: rook-ceph-cluster
       patch: |-
         - op: add
-          path: /spec/values/cephClusterSpec/mgr
-          value:
-            count: 1
+          path: /spec/values/cephClusterSpec/mgr/count
+          value: 1
         - op: add
           path: /spec/values/cephClusterSpec/mon
           value:

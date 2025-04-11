@@ -43,10 +43,23 @@ spec:
       enabled: true
     cephClusterSpec:
       cephConfig:
-        global: # below values must be a string (quote bools and ints)
-          bdev_enable_discard: "true"
-          bdev_async_discard_threads: "1"
-          osd_class_update_on_start: "false"
+        global:
+          bdev_enable_discard: "true" # quote
+          bdev_async_discard_threads: "1" # quote
+          osd_class_update_on_start: "false" # quote
+          device_failure_prediction_mode: local # requires mgr module
+      dashboard:
+        prometheusEndpoint: http://vmsingle-vm.observability.svc.cluster.local:8429
+      mgr:
+        modules:
+          - name: diskprediction_local
+            enabled: true
+          - name: insights
+            enabled: true
+          - name: pg_autoscaler
+            enabled: true
+          - name: rook
+            enabled: true
       storage:
         encryptedDevice: true
     # default values, remove once I don't need a single node cluster
@@ -65,7 +78,7 @@ spec:
           reclaimPolicy: Delete
           allowVolumeExpansion: true
           volumeBindingMode: "Immediate"
-          mountOptions: []
+          mountOptions: ["discard"]
           allowedTopologies: []
           parameters:
             imageFormat: "2"

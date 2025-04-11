@@ -36,5 +36,8 @@ spec:
     - name: prometheus-operator-crds
       namespace: observability
   values:
+    csi:
+      serviceMonitor:
+        enabled: true
     monitoring:
       enabled: true
