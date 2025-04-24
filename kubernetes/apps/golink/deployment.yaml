@@ -8,7 +8,7 @@ spec:
       securityContext:
           fsGroup: 1000
       containers:
-        - image: ghcr.io/tailscale/golink:main@sha256:a5a03676d3b7d7ab6f612e41aa5e2c35ef9a2e6b684985c0198c21873e4e6360
+        - image: ghcr.io/tailscale/golink:main@sha256:cf96d3c85bc9ea3d54cdbccd3785134c07b5dab9fdc3c6c181b288daf42e0f44
           name: golink
           command:
             - "/golink"
