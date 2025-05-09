@@ -22,28 +22,3 @@ spec:
   timeout: 30m
   prune: false
   wait: true
-
-  patches:
-    - target:
-        kind: HelmRelease
-        name: rook-ceph-cluster
-      patch: |-
-        - op: add
-          path: /spec/values/cephClusterSpec/mgr/count
-          value: 1
-        - op: add
-          path: /spec/values/cephClusterSpec/mon
-          value:
-              count: 1
-        - op: replace
-          path: /spec/values/cephBlockPools/0/spec/replicated/size
-          value: 1
-        - op: add
-          path: /spec/values/cephBlockPools/0/spec/replicated/requireSafeReplicaSize
-          value: false
-        - op: add
-          path: /spec/values/cephFileSystems
-          value: []
-        - op: add
-          path: /spec/values/cephObjectStores
-          value: []
