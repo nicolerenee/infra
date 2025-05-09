@@ -56,12 +56,3 @@ spec:
   valuesFrom:
     - kind: ConfigMap
       name: cilium-values
-  values:
-    # Set images manually since a new pre release chart didn't come out
-    image:
-      # renovate: datasource=github-releases depName=cilium/cilium
-      tag: v1.18.0-pre.1
-    operator:
-      image:
-        # renovate: datasource=github-releases depName=cilium/cilium
-        tag: v1.18.0-pre.1
