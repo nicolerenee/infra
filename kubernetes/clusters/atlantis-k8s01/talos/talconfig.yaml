@@ -29,6 +29,17 @@ nodes:
           officialExtensions:
             - siderolabs/i915
             - siderolabs/intel-ucode
+            - siderolabs/lldpd
+    extensionServices:
+      - &compute01-lldp-extension
+        name: lldpd
+        configFiles:
+          - mountPath: /usr/local/etc/lldpd/lldpd.conf
+            content: |
+              configure lldp portidsubtype ifname
+              unconfigure lldp management-addresses-advertisements
+              unconfigure lldp capabilities-advertisements
+              configure system description "Talos Node"
 
     networkInterfaces:
       - &compute01-bond0
@@ -66,6 +77,10 @@ nodes:
         addresses:
           - 172.26.3.6/24
           - 2607:fc88:200:403:202:3333::802/64
+    machineSpec: *compute01-machineSpec
+    schematic: *compute01-schematic
+    extensionServices:
+      - <<: *compute01-lldp-extension
 
   - hostname: atlantis-compute03
     ipAddress: 172.26.3.7
@@ -76,6 +91,10 @@ nodes:
         addresses:
           - 172.26.3.7/24
           - 2607:fc88:200:403:202:3333::803/64
+    machineSpec: *compute01-machineSpec
+    schematic: *compute01-schematic
+    extensionServices:
+      - <<: *compute01-lldp-extension
 
   - hostname: atlantis-compute04
     ipAddress: 172.26.3.8
@@ -86,6 +105,10 @@ nodes:
         addresses:
           - 172.26.3.8/24
           - 2607:fc88:200:403:202:3333::804/64
+    machineSpec: *compute01-machineSpec
+    schematic: *compute01-schematic
+    extensionServices:
+      - <<: *compute01-lldp-extension
 
   - hostname: atlantis-compute05
     ipAddress: 172.26.3.9
@@ -96,6 +119,10 @@ nodes:
         addresses:
           - 172.26.3.9/24
           - 2607:fc88:200:403:202:3333::805/64
+    machineSpec: *compute01-machineSpec
+    schematic: *compute01-schematic
+    extensionServices:
+      - <<: *compute01-lldp-extension
 
 controlPlane:
   nodeLabels: {}

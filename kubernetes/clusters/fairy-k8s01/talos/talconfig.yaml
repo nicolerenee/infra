@@ -20,20 +20,32 @@ nodes:
     controlPlane: true
     installDisk: /dev/sda
 
-    machineSpec:
+    machineSpec: &compute01-machineSpec
       mode: metal
       arch: amd64
       useUKI: true
       secureboot: true
-    schematic:
+    schematic: &compute01-schematic
       customization:
         systemExtensions:
           officialExtensions:
             - siderolabs/i915
             - siderolabs/intel-ucode
+            - siderolabs/lldpd
+    extensionServices:
+      - &compute01-lldp-extension
+        name: lldpd
+        configFiles:
+          - mountPath: /usr/local/etc/lldpd/lldpd.conf
+            content: |
+              configure lldp portidsubtype ifname
+              unconfigure lldp management-addresses-advertisements
+              unconfigure lldp capabilities-advertisements
+              configure system description "Talos Node"
 
     networkInterfaces:
-      - interface: br0
+      - &compute01-br0
+        interface: br0
         bridge:
           stp:
             enabled: true
@@ -48,6 +60,35 @@ nodes:
             metric: 1024
         vip:
           ip: 192.168.227.5
+
+  - hostname: fairy-compute02
+    ipAddress: 192.168.227.7
+    controlPlane: true
+    installDisk: /dev/sda
+    networkInterfaces:
+      - <<: *compute01-br0
+        addresses:
+          - 192.168.227.7/24
+          - fd80:0383:1a38::7/64
+    machineSpec: *compute01-machineSpec
+    schematic: *compute01-schematic
+    extensionServices:
+      - <<: *compute01-lldp-extension
+
+  - hostname: fairy-compute03
+    ipAddress: 192.168.227.8
+    controlPlane: true
+    installDisk: /dev/sda
+    networkInterfaces:
+      - <<: *compute01-br0
+        addresses:
+          - 192.168.227.8/24
+          - fd80:0383:1a38::8/64
+    machineSpec: *compute01-machineSpec
+    schematic: *compute01-schematic
+    extensionServices:
+      - <<: *compute01-lldp-extension
+
 controlPlane:
   nodeLabels: {}
   patches:
