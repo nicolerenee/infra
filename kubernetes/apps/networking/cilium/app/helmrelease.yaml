@@ -42,7 +42,7 @@ spec:
   chart:
     spec:
       chart: cilium
-      version: 1.18.0-pre.0
+      version: 1.18.0-pre.2
       sourceRef:
         kind: HelmRepository
         name: cilium
@@ -56,12 +56,4 @@ spec:
   valuesFrom:
     - kind: ConfigMap
       name: cilium-values
-  values:
-    # Set images manually since a new pre release chart didn't come out
-    image:
-      # renovate: datasource=github-releases depName=cilium/cilium
-      tag: v1.18.0-pre.1
-    operator:
-      image:
-        # renovate: datasource=github-releases depName=cilium/cilium
-        tag: v1.18.0-pre.1
+  values: {}
