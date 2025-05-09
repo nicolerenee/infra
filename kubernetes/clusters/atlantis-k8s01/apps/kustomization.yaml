@@ -9,7 +9,6 @@ resources:
   - ./gateway
   - ./kube-system
   - ./media
-  - ./metallb
   - ./nginx-public
   - ./nginx-tailscale
   - ./observability
