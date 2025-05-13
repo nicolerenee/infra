@@ -38,7 +38,7 @@ spec:
                 custom: true
                 spec:
                   httpGet:
-                    path: /health
+                    path: /web/index.html
                     port: http
                   initialDelaySeconds: 0
                   timeoutSeconds: 1
@@ -50,7 +50,7 @@ spec:
                 custom: true
                 spec:
                   httpGet:
-                    path: /health
+                    path: /web/index.html
                     port: http
                   initialDelaySeconds: 0
                   periodSeconds: 10
