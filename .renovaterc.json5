@@ -1,33 +1,45 @@
 {
-  $schema: "https://docs.renovatebot.com/renovate-schema.json",
-  reviewers: ["@nicolerenee"],
-  extends: [
-    "config:recommended",
-    "docker:enableMajor",
-    "helpers:pinGitHubActionDigests",
-    "github>nicolerenee/infra//.renovate/autoMerge.json5",
-    "github>nicolerenee/infra//.renovate/customManagers.json5",
-    "github>nicolerenee/infra//.renovate/groups.json5",
-    "github>nicolerenee/infra//.renovate/labels.json5",
-    "github>nicolerenee/infra//.renovate/semanticCommits.json5",
-    ":automergeBranch",
-    ":disableRateLimiting",
-    ":dependencyDashboard",
-    ":semanticCommits",
-    ":timezone(America/Chicago)",
-    // the ordering for packageRules matter, this needs the highest priority
-    "github>nicolerenee/infra//.renovate/infraPackages.json5",
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  reviewers: [
+    '@nicolerenee',
   ],
-  rebaseWhen: "behind-base-branch",
-  dependencyDashboardTitle: "Renovate Dashboard 🤖",
+  extends: [
+    'config:recommended',
+    'docker:enableMajor',
+    'helpers:pinGitHubActionDigests',
+    'github>nicolerenee/infra//.renovate/autoMerge.json5',
+    'github>nicolerenee/infra//.renovate/customManagers.json5',
+    'github>nicolerenee/infra//.renovate/groups.json5',
+    'github>nicolerenee/infra//.renovate/labels.json5',
+    'github>nicolerenee/infra//.renovate/semanticCommits.json5',
+    ':automergeBranch',
+    ':disableRateLimiting',
+    ':dependencyDashboard',
+    ':semanticCommits',
+    ':timezone(America/Chicago)',
+    'github>nicolerenee/infra//.renovate/infraPackages.json5',
+  ],
+  rebaseWhen: 'behind-base-branch',
+  dependencyDashboardTitle: 'Renovate Dashboard 🤖',
   flux: {
-    fileMatch: ["(^|/)apps/.+\\.ya?ml$", "(^|/)kubernetes/.+\\.ya?ml$"],
+    managerFilePatterns: [
+      '/(^|/)apps/.+\\.ya?ml$/',
+      '/(^|/)kubernetes/.+\\.ya?ml$/',
+    ],
   },
-  "helm-values": {
-    fileMatch: ["(^|/)apps/.+\\.ya?ml$", "(^|/)kubernetes/.+\\.ya?ml$"],
+  'helm-values': {
+    managerFilePatterns: [
+      '/(^|/)apps/.+\\.ya?ml$/',
+      '/(^|/)kubernetes/.+\\.ya?ml$/',
+    ],
   },
   kubernetes: {
-    fileMatch: ["(^|/)apps/.+\\.ya?ml$", "(^|/)kubernetes/.+\\.ya?ml$"],
-    ignorePaths: ["kubernetes/**/flux-system/**"],
+    managerFilePatterns: [
+      '/(^|/)apps/.+\\.ya?ml$/',
+      '/(^|/)kubernetes/.+\\.ya?ml$/',
+    ],
+    ignorePaths: [
+      'kubernetes/**/flux-system/**',
+    ],
   },
 }
