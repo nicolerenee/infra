@@ -8,4 +8,6 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - ./radarr.yaml
+  - ./recyclarr.yaml
   - ./sonarr.yaml
+  - ./sonarr-anime.yaml

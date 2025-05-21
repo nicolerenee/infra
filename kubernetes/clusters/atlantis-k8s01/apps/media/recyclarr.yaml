@@ -1,0 +1,44 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app recyclarr
+  namespace: &namespace media
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/clusters/atlantis-k8s01/apps/media/recyclarr
+  dependsOn:
+    - name: onepassword-store
+      namespace: external-secrets
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true
+  patches:
+    - target:
+        kind: ExternalSecret
+      patch: |-
+        - op: add
+          path: /spec/target/template/data/SONARR_ANIME_API_KEY
+          value: "{{ .sonarr_anime_api_key }}"
+
+        - op: add
+          path: /spec/dataFrom/0
+          value:
+            extract:
+              key: sonarr-anime-${CLUSTER_NAME}
+            rewrite:
+              - regexp:
+                  source: "(.*)"
+                  target: "sonarr_anime_$1"

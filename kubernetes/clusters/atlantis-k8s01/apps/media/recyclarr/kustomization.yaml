@@ -1,0 +1,15 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+configMapGenerator:
+  - name: recyclarr-configmap
+    behavior: replace
+    files:
+      - recyclarr.yml=./config/recyclarr.yml
+generatorOptions:
+  disableNameSuffixHash: true
+
+resources:
+  - ../../../../../apps/media/recyclarr
