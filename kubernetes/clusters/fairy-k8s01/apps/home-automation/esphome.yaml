@@ -28,7 +28,7 @@ spec:
         kind: HelmRelease
       patch: |-
         - op: add
-          path: /spec/values/controllers/scrypted/pod/annotations/k8s.v1.cni.cncf.io~1networks
+          path: /spec/values/controllers/esphome/pod/annotations/k8s.v1.cni.cncf.io~1networks
           value:
             [{
               "name":"multus-iot",
