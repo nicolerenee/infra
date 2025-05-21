@@ -5,6 +5,8 @@ kind: Kustomization
 metadata:
   name: &app zigbee
   namespace: &namespace home-automation
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
 spec:
   targetNamespace: *namespace
   commonMetadata:
