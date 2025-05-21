@@ -36,7 +36,7 @@ spec:
 
         - op: add
           path: /spec/values/controllers/scrypted/pod/annotations/k8s.v1.cni.cncf.io~1networks
-          value:
+          value: |
             [{
               "name":"multus-iot",
               "namespace": "networking",

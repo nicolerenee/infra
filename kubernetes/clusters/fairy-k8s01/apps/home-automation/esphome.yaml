@@ -29,7 +29,7 @@ spec:
       patch: |-
         - op: add
           path: /spec/values/controllers/esphome/pod/annotations/k8s.v1.cni.cncf.io~1networks
-          value:
+          value: |
             [{
               "name":"multus-iot",
               "namespace": "networking",
