@@ -61,7 +61,7 @@ spec:
                 memory: 8192Mi
                 gpu.intel.com/i915: 1
             securityContext:
-              allowPrivilegeEscalation: false
+              # allowPrivilegeEscalation: false
               # readOnlyRootFilesystem: true
               # capabilities:
               #   drop:
