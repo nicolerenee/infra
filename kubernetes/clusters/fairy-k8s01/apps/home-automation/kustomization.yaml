@@ -7,8 +7,10 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
+  - esphome.yaml
   # disabled for now
   # - homeassistant.yaml
   - mosquitto.yaml
   - rtl-autodiscovery.yaml
   - rtl915.yaml
+  - scrypted.yaml
