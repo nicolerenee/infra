@@ -1,0 +1,44 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app zigbee
+  namespace: &namespace home-automation
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/home-automation/zigbee
+  dependsOn:
+    - name: rook-ceph-cluster
+      namespace: rook-ceph
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true
+  patches:
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: add
+          path: /spec/values/controllers/zigbee/containers/app/env/ZIGBEE2MQTT_CONFIG_SERIAL_BAUDRATE
+          value: "115200"
+        - op: add
+          path: /spec/values/controllers/zigbee/containers/app/env/ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED
+          value: "false"
+        - op: add
+          path: /spec/values/controllers/zigbee/containers/app/env/ZIGBEE2MQTT_CONFIG_SERIAL_PORT
+          value: tcp://zigbee01.fairy.lan:6638
+        - op: add
+          path: /spec/values/controllers/zigbee/containers/app/env/ZIGBEE2MQTT_CONFIG_SERIAL_ADAPTER
+          value: ember
+        - op: add
+          path: /spec/values/controllers/zigbee/containers/app/env/ZIGBEE2MQTT_CONFIG_SERIAL_RTSCTS
+          value: "false"
