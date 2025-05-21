@@ -13,5 +13,6 @@ resources:
   - ./nginx-tailscale
   - ./observability
   - ./rook-ceph
+  - ./spegel
   - ./system-upgrade
   - ./tailscale
