@@ -3,7 +3,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app prowlarr
+  name: &app sabnzbd
   namespace: &namespace media
   labels:
     infra.freckle.systems/post-build-variables: enabled
@@ -16,7 +16,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/media/prowlarr
+  path: ./kubernetes/apps/media/sabnzbd
   dependsOn:
     - name: onepassword-store
       namespace: external-secrets
@@ -29,3 +29,24 @@ spec:
   timeout: 5m
   prune: true
   wait: true
+  patches:
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: replace
+          path: /spec/values/controllers/sabnzbd/containers/app/env/SABNZBD__HOST_WHITELIST_ENTRIES
+          value: >-
+            sabnzbd,
+            sabnzbd.media,
+            sabnzbd.media.svc,
+            sabnzbd.media.svc.cluster,
+            sabnzbd.media.svc.cluster.local,
+            sabnzbd.${CLUSTER_DOMAIN}
+
+        - op: replace
+          path: /spec/values/persistence/media
+          value:
+            existingClaim: store01-media
+            globalMounts:
+              - path: /store01/downloads/sabnzbd
+                subPath: downloads/sabnzbd

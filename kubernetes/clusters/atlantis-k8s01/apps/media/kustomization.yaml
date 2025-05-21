@@ -7,7 +7,9 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./prowlarr.yaml
   - ./radarr.yaml
   - ./recyclarr.yaml
+  - ./sabnzbd.yaml
   - ./sonarr.yaml
   - ./sonarr-anime.yaml
