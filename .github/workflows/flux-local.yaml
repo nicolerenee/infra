@@ -80,7 +80,7 @@ jobs:
           path: default
 
       - name: Generate Manifests for Pull Request Branch
-        uses: docker://ghcr.io/allenporter/flux-local:v7.5.2
+        uses: docker://ghcr.io/allenporter/flux-local:v7.5.4
         with:
           args: >-
             build all
@@ -90,7 +90,7 @@ jobs:
             /github/workspace/pull/kubernetes/clusters/${{ matrix.cluster }}/flux
 
       - name: Generate Manifests for Default Branch
-        uses: docker://ghcr.io/allenporter/flux-local:v7.5.2
+        uses: docker://ghcr.io/allenporter/flux-local:v7.5.4
         with:
           args: >-
             build all
