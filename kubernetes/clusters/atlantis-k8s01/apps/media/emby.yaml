@@ -1,0 +1,61 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app emby
+  namespace: &namespace media
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/media/emby
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true
+  patches:
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: replace
+          path: /spec/values/persistence/config/size
+          value: 250Gi
+        - op: replace
+          path: /spec/values/persistence/cache/size
+          value: 250Gi
+        - op: replace
+          path: /spec/values/persistence/media
+          value:
+            existingClaim: store01-media
+            globalMounts:
+              - path: /store01
+        - op: replace
+          path: /spec/values/defaultPodOptions/securityContext/runAsUser
+          value: 943
+        - op: replace
+          path: /spec/values/defaultPodOptions/securityContext/runAsGroup
+          value: 943
+        - op: replace
+          path: /spec/values/defaultPodOptions/securityContext/fsGroup
+          value: 943
+        - op: add
+          path: /spec/values/route/public
+          value: |
+            hostnames: ["watch.freckle.vision"]
+            parentRefs:
+              - name: external-gw
+                namespace: gateway
+                sectionName: frecklevision-https
+            rules:
+              - backendRefs:
+                  - identifier: app
+                    port: 8096

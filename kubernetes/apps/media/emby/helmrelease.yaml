@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app emby
+  name: emby
 spec:
   interval: 1h
   chartRef:
@@ -18,7 +18,7 @@ spec:
       retries: 3
   values:
     controllers:
-      emby:
+      app:
         replicas: 1
         annotations:
           reloader.stakater.com/auto: "true"
@@ -81,7 +81,7 @@ spec:
           - 44
     service:
       app:
-        controller: emby
+        controller: app
         ports:
           http:
             port: 8096
@@ -89,7 +89,7 @@ spec:
             port: 7359
             protocol: UDP
     route:
-      ts-cluster:
+      app:
         hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
         parentRefs:
           - name: gw-tailscale
