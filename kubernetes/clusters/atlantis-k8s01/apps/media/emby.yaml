@@ -46,7 +46,7 @@ spec:
           value: 943
         - op: add
           path: /spec/values/route/public
-          value: |
+          value:
             hostnames: ["watch.freckle.vision"]
             parentRefs:
               - name: external-gw
