@@ -84,7 +84,7 @@ spec:
             sectionName: https
         rules:
           - backendRefs:
-              - name: *app
+              - identifier: app
                 port: *port
 
     persistence:
@@ -94,3 +94,4 @@ spec:
         accessMode: ReadWriteOnce
         size: 10Gi
         retain: true
+        suffix: "config"
