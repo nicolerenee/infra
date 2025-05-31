@@ -61,7 +61,7 @@ spec:
         accessMode: ReadWriteOnce
         size: 10Gi
         retain: true
-        suffix: "-config"
+        suffix: "config"
       config-file:
         type: configMap
         name: recyclarr-configmap
