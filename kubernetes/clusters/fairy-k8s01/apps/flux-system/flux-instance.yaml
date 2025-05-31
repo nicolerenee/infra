@@ -9,6 +9,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+      infra.freckle.systems/post-build-variables: enabled
   dependsOn:
     - name: flux-operator
   targetNamespace: *namespace
@@ -21,13 +22,3 @@ spec:
   interval: 5m
   retryInterval: 2m
   timeout: 5m
-  patches:
-    - target:
-        kind: HelmRelease
-      patch: |-
-        - op: replace
-          path: /spec/values
-          value:
-            instance:
-              sync:
-                path: kubernetes/clusters/fairy-k8s01/flux
