@@ -7,4 +7,5 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./certificates.yaml
   - ./gateways.yaml

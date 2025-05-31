@@ -198,7 +198,7 @@ spec:
         enabled: true
         hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
         parentRefs:
-          - name: gw-tailscale
+          - name: tailscale
             namespace: gateway
             sectionName: https
     persistence:

@@ -94,7 +94,7 @@ spec:
       app:
         hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
         parentRefs:
-          - name: gw-media-mgmt
+          - name: tailscale-media-mgmt
             namespace: gateway
             sectionName: https
         rules:
