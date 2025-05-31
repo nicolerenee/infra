@@ -8,10 +8,14 @@ metadata:
     external-dns.alpha.kubernetes.io/controller: none
 spec:
   parentRefs:
-    - name: gw-tailscale
+    - name: tailscale
       sectionName: http
-    - name: gw-media-mgmt
+    - name: tailscale-media-mgmt
       sectionName: http
+    - name: external
+      sectionName: frecklesystems-http
+    - name: external
+      sectionName: frecklefamily-http
   rules:
     - filters:
         - requestRedirect:

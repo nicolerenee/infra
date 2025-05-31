@@ -55,7 +55,7 @@ spec:
           value:
             hostnames: ["watch.freckle.vision"]
             parentRefs:
-              - name: external-gw
+              - name: external
                 namespace: gateway
                 sectionName: frecklevision-https
             rules:

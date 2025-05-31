@@ -73,7 +73,7 @@ spec:
       app:
         hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
         parentRefs:
-          - name: gw-tailscale
+          - name: tailscale
             namespace: gateway
             sectionName: https
         rules:

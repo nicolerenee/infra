@@ -21,3 +21,79 @@ spec:
   interval: 1h
   retryInterval: 2m
   timeout: 5m
+  patches:
+    - target:
+        kind: Gateway
+        name: external
+      patch: |-
+        - op: add
+          path: /spec/infrastructure
+          value:
+            labels:
+              gateway.freckle.systems/dns: cloudflare
+              ipam.freckle.systems/lb-pool: public
+        - op: add
+          path: /spec/listeners/0
+          value:
+            allowedRoutes:
+              namespaces:
+                from: Same
+            hostname: '*.freckle.vision'
+            name: frecklevision-http
+            port: 80
+            protocol: HTTP
+        - op: add
+          path: /spec/listeners/0
+          value:
+            allowedRoutes:
+              namespaces:
+                from: All
+            hostname: '*.freckle.vision'
+            name: frecklevision-https
+            port: 443
+            protocol: HTTPS
+            tls:
+              certificateRefs:
+              - kind: Secret
+                name: frecklevision-tls
+        - op: add
+          path: /spec/listeners/0
+          value:
+            allowedRoutes:
+              namespaces:
+                from: Same
+            hostname: 'freckle.id'
+            name: freckleid-root-http
+            port: 80
+            protocol: HTTP
+        - op: add
+          path: /spec/listeners/0
+          value:
+            allowedRoutes:
+              namespaces:
+                from: Selector
+                selector:
+                  matchLabels:
+                    kubernetes.io/metadata.name: freckle-id
+            hostname: 'freckle.id'
+            name: freckleid-root-https
+            port: 443
+            protocol: HTTPS
+            tls:
+              certificateRefs:
+              - kind: Secret
+                name: freckleid-tls
+    - target:
+        kind: HTTPRoute
+        name: httpsredirect
+      patch: |-
+        - op: add
+          path: /spec/parentRefs/0
+          value:
+            name: external
+            sectionName: frecklevision-http
+        - op: add
+          path: /spec/parentRefs/0
+          value:
+            name: external
+            sectionName: freckleid-root-http

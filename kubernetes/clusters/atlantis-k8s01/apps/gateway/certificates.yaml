@@ -3,30 +3,28 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: frecklesystems-tls
+  name: frecklevision-tls
 spec:
-  secretName: frecklesystems-tls
+  secretName: frecklevision-tls
   issuerRef:
     name: letsencrypt-production
     kind: ClusterIssuer
-  commonName: "freckle.systems"
+  commonName: "freckle.vision"
   dnsNames:
-    - freckle.systems
-    - "*.freckle.systems"
-    - "*.${CLUSTER_DOMAIN}"
+    - freckle.vision
+    - "*.freckle.vision"
 
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/cert-manager.io/certificate_v1.json
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: frecklefamily-tls
+  name: freckleid-tls
 spec:
-  secretName: frecklefamily-tls
+  secretName: freckleid-tls
   issuerRef:
     name: letsencrypt-production
     kind: ClusterIssuer
-  commonName: "freckle.family"
+  commonName: "freckle.id"
   dnsNames:
-    - freckle.family
-    - "*.freckle.family"
+    - freckle.id
