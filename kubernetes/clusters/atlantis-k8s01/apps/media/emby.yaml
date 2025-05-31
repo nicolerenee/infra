@@ -30,9 +30,6 @@ spec:
           path: /spec/values/persistence/config/size
           value: 250Gi
         - op: replace
-          path: /spec/values/persistence/cache/size
-          value: 250Gi
-        - op: replace
           path: /spec/values/persistence/media
           value:
             existingClaim: store01-media

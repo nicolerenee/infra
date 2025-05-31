@@ -18,7 +18,7 @@ spec:
       retries: 3
   values:
     controllers:
-      app:
+      emby:
         replicas: 1
         annotations:
           reloader.stakater.com/auto: "true"
@@ -81,7 +81,7 @@ spec:
           - 44
     service:
       app:
-        controller: app
+        controller: emby
         ports:
           http:
             port: 8096
