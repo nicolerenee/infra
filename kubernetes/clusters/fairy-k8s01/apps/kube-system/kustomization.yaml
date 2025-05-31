@@ -9,8 +9,11 @@ components:
 resources:
   - ./cilium.yaml
   - ./cilium-gw-config.yaml
+  - ./descheduler.yaml
   - ./generic-device-plugin.yaml
   - ./intel-device-plugin.yaml
+  - ./kubelet-csr-approver.yaml
+  - ./metrics-server.yaml
   - ./multus.yaml
   - ./node-feature-discovery.yaml
   - ./reloader.yaml
