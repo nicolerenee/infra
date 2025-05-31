@@ -29,10 +29,7 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
-  values:
-    instance:
-      sync:
-        path: kubernetes/clusters/${CLUSTER_NAME}/flux
+  values: {}
   valuesFrom:
     - kind: ConfigMap
       name: flux-instance-values
