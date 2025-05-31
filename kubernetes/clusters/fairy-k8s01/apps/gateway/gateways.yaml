@@ -29,3 +29,6 @@ spec:
         - op: add
           path: /metadata/annotations/external-dns.alpha.kubernetes.io~1cloudflare-proxied
           value: "true"
+        - op: add
+          path: /metadata/annotations/external-dns.alpha.kubernetes.io~1target
+          value: "external.${CLUSTER_DOMAIN}"
