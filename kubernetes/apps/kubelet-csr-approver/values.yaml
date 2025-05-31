@@ -1,0 +1,5 @@
+---
+providerRegex: |
+  ^(atlantis|fairy)-compute\d{2}$
+
+bypassDnsResolution: true
