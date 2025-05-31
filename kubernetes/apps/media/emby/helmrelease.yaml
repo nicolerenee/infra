@@ -106,6 +106,7 @@ spec:
         accessMode: ReadWriteOnce
         size: 100Gi
         retain: true
+        suffix: "-config"
       tmp:
         type: emptyDir
         globalMounts:
