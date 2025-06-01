@@ -5,8 +5,6 @@ kind: Kustomization
 metadata:
   name: &app cloudflare-tunnel
   namespace: &namespace cloudflare-tunnel
-  labels:
-    infra.freckle.systems/post-build-variables: enabled
 spec:
   commonMetadata:
     labels:
@@ -18,6 +16,12 @@ spec:
       namespace: observability
   targetNamespace: *namespace
   path: ./kubernetes/apps/networking/cloudflare-tunnel
+  postBuild:
+    substituteFrom:
+      - kind: Secret
+        name: cloudflare-tunnel-id-secret
+      - kind: ConfigMap
+        name: infra-info-cluster
   prune: true
   sourceRef:
     kind: GitRepository
