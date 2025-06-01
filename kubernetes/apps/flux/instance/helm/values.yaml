@@ -91,3 +91,13 @@ instance:
         target:
           kind: Deployment
           name: helm-controller
+      - # Disable chart digest tracking. When enabled it adds the digest to the
+        # chart version which breaks putting the chart version in a label.
+        # More info: https://github.com/fluxcd/helm-controller/pull/1212
+        patch: |
+          - op: add
+            path: /spec/template/spec/containers/0/args/-Add commentMore actions
+            value: --feature-gates=DisableChartDigestTracking=true
+        target:
+          kind: Deployment
+          name: helm-controller

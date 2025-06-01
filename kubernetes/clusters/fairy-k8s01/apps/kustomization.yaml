@@ -12,7 +12,6 @@ resources:
   - ./home-automation
   - ./kube-system
   - ./media
-  - ./nginx-tailscale
   - ./observability
   - ./rook-ceph
   - ./spegel
