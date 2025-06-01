@@ -32,3 +32,6 @@ spec:
         - op: add
           path: /metadata/annotations/external-dns.alpha.kubernetes.io~1target
           value: "external-gw.${CLUSTER_DOMAIN}"
+        - op: replace
+          path: /metadata/labels/gateway.freckle.systems~1dns
+          value: cloudflare-tunnel
