@@ -2,7 +2,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app it-tools
+  name: it-tools
 spec:
   interval: 1h
   chartRef:
@@ -45,7 +45,7 @@ spec:
 
     service:
       app:
-        controller: *app
+        controller: it-tools
         ports:
           http:
             port: &port 80
