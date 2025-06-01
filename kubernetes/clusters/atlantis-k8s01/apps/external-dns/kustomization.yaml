@@ -8,4 +8,3 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - ./cloudflare.yaml
-  - ./cloudflare-tunnel.yaml
