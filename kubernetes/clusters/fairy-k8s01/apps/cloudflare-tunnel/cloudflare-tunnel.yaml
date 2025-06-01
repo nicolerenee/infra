@@ -19,7 +19,7 @@ spec:
   postBuild:
     substituteFrom:
       - kind: Secret
-        name: cloudflare-tunnel-id-secret
+        name: cloudflare-tunnel-id
       - kind: ConfigMap
         name: infra-info-cluster
   prune: true

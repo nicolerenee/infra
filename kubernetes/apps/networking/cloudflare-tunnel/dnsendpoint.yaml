@@ -10,4 +10,4 @@ spec:
   endpoints:
     - dnsName: external.${CLUSTER_DOMAIN}
       recordType: CNAME
-      targets: ["${cloudflare_tunnel_id}.cfargotunnel.com"]
+      targets: ["${CLOUDFLARE_TUNNEL_ID}.cfargotunnel.com"]
