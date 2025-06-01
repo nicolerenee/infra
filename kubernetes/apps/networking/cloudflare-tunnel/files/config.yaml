@@ -1,6 +1,6 @@
 ---
 originRequest:
-  originServerName: external.${CLUSTER_DOMAIN}
+  originServerName: external-gw.${CLUSTER_DOMAIN}
   http2Origin: true
 
 ingress:

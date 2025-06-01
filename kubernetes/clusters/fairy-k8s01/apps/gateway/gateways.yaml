@@ -31,4 +31,4 @@ spec:
           value: "true"
         - op: add
           path: /metadata/annotations/external-dns.alpha.kubernetes.io~1target
-          value: "external.${CLUSTER_DOMAIN}"
+          value: "external-gw.${CLUSTER_DOMAIN}"
