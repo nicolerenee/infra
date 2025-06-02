@@ -13,8 +13,8 @@ spec:
       allow_sign_up: "True"
       api_url: https://freckle.id/application/o/userinfo/
       auth_url: https://freckle.id/application/o/authorize/
-      client_id: ${AUTH_CLIENT_ID}
-      client_secret: ${AUTH_CLIENT_SECRET}
+      client_id: $${AUTH_CLIENT_ID}
+      client_secret: $${AUTH_CLIENT_SECRET}
       enabled: "True"
       groups_attribute_path: groups
       name: Freckle ID
