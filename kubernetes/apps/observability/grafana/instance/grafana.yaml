@@ -5,39 +5,38 @@ metadata:
   labels:
     dashboards: "grafana"
 spec:
-  persistentVolumeClaim:
-    spec:
-      accessModes:
-        - ReadWriteOnce
-      resources:
-        requests:
-          storage: 10Gi
-
   config:
     auth:
       disable_login_form: "false"
-    auth.proxy:
-      auto_sign_up: "True"
+    auth.generic_oauth:
+      allow_assign_grafana_admin: "True"
+      allow_sign_up: "True"
+      api_url: https://freckle.id/application/o/userinfo/
+      auth_url: https://freckle.id/application/o/authorize/
+      client_id: ${AUTH_CLIENT_ID}
+      client_secret: ${AUTH_CLIENT_SECRET}
       enabled: "True"
-      enable_login_token: "True"
-      headers: "Name:Tailscale-User-Name"
-      header_property: "username"
-      header_name: "Tailscale-User-Login"
+      groups_attribute_path: groups
+      name: Freckle ID
+      role_attribute_path: contains(grafana_role[*], 'GrafanaAdmin') && 'GrafanaAdmin' || contains(grafana_role[*], 'Admin') && 'Admin' || contains(grafana_role[*], 'Editor') && 'Editor' || 'Viewer'
+      scopes: openid,profile,email,groups
+      token_url: https://freckle.id/application/o/token/
+      use_pkce: "True"
 
-  ingress:
+  deployment:
     spec:
-      ingressClassName: tailscale
-      rules:
-        - host: grafana-${CLUSTER_NAME}
-          http:
-            paths:
-              - backend:
-                  service:
-                    name: grafana-service
-                    port:
-                      number: 3000
-                path: /
-                pathType: Prefix
-      tls:
-        - hosts:
-            - grafana-${CLUSTER_NAME}
+      template:
+        spec:
+          containers:
+            - name: grafana
+              env:
+                - name: AUTH_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: grafana-oauth
+                      key: client-id
+                - name: AUTH_CLIENT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: grafana-oauth
+                      key: client-secret

@@ -8,8 +8,6 @@ nodePort:
   enabled: false
 bpf:
   masquerade: true
-  #TODO: update talos config and remove this
-  hostLegacyRouting: true
 cni:
   exclusive: false
 
@@ -61,6 +59,31 @@ resources:
   limits:
     cpu: "2"
     memory: "6Gi"
+
+hubble:
+  enabled: true
+  metrics:
+    enabled:
+      - dns:query
+      - drop
+      - tcp
+      - flow
+      - port-distribution
+      - icmp
+      - http
+    serviceMonitor:
+      enabled: true
+    dashboards:
+      enabled: true
+  relay:
+    enabled: true
+    rollOutPods: true
+    prometheus:
+      serviceMonitor:
+        enabled: true
+  ui:
+    enabled: true
+    rollOutPods: true
 
 # required for talos
 securityContext:
