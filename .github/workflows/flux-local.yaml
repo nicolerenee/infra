@@ -111,6 +111,7 @@ jobs:
         run: |
           DYFFCMD=(
           dyff between main.yaml pr.yaml
+          --ignore-order-changes
           --exclude-regexp "/metadata/labels/app.kubernetes.io/version"
           --exclude-regexp "/metadata/labels/chart"
           --exclude-regexp "/metadata/labels/helm.sh/chart"
