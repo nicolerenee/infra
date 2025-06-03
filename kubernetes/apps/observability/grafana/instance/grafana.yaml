@@ -22,8 +22,7 @@ spec:
       scopes: openid,profile,email,groups
       token_url: https://freckle.id/application/o/token/
       use_pkce: "True"
-  external:
-    url: https://grafana.${CLUSTER_DOMAIN}
+    root_url: https://grafana.${CLUSTER_DOMAIN}
 
   deployment:
     spec:
