@@ -18,7 +18,7 @@ spec:
         operator: In
         values: ["talos"]
   upgrade:
-    image: ghcr.io/jfroy/tnu:0.4.2
+    image: ghcr.io/jfroy/tnu:0.4.3
     args:
       - --node=$(NODE_IP)
       - --tag=$(SYSTEM_UPGRADE_PLAN_LATEST_VERSION)
