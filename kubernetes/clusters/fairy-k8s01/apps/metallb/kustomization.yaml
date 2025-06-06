@@ -9,3 +9,11 @@ components:
 resources:
   - metallb.yaml
   - metallb-config.yaml
+patches:
+  - target:
+      kind: Namespace
+    patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          pod-security.kubernetes.io/enforce: privileged
