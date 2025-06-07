@@ -85,5 +85,5 @@ spec:
             sectionName: freckleid-root-https
         rules:
           - backendRefs:
-              - port: 80
-                name: *app
+              - identifier: app
+                port: 80
