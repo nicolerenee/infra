@@ -96,7 +96,7 @@ instance:
         # More info: https://github.com/fluxcd/helm-controller/pull/1212
         patch: |
           - op: add
-            path: /spec/template/spec/containers/0/args/-Add commentMore actions
+            path: /spec/template/spec/containers/0/args/-
             value: --feature-gates=DisableChartDigestTracking=true
         target:
           kind: Deployment
