@@ -7,6 +7,7 @@ resources:
   - ./external-dns
   - ./external-secrets
   - ./flux-system
+  - ./freckle-id
   - ./gateway
   - ./golink
   - ./home-automation
