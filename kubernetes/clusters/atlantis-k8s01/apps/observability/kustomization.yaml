@@ -7,6 +7,7 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./gatus.yaml
   - ./grafana-operator.yaml
   - ./grafana-instance.yaml
   - ./prometheus-operator-crds.yaml
