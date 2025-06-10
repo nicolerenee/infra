@@ -23,3 +23,8 @@ spec:
   interval: 30s
   retryInterval: 1m
   timeout: 5m
+  components:
+    - ../../../components/gatus/tailscale
+  postBuild:
+    substitute:
+      GATUS_APP: grafana
