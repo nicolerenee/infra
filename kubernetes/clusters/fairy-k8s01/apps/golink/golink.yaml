@@ -29,4 +29,6 @@ spec:
     - ../../components/gatus/tailscale
   postBuild:
     substitute:
-      GATUS_APP: go-links
+      APP: *app
+      GATUS_TS_NAME: go-links
+      GATUS_TS_DOMAIN: go.hummingbird-perch.ts.net

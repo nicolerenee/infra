@@ -9,7 +9,7 @@ metrics: true
 debug: false
 ui:
   title: Status | ${CLUSTER_NAME}
-  header: Status
+  header: Status - ${CLUSTER_NAME}
 connectivity:
   checker:
     target: 1.1.1.1:53

@@ -1,5 +1,5 @@
 endpoints:
-  - name: "${GATUS_APP:=${APP}}"
+  - name: "${GATUS_EXT_NAME:=${GATUS_APP:=${APP}}}"
     group: external
     url: "https://${GATUS_EXT_DOMAIN:=${GATUS_SUBDOMAIN:=${GATUS_APP:=${APP}}}.${CLUSTER_DOMAIN}}${GATUS_PATH:=/}"
     interval: "${GATUS_INTERVAL:=1m}"
