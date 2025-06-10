@@ -25,6 +25,11 @@ spec:
   timeout: 5m
   prune: true
   wait: true
+  components:
+    - ../../../components/gatus/tailscale
+  postBuild:
+    substitute:
+      APP: *app
   patches:
     - target:
         kind: HelmRelease

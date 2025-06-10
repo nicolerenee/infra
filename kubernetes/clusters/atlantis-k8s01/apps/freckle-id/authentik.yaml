@@ -22,3 +22,10 @@ spec:
   timeout: 5m
   prune: true
   wait: true
+  components:
+    - ../../../../components/gatus/external
+  postBuild:
+    substitute:
+      GATUS_APP: freckle-id
+      GATUS_EXT_NAME: Freckle ID
+      GATUS_EXT_DOMAIN: freckle.id
