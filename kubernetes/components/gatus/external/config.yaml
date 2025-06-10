@@ -1,7 +1,7 @@
 endpoints:
   - name: "${GATUS_APP:=${APP}}"
     group: external
-    url: "https://${GATUS_EXT_DOMAIN:=${GATUS_SUBDOMAIN:=${APP}}.${CLUSTER_DOMAIN}}${GATUS_PATH:=/}"
+    url: "https://${GATUS_EXT_DOMAIN:=${GATUS_SUBDOMAIN:=${GATUS_APP:=${APP}}}.${CLUSTER_DOMAIN}}${GATUS_PATH:=/}"
     interval: "${GATUS_INTERVAL:=1m}"
     client:
       dns-resolver: tcp://1.1.1.1:53

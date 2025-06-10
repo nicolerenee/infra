@@ -1,7 +1,7 @@
 endpoints:
   - name: "${GATUS_APP:=${APP}}"
     group: tailscale
-    url: "https://${GATUS_SUBDOMAIN:=${APP}}.${CLUSTER_DOMAIN}${GATUS_PATH:=/}"
+    url: "https://${GATUS_SUBDOMAIN:=${GATUS_APP:=${APP}}kubernetes/components/gatus/tailscale/config.yaml}.${CLUSTER_DOMAIN}${GATUS_PATH:=/}"
     interval: "${GATUS_INTERVAL:=1m}"
     client:
       dns-resolver: tcp://1.1.1.1:53

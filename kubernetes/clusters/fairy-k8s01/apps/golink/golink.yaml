@@ -5,6 +5,8 @@ kind: Kustomization
 metadata:
   name: &app golink
   namespace: &namespace golink
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
 spec:
   commonMetadata:
     labels:
@@ -27,4 +29,4 @@ spec:
     - ../../components/gatus/tailscale
   postBuild:
     substitute:
-      GATUS_APP: go
+      GATUS_APP: go-links
