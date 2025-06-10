@@ -23,7 +23,7 @@ spec:
   prune: true
   wait: true
   components:
-    - ../../../components/gatus/external
+    - ../../../../components/gatus/external
   postBuild:
     substitute:
       GATUS_APP: freckle-id

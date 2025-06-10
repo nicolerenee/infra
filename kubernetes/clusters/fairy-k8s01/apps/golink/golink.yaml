@@ -24,7 +24,7 @@ spec:
   prune: true
   wait: true
   components:
-    - ../../../components/gatus/tailscale
+    - ../../components/gatus/tailscale
   postBuild:
     substitute:
       GATUS_APP: go
