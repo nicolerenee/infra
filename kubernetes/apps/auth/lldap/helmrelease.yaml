@@ -6,15 +6,10 @@ metadata:
   name: lldap
 spec:
   interval: 15m
-  chart:
-    spec:
-      chart: app-template
-      version: 3.7.3
-      sourceRef:
-        kind: HelmRepository
-        name: bjw-s-charts
-        namespace: flux-system
-      interval: 15m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
   install:
     createNamespace: true
     remediation:
@@ -25,6 +20,8 @@ spec:
   values:
     controllers:
       lldap:
+        annotations:
+          reloader.stakater.com/auto: "true"
         containers:
           main:
             image:
@@ -40,22 +37,57 @@ spec:
                 enabled: true
               readiness:
                 enabled: true
+            env:
+              TZ: America/Chicago
+              LLDAP_HTTP_PORT: 80
+              LLDAP_LDAPS_OPTIONS__PORT: 636
+              LLDAP_LDAPS_OPTIONS__ENABLED: "true"
+              LLDAP_LDAPS_OPTIONS__CERT_FILE: /cert/tls.crt
+              LLDAP_LDAPS_OPTIONS__KEY_FILE: /cert/tls.key
             envFrom:
               - secretRef:
                   name: lldap
+            resources:
+              requests:
+                cpu: 5m
+                memory: 36M
+              limits:
+                cpu: 1000m
+                memory: 256M
     service:
-      main:
+      ldap:
+        controller: lldap
+        ports:
+          ldaps:
+            protocol: TCP
+            port: 636
+      web:
         controller: lldap
         ports:
           http:
-            port: 3890
-          web:
             enabled: true
-            protocol: TCP
-            port: 17170
+            port: 80
+    route:
+      lldap:
+        hostnames:
+          - "lldap.${CLUSTER_DOMAIN}"
+        parentRefs:
+          - name: tailscale
+            namespace: gateway
+            sectionName: http
+        rules:
+          - backendRefs:
+              - identifier: web
+                port: 80
     persistence:
-      config:
+      data:
         enabled: true
-        existingClaim: lldap-config
+        existingClaim: lldap-data
         globalMounts:
           - path: /data
+      cert:
+        enabled: true
+        type: secret
+        name: ldap-cert
+        globalMounts:
+          - path: /cert/
