@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: lldap-config
+  name: lldap-data
 spec:
   accessModes:
     - ReadWriteOnce
