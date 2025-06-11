@@ -47,6 +47,10 @@ spec:
             envFrom:
               - secretRef:
                   name: lldap
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
             resources:
               requests:
                 cpu: 5m
@@ -54,6 +58,13 @@ spec:
               limits:
                 cpu: 1000m
                 memory: 256M
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        fsGroupChangePolicy: OnRootMismatch
     service:
       ldap:
         controller: lldap
@@ -88,6 +99,6 @@ spec:
       cert:
         enabled: true
         type: secret
-        name: ldap-cert
+        name: ldap-tls
         globalMounts:
           - path: /cert/
