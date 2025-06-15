@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: store01-tmp-media
+spec:
+  capacity:
+    storage: 1Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    name: store01-tmp-media
+    namespace: media
+  nfs:
+    path: /mnt/tmp-migrate/media/
+    server: 192.168.227.10
+    readOnly: false
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: store01-tmp-media
+  namespace: media
+spec:
+  volumeName: store01-tmp-media
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Ti
