@@ -16,3 +16,4 @@ resources:
   - sabnzbd.yaml
   - sonarr.yaml
   - vault01-store01.yaml
+  - vault01-tmp.yaml

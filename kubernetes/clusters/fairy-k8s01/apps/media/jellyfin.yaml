@@ -34,6 +34,6 @@ spec:
         - op: replace
           path: /spec/values/persistence/media
           value:
-            existingClaim: store01-vault01-media
+            existingClaim: store01-tmp-media
             globalMounts:
               - path: /store01/vault01

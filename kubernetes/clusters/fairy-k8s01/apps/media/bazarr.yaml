@@ -39,7 +39,7 @@ spec:
         kind: HelmRelease
       patch: |-
         - op: replace
-          path: /spec/values/persistence/media
+          path: /spec/values/tmp/media
           value:
             existingClaim: store01-vault01-media
             globalMounts:
