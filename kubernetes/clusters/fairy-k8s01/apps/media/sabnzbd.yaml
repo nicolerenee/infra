@@ -51,7 +51,7 @@ spec:
         - op: replace
           path: /spec/values/persistence/media
           value:
-            existingClaim: store01-tmp-media
+            existingClaim: store01-vault01-media
             globalMounts:
               - path: /store01/vault01/downloads/sabnzbd
                 subPath: downloads/sabnzbd
