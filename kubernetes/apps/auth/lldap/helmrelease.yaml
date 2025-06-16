@@ -85,7 +85,7 @@ spec:
         parentRefs:
           - name: tailscale
             namespace: gateway
-            sectionName: http
+            sectionName: https
         rules:
           - backendRefs:
               - identifier: web
