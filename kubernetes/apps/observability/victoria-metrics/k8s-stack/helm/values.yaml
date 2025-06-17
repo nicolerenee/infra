@@ -95,7 +95,7 @@ alertmanager:
           - send_resolved: true
             webhook_url: "${SECRET_DISCORD_INFRA_ALERTS_WEBHOOK}"
             title: '{{ template "discord.default.title" . }}'
-            username: "AlertManager - ${CLUSTER_DOMAIN}"
+            username: "AlertManager - ${CLUSTER_NAME}"
   enabled: true
   spec:
     externalURL: "https://alertmanager.${CLUSTER_DOMAIN}"
