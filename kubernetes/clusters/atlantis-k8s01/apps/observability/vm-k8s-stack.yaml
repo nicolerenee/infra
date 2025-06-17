@@ -17,6 +17,10 @@ spec:
     - name: grafana-operator
   targetNamespace: *namespace
   path: ./kubernetes/apps/observability/victoria-metrics/k8s-stack
+  postBuild:
+    substituteFrom:
+      - kind: Secret
+        name: victoriametrics-secrets
   prune: true
   sourceRef:
     kind: GitRepository

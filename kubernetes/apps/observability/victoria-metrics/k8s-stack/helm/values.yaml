@@ -42,7 +42,60 @@ defaultDatasources:
   grafanaOperator:
     enabled: true
 
+vmalert:
+  enabled: true
+  spec:
+    extraArgs:
+      external.url: "https://vmalert.${CLUSTER_DOMAIN}"
+
 alertmanager:
+  config:
+    route:
+      receiver: "blackhole"
+      group_by: ["alertgroup", "job"]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      routes:
+        # default route
+        - matchers:
+            - severity=~"info|warning|critical"
+          receiver: discord-infra-alerts
+          continue: true
+
+    inhibit_rules:
+      - target_matchers:
+          - severity=~"warning|info"
+        source_matchers:
+          - severity=critical
+        equal:
+          - cluster
+          - namespace
+          - alertname
+      - target_matchers:
+          - severity=info
+        source_matchers:
+          - severity=warning
+        equal:
+          - cluster
+          - namespace
+          - alertname
+      - target_matchers:
+          - severity=info
+        source_matchers:
+          - alertname=InfoInhibitor
+        equal:
+          - cluster
+          - namespace
+
+    receivers:
+      - name: blackhole
+      - name: discord-infra-alerts
+        discord_configs:
+          - send_resolved: true
+            webhook_url: "${SECRET_DISCORD_INFRA_ALERTS_WEBHOOK}"
+            title: '{{ template "discord.default.title" . }}'
+            username: "AlertManager - ${CLUSTER_DOMAIN}"
   enabled: true
   spec:
     externalURL: "https://alertmanager.${CLUSTER_DOMAIN}"
