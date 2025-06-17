@@ -5,8 +5,6 @@ kind: Kustomization
 metadata:
   name: &app vm-k8s-stack
   namespace: &namespace observability
-  labels:
-    infra.freckle.systems/post-build-variables: enabled
 spec:
   commonMetadata:
     labels:
@@ -21,6 +19,8 @@ spec:
     substituteFrom:
       - kind: Secret
         name: victoriametrics-secrets
+      - kind: ConfigMap
+        name: infra-info-cluster
   prune: true
   sourceRef:
     kind: GitRepository
