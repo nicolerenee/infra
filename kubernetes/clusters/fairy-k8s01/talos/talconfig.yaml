@@ -60,6 +60,12 @@ nodes:
             metric: 1024
         vip:
           ip: 192.168.227.5
+        dhcp: false
+        mtu: 9000
+      - &compute01-enp3s0
+        interface: enp3s0
+        dhcp: false
+        mtu: 9000
 
   - hostname: fairy-compute02
     ipAddress: 192.168.227.7
@@ -70,6 +76,7 @@ nodes:
         addresses:
           - 192.168.227.7/24
           - fd80:0383:1a38::7/64
+      - <<: *compute01-enp3s0
     machineSpec: *compute01-machineSpec
     schematic: *compute01-schematic
     extensionServices:
@@ -84,6 +91,7 @@ nodes:
         addresses:
           - 192.168.227.8/24
           - fd80:0383:1a38::8/64
+      - <<: *compute01-enp3s0
     machineSpec: *compute01-machineSpec
     schematic: *compute01-schematic
     extensionServices:
