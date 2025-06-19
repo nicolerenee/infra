@@ -26,7 +26,7 @@ spec:
           pocket-id:
             image:
               repository: ghcr.io/pocket-id/pocket-id
-              tag: v1.3.1@sha256:879760286ae9314df0bc2f28a3a838a99400b6331cee45ff062bc503fb8066c5
+              tag: v1.4.0@sha256:f546581d6a5f070dd031cbf7509fc3689470a885b107f56680b65292b4090ebc
             command: ["/app/pocket-id"]
             env:
               ANALYTICS_DISABLED: "true"
