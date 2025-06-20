@@ -37,6 +37,6 @@ spec:
               # requires pod/node restart to enable
               # datapathMode: netkit
               preallocateMaps: true
-            routing-mode: native
-            ipv4-native-routing-cidr: 10.244.0.0/16
-            ipv6-native-routing-cidr: fd2b:ec92:e232::/48
+            routingMode: native
+            ipv4NativeRoutingCIDR: 10.244.0.0/16
+            ipv6NativeRoutingCIDR: fd2b:ec92:e232::/48
