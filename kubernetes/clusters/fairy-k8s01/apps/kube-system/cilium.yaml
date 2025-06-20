@@ -30,3 +30,13 @@ spec:
           path: /spec/values
           value:
             devices: br0
+            bandwidthManager:
+              enabled: true
+              bbr: true
+            bpf:
+              # requires pod/node restart to enable
+              # datapathMode: netkit
+              preallocateMaps: true
+            routing-mode: native
+            ipv4-native-routing-cidr: 10.244.0.0/16
+            ipv6-native-routing-cidr: fd2b:ec92:e232::/48
