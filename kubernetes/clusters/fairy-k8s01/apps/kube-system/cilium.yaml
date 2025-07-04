@@ -34,9 +34,15 @@ spec:
               enabled: true
               bbr: true
             bpf:
-              # requires pod/node restart to enable
-              # datapathMode: netkit
+              datapathMode: netkit
               preallocateMaps: true
+              distributedLRU:
+                enabled: true
+            loadBalancer:
+              mode: dsr
+            enableIPv4BIGTCP: true
+            enableIPv6BIGTCP: true
+            bpfClockProbe: true
             routingMode: native
             ipv4NativeRoutingCIDR: 10.244.0.0/16
             ipv6NativeRoutingCIDR: fd2b:ec92:e232::/48

@@ -13,6 +13,6 @@ metadata:
   name: l2-lan
 spec:
   interfaces:
-    - br0
+    - br0.300
   ipAddressPools:
     - lan
