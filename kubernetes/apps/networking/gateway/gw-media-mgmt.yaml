@@ -31,4 +31,4 @@ spec:
       tls:
         certificateRefs:
           - kind: Secret
-            name: cluster-domain-tls
+            name: frecklesystems-tls

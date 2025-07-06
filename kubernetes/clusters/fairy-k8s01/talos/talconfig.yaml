@@ -45,13 +45,8 @@ nodes:
               configure system description "Talos Node"
 
     networkInterfaces:
-      - &compute01-br0
-        interface: br0
-        bridge:
-          stp:
-            enabled: true
-          interfaces:
-            - enp133s0f0np0
+      - &compute01-eth01
+        interface: enp133s0f0np0
         addresses:
           - 192.168.102.17/24
           - 2600:1700:541:fcc:9a03::a101/64
@@ -62,16 +57,12 @@ nodes:
             metric: 1024
         vip:
           ip: 192.168.102.30
+        dhcp: false
+        mtu: 9000
         vlans:
           - vlanId: 300
             mtu: 1500
             dhcp: false
-        dhcp: false
-        mtu: 9000
-      - &compute01-nic01
-        interface: enp133s0f0np0
-        dhcp: false
-        mtu: 9000
     extraManifests:
       - ./watchdog.yaml
 
@@ -80,12 +71,11 @@ nodes:
     controlPlane: true
     installDisk: /dev/sda
     networkInterfaces:
-      - <<: *compute01-br0
+      - <<: *compute01-eth01
         addresses:
           - 192.168.102.18/24
           - 2600:1700:541:fcc:9a03::a102/64
           - fd80:383:1a38::18/64
-      - <<: *compute01-nic01
     machineSpec: *compute01-machineSpec
     schematic: *compute01-schematic
     extensionServices:
@@ -98,12 +88,11 @@ nodes:
     controlPlane: true
     installDisk: /dev/sda
     networkInterfaces:
-      - <<: *compute01-br0
+      - <<: *compute01-eth01
         addresses:
           - 192.168.102.19/24
           - 2600:1700:541:fcc:9a03::a103/64
           - fd80:383:1a38::19/64
-      - <<: *compute01-nic01
     machineSpec: *compute01-machineSpec
     schematic: *compute01-schematic
     extensionServices:
@@ -194,6 +183,10 @@ controlPlane:
           sunrpc.tcp_max_slot_table_entries: 128 # 10Gb/s | NFS
           user.max_user_namespaces: 11255        # User Namespaces
           vm.nr_hugepages: 1024                  # PostgreSQL
+          # disable slaac on vlan interface since it's only used for multus attachments aand not the host
+          # / is a control character for '.' so enp1a0cb0e/300 becomes enp1a0cb0e.300
+          net.ipv6.conf.enp1a0cb0e/300.autoconf: 0
+          net.ipv6.conf.enp1a0cb0e/300.accept_ra: 0
         install:
           bootloader: true
           wipe: true
@@ -225,47 +218,47 @@ controlPlane:
           - time.cloudflare.com # leave it as cloudflare but the router will hijack this and respond
     # bridge mac address hackery until https://github.com/siderolabs/talos/issues/10962 is releases
     # inspired by similiar from https://github.com/JJGadgets/Biohazard
-    - &bridgeMacHackery |
-      machine:
-        pods:
-          - apiVersion: v1
-            kind: Pod
-            metadata:
-              name: &name "br-macaddr-hackery"
-              namespace: "kube-system"
-            spec:
-              hostNetwork: true
-              hostPID: true
-              restartPolicy: OnFailure
-              containers:
-                - &ct
-                  name: bridge-mac-set
-                  image: "alpine:latest"
-                  command: ["/bin/sh", "-c"]
-                  args:
-                    - |
-                      duration=600
-                      endTime=$(( $(date +%s) + duration ))
-                      while [ $(date +%s) -lt $$endTime ]; do
-                        for br in $(brctl show | awk '!/bridge name/' | cut -f1); do
-                          ip link show dev $$br
-                          ip link set $$br address $(brctl showmacs $$br | grep "0.00" | grep "  1" | grep "yes" | head -n 1 | cut -f2)
-                          ip link show dev $$br
-                        done
-                        sleep 5
-                      done
-                  securityContext:
-                    privileged: true
-                  resources:
-                    requests:
-                      cpu: 0m
-                      memory: 5Mi
-                    limits:
-                      cpu: 100m
-                      memory: 64Mi
+    # - &bridgeMacHackery |
+    #   machine:
+    #     pods:
+    #       - apiVersion: v1
+    #         kind: Pod
+    #         metadata:
+    #           name: &name "br-macaddr-hackery"
+    #           namespace: "kube-system"
+    #         spec:
+    #           hostNetwork: true
+    #           hostPID: true
+    #           restartPolicy: OnFailure
+    #           containers:
+    #             - &ct
+    #               name: bridge-mac-set
+    #               image: "alpine:latest"
+    #               command: ["/bin/sh", "-c"]
+    #               args:
+    #                 - |
+    #                   duration=600
+    #                   endTime=$(( $(date +%s) + duration ))
+    #                   while [ $(date +%s) -lt $$endTime ]; do
+    #                     for br in $(brctl show | awk '!/bridge name/' | cut -f1); do
+    #                       ip link show dev $$br
+    #                       ip link set $$br address $(brctl showmacs $$br | grep "0.00" | grep "  1" | grep "yes" | head -n 1 | cut -f2)
+    #                       ip link show dev $$br
+    #                     done
+    #                     sleep 5
+    #                   done
+    #               securityContext:
+    #                 privileged: true
+    #               resources:
+    #                 requests:
+    #                   cpu: 0m
+    #                   memory: 5Mi
+    #                 limits:
+    #                   cpu: 100m
+    #                   memory: 64Mi
 worker:
   patches:
     - *disableSearchDomainPatch
     - *nameServersPatch
     - *machinePatches
-    - *bridgeMacHackery
+    # - *bridgeMacHackery
