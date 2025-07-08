@@ -10,3 +10,4 @@ spec:
   subnetRouter:
     advertiseRoutes:
       - "192.168.102.0/24"
+      - "192.168.38.0/24"
