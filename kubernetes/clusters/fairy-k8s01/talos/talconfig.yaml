@@ -59,9 +59,13 @@ nodes:
         dhcp: false
         mtu: 1500
         vlans:
-          - vlanId: 300
+          - &compute01-vlan300
+            vlanId: 300
             mtu: 1500
             dhcp: false
+            # hack...without an IP on the vlan the macvlan doesn't work
+            addresses:
+              - 100.64.0.1/32
     extraManifests:
       - ./watchdog.yaml
 
@@ -74,6 +78,10 @@ nodes:
         addresses:
           - 10.189.2.6/27
           - fd2b:ec92:e230:f370::206/64
+        vlans:
+          - <<: *compute01-vlan300
+            addresses:
+              - 100.64.0.2/32
     machineSpec: *compute01-machineSpec
     schematic: *compute01-schematic
     extensionServices:
@@ -90,6 +98,10 @@ nodes:
         addresses:
           - 10.189.2.7/27
           - fd2b:ec92:e230:f370::207/64
+        vlans:
+          - <<: *compute01-vlan300
+            addresses:
+              - 100.64.0.3/32
     machineSpec: *compute01-machineSpec
     schematic: *compute01-schematic
     extensionServices:
@@ -184,7 +196,7 @@ controlPlane:
           # disable slaac on vlan interface since it's only used for multus attachments aand not the host
           # / is a control character for '.' so enp1a0cb0e/300 becomes enp1a0cb0e.300
           net.ipv6.conf.enp1a0cb0e/300.autoconf: 0
-          net.ipv6.conf.enp1a0cb0e/300.accept_ra: 0
+          net.ipv6.conf.enp1a0cb0e/300.accept_ra: 1
         install:
           bootloader: true
           wipe: true
