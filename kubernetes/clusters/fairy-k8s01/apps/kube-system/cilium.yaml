@@ -29,6 +29,7 @@ spec:
         - op: add
           path: /spec/values
           value:
+            devices: br0
             bandwidthManager:
               enabled: true
               bbr: true
