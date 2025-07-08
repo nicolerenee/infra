@@ -45,8 +45,18 @@ nodes:
               configure system description "Talos Node"
 
     networkInterfaces:
-      - &compute01-eth01
+      - &compute01-nic0
         interface: enp133s0f0np0
+        dhcp: false
+        bridgePort:
+          master: br0
+      - &compute01-br0
+        interface: br0
+        bridge:
+          stp:
+            enabled: true
+          vlan:
+            vlanFiltering: true
         addresses:
           - 10.189.2.5/27
           - fd2b:ec92:e230:f370::205/64
@@ -70,7 +80,8 @@ nodes:
     controlPlane: true
     installDisk: /dev/sda
     networkInterfaces:
-      - <<: *compute01-eth01
+      - <<: *compute01-nic0
+      - <<: *compute01-br0
         addresses:
           - 10.189.2.6/27
           - fd2b:ec92:e230:f370::206/64
@@ -86,7 +97,8 @@ nodes:
     controlPlane: true
     installDisk: /dev/sda
     networkInterfaces:
-      - <<: *compute01-eth01
+      - <<: *compute01-nic0
+      - <<: *compute01-br0
         addresses:
           - 10.189.2.7/27
           - fd2b:ec92:e230:f370::207/64
@@ -182,9 +194,9 @@ controlPlane:
           user.max_user_namespaces: 11255        # User Namespaces
           vm.nr_hugepages: 1024                  # PostgreSQL
           # disable slaac on vlan interface since it's only used for multus attachments aand not the host
-          # / is a control character for '.' so enp1a0cb0e/300 becomes enp1a0cb0e.300
-          net.ipv6.conf.enp1a0cb0e/300.autoconf: 0
-          net.ipv6.conf.enp1a0cb0e/300.accept_ra: 0
+          # / is a control character for '.' so br0/300 becomes br0.300
+          net.ipv6.conf.br0/300.autoconf: 0
+          net.ipv6.conf.br0/300.accept_ra: 0
         install:
           bootloader: true
           wipe: true
