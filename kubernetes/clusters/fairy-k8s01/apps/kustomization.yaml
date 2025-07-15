@@ -13,7 +13,6 @@ resources:
   - ./home-automation
   - ./kube-system
   - ./media
-  - ./metallb
   - ./observability
   - ./rook-ceph
   - ./spegel
