@@ -33,6 +33,8 @@ spec:
             bandwidthManager:
               enabled: true
               bbr: true
+            bgpControlPlane:
+              enabled: true
             bpf:
               datapathMode: netkit
               preallocateMaps: true
