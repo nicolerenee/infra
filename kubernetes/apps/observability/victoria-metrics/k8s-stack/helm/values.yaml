@@ -139,3 +139,38 @@ kubeScheduler:
 
 kubeProxy:
   enabled: false
+
+kubelet:
+  enabled: true
+  vmScrape:
+    kind: VMNodeScrape
+    spec:
+      scheme: "https"
+      honorLabels: true
+      interval: "30s"
+      scrapeTimeout: "5s"
+      tlsConfig:
+        insecureSkipVerify: true
+        caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      # drop high cardinality label and useless metrics for cadvisor and kubelet
+      metricRelabelConfigs:
+        - action: labeldrop
+          regex: (uid)
+        - action: labeldrop
+          regex: (id|name)
+        - action: drop
+          source_labels: [__name__]
+          regex: (rest_client_request_duration_seconds_bucket|rest_client_request_duration_seconds_sum|rest_client_request_duration_seconds_count)
+        - action: labeldrop
+          regex: "cpu_feature_node_kubevirt_io_.*|host_model_required_features_node_kubevirt_io_.*|machine_type_node_kubevirt_io_.*"
+      relabelConfigs:
+        - action: labelmap
+          regex: __meta_kubernetes_node_label_(.+)
+        - sourceLabels: [__metrics_path__]
+          targetLabel: metrics_path
+        - targetLabel: job
+          replacement: kubelet
+      # ignore timestamps of cadvisor's metrics by default
+      # more info here https://github.com/VictoriaMetrics/VictoriaMetrics/issues/4697#issuecomment-1656540535
+      honorTimestamps: false
