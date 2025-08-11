@@ -29,7 +29,7 @@ jobs:
     outputs:
       cluster-list: ${{ steps.list.outputs.clusters }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - id: list
         name: Get Cluster List
         working-directory: ./kubernetes/clusters
@@ -47,7 +47,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - name: Setup Flux CLI
         uses: fluxcd/flux2/action@6bf37f6a560fd84982d67f853162e4b3c2235edb # v2.6.4
       - uses: allenporter/flux-local/action/test@53ed3899b2b0dce255069e45e94d91d529c78007 # 7.8.0
@@ -69,12 +69,12 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout Pull Request Branch
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           path: pull
 
       - name: Checkout Default Branch
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           ref: "${{ github.event.repository.default_branch }}"
           path: default
