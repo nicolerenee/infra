@@ -11,6 +11,8 @@ resources:
   - ./grafana-operator.yaml
   - ./grafana-instance.yaml
   - ./prometheus-operator-crds.yaml
+  - ./silence-operator.yaml
+  - ./silences.yaml
   - ./victoria-logs.yaml
   - ./vm-operator-crds.yaml
   - ./vm-k8s-stack.yaml
