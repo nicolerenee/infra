@@ -1,0 +1,15 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/observability.giantswarm.io/silence_v1alpha2.json
+# scrypted pvc is meant to use all space, so ignore any alerts for it
+apiVersion: observability.giantswarm.io/v1alpha2
+kind: Silence
+metadata:
+  name: scrypted-pvc-diskspace-warning
+spec:
+  matchers:
+    - name: alertname
+      value: KubePersistentVolumeFillingUp
+    - name: namespace
+      value: home-automation
+    - name: persistentvolumeclaim
+      value: store01-vault01-scrypted
