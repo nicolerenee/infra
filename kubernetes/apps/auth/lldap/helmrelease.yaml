@@ -26,7 +26,7 @@ spec:
           main:
             image:
               repository: ghcr.io/lldap/lldap
-              tag: v0.6.1-alpine-rootless@sha256:7e1c16090167c49d34e9e98f9f7d3fce97d3d86de8d2f62eedefad3dca3d270b
+              tag: v0.6.2-alpine-rootless@sha256:35df821899ec54c11eaab395e9c68e191e2582592cba343b0a904f6821aadcd2
             probes:
               startup:
                 enabled: true
