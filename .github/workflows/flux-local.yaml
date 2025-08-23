@@ -125,16 +125,54 @@ jobs:
           summary=$("${DYFFCMD[@]}" --output brief)
           echo summary="${summary//$'\n'/ }" >> $GITHUB_OUTPUT
 
+          # Generate full diff
           "${DYFFCMD[@]}" --output github > diff-results
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo 'diff<<$EOF' >> $GITHUB_OUTPUT
-          cat diff-results >> $GITHUB_OUTPUT
-          echo '$EOF' >> $GITHUB_OUTPUT
+          
+          # Check diff size (GitHub comment limit is ~65k characters, we'll use 50k as safe limit)
+          diff_size=$(wc -c < diff-results)
+          echo "Diff size: $diff_size characters"
+          
+          if [ "$diff_size" -gt 50000 ]; then
+            echo "diff_too_large=true" >> $GITHUB_OUTPUT
+            echo "diff_size=$diff_size" >> $GITHUB_OUTPUT
+            
+            # Create truncated version for comment (first 40k chars + truncation notice)
+            head -c 40000 diff-results > diff-truncated
+            echo "" >> diff-truncated
+            echo "" >> diff-truncated
+            echo "... (diff truncated - full diff available in artifacts)" >> diff-truncated
+            echo "Total diff size: $diff_size characters" >> diff-truncated
+            
+            # Set truncated diff for comment
+            EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+            echo 'diff<<$EOF' >> $GITHUB_OUTPUT
+            cat diff-truncated >> $GITHUB_OUTPUT
+            echo '$EOF' >> $GITHUB_OUTPUT
+          else
+            echo "diff_too_large=false" >> $GITHUB_OUTPUT
+            
+            # Set full diff for comment
+            EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+            echo 'diff<<$EOF' >> $GITHUB_OUTPUT
+            cat diff-results >> $GITHUB_OUTPUT
+            echo '$EOF' >> $GITHUB_OUTPUT
+          fi
 
+          # Always add to step summary (GitHub handles large summaries better)
           echo '### Diff' >> $GITHUB_STEP_SUMMARY
           echo '```diff' >> $GITHUB_STEP_SUMMARY
-          cat diff-results >> $GITHUB_STEP_SUMMARY
+          if [ "$diff_size" -gt 100000 ]; then
+            # Even step summary has limits, so truncate for very large diffs
+            head -c 90000 diff-results >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "... (diff truncated in summary - full diff available in artifacts)" >> $GITHUB_STEP_SUMMARY
+          else
+            cat diff-results >> $GITHUB_STEP_SUMMARY
+          fi
           echo '```' >> $GITHUB_STEP_SUMMARY
+          
+          # Save full diff for artifact upload
+          cp diff-results "diff-${{ matrix.cluster }}.txt"
 
       - name: Generate Token
         uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
@@ -144,7 +182,15 @@ jobs:
           private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
 
       - if: ${{ steps.diff.outputs.diff != '' }}
-        name: Add Comment
+        name: Upload Full Diff as Artifact
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: flux-diff-${{ matrix.cluster }}
+          path: diff-${{ matrix.cluster }}.txt
+          retention-days: 30
+
+      - if: ${{ steps.diff.outputs.diff != '' && steps.diff.outputs.diff_too_large != 'true' }}
+        name: Add Comment (Normal Size)
         uses: marocchino/sticky-pull-request-comment@773744901bac0e8cbb5a0dc842800d45e9b2b405 # v2.9.4
         with:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -157,6 +203,35 @@ jobs:
             ```diff
             ${{ steps.diff.outputs.diff }}
             ```
+
+      - if: ${{ steps.diff.outputs.diff != '' && steps.diff.outputs.diff_too_large == 'true' }}
+        name: Add Comment (Large Diff)
+        uses: marocchino/sticky-pull-request-comment@773744901bac0e8cbb5a0dc842800d45e9b2b405 # v2.9.4
+        with:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          header: ${{ github.event.pull_request.number }}/kubernetes-dyff/${{ matrix.cluster }}
+          message: |
+            ### ${{ matrix.cluster }} Diff
+
+            There were ${{ steps.diff.outputs.summary }}
+
+            ⚠️ **Large Diff Detected** (${{ steps.diff.outputs.diff_size }} characters)
+            
+            The diff is too large to display in a comment. You can:
+            1. 📥 **Download the full diff** from the [workflow artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            2. 📋 **View in the workflow summary** (may be truncated if very large)
+            3. 👀 **Preview below** (truncated to first 40k characters)
+
+            <details>
+            <summary>🔍 Click to view truncated diff preview</summary>
+
+            ```diff
+            ${{ steps.diff.outputs.diff }}
+            ```
+
+            </details>
+
+            💡 **Tip**: Large diffs often indicate significant changes. Consider reviewing the full diff artifact for complete details.
 
       - if: ${{ steps.diff.outputs.diff == '' }}
         name: Add Comment
