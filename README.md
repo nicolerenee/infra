@@ -77,8 +77,10 @@ kubernetes/
 ### Media & Entertainment
 - **Emby/Jellyfin**: Media streaming servers
 - **Sonarr/Radarr/Lidarr**: Media acquisition and management
+- **Bazarr**: Subtitle management
 - **SABnzbd**: Usenet downloader
 - **Prowlarr**: Indexer management
+- **Recyclarr**: Quality profile management
 
 ### Home Automation
 - **Home Assistant**: Home automation platform
@@ -94,6 +96,7 @@ kubernetes/
 
 ### Infrastructure Services
 - **Authentik**: Identity provider and SSO
+- **LLDAP**: Lightweight LDAP server
 - **External DNS**: Automatic DNS record management
 - **System Upgrade Controller**: Automated node updates (Kubernetes and Talos)
 

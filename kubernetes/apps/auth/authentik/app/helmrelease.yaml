@@ -65,6 +65,8 @@ spec:
         use_tls: true
 
     server:
+      annotations:
+        reloader.stakater.com/auto: "true"
       metrics:
         prometheus:
           serviceMonitor:

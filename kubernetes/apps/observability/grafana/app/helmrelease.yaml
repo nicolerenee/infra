@@ -31,6 +31,8 @@ spec:
     remediation:
       retries: 3
   values:
+    podAnnotations:
+      reloader.stakater.com/auto: "true"
     deploymentStrategy:
       type: Recreate
     # admin:
