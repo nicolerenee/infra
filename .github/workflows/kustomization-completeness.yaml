@@ -74,26 +74,33 @@ jobs:
                 fi
               fi
             done
-            
-            # Check for resources listed but files don't exist
+
+            # Check for resources listed but files/directories don't exist
             missing_files=""
             for resource in $current_resources; do
               if [ -n "$resource" ]; then
-                resource_file="$dir/$resource"
-                if [ ! -f "$resource_file" ]; then
+                resource_path="$dir/$resource"
+                # Check if it's neither a file nor a directory
+                if [ ! -f "$resource_path" ] && [ ! -d "$resource_path" ]; then
                   missing_files="$missing_files $resource"
                 fi
               fi
             done
-            
+
             # Report findings
             if [ -n "$missing_in_kustomization" ] || [ -n "$missing_files" ]; then
               echo "❌ Issues found in $kustomization_file:"
               if [ -n "$missing_in_kustomization" ]; then
                 echo "   Missing from kustomization:$missing_in_kustomization"
+                # Check if any missing files are commented out
+                for missing_file in $missing_in_kustomization; do
+                  if grep -q "# - .*$missing_file" "$kustomization_file"; then
+                    echo "     ℹ️  Note: $missing_file is commented out (may be intentionally excluded)"
+                  fi
+                done
               fi
               if [ -n "$missing_files" ]; then
-                echo "   Referenced but missing files:$missing_files"
+                echo "   Referenced but missing files/directories:$missing_files"
               fi
               echo "$kustomization_file" >> /tmp/problematic_kustomizations.txt
             else
