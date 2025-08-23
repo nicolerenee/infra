@@ -99,7 +99,7 @@ kubernetes/
 
 ## 🔧 Hardware & Infrastructure
 
-### Atlantis Cluster (Production)
+### Atlantis Cluster
 - **5 nodes** with Intel hardware and 10Gb networking
 - **Bonded network interfaces** with LACP for redundancy
 - **NVMe boot storage** for quick boot speed
@@ -109,7 +109,7 @@ kubernetes/
 ### Fairy Cluster
 - **3 nodes** (all control plane) with advanced security features
 - **Secure Boot** and **UKI** enabled for enhanced security
-- **NVMe storage** for boot device and ceoh storage
+- **NVMe storage** for boot device and ceph storage
 - **Intel integrated graphics** support for media workloads
 
 ## 🚦 Getting Started
