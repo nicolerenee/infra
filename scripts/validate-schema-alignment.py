@@ -33,7 +33,8 @@ class SchemaAlignmentValidator:
     def __init__(self):
         # Known schema mappings for common mismatches
         self.known_mappings = {
-            # Kustomization files
+            # Kustomization files - schemastore.org schema supports both v1alpha1 and v1beta1
+            'kustomize.config.k8s.io/v1alpha1': 'https://www.schemastore.org/kustomization.json',
             'kustomize.config.k8s.io/v1beta1': 'https://www.schemastore.org/kustomization.json',
 
             # Flux resources
@@ -44,6 +45,12 @@ class SchemaAlignmentValidator:
             # External Secrets
             'external-secrets.io/v1': 'clustersecretstore_v1.json',
             'external-secrets.io/v1beta1': 'clustersecretstore_v1beta1.json',
+        }
+
+        # Schema URLs that are valid for multiple API versions
+        self.multi_version_schemas = {
+            'https://www.schemastore.org/kustomization.json': ['1alpha1', '1beta1'],
+            'https://json.schemastore.org/kustomization': ['1alpha1', '1beta1'],
         }
 
     def extract_schema_version(self, schema_url: str) -> Optional[str]:
@@ -119,7 +126,18 @@ class SchemaAlignmentValidator:
                     schema_version = self.extract_schema_version(schema_url)
                     api_version_part = self.extract_api_version(api_version)
 
-                    if schema_version and api_version_part and schema_version != api_version_part:
+                    # Check if this schema supports multiple API versions
+                    is_valid = False
+                    if schema_url in self.multi_version_schemas:
+                        if api_version_part in self.multi_version_schemas[schema_url]:
+                            is_valid = True
+
+                    # Check if this is a known valid mapping
+                    if api_version in self.known_mappings:
+                        if schema_url == self.known_mappings[api_version]:
+                            is_valid = True
+
+                    if schema_version and api_version_part and not is_valid and schema_version != api_version_part:
                         expected_schema = self.get_expected_schema(api_version, kind)
                         mismatches.append({
                             'document': i,
