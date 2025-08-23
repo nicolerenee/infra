@@ -22,8 +22,6 @@ jobs:
             .github/workflows/schema-validation.yaml
             kubernetes/**/*.yaml
             kubernetes/**/*.yml
-            apps/**/*.yaml
-            apps/**/*.yml
 
   validate-schemas:
     if: ${{ needs.filter.outputs.changed-files != '[]' }}
@@ -43,7 +41,7 @@ jobs:
         run: npm install -g ajv-cli@5.0.0
 
       - name: Install yq for YAML processing
-        uses: mikefarah/yq@c35ec752e38ea0c096d3c44dd13b0a06d60c64cc # v4.44.3
+        uses: mikefarah/yq@v4.44.3
 
       - name: Validate YAML Syntax
         run: |
@@ -53,7 +51,7 @@ jobs:
           total_files=0
           
           # Find all YAML files
-          for file in $(find kubernetes apps -name "*.yaml" -o -name "*.yml" -type f); do
+          for file in $(find kubernetes -name "*.yaml" -o -name "*.yml" -type f); do
             total_files=$((total_files + 1))
             
             # Check YAML syntax
@@ -109,7 +107,7 @@ jobs:
           echo "🔍 Checking all schema URLs are accessible..."
           
           # Extract all schema URLs from files
-          schema_urls=$(find kubernetes apps -name "*.yaml" -exec grep -h "yaml-language-server.*schema" {} \; 2>/dev/null | \
+          schema_urls=$(find kubernetes -name "*.yaml" -exec grep -h "yaml-language-server.*schema" {} \; 2>/dev/null | \
                        sed -n 's/.*\$schema=\([^[:space:]]*\).*/\1/p' | \
                        sort -u)
           
@@ -143,7 +141,7 @@ jobs:
           validated_count=0
           
           # Validate HelmRelease files
-          for file in $(find kubernetes apps -name "*.yaml" -exec grep -l "kind: HelmRelease" {} \; 2>/dev/null); do
+          for file in $(find kubernetes -name "*.yaml" -exec grep -l "kind: HelmRelease" {} \; 2>/dev/null); do
             echo "Validating HelmRelease: $file"
             if curl -s -f https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json > /tmp/helmrelease-schema.json; then
               if yq eval -o=json "$file" | ajv validate -s /tmp/helmrelease-schema.json --errors=text >/dev/null 2>&1; then
@@ -156,7 +154,7 @@ jobs:
           done
           
           # Validate ExternalSecret files
-          for file in $(find kubernetes apps -name "*.yaml" -exec grep -l "kind: ExternalSecret" {} \; 2>/dev/null); do
+          for file in $(find kubernetes -name "*.yaml" -exec grep -l "kind: ExternalSecret" {} \; 2>/dev/null); do
             echo "Validating ExternalSecret: $file"
             if curl -s -f https://kubernetes-schemas.pages.dev/external-secrets.io/externalsecret_v1.json > /tmp/externalsecret-schema.json; then
               if yq eval -o=json "$file" | ajv validate -s /tmp/externalsecret-schema.json --errors=text >/dev/null 2>&1; then

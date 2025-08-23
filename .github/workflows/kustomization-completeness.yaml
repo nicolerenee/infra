@@ -22,8 +22,6 @@ jobs:
             .github/workflows/kustomization-completeness.yaml
             kubernetes/**/*.yaml
             kubernetes/**/*.yml
-            apps/**/*.yaml
-            apps/**/*.yml
 
   check-completeness:
     if: ${{ needs.filter.outputs.changed-files != '[]' }}
@@ -35,7 +33,10 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Install yq for YAML processing
-        uses: mikefarah/yq@c35ec752e38ea0c096d3c44dd13b0a06d60c64cc # v4.44.3
+        uses: mikefarah/yq@v4.44.3
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@3e0aec4d80787158d308d7b364cb1b702e7feb7f # v4.0.0
 
       - name: Check App-Level Kustomizations
         run: |
@@ -220,12 +221,14 @@ jobs:
         run: |
           echo "🔍 Testing kustomization builds to ensure they work..."
           
-          failed_builds=()
-          
           # Test app-level kustomizations
-          find kubernetes/apps -name "kustomization.yaml" -type f | while IFS= read -r kustomization_file; do
+          failed_count=0
+          total_count=0
+          
+          for kustomization_file in $(find kubernetes/apps -name "kustomization.yaml" -type f); do
             dir=$(dirname "$kustomization_file")
             echo "Testing build: $dir"
+            total_count=$((total_count + 1))
             
             # Try to build the kustomization (dry-run)
             if kubectl kustomize "$dir" >/dev/null 2>&1; then
@@ -233,13 +236,15 @@ jobs:
             else
               echo "❌ $dir - Build failed"
               echo "$dir" >> /tmp/failed_builds.txt
+              failed_count=$((failed_count + 1))
             fi
           done
           
           # Test cluster-level kustomizations
-          find kubernetes/clusters -path "*/apps/kustomization.yaml" -type f | while IFS= read -r kustomization_file; do
+          for kustomization_file in $(find kubernetes/clusters -path "*/apps/kustomization.yaml" -type f); do
             dir=$(dirname "$kustomization_file")
             echo "Testing build: $dir"
+            total_count=$((total_count + 1))
             
             # Try to build the kustomization (dry-run)
             if kubectl kustomize "$dir" >/dev/null 2>&1; then
@@ -247,13 +252,16 @@ jobs:
             else
               echo "❌ $dir - Build failed"
               echo "$dir" >> /tmp/failed_builds.txt
+              failed_count=$((failed_count + 1))
             fi
           done
+          
+          echo "📊 Tested $total_count kustomizations"
           
           # Check results
           if [ -f /tmp/failed_builds.txt ]; then
             echo ""
-            echo "💥 Found kustomization builds that failed:"
+            echo "💥 Found $failed_count kustomization builds that failed:"
             cat /tmp/failed_builds.txt
             echo ""
             echo "These kustomizations have syntax or reference errors."
