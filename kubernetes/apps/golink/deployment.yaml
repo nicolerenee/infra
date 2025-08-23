@@ -3,10 +3,12 @@ kind: Deployment
 metadata:
   name: golink
 spec:
+  strategy:
+    type: Recreate
   template:
     spec:
       securityContext:
-          fsGroup: 1000
+        fsGroup: 1000
       containers:
         - image: ghcr.io/tailscale/golink:main@sha256:6fa5c739f329ef4add6653ff9be7241694881ba15068ca2d7084b3362ffc7856
           name: golink
