@@ -71,7 +71,6 @@ kubernetes/
 - **Gateway API** for modern ingress management
 - **MetalLB** in BGP mode for LoadBalancer services
 - **Tailscale** integration for secure remote access
-- **Cloudflare Tunnel** for external connectivity
 
 ## 🏠 Applications & Services
 
