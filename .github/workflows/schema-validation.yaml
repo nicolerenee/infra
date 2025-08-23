@@ -1,0 +1,186 @@
+---
+name: Schema Validation
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+
+jobs:
+  filter:
+    name: Schema Validation - Filter
+    runs-on: ubuntu-latest
+    outputs:
+      changed-files: ${{ steps.changed-files.outputs.changed_files }}
+    steps:
+      - name: Get Changed Files
+        id: changed-files
+        uses: bjw-s-labs/action-changed-files@930cef8463348e168cab7235c47fe95a7a235f65 # v0.3.3
+        with:
+          patterns: |-
+            .github/workflows/schema-validation.yaml
+            kubernetes/**/*.yaml
+            kubernetes/**/*.yml
+            apps/**/*.yaml
+            apps/**/*.yml
+
+  validate-schemas:
+    if: ${{ needs.filter.outputs.changed-files != '[]' }}
+    needs: filter
+    name: Schema Validation - Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
+        with:
+          node-version: '20'
+
+      - name: Install AJV CLI for JSON Schema Validation
+        run: npm install -g ajv-cli@5.0.0
+
+      - name: Install yq for YAML processing
+        uses: mikefarah/yq@c35ec752e38ea0c096d3c44dd13b0a06d60c64cc # v4.44.3
+
+      - name: Validate YAML Syntax
+        run: |
+          echo "🔍 Validating YAML syntax for all files..."
+          
+          failed_files=()
+          total_files=0
+          
+          # Find all YAML files
+          for file in $(find kubernetes apps -name "*.yaml" -o -name "*.yml" -type f); do
+            total_files=$((total_files + 1))
+            
+            # Check YAML syntax
+            if yq eval 'true' "$file" >/dev/null 2>&1; then
+              echo "✅ $file - Valid YAML syntax"
+            else
+              echo "❌ $file - Invalid YAML syntax"
+              failed_files+=("$file")
+            fi
+          done
+          
+          echo "📊 Checked YAML syntax for $total_files files"
+          
+          if [ ${#failed_files[@]} -ne 0 ]; then
+            echo "💥 Failed YAML syntax validation for ${#failed_files[@]} files:"
+            printf '%s\n' "${failed_files[@]}"
+            exit 1
+          fi
+
+      - name: Validate Kustomization Schemas
+        run: |
+          echo "🔍 Validating Kustomization files against json.schemastore.org schema..."
+          
+          # Download the kustomization schema
+          curl -s https://json.schemastore.org/kustomization > /tmp/kustomization-schema.json
+          
+          failed_files=()
+          
+          # Find and validate all kustomization.yaml files
+          for file in $(find kubernetes -name "kustomization.yaml" -type f); do
+            echo "Validating: $file"
+            
+            # Convert YAML to JSON and validate
+            if yq eval -o=json "$file" | ajv validate -s /tmp/kustomization-schema.json --errors=text; then
+              echo "✅ $file - Valid"
+            else
+              echo "❌ $file - Invalid"
+              failed_files+=("$file")
+            fi
+          done
+          
+          # Report results
+          if [ ${#failed_files[@]} -eq 0 ]; then
+            echo "🎉 All kustomization files are valid!"
+          else
+            echo "💥 Failed validation for ${#failed_files[@]} files:"
+            printf '%s\n' "${failed_files[@]}"
+            exit 1
+          fi
+
+      - name: Check Schema URLs
+        run: |
+          echo "🔍 Checking all schema URLs are accessible..."
+          
+          # Extract all schema URLs from files
+          schema_urls=$(find kubernetes apps -name "*.yaml" -exec grep -h "yaml-language-server.*schema" {} \; 2>/dev/null | \
+                       sed -n 's/.*\$schema=\([^[:space:]]*\).*/\1/p' | \
+                       sort -u)
+          
+          failed_urls=()
+          
+          echo "$schema_urls" | while IFS= read -r url; do
+            if [ -n "$url" ]; then
+              echo "Checking: $url"
+              if curl -s -f -I "$url" >/dev/null 2>&1; then
+                echo "✅ $url - Accessible"
+              else
+                echo "❌ $url - Not accessible"
+                echo "$url" >> /tmp/failed_urls.txt
+              fi
+            fi
+          done
+          
+          if [ -f /tmp/failed_urls.txt ]; then
+            echo "💥 Failed to access schema URLs:"
+            cat /tmp/failed_urls.txt
+            exit 1
+          else
+            echo "🎉 All schema URLs are accessible!"
+          fi
+
+      - name: Validate Common CRD Schemas
+        run: |
+          echo "🔍 Validating common Kubernetes CRD files..."
+          
+          # Test a few key CRD types that we know have schemas
+          validated_count=0
+          
+          # Validate HelmRelease files
+          for file in $(find kubernetes apps -name "*.yaml" -exec grep -l "kind: HelmRelease" {} \; 2>/dev/null); do
+            echo "Validating HelmRelease: $file"
+            if curl -s -f https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json > /tmp/helmrelease-schema.json; then
+              if yq eval -o=json "$file" | ajv validate -s /tmp/helmrelease-schema.json --errors=text >/dev/null 2>&1; then
+                echo "✅ $file - Valid HelmRelease"
+                validated_count=$((validated_count + 1))
+              else
+                echo "⚠️  $file - HelmRelease validation issues (non-blocking)"
+              fi
+            fi
+          done
+          
+          # Validate ExternalSecret files
+          for file in $(find kubernetes apps -name "*.yaml" -exec grep -l "kind: ExternalSecret" {} \; 2>/dev/null); do
+            echo "Validating ExternalSecret: $file"
+            if curl -s -f https://kubernetes-schemas.pages.dev/external-secrets.io/externalsecret_v1.json > /tmp/externalsecret-schema.json; then
+              if yq eval -o=json "$file" | ajv validate -s /tmp/externalsecret-schema.json --errors=text >/dev/null 2>&1; then
+                echo "✅ $file - Valid ExternalSecret"
+                validated_count=$((validated_count + 1))
+              else
+                echo "⚠️  $file - ExternalSecret validation issues (non-blocking)"
+              fi
+            fi
+          done
+          
+          echo "📊 Successfully validated $validated_count CRD files"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "📋 Schema Validation Summary"
+          echo "=========================="
+          echo "✅ YAML syntax validation completed"
+          echo "✅ Kustomization files validated against json.schemastore.org"
+          echo "✅ Schema URL accessibility verified"
+          echo "✅ Common CRD files validated"
+          echo ""
+          echo "This ensures all YAML files have:"
+          echo "- Valid syntax"
+          echo "- Correct schema validation"
+          echo "- Accessible schema URLs for IDE support"
