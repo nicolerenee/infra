@@ -45,8 +45,6 @@ spec:
       retries: 3
   values:
     fullnameOverride: *app
-    podAnnotations:
-      reloader.stakater.com/auto: "true"
     extraArgs:
       - --gateway-label-filter=gateway.freckle.systems/dns==cloudflare
     sources:
