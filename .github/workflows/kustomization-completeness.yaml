@@ -48,12 +48,17 @@ jobs:
             echo "Checking: $kustomization_file"
             
             # Get current resources from kustomization.yaml (using grep instead of yq for reliability)
-            current_resources=$(grep -A 20 "resources:" "$kustomization_file" | \
-                               grep "^  - " | \
-                               sed 's/^  - //' | \
-                               sed 's|^\./||' | \
-                               sort)
-            
+            # Only get resources under the "resources:" section, stop at other sections
+            current_resources=$(awk '
+              /^resources:/ { in_resources=1; next }
+              /^[a-zA-Z]/ && in_resources { in_resources=0 }
+              in_resources && /^  - / { 
+                gsub(/^  - /, ""); 
+                gsub(/^\.\//, ""); 
+                print 
+              }
+            ' "$kustomization_file" | sort)
+
             # Find all YAML files in the same directory (excluding kustomization.yaml)
             actual_files=$(find "$dir" -maxdepth 1 -name "*.yaml" -not -name "kustomization.yaml" -type f | \
                           xargs -I {} basename {} | sort)
@@ -118,13 +123,18 @@ jobs:
             dir=$(dirname "$kustomization_file")
             echo "Checking: $kustomization_file"
             
-            # Get current resources from kustomization.yaml (using grep instead of yq)
-            current_resources=$(grep -A 30 "resources:" "$kustomization_file" | \
-                               grep "^  - " | \
-                               sed 's/^  - //' | \
-                               sed 's|^\./||' | \
-                               sort)
-            
+            # Get current resources from kustomization.yaml (using awk for better parsing)
+            # Only get resources under the "resources:" section, stop at other sections
+            current_resources=$(awk '
+              /^resources:/ { in_resources=1; next }
+              /^[a-zA-Z]/ && in_resources { in_resources=0 }
+              in_resources && /^  - / { 
+                gsub(/^  - /, ""); 
+                gsub(/^\.\//, ""); 
+                print 
+              }
+            ' "$kustomization_file" | sort)
+
             # Find all directories in the same directory
             actual_dirs=$(find "$dir" -maxdepth 1 -type d -not -path "$dir" | \
                          xargs -I {} basename {} | sort)
@@ -192,8 +202,18 @@ jobs:
               
               # Check if there's a kustomization.yaml in the same directory
               if [ -f "$dir/kustomization.yaml" ]; then
-                # Check if this file is referenced in the kustomization
-                if ! grep -A 20 "resources:" "$dir/kustomization.yaml" | grep -q "$filename"; then
+                # Check if this file is referenced in the resources section
+                resources_list=$(awk '
+                  /^resources:/ { in_resources=1; next }
+                  /^[a-zA-Z]/ && in_resources { in_resources=0 }
+                  in_resources && /^  - / { 
+                    gsub(/^  - /, ""); 
+                    gsub(/^\.\//, ""); 
+                    print 
+                  }
+                ' "$dir/kustomization.yaml")
+                
+                if ! echo "$resources_list" | grep -q "^$filename$"; then
                   echo "⚠️  Orphaned file: $yaml_file"
                   echo "$yaml_file" >> /tmp/orphaned_files.txt
                 fi
