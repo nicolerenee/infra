@@ -20,6 +20,8 @@ spec:
     controllers:
       recyclarr:
         type: cronjob
+        annotations:
+          reloader.stakater.com/auto: "true"
         cronjob:
           schedule: "*/15 * * * *"
           backoffLimit: 0
