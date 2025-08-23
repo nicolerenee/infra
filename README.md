@@ -23,7 +23,7 @@ This repository manages two Kubernetes clusters using a GitOps approach:
 
 ```
 kubernetes/
-├── apps/                    # Application definitions (shared across clusters)
+├── apps/                   # Application definitions (shared across clusters)
 │   ├── auth/               # Authentication services (Authentik, LLDAP)
 │   ├── cert-manager/       # Certificate management
 │   ├── flux/               # Flux operator and instance configs
@@ -35,11 +35,11 @@ kubernetes/
 │   ├── storage/            # Storage solutions
 │   └── ...
 ├── clusters/               # Cluster-specific configurations
-│   ├── atlantis-k8s01/    # atlantis cluster configuration
-│   │   ├── apps/          # Cluster-specific app deployments
-│   │   ├── flux/          # Flux bootstrap configuration
-│   │   └── talos/         # Talos machine configurations
-│   └── fairy-k8s01/       # fairy cluster configuration
+│   ├── atlantis-k8s01/     # atlantis cluster configuration
+│   │   ├── apps/           # Cluster-specific app deployments
+│   │   ├── flux/           # Flux bootstrap configuration
+│   │   └── talos/          # Talos machine configurations
+│   └── fairy-k8s01/        # fairy cluster configuration
 └── components/             # Reusable Kustomize components
 ```
 
