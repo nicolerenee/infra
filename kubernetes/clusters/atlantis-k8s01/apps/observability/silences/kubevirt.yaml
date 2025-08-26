@@ -1,0 +1,12 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/observability.giantswarm.io/silence_v1alpha2.json
+# kubevirt causes kubeapi to complain about client certificates expiring
+# ignoring the alerts entirely until I track this down
+apiVersion: observability.giantswarm.io/v1alpha2
+kind: Silence
+metadata:
+  name: kubeapi-client-cert-alerts-ignore
+spec:
+  matchers:
+    - name: alertname
+      value: KubeClientCertificateExpiration
