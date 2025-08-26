@@ -17,3 +17,4 @@ resources:
   - sabnzbd.yaml
   - sonarr.yaml
   - vault01-store01.yaml
+  - webhook.yaml
