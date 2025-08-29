@@ -1,0 +1,110 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: bookshelf
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      bookshelf:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/pennydreadful/bookshelf
+              tag: hardcover-v0.4.19.82@sha256:9ccb2e9a5c446f5ec6bdcfa85a91dd7333314e1f46b8d37aeb052d3eb7acf449
+            env:
+              TZ: America/Chicago
+            # envFrom:
+            #   - secretRef:
+            #       name: bookshelf
+            ports:
+              - containerPort: &port 8787
+                name: http
+            probes:
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /ping
+                    port: *port
+                  initialDelaySeconds: 0
+                  timeoutSeconds: 1
+                  # this gives us 150s (5*30) to start then liveness and readiness checks begin
+                  periodSeconds: 5
+                  failureThreshold: 30
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /ping
+                    port: *port
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                cpu: 4
+                memory: 4Gi
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 3000
+        runAsGroup: 3000
+        fsGroup: 3000
+        fsGroupChangePolicy: OnRootMismatch
+    service:
+      app:
+        controller: bookshelf
+        ports:
+          app:
+            port: *port
+    route:
+      app:
+        hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
+        parentRefs:
+          - name: tailscale-media-mgmt
+            namespace: gateway
+            sectionName: https
+        rules:
+          - backendRefs:
+              - identifier: app
+                port: *port
+    persistence:
+      config:
+        enabled: true
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 10Gi
+        retain: true
+        suffix: "config"
+      media:
+        type: emptyDir
+        globalMounts:
+          - path: /media
+      tmp:
+        type: emptyDir

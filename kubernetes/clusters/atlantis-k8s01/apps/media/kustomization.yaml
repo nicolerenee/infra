@@ -8,6 +8,7 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - ./bazarr.yaml
+  - ./bookshelf.yaml
   - ./emby.yaml
   - ./prowlarr.yaml
   - ./radarr.yaml
