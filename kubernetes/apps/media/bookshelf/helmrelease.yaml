@@ -28,9 +28,9 @@ spec:
               tag: hardcover-v0.4.19.82@sha256:9ccb2e9a5c446f5ec6bdcfa85a91dd7333314e1f46b8d37aeb052d3eb7acf449
             env:
               TZ: America/Chicago
-            envFrom:
-              - secretRef:
-                  name: bookshelf
+            # envFrom:
+            #   - secretRef:
+            #       name: bookshelf
             ports:
               - containerPort: &port 8787
                 name: http
