@@ -15,3 +15,6 @@ patches:
           substituteFrom:
             - kind: ConfigMap
               name: infra-info-cluster
+            - kind: Secret
+              name: namespace-post-build-secrets
+              optional: true
