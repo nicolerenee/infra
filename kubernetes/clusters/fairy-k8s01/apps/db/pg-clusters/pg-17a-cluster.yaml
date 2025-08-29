@@ -37,7 +37,7 @@ spec:
       wal:
         compression: bzip2
         maxParallel: 8
-      destinationPath: s3://cloudnative-pg/fairy-k8s01/pg-17a/
+      destinationPath: s3://cloudnative-pg/fairy-k8s01/
       endpointURL: ${CF_R2_URL}
       # Note: serverName version needs to be incremented
       # when recovering from an existing cnpg cluster
