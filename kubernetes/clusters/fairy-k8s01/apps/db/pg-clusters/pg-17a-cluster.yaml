@@ -4,8 +4,8 @@ kind: Cluster
 metadata:
   name: pg-17a
 spec:
-  instances: 3
-  imageName: ghcr.io/cloudnative-pg/postgresql:17
+  instances: 2
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.5-22
   primaryUpdateStrategy: unsupervised
   primaryUpdateMethod: switchover
   storage:
@@ -17,13 +17,14 @@ spec:
   postgresql:
     parameters:
       max_connections: "400"
-      shared_buffers: 256MB
+      shared_buffers: 512MB
   nodeMaintenanceWindow:
     inProgress: false
     reusePVC: true
   resources:
     requests:
       cpu: 500m
+      memory: 512Mi
     limits:
       memory: 4Gi
   monitoring:
