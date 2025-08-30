@@ -24,7 +24,7 @@ spec:
     kind: OCIRepository
     name: cloudnative-pg
   driftDetection:
-    mode: enabled
+    mode: warn
     ignore:
       # Ignore "validated" annotation which is not inserted during install
       - paths: ["/metadata/annotations/prometheus-operator-validated"]
