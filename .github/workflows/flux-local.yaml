@@ -50,7 +50,7 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - name: Setup Flux CLI
         uses: fluxcd/flux2/action@6bf37f6a560fd84982d67f853162e4b3c2235edb # v2.6.4
-      - uses: allenporter/flux-local/action/test@53ed3899b2b0dce255069e45e94d91d529c78007 # 7.8.0
+      - uses: allenporter/flux-local/action/test@2a60df63f96c8503aa74bbe16c48cd8a03a5a30f # 7.9.0
         with:
           path: kubernetes/clusters/${{ matrix.cluster }}/flux
           enable-helm: true
