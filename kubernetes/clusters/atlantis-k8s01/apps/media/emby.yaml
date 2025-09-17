@@ -34,12 +34,6 @@ spec:
         kind: HelmRelease
       patch: |-
         - op: replace
-          path: /spec/values/controllers/emby/containers/app/image
-          value:
-            # stuck on beta until a stable release comes out ahead of it and I can get off of it
-            repository: ghcr.io/nicolerenee/emby-beta
-            tag: 4.9.1.0@sha256:57724965ef4c9dcebe5c2236066efad222eb6f81f3f4995c1e1a4a62fab843bf
-        - op: replace
           path: /spec/values/persistence/config/size
           value: 250Gi
         - op: replace
