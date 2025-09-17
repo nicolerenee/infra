@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - ./actions-runner-system
   - ./cert-manager
+  - ./db
   - ./external-dns
   - ./external-secrets
   - ./flux-system
