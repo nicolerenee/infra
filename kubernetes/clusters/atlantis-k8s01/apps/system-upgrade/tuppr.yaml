@@ -3,23 +3,14 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app system-upgrade-controller-plans
+  name: &app tuppr
   namespace: &namespace system-upgrade
 spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  dependsOn:
-    - name: system-upgrade-controller
-      namespace: system-upgrade
   interval: 1h
-  path: ./kubernetes/apps/system-upgrade-controller/plans
-  postBuild:
-    substitute:
-      # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
-      KUBERNETES_VERSION: v1.34.1
-      # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
-      TALOS_VERSION: v1.11.3
+  path: ./kubernetes/apps/system-upgrade/app
   prune: true
   retryInterval: 2m
   sourceRef:
@@ -28,4 +19,4 @@ spec:
     namespace: flux-system
   targetNamespace: *namespace
   timeout: 5m
-  wait: false
+  wait: true
