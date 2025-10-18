@@ -5,6 +5,8 @@ kind: Kustomization
 metadata:
   name: &app rook-ceph-cluster
   namespace: &namespace rook-ceph
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
 spec:
   targetNamespace: *namespace
   dependsOn:

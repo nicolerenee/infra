@@ -41,6 +41,15 @@ spec:
       createPrometheusRules: true
     toolbox:
       enabled: true
+    route:
+      dashboard:
+        host:
+          name: rook.${CLUSTER_DOMAIN}
+          path: /
+          pathType: PathPrefix
+        parentRefs:
+          - name: tailscale
+            namespace: gateway
     cephClusterSpec:
       cephConfig:
         global:
@@ -48,6 +57,9 @@ spec:
           bdev_async_discard_threads: "1" # quote
           osd_class_update_on_start: "false" # quote
       dashboard:
+        enabled: true
+        ssl: false
+        urlPrefix: /
         prometheusEndpoint: http://vmsingle-vm.observability.svc.cluster.local:8429
       mgr:
         modules:
