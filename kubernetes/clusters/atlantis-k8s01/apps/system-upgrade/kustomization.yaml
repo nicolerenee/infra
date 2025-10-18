@@ -7,8 +7,8 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
-  - ./system-upgrade-controller.yaml
-  - ./system-upgrade-controller-plans.yaml
+  - ./tuppr.yaml
+  - ./tuppr-plans.yaml
 patches:
   - target:
       kind: Namespace
