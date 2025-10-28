@@ -57,10 +57,15 @@ alertmanager:
       group_interval: 5m
       repeat_interval: 12h
       routes:
+        - receiver: blackhole
+          matchers:
+            - name: alertname
+              value: InfoInhibitor
+              matchType: =
         # default route
-        - matchers:
-            - severity=~"info|warning|critical"
-          receiver: discord-infra-alerts
+        - receiver: discord-infra-alerts
+          matchers:
+            - severity=~"warning|critical"
           continue: true
 
     inhibit_rules:
