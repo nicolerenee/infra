@@ -25,11 +25,6 @@ spec:
   targetNamespace: *namespace
   timeout: 5m
   wait: false
-  components:
-    - ../../../components/gatus/tailscale
-  postBuild:
-    substitute:
-      APP: *app
   patches:
     - target:
         kind: HelmRelease
