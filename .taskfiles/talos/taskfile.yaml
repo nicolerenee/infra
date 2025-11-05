@@ -49,6 +49,21 @@ tasks:
       vars: ["node"]
     preconditions: *clusterValidPrecondition
 
+  upgrade:
+    desc: Upgrade Talos on a node
+    dir: "{{.TALOS_DIR}}"
+    env:
+      KUBERNETES_VERSION:
+        sh: yq '.spec.postBuild.substitute.KUBERNETES_VERSION | select(.)' {{.SYSTEM_UPGRADE_YAML}}
+      TALOS_VERSION:
+        sh: yq '.spec.postBuild.substitute.TALOS_VERSION | select(.)' {{.SYSTEM_UPGRADE_YAML}}
+    cmds:
+      - task: generate
+      - talhelper gencommand upgrade -n {{.node}} --extra-flags="{{.CLI_ARGS}}" | bash
+    requires:
+      vars: ["node"]
+    preconditions: *clusterValidPrecondition
+
   talosconfig:
     desc: Get an updated version of talosconfig
     dir: "{{.TALOS_DIR}}"
