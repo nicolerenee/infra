@@ -22,13 +22,6 @@ spec:
   timeout: 5m
   prune: true
   wait: true
-  components:
-    - ../../../components/gatus/tailscale
-    - ../../../components/gatus/external
-  postBuild:
-    substitute:
-      APP: *app
-      GATUS_EXT_DOMAIN: watch.freckle.vision
   patches:
     - target:
         kind: HelmRelease

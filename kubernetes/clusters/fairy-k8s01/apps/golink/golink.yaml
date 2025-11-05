@@ -25,10 +25,3 @@ spec:
   timeout: 5m
   prune: true
   wait: true
-  # components:
-  #   - ../../components/gatus/tailscale
-  postBuild:
-    substitute:
-      APP: *app
-      GATUS_TS_NAME: go-links
-      GATUS_TS_DOMAIN: go.hummingbird-perch.ts.net
