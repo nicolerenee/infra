@@ -62,15 +62,16 @@ spec:
                 cpu: 4000m
                 memory: 8192Mi
                 gpu.intel.com/i915: 1
-            resourceClaims:
-              - name: gpu
-                resourceClaimTemplateName: scrypted
             securityContext:
               # allowPrivilegeEscalation: false
               # readOnlyRootFilesystem: true
               # capabilities:
               #   drop:
               #     - ALL
+    defaultPodOptions:
+      resourceClaims:
+        - name: gpu
+          resourceClaimTemplateName: scrypted
 
     service:
       app:
