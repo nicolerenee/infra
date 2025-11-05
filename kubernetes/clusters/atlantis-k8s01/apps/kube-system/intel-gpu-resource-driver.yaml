@@ -14,8 +14,6 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  components:
-    - ../../../components/gpu
   sourceRef:
     kind: GitRepository
     name: flux-system

@@ -73,7 +73,7 @@ spec:
     defaultPodOptions:
       resourceClaims:
         - name: gpu
-          resourceClaimTemplateName: emby-gpu
+          resourceClaimTemplateName: emby
       securityContext:
         runAsNonRoot: true
         runAsUser: 3000

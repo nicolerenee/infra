@@ -64,7 +64,7 @@ spec:
                 gpu.intel.com/i915: 1
             resourceClaims:
               - name: gpu
-                resourceClaimTemplateName: scrypted-gpu
+                resourceClaimTemplateName: scrypted
             securityContext:
               # allowPrivilegeEscalation: false
               # readOnlyRootFilesystem: true
