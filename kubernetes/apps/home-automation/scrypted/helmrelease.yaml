@@ -52,6 +52,8 @@ spec:
               startup:
                 enabled: true
             resources:
+              claims:
+                - name: gpu
               requests:
                 cpu: 500m
                 memory: 128Mi
@@ -60,6 +62,9 @@ spec:
                 cpu: 4000m
                 memory: 8192Mi
                 gpu.intel.com/i915: 1
+            resourceClaims:
+              - name: gpu
+                resourceClaimTemplateName: scrypted-gpu
             securityContext:
               # allowPrivilegeEscalation: false
               # readOnlyRootFilesystem: true

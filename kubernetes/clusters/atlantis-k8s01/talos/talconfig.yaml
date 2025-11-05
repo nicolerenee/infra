@@ -29,7 +29,9 @@ nodes:
           officialExtensions:
             - siderolabs/i915
             - siderolabs/intel-ucode
+            - siderolabs/iscsi-tools
             - siderolabs/lldpd
+            - siderolabs/mei
     extensionServices:
       - &compute01-lldp-extension
         name: lldpd
@@ -196,6 +198,9 @@ controlPlane:
             content: |
               [plugins."io.containerd.cri.v1.images"]
                 discard_unpacked_layers = false
+              [plugins."io.containerd.cri.v1.runtime"]
+                cdi_spec_dirs = ["/var/cdi/static", "/var/cdi/dynamic"]
+                device_ownership_from_security_context = true
         install:
           bootloader: true
           wipe: true

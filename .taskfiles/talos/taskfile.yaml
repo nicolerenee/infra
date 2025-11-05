@@ -5,7 +5,7 @@ version: "3"
 vars:
   TALOS_RESOURCES_DIR: "{{.ROOT_DIR}}/.taskfiles/talos/resources"
   TALOS_DIR: "{{.CLUSTER_ROOT}}/talos"
-  SYSTEM_UPGRADE_YAML: "{{.CLUSTER_ROOT}}/apps/system-upgrade/system-upgrade-controller-plans.yaml"
+  SYSTEM_UPGRADE_YAML: "{{.CLUSTER_ROOT}}/apps/system-upgrade/tuppr-plans.yaml"
 
 tasks:
   generate:

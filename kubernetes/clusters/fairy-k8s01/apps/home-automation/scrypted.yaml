@@ -26,6 +26,7 @@ spec:
   prune: true
   wait: true
   components:
+    - ../../../components/gpu
     - ../../../components/gatus/tailscale
   postBuild:
     substitute:

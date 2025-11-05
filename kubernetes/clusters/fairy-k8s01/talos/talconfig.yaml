@@ -29,9 +29,10 @@ nodes:
       customization:
         systemExtensions:
           officialExtensions:
-            - siderolabs/lldpd
             - siderolabs/i915
             - siderolabs/intel-ucode
+            - siderolabs/iscsi-tools
+            - siderolabs/lldpd
             - siderolabs/mei
     extensionServices:
       - &compute01-lldp-extension
@@ -173,6 +174,9 @@ controlPlane:
             content: |
               [plugins."io.containerd.cri.v1.images"]
                 discard_unpacked_layers = false
+              [plugins."io.containerd.cri.v1.runtime"]
+                cdi_spec_dirs = ["/var/cdi/static", "/var/cdi/dynamic"]
+                device_ownership_from_security_context = true
         sysctls:
           fs.inotify.max_user_watches: 1048576   # Watchdog
           fs.inotify.max_user_instances: 8192    # Watchdog
