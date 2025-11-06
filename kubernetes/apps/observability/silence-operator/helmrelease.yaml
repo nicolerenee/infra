@@ -32,7 +32,5 @@ spec:
       retries: 3
   values:
     alertmanagerAddress: http://vmalertmanager-vm:9093
-    image:
-      registry: quay.io
     networkPolicy:
       enabled: true
