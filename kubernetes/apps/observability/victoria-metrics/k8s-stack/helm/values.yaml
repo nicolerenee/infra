@@ -27,7 +27,7 @@ vmsingle:
         - ReadWriteOnce
       resources:
         requests:
-          storage: 40Gi
+          storage: 100Gi
 
 defaultDashboards:
   enabled: true
@@ -57,11 +57,6 @@ alertmanager:
       group_interval: 5m
       repeat_interval: 12h
       routes:
-        - receiver: blackhole
-          matchers:
-            - name: alertname
-              value: InfoInhibitor
-              matchType: =
         # default route
         - receiver: discord-infra-alerts
           matchers:
