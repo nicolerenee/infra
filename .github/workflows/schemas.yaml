@@ -59,7 +59,7 @@ jobs:
         uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
           pattern: schemas-*
-          merge-multiple: true
+          # merge-multiple: true
           path: merged-schemas
 
       - name: Merge Schemas
@@ -102,6 +102,13 @@ jobs:
         with:
           name: schemas
           path: crdSchemas
+          retention-days: 1
+
+      - name: Upload downloaded Schemas
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        with:
+          name: merged-schemas
+          path: merged-schemas
           retention-days: 1
 
   success:
