@@ -86,17 +86,23 @@ jobs:
           schema_count=$(find crdSchemas -type f | wc -l)
           echo "Merged $schema_count schema files from all clusters"
 
-      - name: Publish Schemas
-        run: |
-          BUCKET_NAME="${{ secrets.K8S_SCHEMAS_BUCKET_NAME }}"
-          ENDPOINT_URL="${{ secrets.K8S_SCHEMAS_ENDPOINT_URL }}"
-          aws s3 sync crdSchemas/ s3://$BUCKET_NAME/ \
-            --endpoint-url="$ENDPOINT_URL" \
-            --delete
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.K8S_SCHEMAS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.K8S_SCHEMAS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: auto
+      # - name: Publish Schemas
+      #   run: |
+      #     BUCKET_NAME="${{ secrets.K8S_SCHEMAS_BUCKET_NAME }}"
+      #     ENDPOINT_URL="${{ secrets.K8S_SCHEMAS_ENDPOINT_URL }}"
+      #     aws s3 sync crdSchemas/ s3://$BUCKET_NAME/ \
+      #       --endpoint-url="$ENDPOINT_URL" \
+      #       --delete
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.K8S_SCHEMAS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.K8S_SCHEMAS_SECRET_ACCESS_KEY }}
+      #     AWS_DEFAULT_REGION: auto
+      - name: Upload Merged Schemas
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        with:
+          name: schemas
+          path: crdSchemas
+          retention-days: 1
 
   success:
     if: ${{ !cancelled() }}
