@@ -52,7 +52,7 @@ jobs:
         run: curl -fsSL https://raw.githubusercontent.com/datreeio/CRDs-catalog/43e4407642d4c37683c88711f37caa6c9c20ca40/Utilities/crd-extractor.sh | bash
 
       - name: Upload Schemas Artifact
-        uses: actions/upload-artifact@50769540e7f7bd5e21e526ee35c689e35e0e3a29d # v4.4.3
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: schemas-${{ inputs.cluster }}
           path: /home/runner/.datree/crdSchemas
