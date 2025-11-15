@@ -56,7 +56,7 @@ jobs:
           persist-credentials: false
 
       - name: Download All Schema Artifacts
-        uses: actions/download-artifact@b1b8550039136007fd790d29e4a6870b4817b1c0 # v4.1.8
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           pattern: schemas-*
           merge-multiple: true
