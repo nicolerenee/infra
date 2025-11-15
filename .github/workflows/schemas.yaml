@@ -1,0 +1,99 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Schemas
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: 0 0 * * *
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/schemas.yaml
+      - .github/workflows/schemas-extract.yaml
+
+permissions:
+  contents: read
+
+jobs:
+  clusters:
+    name: Schemas - Cluster List
+    runs-on: ubuntu-latest
+    outputs:
+      cluster-list: ${{ steps.list.outputs.clusters }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - id: list
+        name: Get Cluster List
+        working-directory: ./kubernetes/clusters
+        run: |
+          echo "clusters=$(ls -d * | jq --raw-input --slurp --compact-output 'split("\n")[:-1]')" >> ${GITHUB_OUTPUT}
+
+  extract:
+    needs: clusters
+    name: Schemas - Extract
+    strategy:
+      matrix:
+        cluster: ${{ fromJSON(needs.clusters.outputs.cluster-list) }}
+      fail-fast: false
+    uses: ./.github/workflows/schemas-extract.yaml
+    with:
+      cluster: ${{ matrix.cluster }}
+      runner: ${{ matrix.cluster }}-infra-runner
+
+  merge:
+    needs: [clusters, extract]
+    name: Schemas - Merge and Publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: Download All Schema Artifacts
+        uses: actions/download-artifact@b1b8550039136007fd790d29e4a6870b4817b1c0 # v4.1.8
+        with:
+          pattern: schemas-*
+          merge-multiple: true
+          path: merged-schemas
+
+      - name: Merge Schemas
+        run: |
+          # Create the target directory
+          mkdir -p crdSchemas
+
+          # Copy all schemas from all clusters, preserving directory structure
+          # When merge-multiple is true, artifacts are in subdirectories
+          # Find all files and copy them to the target, overwriting duplicates (last one wins)
+          find merged-schemas -type f -exec sh -c 'cp "$1" crdSchemas/$(basename "$1")' _ {} \;
+
+          # Count merged schemas
+          schema_count=$(find crdSchemas -type f | wc -l)
+          echo "Merged $schema_count schema files from all clusters"
+
+      - name: Publish Schemas
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CF_SCHEMAS_API_TOKEN }}
+          accountId: ${{ secrets.CF_SCHEMAS_ACCOUNT_ID }}
+          workingDirectory: crdSchemas
+          command: pages deploy --project-name=kubernetes-schemas --branch main .
+
+  success:
+    if: ${{ !cancelled() }}
+    needs: [extract, merge]
+    name: Schemas - Success
+    runs-on: ubuntu-latest
+    steps:
+      - name: Any jobs failed?
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: exit 1
+
+      - name: All jobs passed or skipped?
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
