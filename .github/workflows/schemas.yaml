@@ -76,20 +76,17 @@ jobs:
           schema_count=$(find crdSchemas -type f | wc -l)
           echo "Merged $schema_count schema files from all clusters"
 
-      - name: Configure AWS CLI
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.K8S_SCHEMAS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.K8S_SCHEMAS_SECRET_ACCESS_KEY }}
-          aws-region: auto
-
-      - name: Publish Schemas to R2
+      - name: Publish Schemas
         run: |
           BUCKET_NAME="${{ secrets.K8S_SCHEMAS_BUCKET_NAME }}"
           ENDPOINT_URL="${{ secrets.K8S_SCHEMAS_ENDPOINT_URL }}"
           aws s3 sync crdSchemas/ s3://$BUCKET_NAME/ \
             --endpoint-url="$ENDPOINT_URL" \
             --delete
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.K8S_SCHEMAS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.K8S_SCHEMAS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
 
   success:
     if: ${{ !cancelled() }}
