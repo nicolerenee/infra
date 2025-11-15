@@ -68,9 +68,19 @@ jobs:
           mkdir -p crdSchemas
 
           # Copy all schemas from all clusters, preserving directory structure
-          # When merge-multiple is true, artifacts are in subdirectories
-          # Find all files and copy them to the target, overwriting duplicates (last one wins)
-          find merged-schemas -type f -exec sh -c 'cp "$1" crdSchemas/$(basename "$1")' _ {} \;
+          # When merge-multiple is true, artifacts are in cluster-specific subdirectories
+          # (e.g., merged-schemas/schemas-cluster1/path/to/schema.json)
+          # We need to strip the cluster-specific prefix and preserve the rest of the path
+          find merged-schemas -type f | while read -r file; do
+            # Get the relative path from merged-schemas, stripping the cluster-specific directory
+            # e.g., merged-schemas/schemas-cluster1/path/to/schema.json -> path/to/schema.json
+            rel_path="${file#merged-schemas/*/}"
+            # Create the target directory structure
+            target_file="crdSchemas/$rel_path"
+            mkdir -p "$(dirname "$target_file")"
+            # Copy the file, overwriting if it exists (last cluster wins)
+            cp "$file" "$target_file"
+          done
 
           # Count merged schemas
           schema_count=$(find crdSchemas -type f | wc -l)
