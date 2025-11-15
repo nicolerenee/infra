@@ -26,7 +26,7 @@ jobs:
           pip install pyyaml jsonschema requests
 
       - name: Install yq for YAML processing
-        uses: mikefarah/yq@v4.44.3
+        uses: mikefarah/yq@bbdd97482f2d439126582a59689eb1c855944955 # v4.44.3
 
       - name: Run comprehensive repository validation
         run: |
@@ -58,7 +58,7 @@ jobs:
           output: "trivy-results.sarif"
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@f94c9befffa4412c356fb5463a959ab7821dd57e # v3
         if: always()
         with:
           sarif_file: "trivy-results.sarif"
@@ -71,7 +71,7 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Validate markdown files
-        uses: DavidAnson/markdownlint-cli2-action@v16
+        uses: DavidAnson/markdownlint-cli2-action@b4c9feab76d8025d1e83c653fa3990936df0e6c8 # v16
         with:
           globs: |
             **/*.md
