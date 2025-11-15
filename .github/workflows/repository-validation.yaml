@@ -36,9 +36,11 @@ jobs:
         run: |
           echo "🔍 Running individual validation checks..."
 
-          # Test individual validators work
-          python3 scripts/validate-kustomizations.py kubernetes/apps/ || echo "Kustomization validation issues found"
-          python3 scripts/validate-schema-alignment.py kubernetes/apps/ || echo "Schema alignment issues found"
+          # Validate kustomization files
+          python3 scripts/validate-kustomizations.py kubernetes/apps/
+
+          # Validate schema/apiVersion alignment
+          python3 scripts/validate-schema-alignment.py kubernetes/apps/
 
   security-scan:
     name: Security Scan
