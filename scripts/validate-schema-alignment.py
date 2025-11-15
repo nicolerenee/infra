@@ -8,11 +8,11 @@ schema annotations are correct.
 
 Usage:
     python3 scripts/validate-schema-alignment.py [directory]
-    
+
 Examples:
     # Check all files
     python3 scripts/validate-schema-alignment.py
-    
+
     # Check specific directory
     python3 scripts/validate-schema-alignment.py kubernetes/apps/
 """
@@ -29,36 +29,36 @@ from typing import List, Dict, Optional, Tuple
 
 class SchemaAlignmentValidator:
     """Validates schema URL and apiVersion alignment"""
-    
+
     def __init__(self):
         # Known schema mappings for common mismatches
         self.known_mappings = {
             # Kustomization files
             'kustomize.config.k8s.io/v1beta1': 'https://www.schemastore.org/kustomization.json',
-            
+
             # Flux resources
             'source.toolkit.fluxcd.io/v1': 'ocirepository_v1.json',
             'source.toolkit.fluxcd.io/v1beta2': 'ocirepository_v1beta2.json',
             'helm.toolkit.fluxcd.io/v2': 'helmrelease_v2.json',
-            
+
             # External Secrets
             'external-secrets.io/v1': 'clustersecretstore_v1.json',
             'external-secrets.io/v1beta1': 'clustersecretstore_v1beta1.json',
         }
-    
+
     def extract_schema_version(self, schema_url: str) -> Optional[str]:
         """Extract version from schema URL"""
         # Match patterns like ocirepository_v1.json, helmrelease_v2.json, etc.
         match = re.search(r'/([^/]+)_v(\d+(?:beta\d+|alpha\d+)?).json', schema_url)
         if match:
             return match.group(2)  # Return version part
-        
+
         # Special case for schemastore.org kustomization
         if 'schemastore.org/kustomization' in schema_url:
             return '1beta1'  # Kustomization schema is for v1beta1 (return without 'v' prefix)
 
         return None
-    
+
     def extract_api_version(self, api_version: str) -> Optional[str]:
         """Extract version from apiVersion"""
         # Match patterns like source.toolkit.fluxcd.io/v1, helm.toolkit.fluxcd.io/v2, etc.
@@ -66,45 +66,45 @@ class SchemaAlignmentValidator:
         if match:
             return match.group(1)  # Return version part
         return None
-    
+
     def get_expected_schema(self, api_version: str, kind: str) -> Optional[str]:
         """Get expected schema URL for given apiVersion and kind"""
         if api_version in self.known_mappings:
             return self.known_mappings[api_version]
-        
+
         # Try to construct schema URL for common patterns
         if 'toolkit.fluxcd.io' in api_version:
             version = self.extract_api_version(api_version)
             if version and kind:
                 kind_lower = kind.lower()
-                return f"https://kubernetes-schemas.pages.dev/{api_version.split('/')[0]}/{kind_lower}_v{version}.json"
-        
+                return f"https://k8s-schemas.freckle.systems/{api_version.split('/')[0]}/{kind_lower}_v{version}.json"
+
         return None
-    
+
     def check_file_for_mismatches(self, file_path: str) -> List[Dict]:
         """Check a single file for schema/apiVersion mismatches"""
         mismatches = []
-        
+
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-            
+
             # Split by document separator to handle multi-document YAML
             documents = content.split('\n---\n')
-            
+
             for i, doc in enumerate(documents):
                 if not doc.strip():
                     continue
-                    
+
                 schema_url = None
                 api_version = None
                 kind = None
-                
+
                 # Extract schema URL from yaml-language-server comment
                 schema_match = re.search(r'yaml-language-server:\s*\$schema=([^\s]+)', doc)
                 if schema_match:
                     schema_url = schema_match.group(1)
-                
+
                 # Extract apiVersion and kind from YAML
                 try:
                     yaml_data = yaml.safe_load(doc)
@@ -113,12 +113,12 @@ class SchemaAlignmentValidator:
                         kind = yaml_data.get('kind')
                 except:
                     continue
-                
+
                 # Check for mismatch
                 if schema_url and api_version:
                     schema_version = self.extract_schema_version(schema_url)
                     api_version_part = self.extract_api_version(api_version)
-                    
+
                     if schema_version and api_version_part and schema_version != api_version_part:
                         expected_schema = self.get_expected_schema(api_version, kind)
                         mismatches.append({
@@ -130,27 +130,27 @@ class SchemaAlignmentValidator:
                             'kind': kind,
                             'expected_schema': expected_schema
                         })
-        
+
         except Exception as e:
             print(f"Error processing {file_path}: {e}")
-        
+
         return mismatches
-    
+
     def find_yaml_files_with_schemas(self, path: str) -> List[str]:
         """Find all YAML files with schema annotations"""
         if os.path.isfile(path):
             return [path] if path.endswith(('.yaml', '.yml')) else []
-        
+
         # Find all YAML files
         patterns = [
             os.path.join(path, '**/*.yaml'),
             os.path.join(path, '**/*.yml')
         ]
-        
+
         yaml_files = []
         for pattern in patterns:
             yaml_files.extend(glob.glob(pattern, recursive=True))
-        
+
         # Filter to only files with schema annotations
         schema_files = []
         for file_path in yaml_files:
@@ -160,22 +160,22 @@ class SchemaAlignmentValidator:
                         schema_files.append(file_path)
             except:
                 continue
-        
+
         return sorted(schema_files)
-    
+
     def validate_path(self, path: str) -> Tuple[int, List[str]]:
         """Validate all files in the given path"""
         files = self.find_yaml_files_with_schemas(path)
-        
+
         if not files:
             print(f"⚠️  No YAML files with schema annotations found in: {path}")
             return 0, []
-        
+
         print(f"📊 Found {len(files)} files with schema annotations")
-        
+
         total_mismatches = 0
         files_with_mismatches = []
-        
+
         for file_path in files:
             mismatches = self.check_file_for_mismatches(file_path)
             if mismatches:
@@ -187,7 +187,7 @@ class SchemaAlignmentValidator:
                     if mismatch['expected_schema']:
                         print(f"   Expected schema: {mismatch['expected_schema']}")
                 total_mismatches += len(mismatches)
-        
+
         return total_mismatches, files_with_mismatches
 
 
@@ -202,8 +202,8 @@ Examples:
         """
     )
     parser.add_argument(
-        'path', 
-        nargs='?', 
+        'path',
+        nargs='?',
         default='kubernetes',
         help='Path to directory or file to check (default: kubernetes)'
     )
@@ -212,29 +212,29 @@ Examples:
         action='store_true',
         help='Enable verbose output'
     )
-    
+
     args = parser.parse_args()
-    
+
     # Check if path exists
     if not os.path.exists(args.path):
         print(f"❌ Path does not exist: {args.path}")
         sys.exit(1)
-    
+
     # Initialize validator
     validator = SchemaAlignmentValidator()
-    
+
     print(f"🔍 Checking schema/apiVersion alignment in: {args.path}")
     print("=" * 60)
-    
+
     # Validate files
     total_mismatches, files_with_mismatches = validator.validate_path(args.path)
-    
+
     # Print summary
     print("\n" + "=" * 60)
     print("📊 Schema Alignment Summary")
     print(f"   Total mismatches: {total_mismatches}")
     print(f"   Files with issues: {len(files_with_mismatches)}")
-    
+
     if total_mismatches == 0:
         print("\n✅ All schema URLs align with their apiVersions!")
         sys.exit(0)
