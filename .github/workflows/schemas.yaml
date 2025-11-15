@@ -62,11 +62,6 @@ jobs:
           merge-multiple: true
           path: merged-schemas
 
-      - name: Setup Node
-        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
-        with:
-          node-version: 24.x
-
       - name: Merge Schemas
         run: |
           # Create the target directory
@@ -81,13 +76,20 @@ jobs:
           schema_count=$(find crdSchemas -type f | wc -l)
           echo "Merged $schema_count schema files from all clusters"
 
-      - name: Publish Schemas
-        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
+      - name: Configure AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          apiToken: ${{ secrets.CF_SCHEMAS_API_TOKEN }}
-          accountId: ${{ secrets.CF_SCHEMAS_ACCOUNT_ID }}
-          workingDirectory: crdSchemas
-          command: pages deploy --project-name=k8s-schemas --branch main .
+          aws-access-key-id: ${{ secrets.K8S_SCHEMAS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.K8S_SCHEMAS_SECRET_ACCESS_KEY }}
+          aws-region: auto
+
+      - name: Publish Schemas to R2
+        run: |
+          BUCKET_NAME="${{ secrets.K8S_SCHEMAS_BUCKET_NAME }}"
+          ENDPOINT_URL="${{ secrets.K8S_SCHEMAS_ENDPOINT_URL }}"
+          aws s3 sync crdSchemas/ s3://$BUCKET_NAME/ \
+            --endpoint-url="$ENDPOINT_URL" \
+            --delete
 
   success:
     if: ${{ !cancelled() }}
