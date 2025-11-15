@@ -44,7 +44,9 @@ jobs:
         run: uv pip install pyyaml
 
       - name: Run crd-extractor
-        run: curl -fsSL https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/Utilities/crd-extractor.sh | bash
+        run: |
+          curl -fsSLO https://raw.githubusercontent.com/datreeio/CRDs-catalog/refs/heads/main/Utilities/openapi2jsonschema.py
+          curl -fsSL https://raw.githubusercontent.com/datreeio/CRDs-catalog/refs/heads/main/Utilities/crd-extractor.sh | bash
 
       - name: Upload Schemas Artifact
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
