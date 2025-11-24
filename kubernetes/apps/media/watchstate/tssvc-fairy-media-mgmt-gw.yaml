@@ -8,5 +8,9 @@ metadata:
     tailscale.com/proxy-class: accept-routes
   name: fairy-media-mgmt-gw
 spec:
-  sessionAffinity: None
+  externalName: media-mgmt-gw
   type: ExternalName
+  ports:
+    - port: 443
+      protocol: TCP
+      name: https
