@@ -87,7 +87,11 @@ spec:
         controller: emby
         ports:
           http:
-            port: 8096
+            port: 80
+            targetPort: 8096
+          emby:
+            port: 8920
+            targetPort: 8920
           discovery:
             port: 7359
             protocol: UDP

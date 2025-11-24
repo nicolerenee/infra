@@ -91,7 +91,11 @@ spec:
         controller: jellyfin
         ports:
           http:
+            port: 80
+            targetPort: 8096
+          jellyfin:
             port: 8096
+            targetPort: 8096
           discovery:
             port: 7359
             protocol: UDP

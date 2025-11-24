@@ -48,7 +48,7 @@ spec:
           path: /spec/values/controllers/plex/containers/app/env
           value:
             - name: ADVERTISE_IP
-              value: https://plex.freckle.vision/,http://plex:32400/
+              value: https://plex.freckle.vision/,http://plex/
             - name: PLEX_PREFERENCE_1
               value: FriendlyName=atlantis
             - name: TZ
