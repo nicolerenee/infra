@@ -45,7 +45,7 @@ spec:
           path: /spec/values/defaultPodOptions/securityContext/fsGroup
           value: 943
         - op: replace
-          path: /spec/template/spec/containers/0/env
+          path: /spec/values/controllers/plex/containers/app/env
           value:
             - name: ADVERTISE_IP
               value: https://plex.freckle.vision/,http://plex:32400/

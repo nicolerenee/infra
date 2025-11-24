@@ -10,10 +10,12 @@ resources:
   - ./bazarr.yaml
   - ./bookshelf.yaml
   - ./emby.yaml
+  - ./plex.yaml
   - ./prowlarr.yaml
   - ./radarr.yaml
   - ./recyclarr.yaml
   - ./sabnzbd.yaml
   - ./sonarr.yaml
   - ./sonarr-anime.yaml
+  - ./tautulli.yaml
   - ./webhook.yaml
