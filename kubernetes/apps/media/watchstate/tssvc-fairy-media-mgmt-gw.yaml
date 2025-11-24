@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/tags: tag:media-mgmt
+    tailscale.com/tailnet-fqdn: fairy-k8s01-media-mgmt-gw.hummingbird-perch.ts.net
+  labels:
+    tailscale.com/proxy-class: accept-routes
+  name: fairy-media-mgmt-gw
+spec:
+  sessionAffinity: None
+  type: ExternalName
