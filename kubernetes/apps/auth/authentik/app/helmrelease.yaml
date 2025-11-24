@@ -77,7 +77,7 @@ spec:
           hostnames:
             - "freckle.id"
           parentRefs:
-            - name: external-gw
+            - name: external
               namespace: gateway
 
     global:
