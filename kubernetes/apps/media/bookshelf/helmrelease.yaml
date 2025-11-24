@@ -91,7 +91,6 @@ spec:
         parentRefs:
           - name: tailscale-media-mgmt
             namespace: gateway
-            sectionName: https
         rules:
           - backendRefs:
               - identifier: app

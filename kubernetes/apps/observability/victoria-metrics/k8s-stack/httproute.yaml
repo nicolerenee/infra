@@ -9,7 +9,6 @@ spec:
   parentRefs:
     - name: tailscale
       namespace: gateway
-      sectionName: https
   rules:
     - backendRefs:
         - kind: Service
@@ -26,7 +25,6 @@ spec:
   parentRefs:
     - name: tailscale
       namespace: gateway
-      sectionName: https
   rules:
     - backendRefs:
         - kind: Service
@@ -43,7 +41,6 @@ spec:
   parentRefs:
     - name: tailscale
       namespace: gateway
-      sectionName: https
   rules:
     - backendRefs:
         - kind: Service

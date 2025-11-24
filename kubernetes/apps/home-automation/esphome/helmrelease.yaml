@@ -75,7 +75,6 @@ spec:
         parentRefs:
           - name: tailscale
             namespace: gateway
-            sectionName: https
         rules:
           - backendRefs:
               - identifier: app
