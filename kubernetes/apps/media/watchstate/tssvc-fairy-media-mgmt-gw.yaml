@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    tailscale.com/tags: tag:k8s
+    tailscale.com/tags: tag:atlantis-k8s01
     tailscale.com/tailnet-fqdn: fairy-k8s01-gw.hummingbird-perch.ts.net
   labels:
     tailscale.com/proxy-class: accept-routes
