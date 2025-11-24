@@ -11,8 +11,13 @@ spec:
     namespace: flux-system
   interval: 1h
   values:
+    hostAliases:
+      - ip: "10.189.250.4"
+        hostnames:
+          - "emby.fairy.freckle.systems"
+          - "jellyfin.fairy.freckle.systems"
     controllers:
-      tautulli:
+      watchstate:
         annotations:
           reloader.stakater.com/auto: "true"
         containers:
