@@ -77,3 +77,7 @@ spec:
         size: 10Gi
         retain: true
         suffix: "config"
+      tmp:
+        type: emptyDir
+        globalMounts:
+          - path: /tmp
