@@ -4,6 +4,8 @@ metadata:
   annotations:
     tailscale.com/tags: tag:k8s
     tailscale.com/tailnet-fqdn: fairy-k8s01-gw.hummingbird-perch.ts.net
+  labels:
+    tailscale.com/proxy-class: tailscale-tun
   name: fairy-gw
 spec:
   externalName: fairy-gw
