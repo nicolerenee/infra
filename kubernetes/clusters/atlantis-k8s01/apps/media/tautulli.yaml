@@ -3,8 +3,10 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app homeassistant
-  namespace: &namespace home-automation
+  name: &app tautulli
+  namespace: &namespace media
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
 spec:
   targetNamespace: *namespace
   commonMetadata:
@@ -14,9 +16,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/clusters/fairy-k8s01/apps/home-automation/homeassistant
-  dependsOn:
-    - name: mosquitto
+  path: ./kubernetes/apps/media/tautulli
   interval: 2m
   retryInterval: 1m
   timeout: 5m

@@ -41,28 +41,28 @@ jobs:
       - name: Check App-Level Kustomizations
         run: |
           echo "🔍 Checking app-level kustomization.yaml files for missing resources..."
-          
+
           # Find all app-level kustomization.yaml files
           find kubernetes/apps -name "kustomization.yaml" -type f | while IFS= read -r kustomization_file; do
             dir=$(dirname "$kustomization_file")
             echo "Checking: $kustomization_file"
-            
+
             # Get current resources from kustomization.yaml (using grep instead of yq for reliability)
             # Only get resources under the "resources:" section, stop at other sections
             current_resources=$(awk '
               /^resources:/ { in_resources=1; next }
               /^[a-zA-Z]/ && in_resources { in_resources=0 }
-              in_resources && /^  - / { 
-                gsub(/^  - /, ""); 
-                gsub(/^\.\//, ""); 
-                print 
+              in_resources && /^  - / {
+                gsub(/^  - /, "");
+                gsub(/^\.\//, "");
+                print
               }
             ' "$kustomization_file" | sort)
 
             # Find all YAML files in the same directory (excluding kustomization.yaml)
             actual_files=$(find "$dir" -maxdepth 1 -name "*.yaml" -not -name "kustomization.yaml" -type f | \
                           xargs -I {} basename {} | sort)
-            
+
             # Check for missing resources
             missing_in_kustomization=""
             for file in $actual_files; do
@@ -107,7 +107,7 @@ jobs:
               echo "✅ $kustomization_file - Complete"
             fi
           done
-          
+
           # Check results
           if [ -f /tmp/problematic_kustomizations.txt ]; then
             echo ""
@@ -124,28 +124,28 @@ jobs:
       - name: Check Cluster-Level Kustomizations
         run: |
           echo "🔍 Checking cluster-level kustomization.yaml files for missing directories..."
-          
+
           # Find all cluster-level kustomization.yaml files
           find kubernetes/clusters -path "*/apps/kustomization.yaml" -type f | while IFS= read -r kustomization_file; do
             dir=$(dirname "$kustomization_file")
             echo "Checking: $kustomization_file"
-            
+
             # Get current resources from kustomization.yaml (using awk for better parsing)
             # Only get resources under the "resources:" section, stop at other sections
             current_resources=$(awk '
               /^resources:/ { in_resources=1; next }
               /^[a-zA-Z]/ && in_resources { in_resources=0 }
-              in_resources && /^  - / { 
-                gsub(/^  - /, ""); 
-                gsub(/^\.\//, ""); 
-                print 
+              in_resources && /^  - / {
+                gsub(/^  - /, "");
+                gsub(/^\.\//, "");
+                print
               }
             ' "$kustomization_file" | sort)
 
             # Find all directories in the same directory
             actual_dirs=$(find "$dir" -maxdepth 1 -type d -not -path "$dir" | \
                          xargs -I {} basename {} | sort)
-            
+
             # Check for missing directory resources
             missing_in_kustomization=""
             for dir_name in $actual_dirs; do
@@ -156,7 +156,7 @@ jobs:
                 fi
               fi
             done
-            
+
             # Check for resources listed but directories don't exist
             missing_dirs=""
             for resource in $current_resources; do
@@ -167,7 +167,7 @@ jobs:
                 fi
               fi
             done
-            
+
             # Report findings
             if [ -n "$missing_in_kustomization" ] || [ -n "$missing_dirs" ]; then
               echo "❌ Issues found in $kustomization_file:"
@@ -182,7 +182,7 @@ jobs:
               echo "✅ $kustomization_file - Complete"
             fi
           done
-          
+
           # Check results
           if [ -f /tmp/problematic_cluster_kustomizations.txt ]; then
             echo ""
@@ -196,30 +196,109 @@ jobs:
             echo "🎉 All cluster-level kustomization.yaml files are complete!"
           fi
 
+      - name: Check Cluster App Subdirectory Kustomizations
+        run: |
+          echo "🔍 Checking cluster app subdirectory kustomization.yaml files for missing resources..."
+
+          # Find all kustomization.yaml files in cluster app subdirectories (but not the main apps/kustomization.yaml)
+          find kubernetes/clusters -path "*/apps/*/kustomization.yaml" -type f | while IFS= read -r kustomization_file; do
+            dir=$(dirname "$kustomization_file")
+            echo "Checking: $kustomization_file"
+
+            # Get current resources from kustomization.yaml
+            current_resources=$(awk '
+              /^resources:/ { in_resources=1; next }
+              /^[a-zA-Z]/ && in_resources { in_resources=0 }
+              in_resources && /^  - / {
+                gsub(/^  - /, "");
+                gsub(/^\.\//, "");
+                print
+              }
+            ' "$kustomization_file" | sort)
+
+            # Find all YAML files in the same directory (excluding kustomization.yaml)
+            actual_files=$(find "$dir" -maxdepth 1 -name "*.yaml" -not -name "kustomization.yaml" -type f | \
+                          xargs -I {} basename {} | sort)
+
+            # Check for missing resources
+            missing_in_kustomization=""
+            for file in $actual_files; do
+              if ! echo "$current_resources" | grep -q "^$file$"; then
+                # Check if this file should be included (has Kubernetes resources)
+                if grep -q "^apiVersion:" "$dir/$file" && grep -q "^kind:" "$dir/$file"; then
+                  missing_in_kustomization="$missing_in_kustomization $file"
+                fi
+              fi
+            done
+
+            # Check for resources listed but files/directories don't exist
+            missing_files=""
+            for resource in $current_resources; do
+              if [ -n "$resource" ]; then
+                resource_path="$dir/$resource"
+                if [ ! -f "$resource_path" ] && [ ! -d "$resource_path" ]; then
+                  missing_files="$missing_files $resource"
+                fi
+              fi
+            done
+
+            # Report findings
+            if [ -n "$missing_in_kustomization" ] || [ -n "$missing_files" ]; then
+              echo "❌ Issues found in $kustomization_file:"
+              if [ -n "$missing_in_kustomization" ]; then
+                echo "   Missing from kustomization:$missing_in_kustomization"
+                for missing_file in $missing_in_kustomization; do
+                  if grep -q "# - .*$missing_file" "$kustomization_file"; then
+                    echo "     ℹ️  Note: $missing_file is commented out (may be intentionally excluded)"
+                  fi
+                done
+              fi
+              if [ -n "$missing_files" ]; then
+                echo "   Referenced but missing files/directories:$missing_files"
+              fi
+              echo "$kustomization_file" >> /tmp/problematic_cluster_app_kustomizations.txt
+            else
+              echo "✅ $kustomization_file - Complete"
+            fi
+          done
+
+          # Check results
+          if [ -f /tmp/problematic_cluster_app_kustomizations.txt ]; then
+            echo ""
+            echo "💥 Found cluster app subdirectory kustomization.yaml files with missing resources:"
+            cat /tmp/problematic_cluster_app_kustomizations.txt
+            echo ""
+            echo "Please add missing YAML files to the resources section of the appropriate kustomization.yaml files."
+            exit 1
+          else
+            echo ""
+            echo "🎉 All cluster app subdirectory kustomization.yaml files are complete!"
+          fi
+
       - name: Check for Orphaned YAML Files
         run: |
           echo "🔍 Checking for orphaned YAML files not included in any kustomization..."
-          
+
           # Find all YAML files in kubernetes/apps
           find kubernetes/apps -name "*.yaml" -not -name "kustomization.yaml" -type f | while IFS= read -r yaml_file; do
             # Check if this file has Kubernetes resources
             if grep -q "^apiVersion:" "$yaml_file" && grep -q "^kind:" "$yaml_file"; then
               dir=$(dirname "$yaml_file")
               filename=$(basename "$yaml_file")
-              
+
               # Check if there's a kustomization.yaml in the same directory
               if [ -f "$dir/kustomization.yaml" ]; then
                 # Check if this file is referenced in the resources section
                 resources_list=$(awk '
                   /^resources:/ { in_resources=1; next }
                   /^[a-zA-Z]/ && in_resources { in_resources=0 }
-                  in_resources && /^  - / { 
-                    gsub(/^  - /, ""); 
-                    gsub(/^\.\//, ""); 
-                    print 
+                  in_resources && /^  - / {
+                    gsub(/^  - /, "");
+                    gsub(/^\.\//, "");
+                    print
                   }
                 ' "$dir/kustomization.yaml")
-                
+
                 if ! echo "$resources_list" | grep -q "^$filename$"; then
                   echo "⚠️  Orphaned file: $yaml_file"
                   echo "$yaml_file" >> /tmp/orphaned_files.txt
@@ -230,7 +309,7 @@ jobs:
               fi
             fi
           done
-          
+
           # Report orphaned files as warnings (non-blocking)
           if [ -f /tmp/orphaned_files.txt ]; then
             echo ""
@@ -247,16 +326,16 @@ jobs:
       - name: Validate Kustomization Build
         run: |
           echo "🔍 Testing kustomization builds to ensure they work..."
-          
+
           # Test app-level kustomizations
           failed_count=0
           total_count=0
-          
+
           for kustomization_file in $(find kubernetes/apps -name "kustomization.yaml" -type f); do
             dir=$(dirname "$kustomization_file")
             echo "Testing build: $dir"
             total_count=$((total_count + 1))
-            
+
             # Try to build the kustomization (dry-run)
             if kubectl kustomize "$dir" >/dev/null 2>&1; then
               echo "✅ $dir - Build successful"
@@ -266,13 +345,13 @@ jobs:
               failed_count=$((failed_count + 1))
             fi
           done
-          
+
           # Test cluster-level kustomizations
           for kustomization_file in $(find kubernetes/clusters -path "*/apps/kustomization.yaml" -type f); do
             dir=$(dirname "$kustomization_file")
             echo "Testing build: $dir"
             total_count=$((total_count + 1))
-            
+
             # Try to build the kustomization (dry-run)
             if kubectl kustomize "$dir" >/dev/null 2>&1; then
               echo "✅ $dir - Build successful"
@@ -282,9 +361,9 @@ jobs:
               failed_count=$((failed_count + 1))
             fi
           done
-          
+
           echo "📊 Tested $total_count kustomizations"
-          
+
           # Check results
           if [ -f /tmp/failed_builds.txt ]; then
             echo ""
@@ -305,6 +384,7 @@ jobs:
           echo "=========================================="
           echo "✅ App-level kustomization completeness checked"
           echo "✅ Cluster-level kustomization completeness checked"
+          echo "✅ Cluster app subdirectory kustomization completeness checked"
           echo "✅ Orphaned YAML files identified (warnings)"
           echo "✅ Kustomization build validation completed"
           echo ""
