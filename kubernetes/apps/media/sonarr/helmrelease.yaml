@@ -96,7 +96,6 @@ spec:
         parentRefs:
           - name: tailscale-media-mgmt
             namespace: gateway
-            sectionName: https
         rules:
           - backendRefs:
               - name: ${APP:=sonarr}

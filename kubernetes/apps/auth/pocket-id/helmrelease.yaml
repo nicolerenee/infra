@@ -82,7 +82,6 @@ spec:
         parentRefs:
           - name: external-gw
             namespace: gateway
-            sectionName: freckleid-root-https
         rules:
           - backendRefs:
               - identifier: app

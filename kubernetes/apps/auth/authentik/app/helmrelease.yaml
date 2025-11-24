@@ -79,7 +79,6 @@ spec:
           parentRefs:
             - name: external-gw
               namespace: gateway
-              sectionName: freckleid-root-https
 
     global:
       volumeMounts:
