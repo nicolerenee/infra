@@ -105,6 +105,15 @@ spec:
           - backendRefs:
               - identifier: app
                 port: 8096
+      internal:
+        hostnames: ["{{ .Release.Name }}.${CLUSTER_SVCS_DOMAIN}"]
+        parentRefs:
+          - name: internal
+            namespace: gateway
+        rules:
+          - backendRefs:
+              - identifier: app
+                port: 8096
     persistence:
       config:
         enabled: true
