@@ -104,7 +104,7 @@ spec:
         rules:
           - backendRefs:
               - identifier: app
-                port: 8096
+                port: 80
       internal:
         hostnames: ["{{ .Release.Name }}.${CLUSTER_SVCS_DOMAIN}"]
         parentRefs:
@@ -113,7 +113,7 @@ spec:
         rules:
           - backendRefs:
               - identifier: app
-                port: 8096
+                port: 80
     persistence:
       config:
         enabled: true
