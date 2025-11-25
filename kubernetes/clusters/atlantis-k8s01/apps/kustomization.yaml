@@ -15,7 +15,7 @@ resources:
   - ./gateway
   - ./it-tools
   - ./kube-system
-  - ./media/ks.yaml
+  - ./media
   - ./observability
   - ./rook-ceph
   - ./security
