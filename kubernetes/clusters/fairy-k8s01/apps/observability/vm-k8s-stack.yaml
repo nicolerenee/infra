@@ -20,7 +20,9 @@ spec:
       - kind: Secret
         name: victoriametrics-secrets
       - kind: ConfigMap
-        name: infra-info-cluster
+        name: k8s-cluster-info
+      - kind: Secret
+        name: k8s-cluster-secrets
   prune: true
   sourceRef:
     kind: GitRepository
