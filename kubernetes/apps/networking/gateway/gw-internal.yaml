@@ -6,11 +6,13 @@ metadata:
   annotations: {}
   labels:
     gateway.freckle.systems/dns: cloudflare
-    ipam.freckle.systems/lb-pool: internal
   name: internal
 
 spec:
   gatewayClassName: cilium
+  infrastructure:
+    labels:
+      ipam.freckle.systems/lb-pool: internal
   listeners:
     - name: http
       protocol: HTTP
