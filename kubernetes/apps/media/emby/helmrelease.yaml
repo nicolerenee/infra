@@ -106,7 +106,8 @@ spec:
               - identifier: app
                 port: 80
       internal:
-        hostnames: ["{{ .Release.Name }}.${CLUSTER_SVCS_DOMAIN}"]
+        hostnames:
+          - "{{ .Release.Name }}.${CLUSTER_MEDIA_DOMAIN:-${CLUSTER_SVCS_DOMAIN}}"
         parentRefs:
           - name: internal
             namespace: gateway
