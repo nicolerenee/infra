@@ -71,9 +71,9 @@ spec:
     route:
       app:
         hostnames:
-          - "{{ .Release.Name }}.${CLUSTER_DOMAIN}"
+          - "{{ .Release.Name }}.${CLUSTER_SVCS_DOMAIN}"
         parentRefs:
-          - name: tailscale
+          - name: internal
             namespace: gateway
     persistence:
       config:
