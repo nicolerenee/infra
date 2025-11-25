@@ -13,7 +13,7 @@ resources:
   - ./gateway
   - ./it-tools
   - ./kube-system
-  - ./media
+  - ./media/ks.yaml
   - ./observability
   - ./rook-ceph
   - ./security
