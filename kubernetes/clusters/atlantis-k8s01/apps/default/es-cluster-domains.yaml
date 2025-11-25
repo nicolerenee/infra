@@ -1,0 +1,18 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/external-secrets.io/externalsecret_v1.json
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: cluster-domains
+spec:
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: onepassword
+  target:
+    template:
+      data:
+        MEDIA_DOMAIN: "{{ .media_domain }}"
+        CLUSTER_MEDIA_DOMAIN: "atlantis.{{ .media_domain }}"
+  dataFrom:
+    - extract:
+        key: domains
