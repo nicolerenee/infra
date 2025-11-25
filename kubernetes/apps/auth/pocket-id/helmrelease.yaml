@@ -58,7 +58,7 @@ spec:
         fsGroup: 65534
         fsGroupChangePolicy: Always
     service:
-      pocket-id:
+      app:
         controller: pocket-id
         ports:
           http:
