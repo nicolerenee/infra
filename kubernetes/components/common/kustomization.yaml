@@ -6,4 +6,3 @@ resources:
   - ./namespace.yaml
   - ./infra-info-cluster.yaml
   - ./github-status
-  - ./repos

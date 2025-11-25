@@ -5,6 +5,7 @@ resources:
   - ./actions-runner-system
   - ./cert-manager
   - ./db
+  - ./default
   - ./external-dns
   - ./external-secrets
   - ./flux-system
