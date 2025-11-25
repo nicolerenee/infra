@@ -152,7 +152,11 @@ jobs:
               if ! echo "$current_resources" | grep -q "^$dir_name$"; then
                 # Check if this directory has a kustomization.yaml (should be included)
                 if [ -f "$dir/$dir_name/kustomization.yaml" ]; then
-                  missing_in_kustomization="$missing_in_kustomization $dir_name"
+                  # Check if there's a {dir}/ks.yaml file that includes this directory
+                  # (e.g., media/ks.yaml includes everything in media/)
+                  if ! echo "$current_resources" | grep -q "^$dir_name/ks\.yaml$"; then
+                    missing_in_kustomization="$missing_in_kustomization $dir_name"
+                  fi
                 fi
               fi
             done
@@ -162,7 +166,13 @@ jobs:
             for resource in $current_resources; do
               if [ -n "$resource" ]; then
                 resource_dir="$dir/$resource"
-                if [ ! -d "$resource_dir" ]; then
+                # If it's a file (like media/ks.yaml), check if the file exists
+                if [[ "$resource" == *"/ks.yaml" ]]; then
+                  if [ ! -f "$resource_dir" ]; then
+                    missing_dirs="$missing_dirs $resource"
+                  fi
+                # Otherwise, check if it's a directory
+                elif [ ! -d "$resource_dir" ]; then
                   missing_dirs="$missing_dirs $resource"
                 fi
               fi
