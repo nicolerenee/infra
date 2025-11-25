@@ -56,14 +56,3 @@ spec:
               - backendRefs:
                   - identifier: app
                     port: 8096
-        - op: add
-          path: /spec/values/route/media
-          value:
-            hostnames: ["emby.${ CLUSTER_MEDIA_DOMAIN }"]
-            parentRefs:
-              - name: external
-                namespace: gateway
-            rules:
-              - backendRefs:
-                  - identifier: app
-                    port: 80
