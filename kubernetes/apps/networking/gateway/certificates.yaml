@@ -47,3 +47,20 @@ spec:
     - freckle.services
     - "*.freckle.services"
     - "*.${CLUSTER_SVCS_DOMAIN}"
+
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: media-tls
+spec:
+  secretName: media-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "${MEDIA_DOMAIN:-freckle.services}"
+  dnsNames:
+    - "${MEDIA_DOMAIN:-freckle.services}"
+    - "*.${MEDIA_DOMAIN:-freckle.services}"
+    - "*.${CLUSTER_MEDIA_DOMAIN:-${CLUSTER_SVCS_DOMAIN}}"

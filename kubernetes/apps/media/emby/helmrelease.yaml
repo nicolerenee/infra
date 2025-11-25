@@ -109,7 +109,7 @@ spec:
         hostnames:
           - "{{ .Release.Name }}.${CLUSTER_MEDIA_DOMAIN:-${CLUSTER_SVCS_DOMAIN}}"
         parentRefs:
-          - name: internal
+          - name: media
             namespace: gateway
         rules:
           - backendRefs:

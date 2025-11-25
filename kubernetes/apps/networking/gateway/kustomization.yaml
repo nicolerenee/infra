@@ -7,5 +7,7 @@ resources:
   - ./gw-external.yaml
   - ./gw-internal.yaml
   - ./gw-media-mgmt.yaml
+  - ./gw-media-public.yaml
+  - ./gw-media.yaml
   - ./gw-tailscale.yaml
   - ./redirect.yaml

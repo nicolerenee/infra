@@ -18,6 +18,10 @@ spec:
       sectionName: frecklefamily-http
     - name: internal
       sectionName: http
+    - name: media-public
+      sectionName: http
+    - name: media
+      sectionName: http
   rules:
     - filters:
         - requestRedirect:
