@@ -33,11 +33,11 @@ spec:
       patch: |-
         - op: replace
           path: /spec/values/controllers/pocket-id/containers/pocket-id/env/APP_URL
-          value: https://auth.${CLUSTER_MEDIA_DOMAIN}
+          value: https://auth.${MEDIA_DOMAIN}
         - op: replace
           path: /spec/values/route/pocket-id
           value:
-            hostnames: ["auth.${CLUSTER_MEDIA_DOMAIN}"]
+            hostnames: ["auth.${MEDIA_DOMAIN}"]
             parentRefs:
               - name: media-public
                 namespace: gateway
