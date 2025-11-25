@@ -15,6 +15,7 @@ resources:
   - ./media
   - ./observability
   - ./rook-ceph
+  - ./security
   - ./spegel
   - ./system-upgrade
   - ./tailscale
