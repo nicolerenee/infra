@@ -61,6 +61,7 @@ spec:
     domainFilters:
       - freckle.family
       - freckle.vision
+      - freckle.services
       - freckle.systems
       - warehouse43.com
     env:
