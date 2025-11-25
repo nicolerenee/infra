@@ -7,7 +7,15 @@ metadata:
 spec:
   chartRef:
     kind: OCIRepository
-    name: seerr
+    name: app-template
+    namespace: default
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
   interval: 1h
   values:
     controllers:
