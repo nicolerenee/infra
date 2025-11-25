@@ -97,19 +97,19 @@ spec:
             protocol: UDP
     route:
       app:
-        hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
+        hostnames:
+          - "{{ .Release.Name }}.${CLUSTER_MEDIA_DOMAIN}"
         parentRefs:
-          - name: tailscale
+          - name: media-public
             namespace: gateway
         rules:
           - backendRefs:
               - identifier: app
                 port: 80
-      internal:
-        hostnames:
-          - "{{ .Release.Name }}.${CLUSTER_MEDIA_DOMAIN:-${CLUSTER_SVCS_DOMAIN}}"
+      ts:
+        hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
         parentRefs:
-          - name: media
+          - name: tailscale
             namespace: gateway
         rules:
           - backendRefs:
