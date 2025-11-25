@@ -3,10 +3,10 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  annotations:
-    ipam.freckle.systems/lb-pool: internal
+  annotations: {}
   labels:
     gateway.freckle.systems/dns: cloudflare
+    ipam.freckle.systems/lb-pool: internal
   name: internal
 
 spec:
