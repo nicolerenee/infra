@@ -30,3 +30,20 @@ spec:
   dnsNames:
     - freckle.family
     - "*.freckle.family"
+
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: freckleservices-tls
+spec:
+  secretName: freckleservices-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "freckle.services"
+  dnsNames:
+    - freckle.services
+    - "*.freckle.services"
+    - "*.${CLUSTER_SVCS_DOMAIN}"

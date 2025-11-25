@@ -16,6 +16,8 @@ spec:
       sectionName: frecklesystems-http
     - name: external
       sectionName: frecklefamily-http
+    - name: internal
+      sectionName: http
   rules:
     - filters:
         - requestRedirect:

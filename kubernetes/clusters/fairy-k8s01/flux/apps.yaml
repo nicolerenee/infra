@@ -20,3 +20,4 @@ spec:
     substitute:
       CLUSTER_NAME: "fairy-k8s01"
       CLUSTER_DOMAIN: "fairy.freckle.systems"
+      CLUSTER_SVCS_DOMAIN: "fairy.freckle.services"
