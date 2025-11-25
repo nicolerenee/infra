@@ -23,9 +23,10 @@ spec:
     - name: tailscale-proxyclass
       namespace: tailscale
   interval: 2m
-  prune: true
-  retryInterval: 2m
+  retryInterval: 1m
   timeout: 5m
+  prune: true
+  wait: true
   patches:
     - target:
         kind: HelmRelease
