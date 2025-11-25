@@ -1,14 +1,15 @@
 apiVersion: tailscale.com/v1alpha1
 kind: Connector
 metadata:
-  name: atlantis-ts-rtr
+  name: den1-subnet-rtr01
   namespace: tailscale
 spec:
   proxyClass: tailscale-tun
-  hostname: atlantis-ts-rtr
+  hostname: den1-subnet-rtr01
   exitNode: true
   subnetRouter:
     advertiseRoutes:
-      - "172.20.0.0/20"
-      - "172.25.0.0/20"
-      - "172.26.0.0/20"
+      - 172.20.0.0/20
+      - 172.25.0.0/20
+      - 172.26.0.0/20
+      - 10.140.0.0/16

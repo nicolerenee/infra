@@ -1,13 +1,14 @@
 apiVersion: tailscale.com/v1alpha1
 kind: Connector
 metadata:
-  name: fairy-ts-rtr
+  name: btx1-subnet-rtr01
   namespace: tailscale
 spec:
   proxyClass: tailscale-tun
-  hostname: fairy-ts-rtr
+  hostname: btx1-subnet-rtr01
   exitNode: true
   subnetRouter:
     advertiseRoutes:
-      - "192.168.102.0/24"
-      - "192.168.38.0/24"
+      - 192.168.102.0/24
+      - 192.168.38.0/24
+      - 10.189.0.0/16
