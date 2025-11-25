@@ -36,3 +36,68 @@ spec:
   driftDetection:
     mode: enabled
   maxHistory: 3
+  values:
+    admissionController:
+      replicas: 3
+      rbac:
+        clusterRole:
+          extraResources:
+            - apiGroups:
+                - ""
+                - "v1"
+              resources:
+                - pods
+                - secrets
+              verbs:
+                - create
+                - update
+                - patch
+                - delete
+                - get
+                - list
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/instance: kyverno
+      serviceMonitor:
+        enabled: true
+    backgroundController:
+      rbac:
+        clusterRole:
+          extraResources:
+            - apiGroups:
+                - ""
+                - "v1"
+              resources:
+                - pods
+                - secrets
+              verbs:
+                - create
+                - update
+                - patch
+                - delete
+                - get
+                - list
+      resources:
+        requests:
+          cpu: 100m
+        limits:
+          memory: 1Gi
+      serviceMonitor:
+        enabled: true
+    cleanupController:
+      serviceMonitor:
+        enabled: true
+    reportsController:
+      serviceMonitor:
+        enabled: true
+      container:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 512Mi
