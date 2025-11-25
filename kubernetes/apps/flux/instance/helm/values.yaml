@@ -14,7 +14,7 @@ instance:
     kind: GitRepository
     url: https://github.com/nicolerenee/infra.git
     ref: refs/heads/main
-    path: kubernetes/clusters/${CLUSTER_NAME}/apps
+    path: kubernetes/clusters/${CLUSTER_NAME}/flux
     interval: 5m
   commonMetadata:
     labels:
