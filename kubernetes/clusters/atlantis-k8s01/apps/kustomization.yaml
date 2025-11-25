@@ -1,6 +1,8 @@
 # yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+components:
+  - ../../../components/flux-post-build-variables
 resources:
   - ./actions-runner-system
   - ./cert-manager
@@ -13,7 +15,7 @@ resources:
   - ./gateway
   - ./it-tools
   - ./kube-system
-  - ./media
+  - ./media/ks.yaml
   - ./observability
   - ./rook-ceph
   - ./security

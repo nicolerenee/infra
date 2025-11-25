@@ -1,0 +1,47 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app pocket-id
+  namespace: &namespace media
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/auth/pocket-id
+  dependsOn:
+    - name: onepassword-store
+      namespace: external-secrets
+    - name: tailscale-proxyclass
+      namespace: tailscale
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true
+  patches:
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: replace
+          path: /spec/values/controllers/pocket-id/containers/pocket-id/env/APP_URL
+          value: https://auth.${CLUSTER_MEDIA_DOMAIN}
+        - op: replace
+          path: /spec/values/route/pocket-id
+          value:
+            hostnames: ["auth.${CLUSTER_MEDIA_DOMAIN}"]
+            parentRefs:
+              - name: media-public
+                namespace: gateway
+            rules:
+              - backendRefs:
+                  - identifier: app
+                    port: 80

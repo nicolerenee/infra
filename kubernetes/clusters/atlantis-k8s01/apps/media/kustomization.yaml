@@ -12,6 +12,7 @@ resources:
   - ./domains-externalsecrets.yaml
   - ./emby.yaml
   - ./plex.yaml
+  - ./pocket-id.yaml
   - ./prowlarr.yaml
   - ./radarr.yaml
   - ./recyclarr.yaml
