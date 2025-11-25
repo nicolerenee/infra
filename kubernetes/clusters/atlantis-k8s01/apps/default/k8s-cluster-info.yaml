@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k8s-cluster-info
+data:
+  CLUSTER_NAME: "atlantis-k8s01"
+  CLUSTER_DOMAIN: "atlantis.freckle.systems"
+  CLUSTER_SVCS_DOMAIN: "atlantis.freckle.services"

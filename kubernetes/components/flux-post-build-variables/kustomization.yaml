@@ -14,10 +14,9 @@ patches:
         postBuild:
           substituteFrom:
             - kind: ConfigMap
-              name: infra-info-cluster
+              name: k8s-cluster-info
+            - kind: Secret
+              name: k8s-cluster-secrets
             - kind: Secret
               name: namespace-post-build-secrets
-              optional: true
-            - kind: Secret
-              name: cluster-domains
               optional: true

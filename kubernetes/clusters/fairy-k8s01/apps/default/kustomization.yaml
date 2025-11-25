@@ -7,5 +7,8 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - ./app-template.yaml
-  - ./es-cluster-domains.yaml
+  - ./k8s-cluster-info.yaml
+  - ./k8s-cluster-secrets.yaml
   - ./namespace.yaml
+  - ./policy-cluster-info.yaml
+  - ./policy-cluster-secrets.yaml
