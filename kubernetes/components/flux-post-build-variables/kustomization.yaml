@@ -18,3 +18,6 @@ patches:
             - kind: Secret
               name: namespace-post-build-secrets
               optional: true
+            - kind: Secret
+              name: cluster-domains
+              optional: true
