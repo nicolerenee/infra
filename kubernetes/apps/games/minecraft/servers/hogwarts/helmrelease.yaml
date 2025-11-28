@@ -1,0 +1,56 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
+
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: minecraft
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: minecraft
+  interval: 30m
+  values:
+    deploymentAnnotations:
+      reloader.stakater.com/auto: "true"
+    image:
+      repository: ghcr.io/itzg/minecraft-server
+      tag: 2025.10.5-java25
+    resources:
+      limits:
+        memory: 4000Mi
+      requests:
+        cpu: 1000m
+        memory: 2000Mi
+    extraEnv:
+      TZ: America/Central
+      ENABLE_ROLLING_LOGS: true
+    persistence:
+      dataDir:
+        enabled: true
+    serviceLabels:
+      ipam.freckle.systems/lb-pool: internal
+    serviceAnnotations:
+      external-dns.alpha.kubernetes.io/hostname: hogwarts.${CLUSTER_DOMAIN}
+    minecraftServer:
+      eula: true
+      version: 1.21.10
+      type: VANILLA
+      difficulty: normal
+      whitelist: "averyisg0rg,killswitcher585"
+      ops: "averyisg0rg"
+      gameMode: survival
+      motd: "🏰 Expelliarmus those Creepers! Happy spelunking, witches and wizards of Hogwarts! ✨"
+      worldSaveName: hogwarts
+      modrinth:
+        projects:
+          - better-leaves
+      rcon:
+        enabled: true
+        serviceType: ClusterIP
+      serviceType: LoadBalancer
+  valuesFrom:
+    - kind: Secret
+      name: hogwarts-minecraft-secrets
+      valuesKey: RCON_PASSWORD
+      targetPath: minecraftServer.rcon.password

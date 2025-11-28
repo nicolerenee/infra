@@ -15,6 +15,7 @@ resources:
   - ./home-automation
   - ./kube-system
   - ./media
+  - ./minecraft
   - ./observability
   - ./rook-ceph
   - ./security
