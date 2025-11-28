@@ -11,6 +11,7 @@ resources:
   - ./bookshelf.yaml
   - ./domains-externalsecrets.yaml
   - ./emby.yaml
+  - ./jellyfin.yaml
   - ./plex.yaml
   - ./pocket-id.yaml
   - ./prowlarr.yaml

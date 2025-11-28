@@ -29,7 +29,7 @@ spec:
               repository: ghcr.io/jellyfin/jellyfin
               tag: 10.11.3@sha256:fab30d85f4ec3e19556ca1d91b82b12329fc4a6d2a4b330673354af9218e1d28
             env:
-              JELLYFIN_PublishedServerUrl: https://{{ .Release.Name }}.${CLUSTER_DOMAIN}
+              JELLYFIN_PublishedServerUrl: https://{{ .Release.Name }}.${CLUSTER_MEDIA_DOMAIN}
               TZ: America/Chicago
             ports:
               - containerPort: 8096
@@ -97,33 +97,12 @@ spec:
           jellyfin:
             port: 8096
             targetPort: 8096
-          discovery:
-            port: 7359
-            protocol: UDP
     route:
       app:
         hostnames:
           - "{{ .Release.Name }}.${CLUSTER_MEDIA_DOMAIN}"
         parentRefs:
           - name: media-public
-            namespace: gateway
-        rules:
-          - backendRefs:
-              - identifier: app
-                port: 80
-      ts-cluster:
-        hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
-        parentRefs:
-          - name: tailscale
-            namespace: gateway
-        rules:
-          - backendRefs:
-              - identifier: app
-                port: 80
-      internal:
-        hostnames: ["{{ .Release.Name }}.${CLUSTER_SVCS_DOMAIN}"]
-        parentRefs:
-          - name: internal
             namespace: gateway
         rules:
           - backendRefs:
