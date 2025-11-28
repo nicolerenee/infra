@@ -42,9 +42,9 @@ spec:
       gameMode: survival
       motd: "🏰 Expelliarmus those Creepers! Happy spelunking, witches and wizards of Hogwarts! ✨"
       worldSaveName: hogwarts
-      modrinth:
-        projects:
-          - better-leaves
+      # modrinth:
+      #   projects:
+      #     - better-leaves
       rcon:
         enabled: true
         serviceType: ClusterIP
