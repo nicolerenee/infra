@@ -24,7 +24,7 @@ spec:
       main:
         annotations:
           reloader.stakater.com/auto: "true"
-        initContainers: &init
+        initContainers:
           init-db:
             image:
               repository: ghcr.io/home-operations/postgres-init
@@ -69,7 +69,6 @@ spec:
                 cpu: 1
                 memory: 2Gi
     defaultPodOptions:
-      hostUsers: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
