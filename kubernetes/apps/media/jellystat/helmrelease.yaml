@@ -1,0 +1,104 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ${APP:=jellystat}
+spec:
+  interval: 1h
+  maxHistory: 1
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    timeout: 2m
+    remediation:
+      retries: 1
+  upgrade:
+    timeout: 2m
+    remediation:
+      retries: 1
+  values:
+    controllers:
+      main:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        initContainers: &init
+          init-db:
+            image:
+              repository: ghcr.io/home-operations/postgres-init
+              tag: 17.6@sha256:86a1992d46273c58fd4ad95b626081dfaabfe16bd56944675169e406d1a660dd
+              pullPolicy: IfNotPresent
+            envFrom: &envFrom
+              - secretRef:
+                  name: ${APP:=jellystat}-secrets
+        containers:
+          main:
+            image:
+              repository: docker.io/cyfershepard/jellystat
+              tag: 1.1.6@sha256:683358900cff8d299fa93add731b2976d7c9bc49f9593f40f5351498fd488767
+            env:
+              POSTGRES_IP: pg-17a-rw.db.svc.cluster.local
+              POSTGRES_DB: "${APP:=jellystat}"
+              POSTGRES_PORT: "5432"
+              TZ: America/Central
+              MINIMUM_SECONDS_TO_INCLUDE_PLAYBACK: "30"
+            envFrom: *envFrom
+            ports:
+              - containerPort: 3000
+                name: http
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: http
+              readiness: *probes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+              limits:
+                cpu: 1
+                memory: 2Gi
+    defaultPodOptions:
+      hostUsers: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile: { type: RuntimeDefault }
+    service:
+      app:
+        controller: main
+        ports:
+          http:
+            port: 80
+            targetPort: 3000
+    route:
+      app:
+        annotations:
+          gatus.home-operations.com/endpoint: |-
+            group: media
+        hostnames:
+          - jellystat.${CLUSTER_MEDIA_DOMAIN}
+        parentRefs:
+          - name: internal
+            namespace: gateway
+
+    persistence:
+      backup:
+        type: emptyDir
+        advancedMounts:
+          main:
+            main:
+              - path: /app/backend/backup-data

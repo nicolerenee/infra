@@ -21,6 +21,7 @@ resources:
   - ./seerr.yaml
   - ./sonarr.yaml
   - ./sonarr-anime.yaml
+  - ./jellystat.yaml
   - ./tautulli.yaml
   - ./watchstate.yaml
   - ./webhook.yaml

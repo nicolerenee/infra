@@ -1,0 +1,133 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ${APP:=streamystats}
+spec:
+  interval: 1h
+  maxHistory: 1
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    timeout: 2m
+    remediation:
+      retries: 1
+  upgrade:
+    timeout: 2m
+    remediation:
+      retries: 1
+  values:
+    controllers:
+      frontend:
+        strategy: RollingUpdate
+        initContainers: &init
+          init-db:
+            image:
+              repository: ghcr.io/home-operations/postgres-init
+              tag: 17.6@sha256:86a1992d46273c58fd4ad95b626081dfaabfe16bd56944675169e406d1a660dd
+              pullPolicy: IfNotPresent
+            envFrom: &envFrom
+              - secretRef:
+                  name: ${APP:=streamystats}
+          migrate:
+            image:
+              repository: docker.io/fredrikburmester/streamystats-v2-migrate
+              tag: v2.5.0@sha256:51f99538f3e01e38791130a06794a8daefb5898ca1cb1aa00668b4bbf6571d88
+            envFrom: *envFrom
+            securityContext: &sec
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+        containers:
+          main:
+            image:
+              repository: docker.io/fredrikburmester/streamystats-v2-nextjs
+              tag: v2.5.0@sha256:da03c501677ca3d6154b5a360f04f8894f7c5fb93c49a0ddc93414ba615a6a65
+            env:
+              JOB_SERVER_URL: http://streamystats-job-server
+            envFrom: *envFrom
+            ports:
+              - containerPort: 3000
+                name: http
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/health
+                    port: http
+              readiness: *probes
+            securityContext: *sec
+            resources:
+              requests:
+                cpu: 100m
+                memory: 112Mi
+              limits:
+                memory: 1Gi
+      job-server:
+        strategy: RollingUpdate
+        initContainers: *init
+        containers:
+          main:
+            image:
+              repository: docker.io/fredrikburmester/streamystats-v2-job-server
+              tag: v2.5.0@sha256:5a907259d5309f7b27a9796a4425cf63f066759f79d55f34b6dbd6f997fca6dc
+            env:
+              HOST: 0.0.0.0
+            envFrom: *envFrom
+            ports:
+              - containerPort: 3005
+                name: http
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: http
+              readiness: *probes
+            securityContext: *sec
+            resources:
+              requests:
+                cpu: 100m
+                memory: 112Mi
+              limits:
+                memory: 1Gi
+    defaultPodOptions:
+      hostUsers: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile: { type: RuntimeDefault }
+    service:
+      frontend:
+        controller: frontend
+        ports:
+          http:
+            port: 80
+            targetPort: 3000
+      job-server:
+        controller: job-server
+        ports:
+          http:
+            port: 80
+            targetPort: 3005
+    route:
+      main:
+        hostnames:
+          - streamystats.${CLUSTER_MEDIA_DOMAIN}
+        parentRefs:
+          - name: internal
+            namespace: gateway
+        rules:
+          - backendRefs:
+              - identifier: frontend
+                port: 80
