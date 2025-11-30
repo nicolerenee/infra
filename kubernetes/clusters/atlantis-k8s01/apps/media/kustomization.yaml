@@ -13,7 +13,7 @@ resources:
   - ./emby.yaml
   - ./jellyfin.yaml
   - ./plex.yaml
-  - ./pocket-id.yaml
+  - ./auth/ks.yaml
   - ./prowlarr.yaml
   - ./radarr.yaml
   - ./recyclarr.yaml
