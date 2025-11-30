@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: ${APP:=jellystat}
+  name: jellystat
 spec:
   interval: 1h
   maxHistory: 1
@@ -32,7 +32,7 @@ spec:
               pullPolicy: IfNotPresent
             envFrom: &envFrom
               - secretRef:
-                  name: ${APP:=jellystat}-secrets
+                  name: jellystat-secrets
         containers:
           main:
             image:
@@ -40,7 +40,7 @@ spec:
               tag: 1.1.6@sha256:683358900cff8d299fa93add731b2976d7c9bc49f9593f40f5351498fd488767
             env:
               POSTGRES_IP: pg-17a-rw.db.svc.cluster.local
-              POSTGRES_DB: "${APP:=jellystat}"
+              POSTGRES_DB: "jellystat"
               POSTGRES_PORT: "5432"
               TZ: America/Central
               MINIMUM_SECONDS_TO_INCLUDE_PLAYBACK: "30"

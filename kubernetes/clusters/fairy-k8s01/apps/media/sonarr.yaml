@@ -29,6 +29,9 @@ spec:
   timeout: 5m
   prune: true
   wait: true
+  postBuild:
+    substitute:
+      APP: *app
   patches:
     - target:
         kind: HelmRelease
