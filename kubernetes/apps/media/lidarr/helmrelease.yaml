@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: ${APP:=lidarr}
+  name: lidarr
 spec:
   interval: 1h
   chartRef:
@@ -28,7 +28,7 @@ spec:
               repository: ghcr.io/home-operations/lidarr
               tag: 3.1.1.4876@sha256:0982783dcc1ede8d45458ffc1d0d96607503035d743f6d18f9c2676a765d5dfe
             env:
-              LIDARR__APP__INSTANCENAME: ${APP:=lidarr}
+              LIDARR__APP__INSTANCENAME: lidarr
               LIDARR__AUTH__METHOD: External
               LIDARR__AUTH__REQUIRED: DisabledForLocalAddresses
               LIDARR__LOG__DBENABLED: "False"
@@ -38,7 +38,7 @@ spec:
               TZ: America/Chicago
             envFrom:
               - secretRef:
-                  name: ${APP:=lidarr}
+                  name: lidarr
             ports:
               - containerPort: *port
                 name: http
@@ -99,7 +99,7 @@ spec:
             namespace: gateway
         rules:
           - backendRefs:
-              - name: ${APP:=lidarr}
+              - name: lidarr
                 port: *port
     persistence:
       config:

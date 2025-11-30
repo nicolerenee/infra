@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: ${APP:=streamystats}
+  name: streamystats
 spec:
   interval: 1h
   maxHistory: 1
@@ -31,7 +31,7 @@ spec:
               pullPolicy: IfNotPresent
             envFrom: &envFrom
               - secretRef:
-                  name: ${APP:=streamystats}
+                  name: streamystats
           migrate:
             image:
               repository: docker.io/fredrikburmester/streamystats-v2-migrate

@@ -25,6 +25,9 @@ spec:
   targetNamespace: *namespace
   timeout: 5m
   wait: false
+  postBuild:
+    substitute:
+      APP: *app
   patches:
     - target:
         kind: HelmRelease

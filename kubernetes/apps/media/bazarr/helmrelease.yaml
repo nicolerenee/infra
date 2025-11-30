@@ -72,7 +72,7 @@ spec:
             namespace: gateway
         rules:
           - backendRefs:
-              - name: ${APP:=bazarr}
+              - name: bazarr
                 port: *port
     persistence:
       config:
