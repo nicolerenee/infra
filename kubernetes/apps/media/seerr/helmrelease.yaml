@@ -25,8 +25,10 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/seerr-team/seerr
-              tag: develop@sha256:2c48a3d8b8a54c9935dc837fb6f279a7aaac41731a399b748b45d10abbf6956f
+              # repository: ghcr.io/seerr-team/seerr
+              # tag: develop@sha256:2c48a3d8b8a54c9935dc837fb6f279a7aaac41731a399b748b45d10abbf6956f
+              repository: mirror.gcr.io/fallenbagel/jellyseerr
+              tag: preview-OIDC@sha256:9f3195998306da6548fc3b2420d114dda64a6e904f41e911168788fb410a7972
             env:
               TZ: America/Chicago
               LOG_LEVEL: "info"
