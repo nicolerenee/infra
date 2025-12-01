@@ -23,6 +23,10 @@ sonarr:
       # - template: sonarr-v4-quality-profile-web-2160p
       - template: sonarr-v4-quality-profile-web-2160p-alternative
       - template: sonarr-v4-custom-formats-web-2160p
+      # Anime specific templates
+      - template: sonarr-quality-definition-anime
+      - template: sonarr-v4-quality-profile-anime
+      - template: sonarr-v4-custom-formats-anime
 
     # Custom Formats: https://recyclarr.dev/wiki/yaml/config-reference/custom-formats/
     custom_formats:
@@ -68,27 +72,7 @@ sonarr:
         assign_scores_to:
           - name: WEB-2160p
 
-  sonarr-anime:
-    base_url: http://sonarr-anime
-    api_key: !env_var SONARR_ANIME_API_KEY
-
-    media_naming:
-      series: jellyfin
-      season: default
-      episodes:
-        rename: true
-        standard: default
-        daily: default
-        anime: default
-
-    delete_old_custom_formats: true
-    replace_existing_custom_formats: true
-    include:
-      - template: sonarr-quality-definition-anime
-      - template: sonarr-v4-quality-profile-anime
-      - template: sonarr-v4-custom-formats-anime
-
-    custom_formats:
+      # Anime Specific
       - trash_ids:
           - 026d5aadd1a6b4e550b134cb6c72b3ca # Uncensored
         assign_scores_to:
