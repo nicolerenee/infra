@@ -1,5 +1,5 @@
 ---
-# yaml-language-server: $schema=https://k8s-schemas.bjw-s.dev/gateway.envoyproxy.k8s.io/envoyproxy_v1alpha1.json
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/envoyproxy_v1alpha1.json
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyProxy
 metadata:
@@ -29,7 +29,7 @@ spec:
     metrics:
       prometheus:
         compression:
-          type: Zstd
+          type: Gzip
 ---
 # yaml-language-server: $schema=https://k8s-schemas.bjw-s.dev/gateway.networking.k8s.io/gatewayclass_v1.json
 apiVersion: gateway.networking.k8s.io/v1
