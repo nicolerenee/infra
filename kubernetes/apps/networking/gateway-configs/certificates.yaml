@@ -3,9 +3,9 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: cluster-svc-tls
+  name: cluster-svcs-tls
 spec:
-  secretName: cluster-svc-tls
+  secretName: cluster-svcs-tls
   issuerRef:
     name: letsencrypt-production
     kind: ClusterIssuer
