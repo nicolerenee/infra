@@ -17,7 +17,7 @@ spec:
     - name: prometheus-operator-crds
       namespace: observability
   targetNamespace: *namespace
-  path: ./kubernetes/apps/networking/envoy-gateway-system/controller
+  path: ./kubernetes/apps/networking/envoy-gateway/controller
   prune: true
   sourceRef:
     kind: GitRepository
