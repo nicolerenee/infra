@@ -8,11 +8,13 @@ resources:
   - ./cert-manager
   - ./db
   - ./default
+  - ./envoy-gateway-system
   - ./external-dns
   - ./external-secrets
   - ./flux-system
   - ./freckle-id
   - ./gateway
+  - ./gateway-system
   - ./it-tools
   - ./kube-system
   - ./media

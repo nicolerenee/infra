@@ -1,0 +1,10 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - ./certificates.yaml
+  - ./envoy-proxy.yaml
+  - ./gw-envoy-media.yaml
+  - ./gw-envoy-public.yaml
+  - ./redirect.yaml
