@@ -11,6 +11,9 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  dependsOn:
+    - name: envoy-gateway
+      namespace: envoy-gateway-system
   targetNamespace: *namespace
   path: ./kubernetes/apps/networking/gateway-configs
   prune: true
