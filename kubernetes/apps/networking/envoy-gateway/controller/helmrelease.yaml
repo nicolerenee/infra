@@ -8,6 +8,9 @@ spec:
   chartRef:
     kind: OCIRepository
     name: envoy-gateway
+  driftDetection:
+    ignore:
+      - paths: [/spec/replicas]
   interval: 1h
   values:
     global:

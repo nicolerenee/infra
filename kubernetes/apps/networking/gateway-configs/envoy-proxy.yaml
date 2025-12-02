@@ -29,7 +29,7 @@ spec:
     metrics:
       prometheus:
         compression:
-          type: Gzip
+          type: Zstd
 ---
 # yaml-language-server: $schema=https://k8s-schemas.bjw-s.dev/gateway.networking.k8s.io/gatewayclass_v1.json
 apiVersion: gateway.networking.k8s.io/v1
