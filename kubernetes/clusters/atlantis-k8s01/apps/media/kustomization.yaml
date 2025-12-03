@@ -7,10 +7,12 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./autobrr.yaml
   - ./bazarr.yaml
   - ./bookshelf.yaml
   - ./domains-externalsecrets.yaml
   - ./emby.yaml
+  - ./flaresolverr.yaml
   - ./jellyfin.yaml
   - ./plex.yaml
   - ./auth/ks.yaml
@@ -25,5 +27,6 @@ resources:
   - ./sonarr-anime.yaml
   - ./jellystat.yaml
   - ./tautulli.yaml
+  - ./unpackerr.yaml
   - ./watchstate.yaml
   - ./webhook.yaml
