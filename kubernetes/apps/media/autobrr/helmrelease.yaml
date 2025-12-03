@@ -19,7 +19,7 @@ spec:
           app:
             image:
               repository: ghcr.io/autobrr/autobrr
-              tag: v1.56.1@sha256:b7096332e0e1b47e7369f2317465abf11a6f7478f5022c7fba4b940593f9fd3a
+              tag: v1.56.1@sha256:ece84c7032c2afef04b145be8f99e6a1e46971dece62328541ac36990b5270f4
             env:
               TZ: America/Chicago
               AUTOBRR__HOST: 0.0.0.0
