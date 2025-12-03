@@ -7,6 +7,7 @@ metadata:
   namespace: &namespace media
   labels:
     infra.freckle.systems/post-build-variables: enabled
+    infra.freckle.systems/vpn-route-fix: enabled
 spec:
   commonMetadata:
     labels:

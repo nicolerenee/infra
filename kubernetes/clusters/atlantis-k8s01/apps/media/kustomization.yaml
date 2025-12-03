@@ -6,6 +6,7 @@ namespace: media
 components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
+  - ../../../../components/vpn-route-fix
 resources:
   - ./bazarr.yaml
   - ./bookshelf.yaml
