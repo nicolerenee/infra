@@ -1,0 +1,12 @@
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: qbittorrent-block-ipv6-egress
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: qbittorrent
+  egressDeny:
+    - toCIDR:
+        - "2000::/3"

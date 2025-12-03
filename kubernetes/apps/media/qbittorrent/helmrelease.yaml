@@ -66,9 +66,6 @@ spec:
         runAsGroup: 1000
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
-        sysctls:
-          - name: net.ipv6.conf.eth0.disable_ipv6
-            value: "1"
     service:
       app:
         ports:
