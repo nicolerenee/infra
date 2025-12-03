@@ -15,6 +15,7 @@ resources:
   - ./plex.yaml
   - ./auth/ks.yaml
   - ./prowlarr.yaml
+  - ./qbittorrent.yaml
   - ./radarr.yaml
   - ./recyclarr.yaml
   - ./sabnzbd.yaml
