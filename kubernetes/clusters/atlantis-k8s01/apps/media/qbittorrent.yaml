@@ -14,6 +14,7 @@ spec:
   postBuild:
     substitute:
       VPN_IP: "192.168.66.10/25"
+      VPN_IP_V6: "fd9d:ae86:e264:c9::10/64"
       VPN_MAC: "ae:98:3e:4e:b2:2a"
   dependsOn:
     - name: rook-ceph-cluster

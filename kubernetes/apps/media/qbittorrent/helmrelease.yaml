@@ -57,7 +57,7 @@ spec:
           [{
             "name": "vpn",
             "namespace": "networking",
-            "ips": ["${VPN_IP}"],
+            "ips": ["${VPN_IP}", "${VPN_IP_V6}"],
             "mac": "${VPN_MAC}"
           }]
       securityContext:
