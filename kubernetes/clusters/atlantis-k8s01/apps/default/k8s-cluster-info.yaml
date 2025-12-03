@@ -6,3 +6,7 @@ data:
   CLUSTER_NAME: "atlantis-k8s01"
   CLUSTER_DOMAIN: "atlantis.freckle.systems"
   CLUSTER_SVCS_DOMAIN: "atlantis.freckle.services"
+  CLUSTER_POD_CIDR: "10.244.0.0/16"
+  CLUSTER_SVC_CIDR: "10.96.0.0/12"
+  CLUSTER_POD_CIDR_V6: "fd2b:ec21:3ff2::/48"
+  CLUSTER_SVC_CIDR_V6: "fd2b:ec21:3ff0:1::/112"

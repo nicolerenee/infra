@@ -11,6 +11,10 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  postBuild:
+    substitute:
+      VPN_IP: "192.168.66.10/25"
+      VPN_MAC: "ef:45:f2:4e:b2:2a"
   dependsOn:
     - name: rook-ceph-cluster
       namespace: rook-ceph

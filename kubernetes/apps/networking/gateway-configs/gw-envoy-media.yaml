@@ -31,7 +31,7 @@ spec:
           - kind: Secret
             name: media-tls
 ---
-# yaml-language-server: $schema=https://k8s-schemas.bjw-s.dev/gateway.envoyproxy.k8s.io/envoypatchpolicy_v1alpha1.json
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/gateway.envoyproxy.io/envoypatchpolicy_v1alpha1.json
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyPatchPolicy
 metadata:

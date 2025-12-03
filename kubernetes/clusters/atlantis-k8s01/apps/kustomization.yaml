@@ -18,6 +18,7 @@ resources:
   - ./it-tools
   - ./kube-system
   - ./media
+  - ./networking
   - ./observability
   - ./rook-ceph
   - ./security
