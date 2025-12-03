@@ -7,14 +7,12 @@ metadata:
   namespace: &namespace media
   labels:
     infra.freckle.systems/post-build-variables: enabled
-    infra.freckle.systems/vpn-route-fix: enabled
 spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
   postBuild:
     substitute:
-      CONTROLLER_NAME: qbittorrent
       VPN_IP: "192.168.66.10/25"
       VPN_MAC: "ef:45:f2:4e:b2:2a"
   dependsOn:
