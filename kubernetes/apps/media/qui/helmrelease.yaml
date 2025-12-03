@@ -71,4 +71,9 @@ spec:
             namespace: gateway
     persistence:
       config:
-        existingClaim: "{{ .Release.Name }}"
+        enabled: true
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 10Gi
+        retain: true
+        suffix: "config"
