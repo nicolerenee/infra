@@ -1,0 +1,60 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+#
+# Usage: Add this component and set CONTROLLER_NAME via Flux postBuild.substitute:
+#
+# spec:
+#   postBuild:
+#     substitute:
+#       CONTROLLER_NAME: qbittorrent
+#
+patches:
+  - target:
+      kind: HelmRelease
+    patch: |-
+      - op: add
+        path: /spec/values/controllers/${CONTROLLER_NAME}/initContainers
+        value:
+          route-fix:
+            image:
+              repository: alpine
+              tag: latest
+            securityContext:
+              capabilities:
+                add:
+                  - NET_ADMIN
+            command:
+              - /bin/sh
+              - -c
+              - |
+                set -e
+                apk add --no-cache iproute2
+
+                # Get eth0 IPv4 gateway (the scope link address)
+                ETH0_GW=$(ip route show dev eth0 | grep "scope link" | head -1 | awk '{print $1}')
+
+                # Get eth0 IPv6 gateway
+                ETH0_GW6=$(ip -6 route show dev eth0 | grep "^fe80::" | head -1 | awk '{print $1}')
+
+                echo "eth0 IPv4 gateway: $ETH0_GW"
+                echo "eth0 IPv6 gateway: $ETH0_GW6"
+
+                # Remove the default route via eth0 so VPN is the only default
+                ip route del default via $ETH0_GW dev eth0 || true
+
+                # Add cluster routes via eth0
+                ip route add 10.244.0.0/16 via $ETH0_GW dev eth0
+                ip route add 10.96.0.0/12 via $ETH0_GW dev eth0
+
+                # IPv6 cluster routes
+                if [ -n "$ETH0_GW6" ]; then
+                  ip -6 route del default via $ETH0_GW6 dev eth0 || true
+                  ip -6 route add fd2b:ec21:3ff2::/48 via $ETH0_GW6 dev eth0
+                  ip -6 route add fd2b:ec21:3ff0:1::/112 via $ETH0_GW6 dev eth0
+                fi
+
+                echo "Routes configured:"
+                ip route
+                ip -6 route

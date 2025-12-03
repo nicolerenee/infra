@@ -2,7 +2,9 @@
 # yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-resources:
-  - helmrelease.yaml
+namespace: networking
 components:
-  - ../../../components/vpn-route-fix
+  - ../../../../components/common
+  - ../../../../components/flux-post-build-variables
+resources:
+  - ./vpn.yaml

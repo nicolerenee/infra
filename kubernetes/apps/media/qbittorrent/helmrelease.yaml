@@ -56,9 +56,9 @@ spec:
         k8s.v1.cni.cncf.io/networks: |-
           [{
             "name": "vpn",
-            "namespace": "networks",
-            "ips": ["192.168.66.10/25"],
-            "mac": "ef:45:f2:4e:b2:2a"
+            "namespace": "networking",
+            "ips": ["${VPN_IP}"],
+            "mac": "${VPN_MAC}"
           }]
       securityContext:
         runAsNonRoot: true
