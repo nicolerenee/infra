@@ -1,7 +1,8 @@
 ---
-originRequest:
-  originServerName: external-gw.${CLUSTER_DOMAIN}
-  http2Origin: true
-
 ingress:
-  - service: https://cilium-gateway-external.gateway.svc.cluster.local
+  - hostname: ingress.${CLUSTER_DOMAIN}
+    originRequest:
+      originServerName: ingress.${CLUSTER_DOMAIN}
+      http2Origin: true
+    service: https://envoy-public.gateway-system.svc.cluster.local:443
+  - service: http_status:404

@@ -8,6 +8,6 @@ metadata:
   name: cloudflare-tunnel
 spec:
   endpoints:
-    - dnsName: external-gw.${CLUSTER_DOMAIN}
+    - dnsName: ingress.${CLUSTER_DOMAIN}
       recordType: CNAME
       targets: ["${CLOUDFLARE_TUNNEL_ID}.cfargotunnel.com"]
