@@ -1,0 +1,27 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: wg
+components:
+  - ../../../../components/common
+  - ../../../../components/flux-post-build-variables
+resources:
+  - ./wg-server.yaml
+  - ./externalsecret.yaml
+configMapGenerator:
+  - name: wg-server-config-template
+    files:
+      - files/wg-server/wg0.conf.tmpl
+    options:
+      disableNameSuffixHash: true
+patches:
+  - target:
+      kind: Namespace
+    patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          pod-security.kubernetes.io/audit: privileged
+          pod-security.kubernetes.io/enforce: privileged
+          pod-security.kubernetes.io/warn: privileged
