@@ -6,6 +6,7 @@ components:
   - ../../../components/flux-post-build-variables
 resources:
   - ./default
+  - ./envoy-gateway-system
   - ./external-secrets
   - ./flux-system
   - ./kube-system
