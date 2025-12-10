@@ -17,11 +17,11 @@ resources:
   - ./plex.yaml
   - ./auth/ks.yaml
   - ./prowlarr.yaml
-  - ./qbittorrent.yaml
   - ./qui.yaml
   - ./radarr.yaml
   - ./recyclarr.yaml
   - ./sabnzbd.yaml
+  - ./seedsync.yaml
   - ./seerr.yaml
   - ./sonarr.yaml
   - ./sonarr-anime.yaml

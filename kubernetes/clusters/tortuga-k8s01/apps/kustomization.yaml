@@ -9,4 +9,5 @@ resources:
   - ./external-secrets
   - ./flux-system
   - ./kube-system
+  - ./tailscale
   - ./wg

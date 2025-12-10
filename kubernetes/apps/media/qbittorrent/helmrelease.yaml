@@ -52,14 +52,6 @@ spec:
               limits:
                 memory: 18Gi
     defaultPodOptions:
-      annotations:
-        k8s.v1.cni.cncf.io/networks: |-
-          [{
-            "name": "vpn",
-            "namespace": "networking",
-            "ips": ["${VPN_IP}", "${VPN_IP_V6}"],
-            "mac": "${VPN_MAC}"
-          }]
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
