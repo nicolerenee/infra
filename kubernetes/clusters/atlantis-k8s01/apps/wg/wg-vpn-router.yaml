@@ -12,8 +12,8 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: onepassword-store
-      namespace: external-secrets
+    - name: wg-secrets
+    - name: wg-vpn-router-configs
   interval: 1h
   path: ./kubernetes/apps/networking/wireguard
   prune: true
@@ -45,11 +45,10 @@ spec:
                 "mac": "ae:98:3e:14:b2:9a"
               }]
 
-        # Init containers
+        # Enable IP forwarding for routing VPN VLAN traffic
         - op: add
           path: /spec/values/controllers/wireguard/initContainers
           value:
-            # Enable IP forwarding for routing VPN VLAN traffic
             sysctl:
               image:
                 repository: busybox
@@ -63,52 +62,12 @@ spec:
                   sysctl -w net.ipv6.conf.all.forwarding=1
               securityContext:
                 privileged: true
-            # Generate wg0.conf from template + secrets
-            # TODO: Build a custom container with envsubst pre-installed to replace this
-            generate-config:
-              image:
-                repository: alpine
-                tag: latest
-              command:
-                - sh
-                - -c
-                - |
-                  apk add --no-cache gettext
-                  envsubst < /config-template/wg0.conf.tmpl > /config-generated/wg0.conf
-              envFrom:
-                - secretRef:
-                    name: wg-vpn-router-secrets
 
-        # Remove the default wg-config secret mount (we generate it instead)
-        - op: remove
-          path: /spec/values/persistence/wg-config
-
-        # Remove the config PVC (not needed, we generate config from template)
+        # Remove the config PVC (not needed)
         - op: remove
           path: /spec/values/persistence/config
 
-        # Mount the config template (ConfigMap)
-        - op: add
-          path: /spec/values/persistence/config-template
-          value:
-            enabled: true
-            type: configMap
-            name: wg-vpn-router-config-template
-            advancedMounts:
-              wireguard:
-                generate-config:
-                  - path: /config-template
-                    readOnly: true
-
-        # Mount for generated config (shared between init and app)
-        - op: add
-          path: /spec/values/persistence/config-generated
-          value:
-            enabled: true
-            type: emptyDir
-            advancedMounts:
-              wireguard:
-                generate-config:
-                  - path: /config-generated
-                app:
-                  - path: /config/wg_confs
+        # Use our config secret
+        - op: replace
+          path: /spec/values/persistence/wg-config/name
+          value: wg-vpn-router-config-template

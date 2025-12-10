@@ -1,0 +1,10 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+secretGenerator:
+  - name: wg-server-config-template
+    files:
+      - wg0.conf
+    options:
+      disableNameSuffixHash: true

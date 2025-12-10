@@ -7,15 +7,10 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
-  - ./externalsecret.yaml
+  - ./wg-secrets.yaml
+  - ./wg-vpn-router-configs.yaml
   - ./nad-vpn.yaml
   - ./wg-vpn-router.yaml
-configMapGenerator:
-  - name: wg-vpn-router-config-template
-    files:
-      - files/wg-vpn-router/wg0.conf.tmpl
-    options:
-      disableNameSuffixHash: true
 patches:
   - target:
       kind: Namespace
