@@ -13,10 +13,6 @@ data:
 
     echo "Setting up port forwarding rules on $WAN_INTERFACE..."
 
-    # Enable IP forwarding
-    sysctl -w net.ipv4.ip_forward=1
-    sysctl -w net.ipv6.conf.all.forwarding=1
-
     # NAT for VPN clients
     iptables -t nat -A POSTROUTING -s 10.66.0.0/16 -o $WAN_INTERFACE -j MASQUERADE
     ip6tables -t nat -A POSTROUTING -s fd66::/64 -o $WAN_INTERFACE -j MASQUERADE
