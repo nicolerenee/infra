@@ -1,0 +1,106 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app wg-vpn-router-1
+  namespace: &namespace wg
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: onepassword-store
+      namespace: external-secrets
+  interval: 1h
+  path: ./kubernetes/apps/networking/wireguard
+  prune: true
+  retryInterval: 2m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: *namespace
+  timeout: 5m
+  wait: false
+  patches:
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: replace
+          path: /metadata/name
+          value: wg-vpn-router-1
+
+        # Multus annotation for VLAN 200 (WG router network)
+        - op: add
+          path: /spec/values/defaultPodOptions/annotations
+          value:
+            k8s.v1.cni.cncf.io/networks: |
+              [{
+                "name": "wg-routers",
+                "namespace": "wg",
+                "ips": ["10.66.2.1/24", "fd66::2:1/112"]
+              }]
+
+        # Enable IP forwarding for routing traffic
+        - op: add
+          path: /spec/values/controllers/wireguard/initContainers
+          value:
+            sysctl:
+              image:
+                repository: busybox
+                tag: latest
+              command:
+                - sh
+                - -c
+                - |
+                  sysctl -w net.ipv4.ip_forward=1
+                  sysctl -w net.ipv4.conf.all.forwarding=1
+                  sysctl -w net.ipv6.conf.all.forwarding=1
+              securityContext:
+                privileged: true
+
+        # Add FRR sidecar for BGP
+        - op: add
+          path: /spec/values/controllers/wireguard/containers/frr
+          value:
+            image:
+              repository: quay.io/frrouting/frr
+              tag: 10.5.0@sha256:fc7f887ab4d8da06f481a4f8d59afded88b3c5823f03610a7e808f7eba45eeea
+            securityContext:
+              capabilities:
+                add:
+                  - NET_ADMIN
+                  - NET_RAW
+                  - SYS_ADMIN
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64Mi
+              limits:
+                memory: 128Mi
+
+        # Remove the config PVC (not needed)
+        - op: remove
+          path: /spec/values/persistence/config
+
+        # Use our config secret for WireGuard
+        - op: replace
+          path: /spec/values/persistence/wg-config/name
+          value: wg-vpn-router-1-secrets
+
+        # Add FRR config mount
+        - op: add
+          path: /spec/values/persistence/frr-config
+          value:
+            enabled: true
+            type: secret
+            name: wg-vpn-router-1-secrets
+            advancedMounts:
+              wireguard:
+                frr:
+                  - path: /etc/frr/frr.conf
+                    subPath: frr.conf
+                    readOnly: true

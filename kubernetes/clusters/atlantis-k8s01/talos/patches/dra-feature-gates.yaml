@@ -1,0 +1,11 @@
+machine:
+  kubelet:
+    extraArgs:
+      feature-gates: DRAExtendedResource=true,ResourceHealthStatus=true
+cluster:
+  apiServer:
+    extraArgs:
+      feature-gates: DRAExtendedResource=true,DRAPartitionableDevices=true,ResourceHealthStatus=true
+  scheduler:
+    extraArgs:
+      feature-gates: DRAExtendedResource=true,DRAPartitionableDevices=true

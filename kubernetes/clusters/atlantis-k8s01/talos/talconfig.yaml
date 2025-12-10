@@ -46,16 +46,6 @@ nodes:
     networkInterfaces:
       - &compute01-bond0
         interface: bond0
-        addresses:
-          - 172.26.3.5/24
-          - 2607:fc88:200:403:202:3333::801/64
-        routes:
-          - network: 0.0.0.0/0
-            gateway: 172.26.3.1
-            metric: 1024
-          - network: ::/0
-            gateway: fe80::def
-            metric: 1024
         bond:
           deviceSelectors:
             # Mellanox ConnectX 10GB adapter (enp#s0 and enp#s0d1 (1 on compute01, 2 on others))
@@ -69,8 +59,31 @@ nodes:
           downdelay: 200
         mtu: 1500
         dhcp: false
-    extraManifests:
-      - ./watchdog.yaml
+
+      - &compute01-br0
+        interface: br0
+        bridge:
+          interfaces:
+            - bond0
+          stp:
+            enabled: false
+          vlan:
+            vlanFiltering: true
+        addresses:
+          - 172.26.3.5/24
+          - 2607:fc88:200:403:202:3333::801/64
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 172.26.3.1
+            metric: 1024
+          - network: ::/0
+            gateway: fe80::def
+            metric: 1024
+        mtu: 1500
+        dhcp: false
+
+    # extraManifests:
+    #   - ./watchdog.yaml
 
   - hostname: atlantis-compute02
     ipAddress: 172.26.3.6
@@ -78,6 +91,7 @@ nodes:
     installDisk: /dev/nvme0n1
     networkInterfaces:
       - <<: *compute01-bond0
+      - <<: *compute01-br0
         addresses:
           - 172.26.3.6/24
           - 2607:fc88:200:403:202:3333::802/64
@@ -85,8 +99,8 @@ nodes:
     schematic: *compute01-schematic
     extensionServices:
       - <<: *compute01-lldp-extension
-    extraManifests:
-      - ./watchdog.yaml
+    # extraManifests:
+    #   - ./watchdog.yaml
 
   - hostname: atlantis-compute03
     ipAddress: 172.26.3.7
@@ -94,6 +108,7 @@ nodes:
     installDisk: /dev/nvme0n1
     networkInterfaces:
       - <<: *compute01-bond0
+      - <<: *compute01-br0
         addresses:
           - 172.26.3.7/24
           - 2607:fc88:200:403:202:3333::803/64
@@ -101,8 +116,8 @@ nodes:
     schematic: *compute01-schematic
     extensionServices:
       - <<: *compute01-lldp-extension
-    extraManifests:
-      - ./watchdog.yaml
+    # extraManifests:
+    #   - ./watchdog.yaml
 
   - hostname: atlantis-compute04
     ipAddress: 172.26.3.8
@@ -110,6 +125,7 @@ nodes:
     installDisk: /dev/nvme0n1
     networkInterfaces:
       - <<: *compute01-bond0
+      - <<: *compute01-br0
         addresses:
           - 172.26.3.8/24
           - 2607:fc88:200:403:202:3333::804/64
@@ -117,8 +133,8 @@ nodes:
     schematic: *compute01-schematic
     extensionServices:
       - <<: *compute01-lldp-extension
-    extraManifests:
-      - ./watchdog.yaml
+    # extraManifests:
+    #   - ./watchdog.yaml
 
   - hostname: atlantis-compute05
     ipAddress: 172.26.3.9
@@ -126,6 +142,7 @@ nodes:
     installDisk: /dev/nvme0n1
     networkInterfaces:
       - <<: *compute01-bond0
+      - <<: *compute01-br0
         addresses:
           - 172.26.3.9/24
           - 2607:fc88:200:403:202:3333::805/64
@@ -133,12 +150,15 @@ nodes:
     schematic: *compute01-schematic
     extensionServices:
       - <<: *compute01-lldp-extension
-    extraManifests:
-      - ./watchdog.yaml
+    # extraManifests:
+    #   - ./watchdog.yaml
 
 controlPlane:
   nodeLabels: {}
   patches:
+    # DRA feature gates for GPU/device support
+    - "@patches/dra-feature-gates.yaml"
+
     # Cluster configuration
     - |-
       cluster:
@@ -184,10 +204,12 @@ controlPlane:
 
     # Enable VIP on control plane nodes
     - |-
-      - op: add
-        path: /machine/network/interfaces/0/vip
-        value:
-          ip: 172.26.3.16
+      machine:
+        network:
+          interfaces:
+            - interface: br0
+              vip:
+                ip: 172.26.3.16
 
     # Machine patches to apply to all nodes
     - &machinePatches |
@@ -228,6 +250,8 @@ controlPlane:
 
 worker:
   patches:
+    # DRA feature gates for GPU/device support
+    - "@patches/dra-feature-gates.yaml"
     - *disableSearchDomainPatch
     - *nameServersPatch
     - *machinePatches

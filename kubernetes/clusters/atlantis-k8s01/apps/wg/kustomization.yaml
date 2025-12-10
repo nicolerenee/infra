@@ -8,12 +8,19 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - ./externalsecret.yaml
-  - ./nad-vpn.yaml
-  - ./wg-vpn-router.yaml
+  - ./nad-wg-routers.yaml
+  - ./wg-vpn-router-1.yaml
+  - ./wg-vpn-router-2.yaml
+  - ./wg-vpn-router-3.yaml
 configMapGenerator:
   - name: wg-vpn-router-config-template
     files:
       - configs/wg-vpn-router/wg0.conf
+    options:
+      disableNameSuffixHash: true
+  - name: frr-config-template
+    files:
+      - configs/frr/frr.conf
     options:
       disableNameSuffixHash: true
 patches:

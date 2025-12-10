@@ -3,7 +3,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app wg-server
+  name: &app wg-server-2
   namespace: &namespace wg
   labels:
     infra.freckle.systems/post-build-variables: enabled
@@ -31,7 +31,7 @@ spec:
       patch: |-
         - op: replace
           path: /metadata/name
-          value: wg-server
+          value: wg-server-2
 
         # Server uses hostNetwork (no LoadBalancer available)
         - op: add
@@ -45,4 +45,4 @@ spec:
         # Use our config secret
         - op: replace
           path: /spec/values/persistence/wg-config/name
-          value: wg-server-secrets
+          value: wg-server-2-secrets

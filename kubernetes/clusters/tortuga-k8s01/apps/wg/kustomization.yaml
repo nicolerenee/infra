@@ -8,7 +8,9 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - ./externalsecret.yaml
-  - ./wg-server.yaml
+  - ./wg-server-1.yaml
+  - ./wg-server-2.yaml
+  - ./wg-server-3.yaml
 configMapGenerator:
   - name: wg-server-config-template
     files:
