@@ -11,12 +11,21 @@ resources:
   - ./wg-server-1.yaml
   - ./wg-server-2.yaml
   - ./wg-server-3.yaml
+  - ./frr.yaml
+  - ./port-forward.yaml
 configMapGenerator:
   - name: wg-server-config-template
     files:
       - configs/wg-server/wg0.conf
       - wg1.conf=configs/wg-server/wg0.conf
       - wg2.conf=configs/wg-server/wg0.conf
+    options:
+      disableNameSuffixHash: true
+  - name: frr-config
+    files:
+      - frr.conf=configs/frr/frr.conf
+      - daemons=configs/frr/daemons
+      - vtysh.conf=configs/frr/vtysh.conf
     options:
       disableNameSuffixHash: true
 patches:

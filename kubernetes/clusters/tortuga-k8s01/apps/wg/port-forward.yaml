@@ -1,0 +1,79 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: port-forward-rules
+  namespace: wg
+data:
+  rules.sh: |
+    #!/bin/sh
+    set -e
+
+    WAN_INTERFACE="${WAN_INTERFACE:-ens3}"
+
+    echo "Setting up port forwarding rules on $WAN_INTERFACE..."
+
+    # Enable IP forwarding
+    sysctl -w net.ipv4.ip_forward=1
+    sysctl -w net.ipv6.conf.all.forwarding=1
+
+    # NAT for VPN clients
+    iptables -t nat -A POSTROUTING -s 10.66.0.0/16 -o $WAN_INTERFACE -j MASQUERADE
+    ip6tables -t nat -A POSTROUTING -s fd66::/64 -o $WAN_INTERFACE -j MASQUERADE
+
+    # Port forwarding for qBittorrent (10.66.1.10 / fd66::1:10)
+    iptables -t nat -A PREROUTING -i $WAN_INTERFACE -p tcp --dport 50469 -j DNAT --to-destination 10.66.1.10:50469
+    iptables -t nat -A PREROUTING -i $WAN_INTERFACE -p udp --dport 50469 -j DNAT --to-destination 10.66.1.10:50469
+    ip6tables -t nat -A PREROUTING -i $WAN_INTERFACE -p tcp --dport 50469 -j DNAT --to-destination [fd66::1:10]:50469
+    ip6tables -t nat -A PREROUTING -i $WAN_INTERFACE -p udp --dport 50469 -j DNAT --to-destination [fd66::1:10]:50469
+
+    echo "NAT and port forwarding rules applied successfully"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: port-forward
+  namespace: wg
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: port-forward
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: port-forward
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      initContainers:
+        - name: setup-rules
+          image: alpine:3.21
+          command: ["/bin/sh", "/scripts/rules.sh"]
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+                - NET_RAW
+              drop:
+                - ALL
+          env:
+            - name: WAN_INTERFACE
+              value: "ens3"
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+      containers:
+        - name: pause
+          image: registry.k8s.io/pause:3.10
+          resources:
+            requests:
+              cpu: 1m
+              memory: 4Mi
+            limits:
+              memory: 8Mi
+      volumes:
+        - name: scripts
+          configMap:
+            name: port-forward-rules
+            defaultMode: 0755

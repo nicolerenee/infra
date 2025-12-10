@@ -24,4 +24,4 @@ resources:
   - ./spegel
   - ./system-upgrade
   - ./tailscale
-  - ./wg
+  - ./wg/ks.yaml

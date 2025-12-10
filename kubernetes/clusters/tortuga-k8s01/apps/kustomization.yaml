@@ -11,4 +11,4 @@ resources:
   - ./flux-system
   - ./kube-system
   - ./tailscale
-  - ./wg
+  - ./wg/ks.yaml

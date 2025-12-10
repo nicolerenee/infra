@@ -1,0 +1,49 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frr
+  namespace: wg
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: frr
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: frr
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: frr
+          image: quay.io/frrouting/frr:10.2.1@sha256:b6f0272f16d48c7dccc9787516e7d81ab00660cb3dfd8a2a5efcb6a1ccbfe3f1
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+                - NET_RAW
+                - SYS_ADMIN
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+          volumeMounts:
+            - name: frr-config
+              mountPath: /etc/frr/frr.conf
+              subPath: frr.conf
+            - name: frr-config
+              mountPath: /etc/frr/daemons
+              subPath: daemons
+            - name: frr-config
+              mountPath: /etc/frr/vtysh.conf
+              subPath: vtysh.conf
+      volumes:
+        - name: frr-config
+          configMap:
+            name: frr-config
