@@ -16,4 +16,5 @@ resources:
   - ./metrics-server.yaml
   - ./multus.yaml
   - ./node-feature-discovery.yaml
+  - ./reflector.yaml
   - ./reloader.yaml
