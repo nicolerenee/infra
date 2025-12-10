@@ -9,6 +9,7 @@ components:
 resources:
   - ./externalsecret.yaml
   - ./nad-wg-routers.yaml
+  - ./pdb.yaml
   - ./wg-vpn-router-1.yaml
   - ./wg-vpn-router-2.yaml
   - ./wg-vpn-router-3.yaml
@@ -21,6 +22,7 @@ configMapGenerator:
   - name: frr-config-template
     files:
       - configs/frr/frr.conf
+      - configs/frr/daemons
     options:
       disableNameSuffixHash: true
 patches:
