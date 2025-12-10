@@ -43,7 +43,11 @@ spec:
             - name: frr-config
               mountPath: /etc/frr/vtysh.conf
               subPath: vtysh.conf
+            - name: frr-run
+              mountPath: /var/run/frr
       volumes:
         - name: frr-config
           configMap:
             name: frr-config
+        - name: frr-run
+          emptyDir: {}
