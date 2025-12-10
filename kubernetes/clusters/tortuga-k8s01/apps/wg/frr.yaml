@@ -18,7 +18,7 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: frr
-          image: quay.io/frrouting/frr:10.2.1@sha256:e47e67bd612030cb1bedee2bde85b73913f2ea021573b749deb21d94940f03c1
+          image: quay.io/frrouting/frr:10.5.0@sha256:fc7f887ab4d8da06f481a4f8d59afded88b3c5823f03610a7e808f7eba45eeea
           securityContext:
             capabilities:
               add:
