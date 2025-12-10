@@ -1,0 +1,9 @@
+apiVersion: tailscale.com/v1alpha1
+kind: Connector
+metadata:
+  name: tortuga-exit01
+  namespace: tailscale
+spec:
+  proxyClass: tailscale-tun
+  hostname: tortuga-exit01
+  exitNode: true

@@ -1,0 +1,11 @@
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyGroup
+metadata:
+  name: egress-proxy
+spec:
+  type: egress
+  hostnamePrefix: ${CLUSTER_NAME}-egress
+  replicas: 2
+  tags:
+    - tag:${CLUSTER_NAME}-egress

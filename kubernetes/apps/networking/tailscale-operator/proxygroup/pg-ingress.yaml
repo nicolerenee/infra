@@ -1,0 +1,11 @@
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyGroup
+metadata:
+  name: ingress-proxy
+spec:
+  type: ingress
+  hostnamePrefix: ${CLUSTER_NAME}-ingress
+  replicas: 2
+  tags:
+    - tag:${CLUSTER_NAME}-ingress

@@ -1,0 +1,29 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app tailscale-operator
+  namespace: &namespace tailscale
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  targetNamespace: *namespace
+  dependsOn:
+    - name: generic-device-plugin
+      namespace: kube-system
+    - name: onepassword-store
+      namespace: external-secrets
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/networking/tailscale-operator/operator
+  interval: 30s
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true
