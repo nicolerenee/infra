@@ -16,7 +16,7 @@ releases:
   # Phase 2: External Secrets (for 1Password integration)
   - name: external-secrets
     chart: oci://ghcr.io/external-secrets/charts/external-secrets
-    version: 1.1.0
+    version: 1.1.1
     namespace: external-secrets
     createNamespace: true
     needs:
