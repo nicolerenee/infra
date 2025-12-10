@@ -9,6 +9,9 @@ data:
     #!/bin/sh
     set -e
 
+    # Install iptables
+    apk add --no-cache iptables ip6tables
+
     WAN_INTERFACE="${WAN_INTERFACE:-ens3}"
 
     echo "Setting up port forwarding rules on $WAN_INTERFACE..."
