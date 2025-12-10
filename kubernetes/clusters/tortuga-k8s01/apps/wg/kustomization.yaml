@@ -7,9 +7,14 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
-  - ./wg-secrets.yaml
-  - ./wg-server-configs.yaml
+  - ./externalsecret.yaml
   - ./wg-server.yaml
+configMapGenerator:
+  - name: wg-server-config-template
+    files:
+      - configs/wg-server/wg0.conf
+    options:
+      disableNameSuffixHash: true
 patches:
   - target:
       kind: Namespace

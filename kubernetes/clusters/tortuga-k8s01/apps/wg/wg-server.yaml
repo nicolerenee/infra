@@ -12,8 +12,8 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: wg-secrets
-    - name: wg-server-configs
+    - name: onepassword-store
+      namespace: external-secrets
   interval: 1h
   path: ./kubernetes/apps/networking/wireguard
   prune: true
@@ -45,4 +45,4 @@ spec:
         # Use our config secret
         - op: replace
           path: /spec/values/persistence/wg-config/name
-          value: wg-server-config-template
+          value: wg-server-secrets
