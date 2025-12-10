@@ -18,7 +18,6 @@ resources:
   - ./minecraft
   - ./observability
   - ./rook-ceph
-  - ./security
   - ./spegel
   - ./system-upgrade
   - ./tailscale

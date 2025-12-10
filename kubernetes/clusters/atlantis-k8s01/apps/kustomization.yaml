@@ -8,6 +8,7 @@ resources:
   - ./cert-manager
   - ./db
   - ./default
+  - ./downloaders
   - ./envoy-gateway-system
   - ./external-dns
   - ./external-secrets
@@ -18,10 +19,9 @@ resources:
   - ./it-tools
   - ./kube-system
   - ./media
-  - ./networking
   - ./observability
   - ./rook-ceph
-  - ./security
   - ./spegel
   - ./system-upgrade
   - ./tailscale
+  - ./wg
