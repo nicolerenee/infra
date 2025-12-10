@@ -1,0 +1,14 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: downloaders
+components:
+  - ../../../../components/common
+  - ../../../../components/flux-post-build-variables
+resources:
+  - ./default-egress-policy.yaml
+  - ./store01-downloads.yaml
+  - ./vpn-routed.yaml
+  - ./vpn-egress-policy.yaml
+  - ./qbittorrent.yaml

@@ -1,0 +1,22 @@
+---
+# This policy blocks public internet egress for pods that require VPN routing.
+# Pods must use the vpn-routed NetworkAttachmentDefinition to access the internet.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: vpn-egress-required
+spec:
+  endpointSelector:
+    matchLabels:
+      vpn.egress.home.arpa/required: "true"
+  egressDeny:
+    # Block IPv6 public internet
+    - toCIDR:
+        - "2000::/3"
+    # Block IPv4 public internet (allow RFC1918 + cluster CIDRs)
+    - toCIDRSet:
+        - cidr: 0.0.0.0/0
+          except:
+            - 10.0.0.0/8
+            - 172.16.0.0/12
+            - 192.168.0.0/16
