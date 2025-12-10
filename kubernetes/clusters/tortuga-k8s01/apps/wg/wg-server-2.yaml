@@ -46,3 +46,11 @@ spec:
         - op: replace
           path: /spec/values/persistence/wg-config/name
           value: wg-server-2-secrets
+
+        # Use wg1 interface
+        - op: replace
+          path: /spec/values/persistence/wg-config/globalMounts
+          value:
+            - path: /config/wg_confs/wg1.conf
+              subPath: wg1.conf
+              readOnly: true

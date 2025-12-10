@@ -46,3 +46,11 @@ spec:
         - op: replace
           path: /spec/values/persistence/wg-config/name
           value: wg-server-1-secrets
+
+        # Use wg0 interface (default path is fine)
+        - op: replace
+          path: /spec/values/persistence/wg-config/globalMounts
+          value:
+            - path: /config/wg_confs/wg0.conf
+              subPath: wg0.conf
+              readOnly: true
