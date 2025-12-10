@@ -23,6 +23,7 @@ configMapGenerator:
     files:
       - configs/frr/frr.conf
       - configs/frr/daemons
+      - configs/frr/vtysh.conf
     options:
       disableNameSuffixHash: true
 patches:

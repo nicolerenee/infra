@@ -7,4 +7,4 @@ spec:
   minAvailable: 2
   selector:
     matchLabels:
-      app.kubernetes.io/name: wg-vpn-router
+      wg-router-group: vpn-egress

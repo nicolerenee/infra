@@ -107,6 +107,9 @@ spec:
                   - path: /etc/frr/daemons
                     subPath: daemons
                     readOnly: true
+                  - path: /etc/frr/vtysh.conf
+                    subPath: vtysh.conf
+                    readOnly: true
 
         # Pod anti-affinity to spread across nodes
         - op: add
@@ -116,11 +119,11 @@ spec:
               requiredDuringSchedulingIgnoredDuringExecution:
                 - labelSelector:
                     matchLabels:
-                      app.kubernetes.io/name: wg-vpn-router
+                      wg-router-group: vpn-egress
                   topologyKey: kubernetes.io/hostname
 
         # Common label for anti-affinity matching
         - op: add
           path: /spec/values/defaultPodOptions/labels
           value:
-            app.kubernetes.io/name: wg-vpn-router
+            wg-router-group: vpn-egress
