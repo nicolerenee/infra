@@ -3,7 +3,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app wg-server
+  name: &app wg-vpn-router
   namespace: &namespace wg
   labels:
     infra.freckle.systems/post-build-variables: enabled
@@ -31,18 +31,40 @@ spec:
       patch: |-
         - op: replace
           path: /metadata/name
-          value: wg-server
+          value: wg-vpn-router
 
-        # Server uses hostNetwork (no LoadBalancer available)
+        # Multus annotation for VPN VLAN interface
         - op: add
-          path: /spec/values/defaultPodOptions/hostNetwork
-          value: true
+          path: /spec/values/defaultPodOptions/annotations
+          value:
+            k8s.v1.cni.cncf.io/networks: |
+              [{
+                "name": "vpn",
+                "namespace": "wg",
+                "ips": ["10.66.1.1/24", "fd66::1:1/112"],
+                "mac": "ae:98:3e:14:b2:9a"
+              }]
 
-        # Init container to generate wg0.conf from template + secrets
-        # TODO: Build a custom container with envsubst pre-installed to replace this
+        # Init containers
         - op: add
           path: /spec/values/controllers/wireguard/initContainers
           value:
+            # Enable IP forwarding for routing VPN VLAN traffic
+            sysctl:
+              image:
+                repository: busybox
+                tag: latest
+              command:
+                - sh
+                - -c
+                - |
+                  sysctl -w net.ipv4.ip_forward=1
+                  sysctl -w net.ipv4.conf.all.forwarding=1
+                  sysctl -w net.ipv6.conf.all.forwarding=1
+              securityContext:
+                privileged: true
+            # Generate wg0.conf from template + secrets
+            # TODO: Build a custom container with envsubst pre-installed to replace this
             generate-config:
               image:
                 repository: alpine
@@ -55,7 +77,7 @@ spec:
                   envsubst < /config-template/wg0.conf.tmpl > /config-generated/wg0.conf
               envFrom:
                 - secretRef:
-                    name: wg-server-secrets
+                    name: wg-vpn-router-secrets
 
         # Remove the default wg-config secret mount (we generate it instead)
         - op: remove
@@ -67,7 +89,7 @@ spec:
           value:
             enabled: true
             type: configMap
-            name: wg-server-config-template
+            name: wg-vpn-router-config-template
             advancedMounts:
               wireguard:
                 generate-config:
