@@ -43,7 +43,11 @@ spec:
               distributedLRU:
                 enabled: true
             loadBalancer:
+              algorithm: maglev
               mode: dsr
+            gatewayAPI:
+              enabled: true
+              enableAlpn: true
             # enableIPv4BIGTCP: true
             # enableIPv6BIGTCP: true
             bpfClockProbe: true

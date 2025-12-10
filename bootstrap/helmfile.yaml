@@ -1,0 +1,68 @@
+---
+repositories:
+  - name: cilium
+    url: https://helm.cilium.io/
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
+
+releases:
+  # Phase 1: CRDs must be installed first
+  - name: prometheus-operator-crds
+    chart: prometheus-community/prometheus-operator-crds
+    version: 25.0.0
+    namespace: observability
+    createNamespace: true
+
+  # Phase 2: External Secrets (for 1Password integration)
+  - name: external-secrets
+    chart: oci://ghcr.io/external-secrets/charts/external-secrets
+    version: 1.1.0
+    namespace: external-secrets
+    createNamespace: true
+    needs:
+      - observability/prometheus-operator-crds
+    values:
+      - installCRDs: true
+        leaderElect: true
+        serviceMonitor:
+          enabled: true
+        webhook:
+          serviceMonitor:
+            enabled: true
+        certController:
+          serviceMonitor:
+            enabled: true
+
+  # Phase 3: CNI (depends on prometheus CRDs for ServiceMonitors)
+  - name: cilium
+    version: 1.18.4
+    chart: cilium/cilium
+    namespace: kube-system
+    needs:
+      - observability/prometheus-operator-crds
+    values:
+      - ../kubernetes/apps/networking/cilium/app/helm/values.yaml
+      - operator:
+          replicas: 1
+
+  # Phase 4: Flux Operator
+  - name: flux-operator
+    chart: oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator
+    version: 0.35.0
+    namespace: flux-system
+    createNamespace: true
+    needs:
+      - observability/prometheus-operator-crds
+
+  # Phase 5: Flux Instance (depends on operator)
+  - name: flux-instance
+    chart: oci://ghcr.io/controlplaneio-fluxcd/charts/flux-instance
+    version: 0.35.0
+    namespace: flux-system
+    needs:
+      - flux-system/flux-operator
+    values:
+      - ../kubernetes/apps/flux/instance/helm/values.yaml
+      - instance:
+          sync:
+            path: kubernetes/clusters/CLUSTER/flux

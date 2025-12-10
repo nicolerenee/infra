@@ -2,8 +2,6 @@
 ipam:
   mode: kubernetes
 
-loadBalancer:
-  algorithm: maglev
 nodePort:
   enabled: false
 bpf:
@@ -11,10 +9,11 @@ bpf:
 cni:
   exclusive: false
 
-# enable gateway api support
+bgpControlPlane:
+  enabled: false
+
 gatewayAPI:
-  enabled: true
-  enableAlpn: true
+  enabled: false
 
 # replace kube-proxy
 kubeProxyReplacement: true
