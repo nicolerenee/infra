@@ -83,6 +83,10 @@ spec:
         - op: remove
           path: /spec/values/persistence/wg-config
 
+        # Remove the config PVC (not needed, we generate config from template)
+        - op: remove
+          path: /spec/values/persistence/config
+
         # Mount the config template (ConfigMap)
         - op: add
           path: /spec/values/persistence/config-template
