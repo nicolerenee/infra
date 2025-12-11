@@ -8,7 +8,7 @@ resources:
   - ./cert-manager
   - ./db
   - ./default
-  - ./downloaders
+  - ./downloaders/ks.yaml
   - ./envoy-gateway-system
   - ./external-dns
   - ./external-secrets
