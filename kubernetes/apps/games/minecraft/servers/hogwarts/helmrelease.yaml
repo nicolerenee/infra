@@ -34,7 +34,7 @@ spec:
       external-dns.alpha.kubernetes.io/hostname: hogwarts.${CLUSTER_DOMAIN}
     minecraftServer:
       eula: true
-      version: 1.21.10
+      version: 1.21.11
       type: VANILLA
       difficulty: normal
       whitelist: "averyisg0rg,killswitcher585,bananaprime6967"
