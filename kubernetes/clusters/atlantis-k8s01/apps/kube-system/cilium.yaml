@@ -31,10 +31,11 @@ spec:
         - op: add
           path: /spec/values
           value:
-            loadBalancer:
-              algorithm: maglev
+            devices: br0
             bgpControlPlane:
               enabled: true
             gatewayAPI:
               enabled: true
               enableAlpn: true
+            loadBalancer:
+              algorithm: maglev
