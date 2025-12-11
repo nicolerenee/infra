@@ -24,4 +24,5 @@ resources:
   - ./spegel
   - ./system-upgrade
   - ./tailscale
-  - ./wg/ks.yaml
+  # Removed - replaced by gluetun sidecar in qbittorrent pod
+  # - ./wg/ks.yaml

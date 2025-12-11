@@ -1,0 +1,34 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+# This policy restricts pods with the vpn-sidecar label to only communicate with:
+# - The WireGuard VPN endpoint (for tunnel traffic)
+# - Cluster-internal networks (for ingress, DNS, etc.)
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: vpn-sidecar-egress
+spec:
+  endpointSelector:
+    matchLabels:
+      vpn.egress.home.arpa/sidecar: "true"
+  egress:
+    # Allow WireGuard traffic to VPN endpoint (IPv4)
+    - toCIDR:
+        - "${VPN_ENDPOINT_V4}/32"
+      toPorts:
+        - ports:
+            - port: "51820"
+              protocol: UDP
+    # Allow WireGuard traffic to VPN endpoint (IPv6)
+    - toCIDR:
+        - "${VPN_ENDPOINT_V6}/128"
+      toPorts:
+        - ports:
+            - port: "51820"
+              protocol: UDP
+    # Allow cluster-internal traffic (pod and service CIDRs)
+    - toCIDR:
+        - 10.244.0.0/16
+        - fd2b:ec21:3ff2::/48
+        - 10.96.0.0/12
+        - fd2b:ec21:3ff0:1::/112

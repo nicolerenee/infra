@@ -9,6 +9,6 @@ components:
 resources:
   - ./default-egress-policy.yaml
   - ./store01-downloads.yaml
-  - ./vpn-routed.yaml
-  - ./vpn-egress-policy.yaml
+  - ./qbittorrent-vpn-secrets.yaml
+  - ./vpn-sidecar-policy.yaml
   - ./qbittorrent.yaml
