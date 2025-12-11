@@ -9,12 +9,6 @@ bpf:
 cni:
   exclusive: false
 
-bgpControlPlane:
-  enabled: false
-
-gatewayAPI:
-  enabled: false
-
 # replace kube-proxy
 kubeProxyReplacement: true
 k8sServiceHost: localhost
