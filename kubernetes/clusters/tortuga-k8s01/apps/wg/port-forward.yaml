@@ -47,7 +47,7 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       initContainers:
         - name: setup-rules
-          image: alpine:3.21
+          image: alpine:3.23
           command: ["/bin/sh", "/scripts/rules.sh"]
           securityContext:
             capabilities:
