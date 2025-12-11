@@ -51,6 +51,9 @@ spec:
         runAsNonRoot: false
         runAsUser: 0
         runAsGroup: 0
+        sysctls:
+          - name: net.ipv6.conf.all.forwarding
+            value: "1"
     persistence:
       wg-config:
         type: secret
