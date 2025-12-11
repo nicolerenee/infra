@@ -12,3 +12,14 @@ resources:
   - ./qbittorrent-vpn-secrets.yaml
   - ./vpn-sidecar-policy.yaml
   - ./qbittorrent.yaml
+
+patches:
+  - target:
+      kind: Namespace
+    patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          pod-security.kubernetes.io/audit: privileged
+          pod-security.kubernetes.io/enforce: privileged
+          pod-security.kubernetes.io/warn: privileged

@@ -55,6 +55,11 @@ spec:
           value:
             vpn.egress.home.arpa/sidecar: "true"
 
+        # Ensure main app container runs as non-root
+        - op: add
+          path: /spec/values/controllers/qbittorrent/containers/app/securityContext/runAsNonRoot
+          value: true
+
         # Gluetun VPN sidecar
         - op: add
           path: /spec/values/controllers/qbittorrent/containers/gluetun
@@ -83,6 +88,7 @@ spec:
               - secretRef:
                   name: qbittorrent-vpn
             securityContext:
+              runAsNonRoot: false
               runAsUser: 0
               runAsGroup: 0
               capabilities:
