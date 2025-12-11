@@ -69,7 +69,7 @@ spec:
                 value: wireguard
               - name: WIREGUARD_ADDRESSES
                 value: "10.66.0.10/32,fd66::10/128"
-              - name: VPN_ENDPOINT_PORT
+              - name: WIREGUARD_ENDPOINT_PORT
                 value: "51820"
               - name: FIREWALL_INPUT_PORTS
                 value: "80"
@@ -83,6 +83,8 @@ spec:
               - secretRef:
                   name: qbittorrent-vpn
             securityContext:
+              runAsUser: 0
+              runAsGroup: 0
               capabilities:
                 add:
                   - NET_ADMIN
