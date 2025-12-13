@@ -81,8 +81,6 @@ spec:
               - name: FIREWALL_VPN_INPUT_PORTS
                 value: "50469"
               - name: DOT
-                value: "off"
-              - name: DNS_KEEP_NAMESERVER
                 value: "on"
             envFrom:
               - secretRef:
