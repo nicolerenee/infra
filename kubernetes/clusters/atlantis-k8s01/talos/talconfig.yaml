@@ -44,6 +44,12 @@ nodes:
               configure system description "Talos Node"
 
     networkInterfaces:
+      - &compute01-nic
+        interface: enp1s0
+        mtu: 1500
+        dhcp: false
+      - <<: *compute01-nic
+        interface: enp1s0d1
       - &compute01-bond0
         interface: bond0
         bond:
@@ -57,18 +63,6 @@ nodes:
           miimon: 100
           updelay: 200
           downdelay: 200
-        mtu: 1500
-        dhcp: false
-
-      - &compute01-br0
-        interface: br0
-        bridge:
-          interfaces:
-            - bond0
-          stp:
-            enabled: false
-          vlan:
-            vlanFiltering: true
         addresses:
           - 172.26.3.5/24
           - 2607:fc88:200:403:202:3333::801/64
@@ -90,8 +84,11 @@ nodes:
     controlPlane: true
     installDisk: /dev/nvme0n1
     networkInterfaces:
+      - <<: *compute01-nic
+        interface: enp2s0
+      - <<: *compute01-nic
+        interface: enp2s0d1
       - <<: *compute01-bond0
-      - <<: *compute01-br0
         addresses:
           - 172.26.3.6/24
           - 2607:fc88:200:403:202:3333::802/64
@@ -107,8 +104,11 @@ nodes:
     controlPlane: true
     installDisk: /dev/nvme0n1
     networkInterfaces:
+      - <<: *compute01-nic
+        interface: enp2s0
+      - <<: *compute01-nic
+        interface: enp2s0d1
       - <<: *compute01-bond0
-      - <<: *compute01-br0
         addresses:
           - 172.26.3.7/24
           - 2607:fc88:200:403:202:3333::803/64
@@ -124,8 +124,11 @@ nodes:
     controlPlane: false
     installDisk: /dev/nvme0n1
     networkInterfaces:
+      - <<: *compute01-nic
+        interface: enp2s0
+      - <<: *compute01-nic
+        interface: enp2s0d1
       - <<: *compute01-bond0
-      - <<: *compute01-br0
         addresses:
           - 172.26.3.8/24
           - 2607:fc88:200:403:202:3333::804/64
@@ -141,8 +144,11 @@ nodes:
     controlPlane: false
     installDisk: /dev/nvme0n1
     networkInterfaces:
+      - <<: *compute01-nic
+        interface: enp2s0
+      - <<: *compute01-nic
+        interface: enp2s0d1
       - <<: *compute01-bond0
-      - <<: *compute01-br0
         addresses:
           - 172.26.3.9/24
           - 2607:fc88:200:403:202:3333::805/64
@@ -207,7 +213,7 @@ controlPlane:
       machine:
         network:
           interfaces:
-            - interface: br0
+            - interface: bond0
               vip:
                 ip: 172.26.3.16
 
@@ -247,6 +253,13 @@ controlPlane:
         time:
           servers:
           - time.cloudflare.com
+            # Network performance
+
+        sysctls:
+          net.core.wmem_max: "67108864"
+          net.core.rmem_max: "67108864"
+          net.ipv4.tcp_wmem: "4096 87380 67108864"
+          net.ipv4.tcp_rmem: "4096 87380 67108864"
 
 worker:
   patches:

@@ -31,11 +31,19 @@ spec:
         - op: add
           path: /spec/values
           value:
-            devices: br0
+            bandwidthManager:
+              enabled: true
+              bbr: true
             bgpControlPlane:
               enabled: true
+            bpf:
+              preallocateMaps: true
             gatewayAPI:
               enabled: true
               enableAlpn: true
             loadBalancer:
               algorithm: maglev
+            routingMode: native
+            autoDirectNodeRoutes: true
+            ipv4NativeRoutingCIDR: 10.244.0.0/16
+            ipv6NativeRoutingCIDR: fd2b:ec21:3ff2::/48
