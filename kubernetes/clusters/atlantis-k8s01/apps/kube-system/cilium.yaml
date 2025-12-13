@@ -37,6 +37,7 @@ spec:
             bgpControlPlane:
               enabled: true
             bpf:
+              datapathMode: netkit
               preallocateMaps: true
             gatewayAPI:
               enabled: true
