@@ -24,3 +24,7 @@ spec:
   interval: 1h
   retryInterval: 2m
   timeout: 5m
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: k8s-cluster-info

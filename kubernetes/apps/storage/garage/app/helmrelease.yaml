@@ -29,18 +29,11 @@ spec:
             image:
               repository: mirror.gcr.io/dxflrs/garage
               tag: v2.1.0@sha256:4c9b34c113e61358466e83fd6e7d66e6d18657ede14b776eb78a93ee8da7cf6a
+            args:
+              - --config
+              - /etc/garage/garage.toml
+              - server
             env:
-              # Garage configuration via environment variables
-              GARAGE_S3_API_BIND_ADDR: "[::]:3900"
-              GARAGE_RPC_BIND_ADDR: "[::]:3901"
-              GARAGE_ADMIN_API_BIND_ADDR: "[::]:3903"
-              GARAGE_REPLICATION_FACTOR: "1"
-              GARAGE_DB_ENGINE: lmdb
-              GARAGE_BLOCK_SIZE: "1048576"
-              GARAGE_COMPRESSION_LEVEL: "1"
-              GARAGE_METADATA_DIR: /data/meta
-              GARAGE_DATA_DIR: /data/storage
-              GARAGE_S3_REGION: garage
               TZ: Etc/UTC
             envFrom:
               - secretRef:
@@ -97,6 +90,30 @@ spec:
           admin:
             port: 3903
 
+    configMaps:
+      config:
+        data:
+          garage.toml: |
+            replication_factor = 1
+            consistency_mode = "consistent"
+
+            metadata_dir = "/data/meta"
+            data_dir = "/data/storage"
+            db_engine = "lmdb"
+
+            block_size = "1M"
+            compression_level = 1
+
+            [rpc]
+            bind_addr = "[::]:3901"
+
+            [s3_api]
+            s3_region = "${GARAGE_S3_REGION}"
+            api_bind_addr = "[::]:3900"
+
+            [admin]
+            api_bind_addr = "[::]:3903"
+
     persistence:
       data:
         enabled: true
@@ -109,3 +126,9 @@ spec:
             subPath: meta
           - path: /data/storage
             subPath: storage
+      config:
+        type: configMap
+        name: garage-config
+        globalMounts:
+          - path: /etc/garage
+            readOnly: true

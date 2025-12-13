@@ -6,7 +6,7 @@ namePrefix: nas-
 resources:
   - ../../../../../apps/storage/garage/app
 patches:
-  # Override storage for TrueNAS iSCSI and fix secretRef name
+  # Override storage for TrueNAS iSCSI and fix resource name references
   - target:
       kind: HelmRelease
       name: garage
@@ -21,8 +21,8 @@ patches:
         path: /spec/values/controllers/garage/containers/app/envFrom/0/secretRef/name
         value: nas-garage
       - op: replace
-        path: /spec/values/controllers/garage/containers/app/env/GARAGE_S3_REGION
-        value: us-den1
+        path: /spec/values/persistence/config/name
+        value: nas-garage-config
   # Update 1Password key name
   - target:
       kind: ExternalSecret
