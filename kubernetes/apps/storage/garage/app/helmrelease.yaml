@@ -105,4 +105,7 @@ spec:
         size: 10Gi
         retain: true
         globalMounts:
-          - path: /data
+          - path: /data/meta
+            subPath: meta
+          - path: /data/storage
+            subPath: storage
