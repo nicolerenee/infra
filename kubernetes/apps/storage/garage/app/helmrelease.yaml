@@ -28,7 +28,7 @@ spec:
           app:
             image:
               repository: mirror.gcr.io/dxflrs/garage
-              tag: v1.1.0
+              tag: v2.1.0
             args:
               - server
             env:
