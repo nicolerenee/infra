@@ -1,0 +1,109 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: garage
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: default
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+
+  values:
+    controllers:
+      garage:
+        annotations:
+          reloader.stakater.com/auto: "true"
+
+        containers:
+          app:
+            image:
+              repository: mirror.gcr.io/dxflrs/garage
+              tag: v1.1.0
+            args:
+              - server
+            env:
+              # Garage configuration via environment variables
+              GARAGE_RPC_BIND_ADDR: "[::]:3901"
+              GARAGE_S3_API_BIND_ADDR: "[::]:3900"
+              GARAGE_ADMIN_API_BIND_ADDR: "[::]:3903"
+              GARAGE_REPLICATION_FACTOR: "1"
+              GARAGE_DB_ENGINE: lmdb
+              GARAGE_BLOCK_SIZE: "1048576"
+              GARAGE_COMPRESSION_LEVEL: "1"
+              GARAGE_METADATA_DIR: /data/meta
+              GARAGE_DATA_DIR: /data/storage
+              GARAGE_S3_REGION: garage
+            envFrom:
+              - secretRef:
+                  name: garage
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: 3903
+                  initialDelaySeconds: 15
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *probes
+              startup:
+                enabled: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: 3903
+                  failureThreshold: 30
+                  periodSeconds: 10
+            resources:
+              requests:
+                memory: 256Mi
+                cpu: 50m
+              limits:
+                memory: 1Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop: ["ALL"]
+
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+
+    service:
+      app:
+        controller: garage
+        ports:
+          s3:
+            port: 3900
+          rpc:
+            port: 3901
+          admin:
+            port: 3903
+
+    persistence:
+      data:
+        enabled: true
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 10Gi
+        retain: true
+        globalMounts:
+          - path: /data

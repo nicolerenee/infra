@@ -14,6 +14,7 @@ resources:
   - ./external-secrets
   - ./flux-system
   - ./freckle-id
+  - ./garage
   - ./gateway
   - ./gateway-system
   - ./it-tools
@@ -24,5 +25,3 @@ resources:
   - ./spegel
   - ./system-upgrade
   - ./tailscale
-  # Removed - replaced by gluetun sidecar in qbittorrent pod
-  # - ./wg/ks.yaml
