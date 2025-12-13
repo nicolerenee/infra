@@ -1,0 +1,30 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namePrefix: nas-
+resources:
+  - ../../../../../apps/storage/garage/app
+patches:
+  # Override storage for TrueNAS iSCSI and fix secretRef name
+  - target:
+      kind: HelmRelease
+      name: garage
+    patch: |-
+      - op: replace
+        path: /spec/values/persistence/data/size
+        value: 500Gi
+      - op: add
+        path: /spec/values/persistence/data/storageClass
+        value: truenas-iscsi
+      - op: replace
+        path: /spec/values/controllers/garage/containers/app/envFrom/0/secretRef/name
+        value: nas-garage
+  # Update 1Password key name
+  - target:
+      kind: ExternalSecret
+      name: garage
+    patch: |-
+      - op: replace
+        path: /spec/dataFrom/0/extract/key
+        value: nas-garage-${CLUSTER_NAME}
