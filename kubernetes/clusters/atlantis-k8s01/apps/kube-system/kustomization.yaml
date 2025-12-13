@@ -9,7 +9,6 @@ components:
 resources:
   - ./cilium.yaml
   - ./cilium-gw-config.yaml
-  - ./cilium-netkit-config.yaml
   - ./descheduler.yaml
   - ./generic-device-plugin.yaml
   - ./intel-gpu-resource-driver.yaml
