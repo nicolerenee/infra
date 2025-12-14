@@ -8,6 +8,9 @@ spec:
     destinationPath: s3://cnpg-backups/
     endpointURL: http://nas-garage.garage.svc.cluster.local:3900
     s3Credentials:
+      region:
+        name: pg-17a-secrets
+        key: s3-region
       accessKeyId:
         name: pg-17a-secrets
         key: s3-access-key-id
