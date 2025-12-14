@@ -3,20 +3,16 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app cloudnative-pg-clusters
-  namespace: &namespace db
-  labels:
-    infra.freckle.systems/post-build-variables: enabled
+  name: &app barman-cloud-plugin
+  namespace: &namespace cnpg-system
 spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: onepassword-store
-      namespace: external-secrets
     - name: cloudnative-pg
       namespace: cnpg-system
-  path: ./kubernetes/clusters/atlantis-k8s01/apps/db/pg-clusters
+  path: ./kubernetes/apps/database/cloudnative-pg/barman-plugin
   targetNamespace: *namespace
   sourceRef:
     kind: GitRepository

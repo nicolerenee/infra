@@ -6,6 +6,7 @@ components:
 resources:
   - ./actions-runner-system
   - ./cert-manager
+  - ./cnpg-system
   - ./db
   - ./default
   - ./downloaders/ks.yaml

@@ -1,0 +1,30 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: plugin-barman-cloud
+spec:
+  interval: 1h
+  maxHistory: 1
+  chartRef:
+    kind: OCIRepository
+    name: plugin-barman-cloud
+  install:
+    timeout: 2m
+    remediation:
+      retries: 1
+  upgrade:
+    timeout: 2m
+    remediation:
+      retries: 1
+  values:
+    namespaceOverride: cnpg-system
+    image:
+      registry: ghcr.io
+      repository: cloudnative-pg/plugin-barman-cloud
+      tag: v0.9.0@sha256:9081f3a4f9227cd3a87eb160300997c3dc1ec7aed56cd77b0cd78a508bfcbc68
+    sidecarImage:
+      registry: ghcr.io
+      repository: cloudnative-pg/plugin-barman-cloud-sidecar
+      tag: v0.9.0@sha256:f6aa40ed2ac56163f40176e2829ca09beebc1fccd7858399608f5fd1ef663311
