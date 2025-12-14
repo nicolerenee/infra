@@ -27,46 +27,49 @@ spec:
                 memory: 128Mi
               limits:
                 memory: 256Mi
-            probes:
-              liveness:
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /metrics
-                    port: 9001
-                  initialDelaySeconds: 10
-                  periodSeconds: 30
-                  timeoutSeconds: 5
-                  failureThreshold: 3
-              readiness:
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /metrics
-                    port: 9001
-                  initialDelaySeconds: 5
-                  periodSeconds: 10
-                  timeoutSeconds: 5
-                  failureThreshold: 3
+            # probes:
+            #   liveness:
+            #     enabled: true
+            #     custom: true
+            #     spec:
+            #       httpGet:
+            #         path: /metrics
+            #         port: 9001
+            #       initialDelaySeconds: 10
+            #       periodSeconds: 30
+            #       timeoutSeconds: 5
+            #       failureThreshold: 3
+            #   readiness:
+            #     enabled: true
+            #     custom: true
+            #     spec:
+            #       httpGet:
+            #         path: /metrics
+            #         port: 9001
+            #       initialDelaySeconds: 5
+            #       periodSeconds: 10
+            #       timeoutSeconds: 5
+            #       failureThreshold: 3
 
     service:
       appservice:
         controller: hookshot
         ports:
           http:
-            port: 9993
+            port: 80
+            targetPort: 9993
       webhooks:
         controller: hookshot
         ports:
           http:
-            port: 9000
+            port: 80
+            targetPort: 9000
       metrics:
         controller: hookshot
         ports:
           http:
-            port: 9001
+            port: 80
+            targetPort: 9001
 
     route:
       webhooks:
@@ -78,7 +81,7 @@ spec:
         rules:
           - backendRefs:
               - name: hookshot-webhooks
-                port: 9000
+                port: 80
 
     persistence:
       config:
