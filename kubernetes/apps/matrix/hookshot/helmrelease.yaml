@@ -22,8 +22,8 @@ spec:
               repository: ghcr.io/matrix-org/matrix-hookshot
               tag: 7.2.0@sha256:bc69f26f6d897e36c8b6399d2be26687c90978234e571262023c5719fc3a427e
             args:
-              - /data/config.yaml
-              - /data/registration.yaml
+              - /data/config.yml
+              - /data/registration.yml
             resources:
               requests:
                 cpu: 50m
@@ -88,9 +88,9 @@ spec:
         type: secret
         name: hookshot-config
         globalMounts:
-          - path: /data/config.yaml
-            subPath: config.yaml
-          - path: /data/registration.yaml
-            subPath: registration.yaml
+          - path: /data/config.yml
+            subPath: config.yml
+          - path: /data/registration.yml
+            subPath: registration.yml
           - path: /data/passkey
             subPath: passkey
