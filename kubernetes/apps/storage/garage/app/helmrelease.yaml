@@ -91,18 +91,16 @@ spec:
         suffix: config
         data:
           garage.toml: |
-            replication_factor = 1
-            consistency_mode = "consistent"
-
             metadata_dir = "/data/meta"
             data_dir = "/data/storage"
             db_engine = "lmdb"
 
-            block_size = "1M"
+
+            replication_factor = 1
             compression_level = 1
 
-            [rpc]
-            bind_addr = "[::]:3901"
+            rpc_bind_addr = "[::]:3901"
+            rpc_public_addr = "127.0.0.1:3901"
 
             [s3_api]
             s3_region = "${GARAGE_S3_REGION}"
