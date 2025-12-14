@@ -1,0 +1,22 @@
+---
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: garage-store
+spec:
+  configuration:
+    destinationPath: s3://cnpg-backups/
+    endpointURL: http://nas-garage.garage.svc.cluster.local:3900
+    s3Credentials:
+      accessKeyId:
+        name: pg-17a-secrets
+        key: s3-access-key-id
+      secretAccessKey:
+        name: pg-17a-secrets
+        key: s3-secret-access-key
+    wal:
+      compression: bzip2
+      maxParallel: 8
+    data:
+      compression: bzip2
+  retentionPolicy: "30d"

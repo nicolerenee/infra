@@ -30,26 +30,14 @@ spec:
   monitoring:
     enablePodMonitor: true
 
-  backup:
-    retentionPolicy: 30d
-    barmanObjectStore: &barmanObjectStore
-      data:
-        compression: bzip2
-      wal:
-        compression: bzip2
-        maxParallel: 8
-      destinationPath: s3://cnpg-backups/
-      endpointURL: http://nas-garage.garage.svc.cluster.local:3900
-      # Note: serverName version needs to be incremented
-      # when recovering from an existing cnpg cluster
-      serverName: &currentCluster pg-17a-v1
-      s3Credentials:
-        accessKeyId:
-          name: pg-17a-secrets
-          key: s3-access-key-id
-        secretAccessKey:
-          name: pg-17a-secrets
-          key: s3-secret-access-key
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: garage-store
+        # Note: serverName version needs to be incremented
+        # when recovering from an existing cnpg cluster
+        serverName: pg-17a-v1
 
   # Note: previousCluster needs to be set to the name of the previous
   # cluster when recovering from an existing cnpg cluster
@@ -59,9 +47,11 @@ spec:
   # Note: externalClusters is needed when recovering from an existing cnpg cluster
   # externalClusters:
   #   - name: *previousCluster
-  #     barmanObjectStore:
-  #       <<: *barmanObjectStore
-  #       serverName: *previousCluster
+  #     plugin:
+  #       name: barman-cloud.cloudnative-pg.io
+  #       parameters:
+  #         barmanObjectName: garage-store
+  #         serverName: *previousCluster
 ---
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup
@@ -73,4 +63,6 @@ spec:
   cluster:
     name: pg-17a
   target: prefer-standby
-  method: barmanObjectStore
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io

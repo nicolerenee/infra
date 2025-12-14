@@ -14,7 +14,7 @@ spec:
   dependsOn:
     - name: onepassword-store
       namespace: external-secrets
-    - name: cloudnative-pg
+    - name: barman-cloud-plugin
       namespace: cnpg-system
   path: ./kubernetes/clusters/atlantis-k8s01/apps/db/pg-clusters
   targetNamespace: *namespace

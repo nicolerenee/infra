@@ -3,5 +3,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - ./objectstore.yaml
   - ./pg-17a-cluster.yaml
   - ./pg-17a-externalsecret.yaml
