@@ -29,10 +29,6 @@ spec:
             image:
               repository: mirror.gcr.io/dxflrs/garage
               tag: v2.1.0@sha256:4c9b34c113e61358466e83fd6e7d66e6d18657ede14b776eb78a93ee8da7cf6a
-            args:
-              - --config
-              - /etc/garage/garage.toml
-              - server
             env:
               TZ: Etc/UTC
             envFrom:
@@ -131,5 +127,6 @@ spec:
         type: configMap
         name: garage-config
         globalMounts:
-          - path: /etc/garage
+          - path: /etc/garage.toml
+            subPath: garage.toml
             readOnly: true
