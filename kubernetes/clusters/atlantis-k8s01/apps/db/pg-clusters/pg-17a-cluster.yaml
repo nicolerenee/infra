@@ -4,7 +4,7 @@ kind: Cluster
 metadata:
   name: pg-17a
 spec:
-  instances: 2
+  instances: 3
   imageName: ghcr.io/cloudnative-pg/postgresql:17.5-22
   primaryUpdateStrategy: unsupervised
   primaryUpdateMethod: switchover
@@ -38,18 +38,18 @@ spec:
       wal:
         compression: bzip2
         maxParallel: 8
-      destinationPath: s3://cloudnative-pg/atlantis-k8s01/
-      endpointURL: ${CF_R2_URL}
+      destinationPath: s3://cnpg-backups/
+      endpointURL: http://nas-garage.garage.svc.cluster.local:3900
       # Note: serverName version needs to be incremented
       # when recovering from an existing cnpg cluster
       serverName: &currentCluster pg-17a-v1
       s3Credentials:
         accessKeyId:
           name: pg-17a-secrets
-          key: aws-access-key-id
+          key: s3-access-key-id
         secretAccessKey:
           name: pg-17a-secrets
-          key: aws-secret-access-key
+          key: s3-secret-access-key
 
   # Note: previousCluster needs to be set to the name of the previous
   # cluster when recovering from an existing cnpg cluster
