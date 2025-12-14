@@ -20,7 +20,7 @@ spec:
           app:
             image:
               repository: ghcr.io/matrix-org/matrix-hookshot
-              tag: 6.0.2@sha256:6da93a54d3af1ef64a4aa1a7e9776f8d8ed8dfe56ed07b0f10e21f7f1aeb6649
+              tag: 6.0.2@sha256:b67b055131c93a9da9740af6156636f0f78a2049814331fb5b641903c07f214c
             args:
               - /data/config.yaml
               - /data/registration.yaml
