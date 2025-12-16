@@ -23,7 +23,16 @@ spec:
             env:
               TZ: America/Chicago
               QBT_WEBUI_PORT: &port 80
-              QBT_TORRENTING_PORT: 50469
+              QBT_TORRENTING_PORT: &transferPort 50469
+            ports:
+              - name: transfer-tcp
+                containerPort: *transferPort
+                hostPort: *transferPort
+                protocol: TCP
+              - name: transfer-udp
+                containerPort: *transferPort
+                hostPort: *transferPort
+                protocol: UDP
             probes:
               liveness: &probes
                 enabled: true

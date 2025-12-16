@@ -46,6 +46,17 @@ patches:
       - op: replace
         path: /spec/values/controllers/qbittorrent/containers/app/env/QBT_TORRENTING_PORT
         value: 51847
+      - op: replace
+        path: /spec/values/controllers/qbittorrent/containers/app/ports
+        value:
+          - name: transfer-tcp
+            containerPort: 51847
+            hostPort: 51847
+            protocol: TCP
+          - name: transfer-udp
+            containerPort: 51847
+            hostPort: 51847
+            protocol: UDP
 
       - op: replace
         path: /spec/values/persistence/config/suffix
