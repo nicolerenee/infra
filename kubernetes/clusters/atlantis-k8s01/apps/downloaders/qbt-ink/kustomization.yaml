@@ -29,16 +29,17 @@ patches:
         path: /spec/values/defaultPodOptions/securityContext/fsGroup
         value: 943
 
-      # LoadBalancer service for torrenting port
+      # LoadBalancer service for transfer port
       - op: add
-        path: /spec/values/service/torrent
+        path: /spec/values/service/transfer-port
         value:
           controller: qbittorrent
           type: LoadBalancer
+          ipFamilyPolicy: PreferDualStack
           labels:
             ipam.freckle.systems/lb-pool: internal
           ports:
-            torrent:
+            transfer-port:
               port: 54182
               protocol: TCP
 
