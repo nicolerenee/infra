@@ -1,4 +1,12 @@
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: downloaders
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+
+---
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -12,11 +20,14 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  dependsOn:
+    - name: external-secrets
+      namespace: external-secrets
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/clusters/atlantis-k8s01/apps/downloaders/apps
+  path: ./kubernetes/clusters/atlantis-k8s01/apps/downloaders
   interval: 2m
   retryInterval: 1m
   timeout: 5m

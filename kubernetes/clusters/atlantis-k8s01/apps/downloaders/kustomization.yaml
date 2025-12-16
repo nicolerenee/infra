@@ -4,14 +4,12 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: downloaders
 components:
-  - ../../../../../components/common
-  - ../../../../../components/flux-post-build-variables
+  - ../../../../components/flux-post-build-variables
 resources:
-  - ./default-egress-policy.yaml
-  - ./store01-downloads.yaml
-  - ./qbittorrent-vpn-secrets.yaml
-  - ./vpn-sidecar-policy.yaml
-  - ./qbittorrent.yaml
+  - ./cnp-default-egress.yaml
+  - ./pvc-store01.yaml
+  - ./qbt-ink.yaml
+  - ./qbt-reel.yaml
 
 patches:
   - target:

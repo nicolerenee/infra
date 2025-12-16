@@ -49,6 +49,19 @@ spec:
           path: /spec/values/defaultPodOptions/securityContext/fsGroup
           value: 943
 
+        # VPN-specific DNS settings (use gluetun's DNS)
+        - op: add
+          path: /spec/values/defaultPodOptions/dnsPolicy
+          value: None
+        - op: add
+          path: /spec/values/defaultPodOptions/dnsConfig
+          value:
+            nameservers:
+              - 127.0.0.1
+            options:
+              - name: ndots
+                value: "1"
+
         # Label for CNP to restrict egress to VPN endpoint only
         - op: add
           path: /spec/values/defaultPodOptions/labels

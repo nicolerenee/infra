@@ -34,7 +34,7 @@ spec:
             # devices: br0
             bandwidthManager:
               enabled: true
-              bbr: true
+              bbr: false
             bgpControlPlane:
               enabled: true
             bpf:

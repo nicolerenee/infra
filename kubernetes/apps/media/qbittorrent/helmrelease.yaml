@@ -46,25 +46,24 @@ spec:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
             resources:
               requests:
                 cpu: 100m
               limits:
                 memory: 18Gi
     defaultPodOptions:
-      dnsPolicy: None
-      dnsConfig:
-        nameservers:
-          - 127.0.0.1
-        options:
-          - name: ndots
-            value: "1"
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
     service:
       app:
         ports:

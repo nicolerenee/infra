@@ -1,0 +1,49 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+nameSuffix: -reel
+resources:
+  - ../../../../../apps/media/qbittorrent
+patches:
+  - target:
+      kind: HelmRelease
+    patch: |-
+      - op: replace
+        path: /spec/values/persistence/media
+        value:
+          existingClaim: store01-downloads
+          globalMounts:
+            - path: /store01/downloads/qbt-reel
+              subPath: qbt-reel
+
+      - op: replace
+        path: /spec/values/defaultPodOptions/securityContext/runAsUser
+        value: 943
+      - op: replace
+        path: /spec/values/defaultPodOptions/securityContext/runAsGroup
+        value: 943
+      - op: replace
+        path: /spec/values/defaultPodOptions/securityContext/fsGroup
+        value: 943
+
+      # LoadBalancer service for torrenting port
+      - op: add
+        path: /spec/values/service/torrent
+        value:
+          controller: qbittorrent
+          type: LoadBalancer
+          labels:
+            ipam.freckle.systems/lb-pool: internal
+          ports:
+            torrent:
+              port: 51847
+              protocol: TCP
+
+      - op: replace
+        path: /spec/values/controllers/qbittorrent/containers/app/env/QBT_TORRENTING_PORT
+        value: 51847
+
+      - op: replace
+        path: /spec/values/persistence/config/suffix
+        value: reel-config

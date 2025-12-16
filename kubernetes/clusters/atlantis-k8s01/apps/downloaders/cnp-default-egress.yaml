@@ -1,0 +1,27 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+# Default egress policy for downloaders namespace.
+# Blocks access to internal/physical networks but allows public internet.
+# DNS access is granted by the cluster-wide intercept-all-dns CCNP.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: default-egress
+spec:
+  # Apply to all pods in the namespace
+  endpointSelector: {}
+  egress:
+    # Allow public internet (IPv4), blocking private/internal ranges
+    - toCIDRSet:
+        - cidr: 0.0.0.0/0
+          except:
+            - 10.0.0.0/8       # RFC1918
+            - 172.16.0.0/12    # RFC1918
+            - 192.168.0.0/16   # RFC1918
+            - 100.64.0.0/10    # CGNAT (Tailscale)
+    # Allow public internet (IPv6)
+    - toCIDRSet:
+        - cidr: "::/0"
+          except:
+            - "fc00::/7"   # Unique local addresses
+            - "fe80::/10"  # Link-local addresses
