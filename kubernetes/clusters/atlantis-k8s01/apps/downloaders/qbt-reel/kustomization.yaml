@@ -2,13 +2,15 @@
 # yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-nameSuffix: -reel
 resources:
   - ../../../../../apps/media/qbittorrent
 patches:
   - target:
       kind: HelmRelease
     patch: |-
+      - op: replace
+        path: /metadata/name
+        value: qbt-reel
       - op: replace
         path: /spec/values/persistence/media
         value:
@@ -46,4 +48,4 @@ patches:
 
       - op: replace
         path: /spec/values/persistence/config/suffix
-        value: reel-config
+        value: config
