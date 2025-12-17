@@ -33,7 +33,7 @@ patches:
       - op: add
         path: /spec/values/defaultPodOptions/annotations
         value:
-          k8s.v1.cni.cncf.io/networks: '[{"name": "vxlan-vpn", "namespace": "kube-system", "ips": ["10.66.5.11/24", "fd66:5::11/64"]}]'
+          k8s.v1.cni.cncf.io/networks: '[{"name": "vxlan-vpn", "namespace": "networking", "ips": ["10.66.5.11/24", "fd66:5::11/64"]}]'
 
       # LoadBalancer service for transfer port
       - op: add
