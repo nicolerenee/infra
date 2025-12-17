@@ -29,6 +29,12 @@ patches:
         path: /spec/values/defaultPodOptions/securityContext/fsGroup
         value: 943
 
+      # Attach VXLAN VPN overlay network
+      - op: add
+        path: /spec/values/defaultPodOptions/annotations
+        value:
+          k8s.v1.cni.cncf.io/networks: '[{"name": "vxlan-vpn", "namespace": "kube-system", "ips": ["10.66.5.11/24", "fd66:5::11/64"]}]'
+
       # LoadBalancer service for transfer port
       - op: add
         path: /spec/values/service/transfer-port

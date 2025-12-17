@@ -164,6 +164,8 @@ controlPlane:
   patches:
     # DRA feature gates for GPU/device support
     - "@patches/dra-feature-gates.yaml"
+    # VXLAN overlay for VPN egress
+    - "@patches/vxlan-vpn.yaml"
 
     # Cluster configuration
     - |-
@@ -285,6 +287,8 @@ worker:
   patches:
     # DRA feature gates for GPU/device support
     - "@patches/dra-feature-gates.yaml"
+    # VXLAN overlay for VPN egress
+    - "@patches/vxlan-vpn.yaml"
     - *disableSearchDomainPatch
     - *nameServersPatch
     - *machinePatches
