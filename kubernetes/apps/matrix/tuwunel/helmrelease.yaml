@@ -20,7 +20,7 @@ spec:
           app:
             image:
               repository: ghcr.io/matrix-construct/tuwunel
-              tag: v1.4.7@sha256:1f384b50a1f87a3839b160d5db4fb157abba92d4b9f8fe683d971b2515a5b8c3
+              tag: v1.4.8@sha256:0e4a55713e5b2bbcae1c9d120395f502fc96bb546c0da589aa87e2c561c6e2f4
             env:
               - name: TUWUNEL_SERVER_NAME
                 value: ${CHAT_DOMAIN}
