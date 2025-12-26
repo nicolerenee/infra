@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: store01-vault01-media
+  name: media-store01-vault01-media
 spec:
   capacity:
-    storage: 1Ti
+    storage: 5Ti
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
@@ -12,8 +12,8 @@ spec:
     name: store01-vault01-media
     namespace: media
   nfs:
-    path: /mnt/vault01/media/
-    server: 10.189.2.36
+    path: /mnt/vault01/media
+    server: 10.189.2.65
     readOnly: false
 
 ---
@@ -23,9 +23,9 @@ metadata:
   name: store01-vault01-media
   namespace: media
 spec:
-  volumeName: store01-vault01-media
+  volumeName: media-store01-vault01-media
   accessModes:
     - ReadWriteMany
   resources:
     requests:
-      storage: 1Ti
+      storage: 5Ti
