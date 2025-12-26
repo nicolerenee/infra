@@ -14,4 +14,5 @@
 **Note:** Use `helmfile sync` instead of `helmfile apply` - apply runs a diff
 first which fails on new clusters where CRDs don't exist yet.
 
-If successful, Flux is now syncing with the repo and will reconcile the cluster state.
+If successful, Flux is now syncing with the repo and will reconcile the cluster
+state.
