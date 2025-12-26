@@ -48,7 +48,7 @@ releases:
   # Phase 4: Flux Operator
   - name: flux-operator
     chart: oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator
-    version: 0.37.0
+    version: 0.38.1
     namespace: flux-system
     createNamespace: true
     needs:
@@ -57,7 +57,7 @@ releases:
   # Phase 5: Flux Instance (depends on operator)
   - name: flux-instance
     chart: oci://ghcr.io/controlplaneio-fluxcd/charts/flux-instance
-    version: 0.37.0
+    version: 0.38.1
     namespace: flux-system
     needs:
       - flux-system/flux-operator
