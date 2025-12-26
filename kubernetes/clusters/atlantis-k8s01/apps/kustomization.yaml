@@ -9,7 +9,6 @@ resources:
   - ./cnpg-system
   - ./db
   - ./default
-  - ./downloaders/ks.yaml
   - ./envoy-gateway-system
   - ./external-dns
   - ./external-secrets

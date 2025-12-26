@@ -2,7 +2,7 @@
 clusterName: fairy-k8s01
 talosVersion: ${TALOS_VERSION}
 kubernetesVersion: ${KUBERNETES_VERSION}
-endpoint: https://10.189.2.4:6443
+endpoint: https://10.189.2.69:6443
 domain: cluster.local
 allowSchedulingOnMasters: true
 clusterPodNets:
@@ -16,7 +16,7 @@ cniConfig:
 
 nodes:
   - hostname: fairy-compute01
-    ipAddress: 10.189.2.5
+    ipAddress: 10.189.2.67
     controlPlane: true
     installDisk: /dev/sda
 
@@ -49,38 +49,32 @@ nodes:
       - &compute01-nic0
         interface: enp1s0f0np0
         addresses:
-          - 10.189.2.5/27
+          - 10.189.2.67/31
+          - fd2b:ec92:e230:20::67/112
         routes:
           - network: 0.0.0.0/0
-            gateway: 10.189.2.1
-            metric: 1024
-        vip:
-          ip: 10.189.2.4
+            gateway: 10.189.2.66
+          - network: ::/0
+            gateway: fe80::def
         dhcp: false
         mtu: 1500
-        vlans:
-          - &compute01-vlan300
-            vlanId: 300
-            mtu: 1500
-            dhcp: false
-            # hack...without an IP on the vlan the macvlan doesn't work
-            addresses:
-              - 100.64.0.1/32
     extraManifests:
       - ./watchdog.yaml
 
   - hostname: fairy-compute02
-    ipAddress: 10.189.2.6
+    ipAddress: 10.189.2.69
     controlPlane: true
     installDisk: /dev/sda
     networkInterfaces:
       - <<: *compute01-nic0
         addresses:
-          - 10.189.2.6/27
-        vlans:
-          - <<: *compute01-vlan300
-            addresses:
-              - 100.64.0.2/32
+          - 10.189.2.69/31
+          - fd2b:ec92:e230:20::69/112
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.189.2.68
+          - network: ::/0
+            gateway: fe80::def
     machineSpec: *compute01-machineSpec
     schematic: *compute01-schematic
     extensionServices:
@@ -89,17 +83,19 @@ nodes:
       - ./watchdog.yaml
 
   - hostname: fairy-compute03
-    ipAddress: 10.189.2.7
+    ipAddress: 10.189.2.71
     controlPlane: true
     installDisk: /dev/sda
     networkInterfaces:
       - <<: *compute01-nic0
         addresses:
-          - 10.189.2.7/27
-        vlans:
-          - <<: *compute01-vlan300
-            addresses:
-              - 100.64.0.3/32
+          - 10.189.2.71/31
+          - fd2b:ec92:e230:20::71/112
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.189.2.70
+          - network: ::/0
+            gateway: fe80::def
     machineSpec: *compute01-machineSpec
     schematic: *compute01-schematic
     extensionServices:
@@ -114,8 +110,6 @@ controlPlane:
     - |-
       cluster:
         etcd:
-          advertisedSubnets:
-            - 10.189.2.0/27
           extraArgs:
             listen-metrics-urls: "http://0.0.0.0:2381"
         controllerManager:
@@ -188,7 +182,7 @@ controlPlane:
           net.core.rmem_max: 67108864
           net.core.wmem_max: 67108864
           net.core.netdev_max_backlog: 30000
-          net.ipv4.tcp_congestion_control: cubic    # bbr did not play nicely and resulted in large amounts of retransmits
+          net.ipv4.tcp_congestion_control: bbr
           net.ipv4.tcp_fastopen: 3
           net.ipv4.tcp_rmem: 4096 131072 67108864
           net.ipv4.tcp_wmem: 4096 131072 67108864
@@ -201,11 +195,6 @@ controlPlane:
           # NFS optimations
           sunrpc.tcp_slot_table_entries: 128
           sunrpc.tcp_max_slot_table_entries: 128
-
-          # disable slaac on vlan interface since it's only used for multus attachments aand not the host
-          # / is a control character for '.' so enp1837f68/300 becomes enp1837f68.300
-          net.ipv6.conf.enp1837f68/300.autoconf: 0
-          net.ipv6.conf.enp1837f68/300.accept_ra: 1
         install:
           bootloader: true
           wipe: true
@@ -219,7 +208,8 @@ controlPlane:
         kubelet:
           nodeIP:
             validSubnets:
-            - 10.189.2.0/27
+            - 10.189.2.64/27
+            - fd2b:ec92:e230:20::67/96
           extraArgs: {}
           extraConfig:
             # Let IPv6 RAs through on 'net1' for thread announcements getting to HA additional NIC

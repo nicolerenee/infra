@@ -33,7 +33,7 @@ spec:
           value:
             bandwidthManager:
               enabled: true
-              bbr: false
+              bbr: true
             bgpControlPlane:
               enabled: true
             bpf:
