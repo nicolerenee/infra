@@ -23,7 +23,8 @@ This repository manages two Kubernetes clusters using a GitOps approach:
 - **Storage**: [Rook Ceph](https://rook.io/) - Distributed storage cluster
 - **Secrets**: [External Secrets Operator](https://external-secrets.io/) with
   1Password integration
-- **Monitoring**: [VictoriaMetrics](https://victoriametrics.com/) stack with Grafana
+- **Monitoring**: [VictoriaMetrics](https://victoriametrics.com/) stack with
+  Grafana
 - **Load Balancing**: [MetalLB](https://metallb.universe.tf/) in BGP mode
 
 ## 📁 Repository Structure
