@@ -45,7 +45,7 @@ spec:
           main:
             image:
               repository: docker.io/fredrikburmester/streamystats-v2-nextjs
-              tag: v2.5.0@sha256:da03c501677ca3d6154b5a360f04f8894f7c5fb93c49a0ddc93414ba615a6a65
+              tag: v2.14.1@sha256:272721bb8c498626083531c1997afbf8c30d611ffb5deb49ef023668e5b40517
             env:
               JOB_SERVER_URL: http://streamystats-job-server
             envFrom: *envFrom
