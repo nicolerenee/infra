@@ -37,7 +37,7 @@ spec:
           main:
             image:
               repository: docker.io/cyfershepard/jellystat
-              tag: 1.1.6@sha256:683358900cff8d299fa93add731b2976d7c9bc49f9593f40f5351498fd488767
+              tag: 1.1.7@sha256:e182aedd122e13be511c59f0462e0d9e48a67c7341a5f3c1f11b7aa6ab6d2291
             env:
               POSTGRES_IP: pg-17a-rw.db.svc.cluster.local
               POSTGRES_DB: "jellystat"
