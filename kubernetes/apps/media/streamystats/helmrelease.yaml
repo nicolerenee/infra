@@ -35,7 +35,7 @@ spec:
           migrate:
             image:
               repository: docker.io/fredrikburmester/streamystats-v2-migrate
-              tag: v2.5.0@sha256:51f99538f3e01e38791130a06794a8daefb5898ca1cb1aa00668b4bbf6571d88
+              tag: v2.16.0@sha256:dd813b5ea8104ebaf8a58c2105abf322420edf6b91c9bd401969bea69ef179cc
             envFrom: *envFrom
             securityContext: &sec
               allowPrivilegeEscalation: false
