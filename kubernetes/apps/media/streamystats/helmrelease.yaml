@@ -75,7 +75,7 @@ spec:
           main:
             image:
               repository: docker.io/fredrikburmester/streamystats-v2-job-server
-              tag: v2.5.0@sha256:5a907259d5309f7b27a9796a4425cf63f066759f79d55f34b6dbd6f997fca6dc
+              tag: v2.16.0@sha256:c2ae14a088c438cdfaeedce8e019ae0ddc2681e92ac665ab5980f472dff21a3e
             env:
               HOST: 0.0.0.0
             envFrom: *envFrom
