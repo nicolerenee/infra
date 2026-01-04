@@ -1,45 +1,95 @@
 ---
----
-# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/source.toolkit.fluxcd.io/helmrepository_v1.json
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
-metadata:
-  name: multus
-spec:
-  interval: 1h
-  timeout: 3m0s
-  url: https://angelnu.github.io/helm-charts/
-
----
-# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: multus
+  name: &app multus
 spec:
-  interval: 5m
-  chart:
-    spec:
-      chart: multus
-      version: 6.0.4
-      sourceRef:
-        name: multus
-        kind: HelmRepository
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: default
+  driftDetection:
+    mode: enabled
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
   values:
-    image:
-      repository: ghcr.io/k8snetworkplumbingwg/multus-cni
-      tag: v4.2.3-thick@sha256:e93af9e533cc16ca7847aeec3b516c9b1e8891c2b95c727991e94c9b59c4970e
-    cni:
-      image:
-        repository: ghcr.io/home-operations/cni-plugins
-        tag: 1.9.0@sha256:cd462d8720f1d9867748f86f84d3b0898f935f882a5130ce47c2c037b1bd3471
-      paths:
-        config: /etc/cni/net.d
-        bin: /opt/cni/bin
-    resources:
-      requests:
-        cpu: 5m
-      limits:
-        memory: 512Mi
-    hostPaths:
-      netns: /var/run/netns
+    controllers:
+      multus:
+        type: daemonset
+        initContainers:
+          cni-plugins:
+            image:
+              repository: ghcr.io/home-operations/cni-plugins
+              tag: 1.9.0@sha256:cd462d8720f1d9867748f86f84d3b0898f935f882a5130ce47c2c037b1bd3471
+        containers:
+          multus:
+            image:
+              repository: ghcr.io/k8snetworkplumbingwg/multus-cni
+              tag: v4.2.3@sha256:54f120a6f8fede8e2da0d0fe3bed3da2c92edcb2cd895e4f382784a9a708e1b9
+            args:
+              - --cleanup-config-on-exit=true
+            resources:
+              requests:
+                cpu: "10m"
+                memory: "96Mi"
+              limits:
+                memory: "512Mi"
+            securityContext:
+              privileged: true
+    defaultPodOptions:
+      hostNetwork: true
+    persistence:
+      etc-cni-net-d:
+        type: hostPath
+        hostPath: /etc/cni/net.d
+        globalMounts:
+          - path: /host/etc/cni/net.d
+      opt-cni-bin:
+        type: hostPath
+        hostPath: /opt/cni/bin
+        globalMounts:
+          - path: /host/opt/cni/bin
+    rbac:
+      roles:
+        multus:
+          type: ClusterRole
+          rules:
+            - apiGroups:
+                - "k8s.cni.cncf.io"
+              resources:
+                - "*"
+              verbs:
+                - "*"
+            - apiGroups:
+                - ""
+              resources:
+                - "pods"
+                - "pods/status"
+              verbs:
+                - "get"
+                - "update"
+            - apiGroups:
+                - ""
+                - "events.k8s.io"
+              resources:
+                - "events"
+              verbs:
+                - "create"
+                - "patch"
+                - "update"
+      bindings:
+        multus:
+          type: ClusterRoleBinding
+          roleRef:
+            identifier: multus
+          subjects:
+            - identifier: multus
+    serviceAccount:
+      multus: {}
