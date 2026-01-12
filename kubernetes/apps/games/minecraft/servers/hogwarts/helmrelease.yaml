@@ -28,7 +28,8 @@ spec:
     persistence:
       dataDir:
         enabled: true
-        size: 10Gi
+        # This value uses an uppercase S for some reason
+        Size: 10Gi
     serviceLabels:
       ipam.freckle.systems/lb-pool: internal
     serviceAnnotations:
