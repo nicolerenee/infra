@@ -28,6 +28,7 @@ spec:
     persistence:
       dataDir:
         enabled: true
+        size: 10Gi
     serviceLabels:
       ipam.freckle.systems/lb-pool: internal
     serviceAnnotations:
