@@ -27,7 +27,7 @@ spec:
           app:
             image:
               repository: ghcr.io/home-operations/emby
-              tag: 4.9.1.90@sha256:31448f230530fbeac1164fa3bee775cdc3fb8434cfdda3ce9edcb5e4ee523033
+              tag: 4.9.3.0@sha256:7c33d88d0186ad7abcc6e53566e9db8766687daa5510cddc13094e25bc5a5dfb
             env:
               TZ: America/Chicago
             ports:
