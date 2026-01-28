@@ -35,7 +35,7 @@ releases:
 
   # Phase 3: CNI (depends on prometheus CRDs for ServiceMonitors)
   - name: cilium
-    version: 1.18.5
+    version: 1.18.6
     chart: cilium/cilium
     namespace: kube-system
     needs:
