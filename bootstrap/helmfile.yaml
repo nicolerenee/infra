@@ -9,7 +9,7 @@ releases:
   # Phase 1: CRDs must be installed first
   - name: prometheus-operator-crds
     chart: prometheus-community/prometheus-operator-crds
-    version: 26.0.0
+    version: 26.0.1
     namespace: observability
     createNamespace: true
 
