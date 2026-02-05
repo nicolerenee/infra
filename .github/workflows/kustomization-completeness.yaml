@@ -155,6 +155,11 @@ jobs:
             missing_in_kustomization=""
             for dir_name in $actual_dirs; do
               if ! echo "$current_resources" | grep -q "^$dir_name$"; then
+                # Skip directories that have been migrated to standalone Flux Kustomizations
+                if [ -f "$dir/$dir_name/.migrated-to-ks" ]; then
+                  echo "  ℹ️  Skipping $dir_name (migrated to standalone Flux Kustomizations)"
+                  continue
+                fi
                 # Check if this directory has a kustomization.yaml (should be included)
                 if [ -f "$dir/$dir_name/kustomization.yaml" ]; then
                   # Check if there's a {dir}/ks.yaml file that includes this directory
