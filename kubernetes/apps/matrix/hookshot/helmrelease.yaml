@@ -20,7 +20,7 @@ spec:
           app:
             image:
               repository: ghcr.io/matrix-org/matrix-hookshot
-              tag: 7.3.1@sha256:d8d08618f28f3c113e6cfc06112573ba0e0033f6c6486e4eca9cbbcbe22cf4cc
+              tag: 7.3.2@sha256:240079c3c57b35d5c1f1fef67bcccd7717fffac543d9fc64b04bec60d0c59902
             resources:
               requests:
                 cpu: 50m
