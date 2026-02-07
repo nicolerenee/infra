@@ -27,4 +27,4 @@ spec:
     sidecarImage:
       registry: ghcr.io
       repository: cloudnative-pg/plugin-barman-cloud-sidecar
-      tag: v0.10.0@sha256:12b211f40b702a39b18859b0b96aa896e068135984f40c8b3e44e8b5d1610c7f
+      tag: v0.11.0@sha256:8e45fedbfaae916d7dff1160ea22648c2d21e6184479d3eb75e9ff0f3b23428a
