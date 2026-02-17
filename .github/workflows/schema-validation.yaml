@@ -43,7 +43,7 @@ jobs:
           sudo apt-get install -y python3-pip python3-yaml python3-jsonschema python3-requests
           
       - name: Install yq for YAML processing
-        uses: mikefarah/yq@2be0094729a1006f61e8339ce9934bfb3cbb549f # v4.52.2
+        uses: mikefarah/yq@2c471b64984fd03a22b54c488b8a8ae10841fa55 # v4.52.3
 
       - name: Validate YAML Syntax
         run: |
