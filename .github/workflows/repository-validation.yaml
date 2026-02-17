@@ -26,7 +26,7 @@ jobs:
           pip install pyyaml jsonschema requests
 
       - name: Install yq for YAML processing
-        uses: mikefarah/yq@2be0094729a1006f61e8339ce9934bfb3cbb549f # v4.52.2
+        uses: mikefarah/yq@2c471b64984fd03a22b54c488b8a8ae10841fa55 # v4.52.3
 
       - name: Run comprehensive repository validation
         run: |
