@@ -12,7 +12,7 @@ spec:
       hostNetwork: true
       containers:
       - name: homeassistant
-        image: ghcr.io/home-assistant/home-assistant:2026.2.2
+        image: ghcr.io/home-assistant/home-assistant:2026.2.3
         ports:
           - name: http
             containerPort: 8123
