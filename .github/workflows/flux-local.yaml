@@ -104,7 +104,7 @@ jobs:
         with:
           repo: homeport/dyff
           # renovate: datasource=github-releases depName=homeport/dyff
-          tag: v1.10.4
+          tag: v1.10.5
 
       - name: Generate Diff
         id: diff
