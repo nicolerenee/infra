@@ -19,7 +19,7 @@ spec:
           app:
             image:
               repository: ghcr.io/linuxserver/wireguard
-              tag: 1.0.20250521@sha256:72a3c0b6eb67bcecf0138092a7a66220c081246083c7f1e0d078c186560e745b
+              tag: 1.0.20250521@sha256:3ed84c8c745c5c24b2adbf47a78ecfeeaaddcbf5ba18fd7210785d556e451251
             env:
               TZ: America/Chicago
             securityContext:
