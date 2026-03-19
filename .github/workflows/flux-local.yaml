@@ -49,7 +49,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Setup Flux CLI
-        uses: fluxcd/flux2/action@bfa461ed2153ae5e0cca6bce08e0845268fb3088 # v2.8.2
+        uses: fluxcd/flux2/action@871be9b40d53627786d3a3835a3ddba1e3234bd2 # v2.8.3
       - uses: allenporter/flux-local/action/test@d4ebcae7ae08c8c8b8b7c1f515cf86759f9ca950 # 8.1.0
         with:
           path: kubernetes/clusters/${{ matrix.cluster }}/flux
