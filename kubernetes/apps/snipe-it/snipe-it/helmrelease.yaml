@@ -1,0 +1,129 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: snipe-it
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: default
+  interval: 1h
+  values:
+    controllers:
+      snipe-it:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: snipe/snipe-it
+              tag: v8.4.0
+            env:
+              # App configuration
+              APP_ENV: production
+              APP_DEBUG: "false"
+              APP_KEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: snipe-it-secret
+                    key: APP_KEY
+              APP_URL: "https://{{ .Release.Name }}.${CLUSTER_DOMAIN}"
+              APP_TIMEZONE: America/Chicago
+              APP_LOCALE: en-US
+
+              # Database configuration
+              DB_CONNECTION: mysql
+              DB_HOST: mariadb-main-primary.db.svc.cluster.local
+              DB_PORT: "3306"
+              DB_DATABASE: snipeit
+              DB_USERNAME: snipeit
+              DB_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: snipe-it-mariadb-secret
+                    key: password
+
+              # Mail configuration (optional - configure in 1Password if needed)
+              MAIL_DRIVER: smtp
+              MAIL_HOST: localhost
+              MAIL_PORT: "25"
+              MAIL_ENCRYPTION: "null"
+
+              # Proxy configuration
+              APP_TRUSTED_PROXIES: "*"
+              SECURE_COOKIES: "true"
+
+            ports:
+              - name: http
+                containerPort: &port 80
+
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: http
+                  initialDelaySeconds: 60
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *probes
+              startup:
+                enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 10
+
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: false
+              capabilities: { drop: ["ALL"] }
+
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+              limits:
+                memory: 512Mi
+
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: false
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+    service:
+      app:
+        controller: snipe-it
+        ports:
+          http:
+            port: 80
+            targetPort: *port
+
+    route:
+      app:
+        hostnames:
+          - "{{ .Release.Name }}.${CLUSTER_DOMAIN}"
+        parentRefs:
+          - name: tailscale
+            namespace: gateway
+        rules:
+          - backendRefs:
+              - identifier: app
+                port: 80
+
+    persistence:
+      data:
+        enabled: true
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 10Gi
+        retain: true
+        globalMounts:
+          - path: /var/lib/snipeit

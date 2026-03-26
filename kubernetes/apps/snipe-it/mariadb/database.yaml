@@ -1,0 +1,12 @@
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Database
+metadata:
+  name: snipeit
+spec:
+  mariaDbRef:
+    name: mariadb-main
+    namespace: db
+
+  characterSet: utf8mb4
+  collate: utf8mb4_unicode_ci
