@@ -1,0 +1,44 @@
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: MariaDB
+metadata:
+  name: mariadb-main
+spec:
+  rootPasswordSecretKeyRef:
+    name: mariadb-main-secret
+    key: root-password
+
+  image: mariadb:11.8.6
+
+  port: 3306
+
+  volumeClaimTemplate:
+    resources:
+      requests:
+        storage: 50Gi
+    accessModes:
+      - ReadWriteOnce
+
+  myCnf: |
+    [mariadb]
+    default_storage_engine=InnoDB
+    binlog_format=row
+    innodb_autoinc_lock_mode=2
+    max_allowed_packet=256M
+    # Connection settings
+    max_connections=200
+    # Performance settings
+    # Buffer pool set to ~60% of memory limit (2Gi), leaving room for
+    # connection buffers, query cache, and other MariaDB memory usage
+    innodb_buffer_pool_size=1280M
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 1Gi
+    limits:
+      memory: 2Gi
+
+  # Enable metrics for monitoring
+  metrics:
+    enabled: true
