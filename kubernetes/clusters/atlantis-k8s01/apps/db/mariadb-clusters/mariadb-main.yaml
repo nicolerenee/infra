@@ -12,12 +12,13 @@ spec:
 
   port: 3306
 
-  volumeClaimTemplate:
-    resources:
-      requests:
-        storage: 50Gi
-    accessModes:
-      - ReadWriteOnce
+  storage:
+    volumeClaimTemplate:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 50Gi
 
   myCnf: |
     [mariadb]
