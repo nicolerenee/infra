@@ -11,7 +11,7 @@ spec:
   chart:
     spec:
       chart: mariadb-operator
-      version: 0.35.0
+      version: 26.3.0
       sourceRef:
         kind: HelmRepository
         name: mariadb-operator
