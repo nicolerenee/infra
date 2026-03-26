@@ -1,0 +1,6 @@
+# This directory uses standalone Flux Kustomizations instead of being included
+# in the parent apps/kustomization.yaml file.
+#
+# The namespace and apps are managed via:
+# - kubernetes/clusters/atlantis-k8s01/flux/homebox.yaml (namespace + parent KS)
+# - kubernetes/clusters/atlantis-k8s01/apps/homebox/*.yaml (individual app KS files)
