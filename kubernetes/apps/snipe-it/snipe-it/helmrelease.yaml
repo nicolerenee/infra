@@ -54,6 +54,8 @@ spec:
               # Proxy configuration
               APP_TRUSTED_PROXIES: "*"
               SECURE_COOKIES: "true"
+              # Force HTTPS detection behind reverse proxy
+              APP_FORCE_HTTPS: "true"
 
             ports:
               - name: http
