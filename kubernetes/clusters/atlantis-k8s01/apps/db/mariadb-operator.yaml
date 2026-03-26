@@ -21,3 +21,4 @@ spec:
   interval: 1h
   retryInterval: 2m
   timeout: 5m
+  wait: true
