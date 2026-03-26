@@ -8,3 +8,5 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - ./cloudnative-pg.yaml
+  - ./mariadb-operator.yaml
+  - ./mariadb-clusters.yaml
