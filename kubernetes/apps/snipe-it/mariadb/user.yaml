@@ -34,4 +34,4 @@ spec:
 
   username: snipeit
 
-  grantOption: true
+  grantOption: false
