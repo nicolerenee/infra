@@ -19,7 +19,7 @@ spec:
           app:
             image:
               repository: snipe/snipe-it
-              tag: v8.4.0
+              tag: v8.4.1
             env:
               # App configuration
               APP_ENV: production
