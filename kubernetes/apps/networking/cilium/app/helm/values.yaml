@@ -54,7 +54,7 @@ resources:
     memory: "6Gi"
 
 hubble:
-  enabled: true
+  enabled: false  # Temporarily disabled to break cert deadlock
   tls:
     auto:
       enabled: true
