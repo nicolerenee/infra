@@ -1,0 +1,8 @@
+machine:
+  systemDiskEncryption:
+    ephemeral: &fde
+      provider: luks2
+      keys:
+        - slot: 0
+          tpm: {}
+    state: *fde

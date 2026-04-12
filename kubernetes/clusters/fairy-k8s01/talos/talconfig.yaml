@@ -15,17 +15,16 @@ cniConfig:
   name: none
 
 nodes:
-  - hostname: fairy-compute01
-    ipAddress: 10.189.2.67
+  - hostname: cn01
+    ipAddress: 192.168.227.30
     controlPlane: true
     installDisk: /dev/sda
-
-    machineSpec: &compute01-machineSpec
+    machineSpec: &cn01-machineSpec
       mode: metal
       arch: amd64
       useUKI: true
       secureboot: true
-    schematic: &compute01-schematic
+    schematic: &cn01-schematic
       customization:
         systemExtensions:
           officialExtensions:
@@ -35,7 +34,7 @@ nodes:
             - siderolabs/lldpd
             - siderolabs/mei
     extensionServices:
-      - &compute01-lldp-extension
+      - &cn01-lldp-extension
         name: lldpd
         configFiles:
           - mountPath: /usr/local/etc/lldpd/lldpd.conf
@@ -43,7 +42,136 @@ nodes:
               configure lldp portidsubtype ifname
               unconfigure lldp management-addresses-advertisements
               unconfigure lldp capabilities-advertisements
-              configure system description "Talos Node"
+              configure system description "Talos Compute Node"
+    patches:
+      - ./patches/tpm-encryption.yaml
+      - ./patches/watchdog.yaml
+
+  - hostname: cn02
+    ipAddress: 192.168.227.31
+    controlPlane: false
+    installDisk: /dev/sda
+    machineSpec: *cn01-machineSpec
+    schematic: *cn01-schematic
+    extensionServices:
+      - <<: *cn01-lldp-extension
+    patches:
+      - ./patches/tpm-encryption.yaml
+      - ./patches/watchdog.yaml
+
+  - hostname: cn03
+    ipAddress: 192.168.227.32
+    controlPlane: false
+    installDisk: /dev/sda
+    machineSpec: *cn01-machineSpec
+    schematic: *cn01-schematic
+    extensionServices:
+      - <<: *cn01-lldp-extension
+    patches:
+      - ./patches/tpm-encryption.yaml
+      - ./patches/watchdog.yaml
+
+  - hostname: dgx01
+    ipAddress: 192.168.227.33
+    controlPlane: false
+    installDisk: /dev/nvme0n1
+    machineSpec: &dgx01-machineSpec
+      mode: metal
+      arch: arm64
+      useUKI: true
+      secureboot: true
+    schematic: &dgx01-schematic
+      customization:
+        extraKernelArgs:
+          - arm64.nobti
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/iscsi-tools
+            - siderolabs/lldpd
+            - siderolabs/mei
+            - siderolabs/nvidia-container-toolkit-production
+            - siderolabs/nvidia-open-gpu-kernel-modules-production
+    extensionServices:
+      - &dgx01-lldp-extension
+        name: lldpd
+        configFiles:
+          - mountPath: /usr/local/etc/lldpd/lldpd.conf
+            content: |
+              configure lldp portidsubtype ifname
+              unconfigure lldp management-addresses-advertisements
+              unconfigure lldp capabilities-advertisements
+              configure system description "Talos DGX Spark Node"
+    networkInterfaces:
+      - &dgx01-mgmt-interface
+        interface: enP7s7
+        dhcp: true
+        mtu: 1500
+      - &dgx01-hs-interface-1
+        interface: enp1s0f0np0
+        mtu: 9000
+      - &dgx01-hs-interface-2
+        interface: enP2p1s0f0np0
+        mtu: 9000
+      - &dgx01-hs-interface-3
+        interface: enp1s0f1np1
+        mtu: 9000
+      - &dgx01-hs-interface-4
+        interface: enP2p1s0f1np1
+        mtu: 9000
+    patches:
+      - ./patches/nvidia-runtime.yaml
+      - ./patches/tpm-encryption.yaml
+      - ./patches/watchdog.yaml
+
+  - hostname: dgx02
+    ipAddress: 192.168.227.34
+    controlPlane: false
+    installDisk: /dev/nvme0n1
+    machineSpec: *dgx01-machineSpec
+    schematic: *dgx01-schematic
+    extensionServices:
+      - <<: *dgx01-lldp-extension
+    networkInterfaces:
+      - <<: *dgx01-mgmt-interface
+      - <<: *dgx01-hs-interface-1
+      - <<: *dgx01-hs-interface-2
+      - <<: *dgx01-hs-interface-3
+      - <<: *dgx01-hs-interface-4
+    patches:
+      - ./patches/nvidia-runtime.yaml
+      - ./patches/tpm-encryption.yaml
+      - ./patches/watchdog.yaml
+
+  - hostname: dgx03
+    ipAddress: 192.168.227.35
+    controlPlane: false
+    installDisk: /dev/nvme0n1
+    machineSpec: *dgx01-machineSpec
+    schematic: *dgx01-schematic
+    extensionServices:
+      - <<: *dgx01-lldp-extension
+    networkInterfaces:
+      - <<: *dgx01-mgmt-interface
+      - <<: *dgx01-hs-interface-1
+      - <<: *dgx01-hs-interface-2
+      - <<: *dgx01-hs-interface-3
+      - <<: *dgx01-hs-interface-4
+    patches:
+      - ./patches/nvidia-runtime.yaml
+      - ./patches/tpm-encryption.yaml
+      - ./patches/watchdog.yaml
+
+  # Original nodes, to be removed once migrated to new hardware
+
+  - hostname: fairy-compute01
+    ipAddress: 10.189.2.67
+    controlPlane: true
+    installDisk: /dev/sda
+
+    machineSpec: *cn01-machineSpec
+    schematic: *cn01-schematic
+    extensionServices:
+      - <<: *cn01-lldp-extension
 
     networkInterfaces:
       - &compute01-nic0
@@ -58,8 +186,8 @@ nodes:
             gateway: fe80::def
         dhcp: false
         mtu: 1500
-    extraManifests:
-      - ./watchdog.yaml
+    patches:
+      - ./patches/watchdog.yaml
 
   - hostname: fairy-compute02
     ipAddress: 10.189.2.69
@@ -75,12 +203,12 @@ nodes:
             gateway: 10.189.2.68
           - network: ::/0
             gateway: fe80::def
-    machineSpec: *compute01-machineSpec
-    schematic: *compute01-schematic
+    machineSpec: *cn01-machineSpec
+    schematic: *cn01-schematic
     extensionServices:
-      - <<: *compute01-lldp-extension
-    extraManifests:
-      - ./watchdog.yaml
+      - <<: *cn01-lldp-extension
+    patches:
+      - ./patches/watchdog.yaml
 
   - hostname: fairy-compute03
     ipAddress: 10.189.2.71
@@ -96,12 +224,12 @@ nodes:
             gateway: 10.189.2.70
           - network: ::/0
             gateway: fe80::def
-    machineSpec: *compute01-machineSpec
-    schematic: *compute01-schematic
+    machineSpec: *cn01-machineSpec
+    schematic: *cn01-schematic
     extensionServices:
-      - <<: *compute01-lldp-extension
-    extraManifests:
-      - ./watchdog.yaml
+      - <<: *cn01-lldp-extension
+    patches:
+      - ./patches/watchdog.yaml
 
 controlPlane:
   nodeLabels: {}
@@ -161,16 +289,6 @@ controlPlane:
             # * https://github.com/siderolabs/talos/pull/9200
             forwardKubeDNSToHost: false
             resolveMemberNames: true
-        # Configure containerd for spegel
-        files:
-          - op: create
-            path: /etc/cri/conf.d/20-customization.part
-            content: |
-              [plugins."io.containerd.cri.v1.images"]
-                discard_unpacked_layers = false
-              [plugins."io.containerd.cri.v1.runtime"]
-                cdi_spec_dirs = ["/var/cdi/static", "/var/cdi/dynamic"]
-                device_ownership_from_security_context = true
         sysctls:
           # Kubernetes essentials
           fs.inotify.max_user_watches: 1048576
@@ -198,18 +316,12 @@ controlPlane:
         install:
           bootloader: true
           wipe: true
-        systemDiskEncryption:
-          ephemeral: &fde
-            provider: luks2
-            keys:
-              - slot: 0
-                tpm: {}
-          state: *fde
         kubelet:
           nodeIP:
             validSubnets:
             - 10.189.2.64/27
             - fd2b:ec92:e230:20::67/96
+            - 192.168.227.0/24  # For cn01 DHCP network
           extraArgs: {}
           extraConfig:
             # Let IPv6 RAs through on 'net1' for thread announcements getting to HA additional NIC
