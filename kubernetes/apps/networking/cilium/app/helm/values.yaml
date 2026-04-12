@@ -54,13 +54,7 @@ resources:
     memory: "6Gi"
 
 hubble:
-  enabled: false  # Temporarily disabled to break cert deadlock
-  tls:
-    auto:
-      enabled: true
-      method: cronJob
-      certValidityDuration: 1095  # 3 years
-      schedule: "0 0 1 */4 *"      # Rotate every 4 months
+  enabled: true
   metrics:
     enabled:
       - dns:query
