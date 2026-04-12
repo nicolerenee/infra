@@ -236,6 +236,16 @@ controlPlane:
             # * https://github.com/siderolabs/talos/pull/9200
             forwardKubeDNSToHost: false
             resolveMemberNames: true
+        # Configure containerd for spegel and DRA GPU support
+        files:
+          - op: create
+            path: /etc/cri/conf.d/20-customization.part
+            content: |
+              [plugins."io.containerd.cri.v1.images"]
+                discard_unpacked_layers = false
+              [plugins."io.containerd.cri.v1.runtime"]
+                cdi_spec_dirs = ["/var/cdi/static", "/var/cdi/dynamic"]
+                device_ownership_from_security_context = true
         install:
           bootloader: true
           wipe: true

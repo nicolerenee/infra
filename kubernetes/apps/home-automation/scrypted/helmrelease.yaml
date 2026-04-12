@@ -53,21 +53,24 @@ spec:
               startup:
                 enabled: true
             resources:
+              claims:
+                - name: gpu
               requests:
                 cpu: 500m
                 memory: 128Mi
-                gpu.intel.com/i915: 1
               limits:
                 cpu: 4000m
                 memory: 8192Mi
-                gpu.intel.com/i915: 1
             securityContext:
               # allowPrivilegeEscalation: false
               # readOnlyRootFilesystem: true
               # capabilities:
               #   drop:
               #     - ALL
-    defaultPodOptions: {}
+    defaultPodOptions:
+      resourceClaims:
+        - name: gpu
+          resourceClaimTemplateName: scrypted
 
     service:
       app:
@@ -96,3 +99,15 @@ spec:
         size: 10Gi
         retain: true
         suffix: "config"
+    rawResources:
+      gpu:
+        apiVersion: resource.k8s.io/v1
+        kind: ResourceClaimTemplate
+        spec:
+          spec:
+            spec:
+              devices:
+                requests:
+                  - name: gpu
+                    exactly:
+                      deviceClassName: gpu.intel.com

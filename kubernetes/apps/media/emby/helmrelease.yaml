@@ -63,15 +63,18 @@ spec:
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
             resources:
+              claims:
+                - name: gpu
               limits:
                 cpu: 8
                 memory: 10Gi
-                gpu.intel.com/i915: 1
               requests:
                 cpu: 1
                 memory: 1Gi
-                gpu.intel.com/i915: 1
     defaultPodOptions:
+      resourceClaims:
+        - name: gpu
+          resourceClaimTemplateName: emby
       securityContext:
         runAsNonRoot: true
         runAsUser: 3000
@@ -133,3 +136,15 @@ spec:
         type: emptyDir
         globalMounts:
           - path: /media
+    rawResources:
+      gpu:
+        apiVersion: resource.k8s.io/v1
+        kind: ResourceClaimTemplate
+        spec:
+          spec:
+            spec:
+              devices:
+                requests:
+                  - name: gpu
+                    exactly:
+                      deviceClassName: gpu.intel.com
