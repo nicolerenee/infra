@@ -10,8 +10,13 @@ spec:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy
   ref:
-    tag: 0.34.0
-  url: oci://ghcr.io/intel/helm-charts/intel-device-plugins-operator
+    tag: 0.35.0
+  url: oci://ghcr.io/home-operations/charts-mirror/intel-device-plugins-operator
+  verify:
+    provider: cosign
+    matchOIDCIdentity:
+      - issuer: "^https://token.actions.githubusercontent.com$"
+        subject: "^https://github.com/home-operations/charts-mirror.*$"
 ---
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
 apiVersion: helm.toolkit.fluxcd.io/v2
