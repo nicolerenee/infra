@@ -19,6 +19,8 @@ nodes:
     ipAddress: 192.168.227.30
     controlPlane: true
     installDisk: /dev/sda
+    nodeLabels:
+      infra.freckle.systems/gpu: i915
     machineSpec: &cn01-machineSpec
       mode: metal
       arch: amd64
@@ -51,6 +53,8 @@ nodes:
     ipAddress: 192.168.227.31
     controlPlane: false
     installDisk: /dev/sda
+    nodeLabels:
+      infra.freckle.systems/gpu: i915
     machineSpec: *cn01-machineSpec
     schematic: *cn01-schematic
     extensionServices:
@@ -63,6 +67,8 @@ nodes:
     ipAddress: 192.168.227.32
     controlPlane: false
     installDisk: /dev/sda
+    nodeLabels:
+      infra.freckle.systems/gpu: i915
     machineSpec: *cn01-machineSpec
     schematic: *cn01-schematic
     extensionServices:
@@ -75,6 +81,8 @@ nodes:
     ipAddress: 192.168.227.33
     controlPlane: false
     installDisk: /dev/nvme0n1
+    nodeLabels:
+      infra.freckle.systems/gpu: nvidia
     machineSpec: &dgx01-machineSpec
       mode: metal
       arch: arm64
@@ -126,6 +134,8 @@ nodes:
     ipAddress: 192.168.227.34
     controlPlane: false
     installDisk: /dev/nvme0n1
+    nodeLabels:
+      infra.freckle.systems/gpu: nvidia
     machineSpec: *dgx01-machineSpec
     schematic: *dgx01-schematic
     extensionServices:
@@ -144,6 +154,8 @@ nodes:
     ipAddress: 192.168.227.35
     controlPlane: false
     installDisk: /dev/nvme0n1
+    nodeLabels:
+      infra.freckle.systems/gpu: nvidia
     machineSpec: *dgx01-machineSpec
     schematic: *dgx01-schematic
     extensionServices:

@@ -40,6 +40,19 @@ spec:
     toolkit:
       enabled: false
 
+    # Only run NFD on NVIDIA GPU nodes
+    nfd:
+      worker:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: infra.freckle.systems/gpu
+                      operator: In
+                      values:
+                        - nvidia
+
     # Talos mounts drivers at /usr/local/glibc/usr/lib
     hostPaths:
       driverInstallDir: /usr/local/glibc/usr/lib

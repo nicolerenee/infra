@@ -40,5 +40,14 @@ spec:
       config:
         core:
           labelSources: ["pci", "system", "usb"]
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: infra.freckle.systems/gpu
+                    operator: In
+                    values:
+                      - i915
     prometheus:
       enable: true
