@@ -41,6 +41,7 @@ spec:
               - --checkers
               - "16"
               - --inplace
+              - --partial
         containers:
           app:
             image:
