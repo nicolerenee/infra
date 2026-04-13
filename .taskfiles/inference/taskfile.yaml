@@ -4,7 +4,7 @@ version: "3"
 
 tasks:
   download-model:
-    desc: Download a HuggingFace model to the inference NFS share
+    desc: Download a HuggingFace model to the inference models volume
     vars:
       JOB_NAME: "download-{{.MODEL | replace \"/\" \"-\" | lower}}"
     cmds:
@@ -43,7 +43,7 @@ tasks:
               volumes:
                 - name: models
                   persistentVolumeClaim:
-                    claimName: inference-models
+                    claimName: models
         EOF
       - echo "Job {{.JOB_NAME}} created. Watch with:"
       - echo "  kubectl logs -n inference -f job/{{.JOB_NAME}}"

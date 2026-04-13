@@ -109,7 +109,7 @@ spec:
     persistence:
       models:
         type: persistentVolumeClaim
-        existingClaim: inference-models
+        existingClaim: models
         globalMounts:
           - path: /models
       shm:
