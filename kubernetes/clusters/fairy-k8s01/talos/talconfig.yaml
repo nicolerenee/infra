@@ -98,9 +98,11 @@ nodes:
           officialExtensions:
             - siderolabs/iscsi-tools
             - siderolabs/lldpd
-            - siderolabs/mei
             - siderolabs/nvidia-container-toolkit-production
-            - siderolabs/nvidia-open-gpu-kernel-modules-production
+            # Open-source drivers cause CUDA initialization failures in containers (cuInit error 3)
+            # - siderolabs/nvidia-open-gpu-kernel-modules-production
+            # Proprietary drivers required for CUDA to work properly on DGX Spark (GB10)
+            - siderolabs/nonfree-kmod-nvidia-production
     extensionServices:
       - &dgx01-lldp-extension
         name: lldpd
@@ -304,13 +306,13 @@ controlPlane:
             # * https://github.com/siderolabs/talos/pull/9200
             forwardKubeDNSToHost: false
             resolveMemberNames: true
-        # Configure containerd for DRA GPU support
+        # Configure containerd for GPU support
+        # Talos 1.13+ has built-in CDI support, just ensure device ownership is set
         files:
           - op: create
             path: /etc/cri/conf.d/20-customization.part
             content: |
               [plugins."io.containerd.cri.v1.runtime"]
-                cdi_spec_dirs = ["/var/cdi/static", "/var/cdi/dynamic"]
                 device_ownership_from_security_context = true
         sysctls:
           # Kubernetes essentials
