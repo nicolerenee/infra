@@ -53,6 +53,10 @@ spec:
                       values:
                         - nvidia
 
+    # Disable operator validator - causes issues with Talos
+    validator:
+      enabled: false
+
     # Talos mounts drivers at /usr/local/glibc/usr/lib
     hostPaths:
       driverInstallDir: /usr/local/glibc/usr/lib
