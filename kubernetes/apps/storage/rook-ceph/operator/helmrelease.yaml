@@ -37,6 +37,10 @@ spec:
       namespace: observability
   values:
     csi:
+      pluginTolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
       serviceMonitor:
         enabled: true
     monitoring:

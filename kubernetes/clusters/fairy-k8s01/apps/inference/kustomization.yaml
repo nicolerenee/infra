@@ -6,5 +6,6 @@ namespace: inference
 components:
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./models-pvc.yaml
   - ./nfs-models.yaml
   - ./vllm-gpt-oss.yaml
