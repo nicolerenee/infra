@@ -28,20 +28,14 @@ spec:
         initContainers:
           cache-models:
             image:
-              repository: mirror.gcr.io/rclone/rclone
-              tag: "1.73.4"
+              repository: mirror.gcr.io/alpine
+              tag: "3.21"
             command:
-              - rclone
-              - sync
-              - /ceph-models/hub/
-              - /models/hub/
-              - --progress
-              - --transfers
-              - "4"
-              - --checkers
-              - "16"
-              - --inplace
-              - --partial
+              - sh
+              - -c
+              - |
+                apk add --no-cache rsync &&
+                rsync -av --partial --progress /ceph-models/hub/ /models/hub/
         containers:
           app:
             image:
