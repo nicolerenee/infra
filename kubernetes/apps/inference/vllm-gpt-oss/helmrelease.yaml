@@ -116,11 +116,8 @@ spec:
             port: 8000
     persistence:
       models:
-        enabled: true
         type: persistentVolumeClaim
-        accessMode: ReadWriteOnce
-        size: 200Gi
-        retain: true
+        existingClaim: inference-models
         globalMounts:
           - path: /models
       shm:
