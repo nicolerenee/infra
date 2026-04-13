@@ -7,5 +7,4 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
-  - ./namespace.yaml
   - ./nvidia-gpu-operator.yaml

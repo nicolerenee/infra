@@ -120,7 +120,6 @@ nodes:
         mtu: 9000
     patches:
       - ./patches/nvidia-runtime.yaml
-      - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
 
   - hostname: dgx02
@@ -139,7 +138,6 @@ nodes:
       - <<: *dgx01-hs-interface-4
     patches:
       - ./patches/nvidia-runtime.yaml
-      - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
 
   - hostname: dgx03
@@ -158,7 +156,6 @@ nodes:
       - <<: *dgx01-hs-interface-4
     patches:
       - ./patches/nvidia-runtime.yaml
-      - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
 
   # Original nodes, to be removed once migrated to new hardware
