@@ -11,9 +11,11 @@ spec:
     name: app-template
     namespace: default
   install:
+    timeout: 15m
     remediation:
       retries: -1
   upgrade:
+    timeout: 15m
     cleanupOnFail: true
     remediation:
       retries: 3
@@ -37,8 +39,6 @@ spec:
               - --reasoning-parser
               - openai_gptoss
               - --enable-auto-tool-choice
-              - --distributed-executor-backend
-              - ray
               - --gpu-memory-utilization
               - "0.7"
               - --enable-prefix-caching
@@ -46,12 +46,6 @@ spec:
               - fastsafetensors
               - --quantization
               - mxfp4
-              - --mxfp4-backend
-              - CUTLASS
-              - --mxfp4-layers
-              - moe,qkv,o,lm_head
-              - --attention-backend
-              - FLASHINFER
               - --kv-cache-dtype
               - fp8
               - --max-num-batched-tokens
