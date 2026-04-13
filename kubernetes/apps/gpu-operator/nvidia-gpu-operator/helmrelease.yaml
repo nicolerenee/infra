@@ -41,7 +41,7 @@ spec:
       enabled: false
 
     # Only run NFD on NVIDIA GPU nodes
-    nfd:
+    node-feature-discovery:
       worker:
         affinity:
           nodeAffinity:
