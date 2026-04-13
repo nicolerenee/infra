@@ -83,6 +83,8 @@ nodes:
     installDisk: /dev/nvme0n1
     nodeLabels:
       infra.freckle.systems/gpu: nvidia
+    nodeTaints:
+      nvidia.com/gpu: ":NoSchedule"
     machineSpec: &dgx01-machineSpec
       mode: metal
       arch: arm64
@@ -136,6 +138,8 @@ nodes:
     installDisk: /dev/nvme0n1
     nodeLabels:
       infra.freckle.systems/gpu: nvidia
+    nodeTaints:
+      nvidia.com/gpu: ":NoSchedule"
     machineSpec: *dgx01-machineSpec
     schematic: *dgx01-schematic
     extensionServices:
@@ -156,6 +160,8 @@ nodes:
     installDisk: /dev/nvme0n1
     nodeLabels:
       infra.freckle.systems/gpu: nvidia
+    nodeTaints:
+      nvidia.com/gpu: ":NoSchedule"
     machineSpec: *dgx01-machineSpec
     schematic: *dgx01-schematic
     extensionServices:
