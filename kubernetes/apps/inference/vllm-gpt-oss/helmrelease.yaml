@@ -1,0 +1,131 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: vllm-gpt-oss
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: default
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      vllm:
+        replicas: 1
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: mirror.gcr.io/vllm/vllm-openai
+              tag: v0.19.0
+            command:
+              - vllm
+              - serve
+              - openai/gpt-oss-120b
+              - --tool-call-parser
+              - openai
+              - --reasoning-parser
+              - openai_gptoss
+              - --enable-auto-tool-choice
+              - --distributed-executor-backend
+              - ray
+              - --gpu-memory-utilization
+              - "0.7"
+              - --enable-prefix-caching
+              - --load-format
+              - fastsafetensors
+              - --quantization
+              - mxfp4
+              - --mxfp4-backend
+              - CUTLASS
+              - --mxfp4-layers
+              - moe,qkv,o,lm_head
+              - --attention-backend
+              - FLASHINFER
+              - --kv-cache-dtype
+              - fp8
+              - --max-num-batched-tokens
+              - "8192"
+              - --host
+              - 0.0.0.0
+              - --port
+              - "8000"
+            env:
+              VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8: "1"
+              HF_HOME: /models
+            envFrom:
+              - secretRef:
+                  name: huggingface
+            ports:
+              - containerPort: 8000
+                name: http
+            probes:
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: http
+                  # Model download + loading can take a long time
+                  initialDelaySeconds: 30
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 180
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: http
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *probes
+            securityContext:
+              privileged: true
+            resources:
+              limits:
+                nvidia.com/gpu: 1
+              requests:
+                nvidia.com/gpu: 1
+    defaultPodOptions:
+      runtimeClassName: nvidia
+      nodeSelector:
+        kubernetes.io/hostname: fairy-dgx03
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+    service:
+      app:
+        controller: vllm
+        ports:
+          http:
+            port: 8000
+    persistence:
+      models:
+        enabled: true
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 200Gi
+        retain: true
+        globalMounts:
+          - path: /models
+      shm:
+        type: emptyDir
+        medium: Memory
+        sizeLimit: 16Gi
+        globalMounts:
+          - path: /dev/shm
