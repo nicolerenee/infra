@@ -47,21 +47,10 @@ spec:
     toolkit:
       enabled: false
 
-    # Only run NFD on NVIDIA GPU nodes
+    # Disable GPU operator's NFD - use kube-system NFD instead
+    # The kube-system NFD runs on all nodes and has custom Intel GPU rules,
+    # while this one has no custom configuration and would be redundant
     node-feature-discovery:
-      worker:
-        affinity:
-          nodeAffinity:
-            requiredDuringSchedulingIgnoredDuringExecution:
-              nodeSelectorTerms:
-                - matchExpressions:
-                    - key: infra.freckle.systems/gpu
-                      operator: In
-                      values:
-                        - nvidia
-
-    # Disable operator validator - causes issues with Talos
-    validator:
       enabled: false
 
     # Talos mounts drivers at /usr/local/glibc/usr/lib
