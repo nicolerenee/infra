@@ -7,6 +7,7 @@ vars:
   CLUSTER_ROOT: "{{.KUBERNETES_ROOT}}/clusters/{{.CLUSTER}}"
 
 includes:
+  inference: .taskfiles/inference/taskfile.yaml
   talos: .taskfiles/talos/taskfile.yaml
 
 tasks:

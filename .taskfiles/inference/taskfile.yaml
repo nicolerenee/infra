@@ -1,0 +1,51 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+
+tasks:
+  download-model:
+    desc: Download a HuggingFace model to the inference NFS share
+    vars:
+      JOB_NAME: "download-{{.MODEL | replace \"/\" \"-\" | lower}}"
+    cmds:
+      - |
+        cat <<EOF | kubectl apply -f -
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: {{.JOB_NAME}}
+          namespace: inference
+        spec:
+          backoffLimit: 3
+          ttlSecondsAfterFinished: 86400
+          template:
+            spec:
+              restartPolicy: OnFailure
+              containers:
+                - name: download
+                  image: mirror.gcr.io/python:3.14.0-slim
+                  command:
+                    - bash
+                    - -c
+                    - |
+                      pip install -q huggingface_hub[hf_transfer] && \
+                      HF_HUB_ENABLE_HF_TRANSFER=1 \
+                      hf download {{.MODEL}} --cache-dir /models
+                  env:
+                    - name: HF_TOKEN
+                      valueFrom:
+                        secretKeyRef:
+                          name: huggingface
+                          key: HF_TOKEN
+                  volumeMounts:
+                    - name: models
+                      mountPath: /models
+              volumes:
+                - name: models
+                  persistentVolumeClaim:
+                    claimName: inference-models
+        EOF
+      - echo "Job {{.JOB_NAME}} created. Watch with:"
+      - echo "  kubectl logs -n inference -f job/{{.JOB_NAME}}"
+    requires:
+      vars: ["MODEL"]
