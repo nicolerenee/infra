@@ -37,9 +37,10 @@ spec:
               - /models/hub/
               - --progress
               - --transfers
-              - "8"
+              - "4"
               - --checkers
               - "16"
+              - --inplace
         containers:
           app:
             image:
