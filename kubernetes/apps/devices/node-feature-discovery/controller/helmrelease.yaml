@@ -41,5 +41,9 @@ spec:
         core:
           labelSources: ["pci", "system", "usb"]
       # Run on all nodes - detects Intel GPUs via custom rules, NVIDIA via PCI discovery
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
     prometheus:
       enable: true
