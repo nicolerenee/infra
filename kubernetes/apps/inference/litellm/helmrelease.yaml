@@ -1,0 +1,144 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: litellm
+spec:
+  interval: 1h
+  maxHistory: 1
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: default
+  install:
+    timeout: 5m
+    remediation:
+      retries: 3
+  upgrade:
+    timeout: 5m
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      litellm:
+        strategy: RollingUpdate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        initContainers:
+          init-db:
+            image:
+              repository: ghcr.io/home-operations/postgres-init
+              tag: 18.3@sha256:6fa1f331cddd2eb0b6afa7b8d3685c864127a81ab01c3d9400bc3ff5263a51cf
+              pullPolicy: IfNotPresent
+            envFrom: &envFrom
+              - secretRef:
+                  name: litellm
+        containers:
+          main:
+            image:
+              repository: ghcr.io/berriai/litellm
+              tag: v1.83.7.rc.1@sha256:2198e9079d62d160e401eba53cc71bfe2770b5f8bcf40f63f8dbe84acb249304
+            command:
+              - litellm
+              - --config
+              - /app/config.yaml
+              - --port
+              - "4000"
+            env:
+              HOME: /tmp
+              STORE_MODEL_IN_DB: "True"
+            envFrom: *envFrom
+            ports:
+              - containerPort: 4000
+                name: http
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health/liveliness
+                    port: http
+                  initialDelaySeconds: 30
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health/readiness
+                    port: http
+                  initialDelaySeconds: 30
+                  periodSeconds: 5
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 2Gi
+    defaultPodOptions:
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile: { type: RuntimeDefault }
+    service:
+      litellm:
+        controller: litellm
+        ports:
+          http:
+            port: 4000
+    configMaps:
+      config:
+        data:
+          config.yaml: |
+            litellm_settings:
+              cache: true
+              cache_params:
+                type: redis
+                host: litellm-cache.inference.svc.cluster.local
+                port: 6379
+            general_settings:
+              master_key: os.environ/LITELLM_MASTER_KEY
+              database_url: os.environ/DATABASE_URL
+    route:
+      main:
+        hostnames:
+          - inference-api.${CLUSTER_DOMAIN}
+        parentRefs:
+          - name: tailscale
+            namespace: gateway
+        rules:
+          - backendRefs:
+              - identifier: litellm
+                port: 4000
+    persistence:
+      config:
+        type: configMap
+        name: litellm
+        globalMounts:
+          - path: /app/config.yaml
+            subPath: config.yaml
+            readOnly: true
+      cache:
+        type: emptyDir
+        globalMounts:
+          - path: /.cache
+            subPath: cache
+          - path: /.npm
+            subPath: npm
+          - path: /tmp
+            subPath: tmp
+      litellm-migrations:
+        type: emptyDir
+        globalMounts:
+          - path: /usr/lib/python3.13/site-packages/litellm_proxy_extras/migrations

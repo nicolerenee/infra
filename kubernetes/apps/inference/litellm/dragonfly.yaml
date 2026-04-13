@@ -1,0 +1,15 @@
+---
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: litellm-cache
+spec:
+  replicas: 1
+  args:
+    - --proactor_threads=1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi

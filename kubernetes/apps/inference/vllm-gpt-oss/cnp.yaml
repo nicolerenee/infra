@@ -1,0 +1,17 @@
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: vllm-gpt-oss
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: vllm-gpt-oss
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: litellm
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
