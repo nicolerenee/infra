@@ -11,11 +11,11 @@ spec:
     name: app-template
     namespace: default
   install:
-    timeout: 15m
+    timeout: 20m
     remediation:
       retries: -1
   upgrade:
-    timeout: 15m
+    timeout: 20m
     cleanupOnFail: true
     remediation:
       retries: 3
@@ -28,8 +28,8 @@ spec:
         containers:
           app:
             image:
-              repository: mirror.gcr.io/vllm/vllm-openai
-              tag: v0.19.0
+              repository: nvcr.io/nvidia/vllm
+              tag: 26.03-py3
             command:
               - vllm
               - serve
@@ -42,8 +42,6 @@ spec:
               - --gpu-memory-utilization
               - "0.7"
               - --enable-prefix-caching
-              - --load-format
-              - fastsafetensors
               - --quantization
               - mxfp4
               - --kv-cache-dtype

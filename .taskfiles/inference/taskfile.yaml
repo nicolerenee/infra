@@ -30,7 +30,7 @@ tasks:
                     - |
                       pip install -q huggingface_hub[hf_transfer] && \
                       HF_HUB_ENABLE_HF_TRANSFER=1 \
-                      hf download {{.MODEL}} --cache-dir /models
+                      hf download {{.MODEL}} --cache-dir /models/hub
                   env:
                     - name: HF_TOKEN
                       valueFrom:
