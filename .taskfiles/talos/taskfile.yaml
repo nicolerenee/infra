@@ -25,6 +25,8 @@ tasks:
     sources:
       - "{{.TALOS_RESOURCES_DIR}}/talsecret.yaml"
       - talconfig.yaml
+      - "{{.SYSTEM_UPGRADE_YAML}}"
+      - patches/**/*.yaml
     generates:
       - clusterconfig/*.yaml
       - clusterconfig/talosconfig
