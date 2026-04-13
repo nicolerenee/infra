@@ -96,7 +96,8 @@ spec:
         controller: litellm
         ports:
           http:
-            port: 4000
+            port: 80
+            targetPort: 4000
     configMaps:
       config:
         data:
@@ -120,7 +121,7 @@ spec:
         rules:
           - backendRefs:
               - identifier: litellm
-                port: 4000
+                port: 80
     persistence:
       config:
         type: configMap
