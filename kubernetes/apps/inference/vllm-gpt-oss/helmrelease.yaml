@@ -103,7 +103,7 @@ spec:
     defaultPodOptions:
       runtimeClassName: nvidia
       nodeSelector:
-        kubernetes.io/hostname: fairy-dgx03
+        kubernetes.io/hostname: dgx03
       tolerations:
         - key: nvidia.com/gpu
           operator: Exists
