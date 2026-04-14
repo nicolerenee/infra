@@ -36,8 +36,10 @@ spec:
               TRUST_PROXY: true
               TZ: America/Central
               GEOLITE_DB_PATH: /data/GeoLite2-City.mmdb
-              KEYS_PATH: /data/keys
               UPLOAD_PATH: /data/uploads
+            envFrom:
+              - secretRef:
+                  name: pocket-id
             probes:
               liveness:
                 enabled: true
@@ -80,7 +82,7 @@ spec:
         hostnames:
           - "freckle.id"
         parentRefs:
-          - name: external-gw
+          - name: external
             namespace: gateway
         rules:
           - backendRefs:
