@@ -61,6 +61,11 @@ spec:
                 nodeAffinityType:
                   - requiredDuringSchedulingIgnoredDuringExecution
             - name: RemovePodsViolatingNodeTaints
+            - name: PodLifeTime
+              args:
+                states:
+                  - Completed
+                maxPodLifeTimeSeconds: 259200
             - name: RemovePodsViolatingTopologySpreadConstraint
           plugins:
             balance:
@@ -68,6 +73,7 @@ spec:
                 - RemovePodsViolatingTopologySpreadConstraint
             deschedule:
               enabled:
+                - PodLifeTime
                 - RemoveFailedPods
                 - RemovePodsViolatingInterPodAntiAffinity
                 - RemovePodsViolatingNodeAffinity
