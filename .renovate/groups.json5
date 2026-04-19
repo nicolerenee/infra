@@ -71,6 +71,15 @@
       },
     },
     {
+      description: "CloudNativePG Barman Cloud Plugin Group",
+      groupName: "Barman Cloud Plugin",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["/plugin-barman-cloud/"],
+      group: {
+        commitMessageTopic: "{{{groupName}}}",
+      },
+    },
+    {
       description: "Rook-Ceph Group",
       groupName: "Rook-Ceph",
       matchDatasources: ["docker"],
