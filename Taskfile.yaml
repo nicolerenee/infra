@@ -8,6 +8,7 @@ vars:
 
 includes:
   inference: .taskfiles/inference/taskfile.yaml
+  k8s: .taskfiles/k8s/taskfile.yaml
   talos: .taskfiles/talos/taskfile.yaml
 
 tasks:

@@ -1,0 +1,166 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+
+tasks:
+  fwupd:
+    desc: Deploy a fwupd container on a specific node for firmware updates
+    silent: true
+    vars:
+      POD_NAME: "fwupd-{{.node | replace \".\" \"-\" | lower}}"
+    cmds:
+      - kubectl delete pod -n kube-system {{.POD_NAME}} --ignore-not-found --wait
+      - |
+        cat <<'TASKEOF' | sed 's/PODNAME/{{.POD_NAME}}/g; s/NODENAME/{{.node}}/g' | kubectl apply -f - >/dev/null
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: PODNAME
+          namespace: kube-system
+        spec:
+          nodeName: NODENAME
+          hostPID: true
+          hostNetwork: true
+          containers:
+            - name: fwupd
+              image: ubuntu:24.04
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  apt-get update -qq && apt-get install -y -qq fwupd locales >/dev/null 2>&1
+                  locale-gen en_US.UTF-8 >/dev/null 2>&1
+                  mkdir -p /boot/efi /var/lib/fwupd/local.d
+                  ESP_DEV=$(blkid -t TYPE=vfat -o device | head -1)
+                  if [ -n "$ESP_DEV" ]; then mount "$ESP_DEV" /boot/efi; fi
+                  echo "FWUPD_READY"
+                  sleep infinity
+              env:
+                - name: FWUPD_UEFI_ESP_PATH
+                  value: /boot/efi
+                - name: LANG
+                  value: en_US.UTF-8
+                - name: LC_ALL
+                  value: en_US.UTF-8
+              securityContext:
+                privileged: true
+              volumeMounts:
+                - name: sys-firmware
+                  mountPath: /sys/firmware
+                - name: dev
+                  mountPath: /dev
+                - name: sys-bus
+                  mountPath: /sys/bus
+                - name: sys-class
+                  mountPath: /sys/class
+                - name: sys-devices
+                  mountPath: /sys/devices
+                - name: run-udev
+                  mountPath: /run/udev
+                  readOnly: true
+          volumes:
+            - name: sys-firmware
+              hostPath:
+                path: /sys/firmware
+            - name: dev
+              hostPath:
+                path: /dev
+            - name: sys-bus
+              hostPath:
+                path: /sys/bus
+            - name: sys-class
+              hostPath:
+                path: /sys/class
+            - name: sys-devices
+              hostPath:
+                path: /sys/devices
+            - name: run-udev
+              hostPath:
+                path: /run/udev
+          restartPolicy: Never
+          tolerations:
+            - key: nvidia.com/gpu
+              operator: Exists
+              effect: NoSchedule
+        TASKEOF
+      - |
+        echo "Waiting for fwupd to be ready on {{.node}}..."
+        kubectl wait -n kube-system pod/{{.POD_NAME}} --for=condition=Ready --timeout=120s >/dev/null 2>&1
+        for i in $(seq 1 60); do kubectl logs -n kube-system {{.POD_NAME}} 2>/dev/null | grep -q FWUPD_READY && break; sleep 2; done
+        echo "Ready. Exec in with:"
+        echo "  kubectl exec -n kube-system -it {{.POD_NAME}} -- bash"
+        echo ""
+        echo "When done, clean up with:"
+        echo "  kubectl delete pod -n kube-system {{.POD_NAME}}"
+    requires:
+      vars: ["node"]
+
+  admin-pod:
+    desc: Deploy a netshoot admin pod on a specific node
+    silent: true
+    vars:
+      POD_NAME: "admin-{{.node | replace \".\" \"-\" | lower}}"
+    cmds:
+      - kubectl delete pod -n kube-system {{.POD_NAME}} --ignore-not-found --wait
+      - |
+        cat <<'TASKEOF' | sed 's/PODNAME/{{.POD_NAME}}/g; s/NODENAME/{{.node}}/g' | kubectl apply -f - >/dev/null
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: PODNAME
+          namespace: kube-system
+        spec:
+          nodeName: NODENAME
+          hostPID: true
+          hostNetwork: true
+          containers:
+            - name: netshoot
+              image: nicolaka/netshoot:v0.15
+              command:
+                - sleep
+                - infinity
+              securityContext:
+                privileged: true
+              volumeMounts:
+                - name: host-root
+                  mountPath: /host
+                - name: dev
+                  mountPath: /dev
+                - name: sys
+                  mountPath: /sys
+                - name: proc-host
+                  mountPath: /host/proc
+                - name: run
+                  mountPath: /run
+          volumes:
+            - name: host-root
+              hostPath:
+                path: /
+            - name: dev
+              hostPath:
+                path: /dev
+            - name: sys
+              hostPath:
+                path: /sys
+            - name: proc-host
+              hostPath:
+                path: /proc
+            - name: run
+              hostPath:
+                path: /run
+          restartPolicy: Never
+          tolerations:
+            - operator: Exists
+        TASKEOF
+      - |
+        echo "Waiting for admin pod on {{.node}}..."
+        kubectl wait -n kube-system pod/{{.POD_NAME}} --for=condition=Ready --timeout=120s >/dev/null 2>&1
+        echo "Ready. Exec in with:"
+        echo "  kubectl exec -n kube-system -it {{.POD_NAME}} -- bash"
+        echo ""
+        echo "Access host filesystem at /host"
+        echo ""
+        echo "When done, clean up with:"
+        echo "  kubectl delete pod -n kube-system {{.POD_NAME}}"
+    requires:
+      vars: ["node"]
