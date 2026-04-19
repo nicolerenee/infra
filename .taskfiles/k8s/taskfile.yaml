@@ -164,3 +164,9 @@ tasks:
         echo "  kubectl delete pod -n kube-system {{.POD_NAME}}"
     requires:
       vars: ["node"]
+
+  ceph-toolbox:
+    desc: Exec into the rook-ceph toolbox pod
+    silent: true
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- bash
