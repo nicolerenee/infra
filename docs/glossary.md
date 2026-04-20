@@ -11,6 +11,7 @@ description: Glossary of acronyms and terms used throughout the infrastructure d
 | ASW | Access switch — provides endpoint connectivity for a network segment |
 | BGP | Border Gateway Protocol — routing protocol used by Cilium to announce Kubernetes service IPs |
 | FSW | Fabric switch — high-speed east-west switch for GPU-to-GPU traffic |
+| GW | Gateway — site router/firewall that handles inter-VLAN routing and internet access |
 | GPON | Gigabit Passive Optical Network — fiber access technology used by AT&T |
 | LLDP | Link Layer Discovery Protocol — neighbor discovery on Ethernet |
 | MDF | Main distribution frame — central wiring point where outside lines enter and internal cabling originates |
@@ -63,6 +64,16 @@ description: Glossary of acronyms and terms used throughout the infrastructure d
 |------|------------|
 | PDU | Power Distribution Unit — distributes mains power to rack equipment |
 | UPS | Uninterruptible Power Supply — battery backup for clean shutdowns during power loss |
+
+## Firewalla
+
+Firewalla uses some non-standard terminology in its UI and documentation.
+
+| Term | Definition |
+|------|------------|
+| VqLAN | Firewalla's name for a VLAN-tagged network segment configured through its UI — functionally a standard 802.1Q VLAN |
+| Network Segment | Firewalla's term for an isolated L2/L3 network, which may be a VLAN, a bridge, or a VPN-backed segment |
+| `post_main.d` | Hook directory (`/home/pi/.firewalla/config/post_main.d/`) for scripts that run after Firewalla's main services start — survives firmware updates |
 
 ## Appliances
 

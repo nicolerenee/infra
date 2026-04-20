@@ -17,87 +17,87 @@
   <rect x="248" y="30" width="114" height="26" rx="13" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
   <text x="305" y="48" font-size="11" fill="#6b7280" text-anchor="middle">Internet</text>
 
-  <!-- gw01 -->
+  <!-- fairy-gw01 -->
   <rect x="220" y="86" width="170" height="32" rx="5" fill="#d97706"/>
-  <text x="305" y="106" font-size="11" fill="white" text-anchor="middle">gw01</text>
+  <text x="305" y="106" font-size="11" fill="white" text-anchor="middle">fairy-gw01</text>
 
-  <!-- mdf-asw01 -->
+  <!-- fairy-mdf-asw01 -->
   <rect x="25" y="175" width="190" height="32" rx="5" fill="#d97706"/>
-  <text x="120" y="195" font-size="11" fill="white" text-anchor="middle">mdf-asw01</text>
+  <text x="120" y="195" font-size="11" fill="white" text-anchor="middle">fairy-mdf-asw01</text>
 
-  <!-- mdf-vsw01 -->
+  <!-- fairy-mdf-vsw01 -->
   <rect x="10" y="265" width="135" height="28" rx="4" fill="#d97706"/>
-  <text x="77" y="283" font-size="10" fill="white" text-anchor="middle">mdf-vsw01</text>
+  <text x="77" y="283" font-size="10" fill="white" text-anchor="middle">fairy-mdf-vsw01</text>
 
   <!-- WiFi APs -->
   <rect x="160" y="265" width="115" height="28" rx="4" fill="#d97706"/>
   <text x="217" y="283" font-size="10" fill="white" text-anchor="middle">WiFi APs (x3)</text>
 
-  <!-- r02-tor01 -->
+  <!-- fairy-r02-tor01 -->
   <rect x="290" y="175" width="180" height="32" rx="5" fill="#d97706"/>
-  <text x="380" y="195" font-size="11" fill="white" text-anchor="middle">r02-tor01</text>
+  <text x="380" y="195" font-size="11" fill="white" text-anchor="middle">fairy-r02-tor01</text>
 
-  <!-- r02-tor01 connected devices -->
+  <!-- fairy-r02-tor01 connected devices -->
   <rect x="530" y="148" width="120" height="26" rx="4" fill="#3b82f6"/>
-  <text x="590" y="165" font-size="10" fill="white" text-anchor="middle">r02-cn01–03</text>
+  <text x="590" y="165" font-size="10" fill="white" text-anchor="middle">fairy-r02-cn01–03</text>
 
   <rect x="530" y="178" width="120" height="26" rx="4" fill="#3b82f6" fill-opacity="0.4" stroke="#3b82f6" stroke-width="1" stroke-dasharray="4 2"/>
-  <text x="590" y="193" font-size="10" fill="#3b82f6" text-anchor="middle">r02-cn04–06</text>
+  <text x="590" y="193" font-size="10" fill="#3b82f6" text-anchor="middle">fairy-r02-cn04–06</text>
   <text x="590" y="202" font-size="7" fill="#93c5fd" text-anchor="middle">planned</text>
 
   <rect x="530" y="208" width="120" height="26" rx="4" fill="#7c3aed"/>
-  <text x="590" y="225" font-size="10" fill="white" text-anchor="middle">r02-dgx01–03</text>
+  <text x="590" y="225" font-size="10" fill="white" text-anchor="middle">fairy-r02-dgx01–03</text>
 
   <rect x="530" y="238" width="120" height="26" rx="4" fill="#059669"/>
-  <text x="590" y="255" font-size="10" fill="white" text-anchor="middle">store01</text>
+  <text x="590" y="255" font-size="10" fill="white" text-anchor="middle">fairy-store01</text>
 
   <rect x="530" y="268" width="120" height="26" rx="4" fill="#64748b"/>
-  <text x="590" y="285" font-size="10" fill="white" text-anchor="middle">nvr01</text>
+  <text x="590" y="285" font-size="10" fill="white" text-anchor="middle">fairy-nvr01</text>
 
-  <!-- r02-fsw01 -->
+  <!-- fairy-r02-fsw01 -->
   <rect x="290" y="330" width="180" height="32" rx="5" fill="#d97706"/>
-  <text x="380" y="350" font-size="11" fill="white" text-anchor="middle">r02-fsw01</text>
+  <text x="380" y="350" font-size="11" fill="white" text-anchor="middle">fairy-r02-fsw01</text>
 
-  <!-- r02-fsw01 connected device -->
+  <!-- fairy-r02-fsw01 connected device -->
   <rect x="530" y="332" width="120" height="28" rx="4" fill="#7c3aed"/>
-  <text x="590" y="350" font-size="10" fill="white" text-anchor="middle">r02-dgx01–03</text>
+  <text x="590" y="350" font-size="10" fill="white" text-anchor="middle">fairy-r02-dgx01–03</text>
 
-  <!-- r02-msw01 -->
+  <!-- fairy-r02-msw01 -->
   <rect x="290" y="390" width="180" height="32" rx="5" fill="#d97706"/>
-  <text x="380" y="410" font-size="11" fill="white" text-anchor="middle">r02-msw01</text>
+  <text x="380" y="410" font-size="11" fill="white" text-anchor="middle">fairy-r02-msw01</text>
 
-  <!-- r02-msw01 connected devices -->
+  <!-- fairy-r02-msw01 connected devices -->
   <rect x="530" y="377" width="120" height="26" rx="4" fill="#94a3b8"/>
   <text x="590" y="394" font-size="10" fill="white" text-anchor="middle">IPMI / BMC</text>
 
   <rect x="530" y="407" width="120" height="26" rx="4" fill="#b45309"/>
-  <text x="590" y="424" font-size="10" fill="white" text-anchor="middle">r02-ups01</text>
+  <text x="590" y="424" font-size="10" fill="white" text-anchor="middle">fairy-r02-ups01</text>
 
   <rect x="530" y="437" width="120" height="26" rx="4" fill="#b45309"/>
-  <text x="590" y="454" font-size="10" fill="white" text-anchor="middle">r02-pdu01–04</text>
+  <text x="590" y="454" font-size="10" fill="white" text-anchor="middle">fairy-r02-pdu01–04</text>
 
   <!-- ============================================================ -->
   <!-- CONNECTION LINES                                              -->
   <!-- ============================================================ -->
 
-  <!-- Internet → gw01 -->
+  <!-- Internet → fairy-gw01 -->
   <line x1="305" y1="56" x2="305" y2="86" stroke="#9ca3af" stroke-width="1.5"/>
 
-  <!-- gw01 → mdf-asw01 -->
+  <!-- fairy-gw01 → fairy-mdf-asw01 -->
   <line x1="255" y1="118" x2="120" y2="175" stroke="#9ca3af" stroke-width="1.5"/>
 
-  <!-- gw01 → r02-tor01 -->
+  <!-- fairy-gw01 → fairy-r02-tor01 -->
   <line x1="355" y1="118" x2="380" y2="175" stroke="#9ca3af" stroke-width="1.5"/>
   <text x="375" y="144" font-size="8" fill="#9ca3af">10G</text>
 
-  <!-- mdf-asw01 → mdf-vsw01 (fiber — dashed line) -->
+  <!-- fairy-mdf-asw01 → fairy-mdf-vsw01 (fiber — dashed line) -->
   <line x1="77" y1="207" x2="77" y2="265" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="5 3"/>
   <text x="88" y="240" font-size="8" fill="#9ca3af">fiber</text>
 
-  <!-- mdf-asw01 → WiFi APs -->
+  <!-- fairy-mdf-asw01 → WiFi APs -->
   <line x1="168" y1="207" x2="217" y2="265" stroke="#9ca3af" stroke-width="1.5"/>
 
-  <!-- r02-tor01 → device bus -->
+  <!-- fairy-r02-tor01 → device bus -->
   <line x1="470" y1="191" x2="505" y2="191" stroke="#9ca3af" stroke-width="1.5"/>
   <line x1="505" y1="161" x2="505" y2="281" stroke="#9ca3af" stroke-width="1.5"/>
   <line x1="505" y1="161" x2="530" y2="161" stroke="#9ca3af" stroke-width="1.5"/>
@@ -107,17 +107,17 @@
   <line x1="505" y1="281" x2="530" y2="281" stroke="#9ca3af" stroke-width="1.5"/>
   <text x="497" y="228" font-size="8" fill="#9ca3af" text-anchor="end">10G</text>
 
-  <!-- r02-fsw01 → dgx01–03 -->
+  <!-- fairy-r02-fsw01 → dgx01–03 -->
   <line x1="470" y1="346" x2="530" y2="346" stroke="#9ca3af" stroke-width="1.5"/>
   <text x="500" y="340" font-size="8" fill="#9ca3af" text-anchor="middle">400G</text>
 
-  <!-- r02-msw01 uplink to r02-tor01 -->
+  <!-- fairy-r02-msw01 uplink to fairy-r02-tor01 -->
   <line x1="290" y1="406" x2="282" y2="406" stroke="#9ca3af" stroke-width="1.5"/>
   <line x1="282" y1="406" x2="282" y2="200" stroke="#9ca3af" stroke-width="1.5"/>
   <line x1="282" y1="200" x2="290" y2="200" stroke="#9ca3af" stroke-width="1.5"/>
   <text x="278" y="310" font-size="8" fill="#9ca3af" text-anchor="end">1G</text>
 
-  <!-- r02-msw01 → device bus -->
+  <!-- fairy-r02-msw01 → device bus -->
   <line x1="470" y1="406" x2="505" y2="406" stroke="#9ca3af" stroke-width="1.5"/>
   <line x1="505" y1="390" x2="505" y2="450" stroke="#9ca3af" stroke-width="1.5"/>
   <line x1="505" y1="390" x2="530" y2="390" stroke="#9ca3af" stroke-width="1.5"/>

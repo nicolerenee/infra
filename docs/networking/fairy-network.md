@@ -36,5 +36,5 @@ network runs on VLAN 900 with its own subnet.
 
 ### DNS
 
-DNS is managed entirely by gw01 (Firewalla). All clients on the network use
+DNS is managed entirely by fairy-gw01 (Firewalla). All clients on the network use
 the Firewalla as their resolver.

@@ -77,12 +77,12 @@
 
   <!-- U27-25: Future dgx05-08 (3U) -->
   <rect x="42" y="171" width="256" height="76" rx="3" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1" stroke-dasharray="4 2"/>
-  <text x="170" y="203" font-size="10" fill="#9ca3af" text-anchor="middle">Future: r02-dgx05–08</text>
+  <text x="170" y="203" font-size="10" fill="#9ca3af" text-anchor="middle">Future: fairy-r02-dgx05–08</text>
   <text x="170" y="217" font-size="8" fill="#b0b8c4" text-anchor="middle">Blanking Panels</text>
 
-  <!-- U24: r02-fsw01 CRS804-4DDQ (1U) -->
+  <!-- U24: fairy-r02-fsw01 CRS804-4DDQ (1U) -->
   <rect x="42" y="249" width="256" height="24" rx="3" fill="#7c3aed"/>
-  <text x="170" y="261" font-size="10" fill="white" text-anchor="middle">r02-fsw01 (CRS804-4DDQ)</text>
+  <text x="170" y="261" font-size="10" fill="white" text-anchor="middle">fairy-r02-fsw01 (CRS804-4DDQ)</text>
 
   <!-- U23-21: DGX trays (each tray is ~1.33U)
        dgx01/02 tray:  all of U21 + bottom 1/3 of U22
@@ -92,66 +92,66 @@
   <text x="170" y="280" font-size="6" fill="#64748b" text-anchor="middle">passthrough</text>
 
   <rect x="42" y="284" width="256" height="32" rx="3" fill="#a78bfa"/>
-  <text x="170" y="300" font-size="10" fill="white" text-anchor="middle">r02-dgx03 / blank tray</text>
+  <text x="170" y="300" font-size="10" fill="white" text-anchor="middle">fairy-r02-dgx03 / blank tray</text>
 
   <rect x="42" y="317" width="256" height="32" rx="3" fill="#a78bfa"/>
-  <text x="170" y="333" font-size="10" fill="white" text-anchor="middle">r02-dgx01/02 tray</text>
+  <text x="170" y="333" font-size="10" fill="white" text-anchor="middle">fairy-r02-dgx01/02 tray</text>
 
-  <!-- U20-19: r02-cn06 (2U) -->
+  <!-- U20-19: fairy-r02-cn06 (2U) -->
   <rect x="42" y="353" width="256" height="50" rx="3" fill="#3b82f6"/>
-  <text x="170" y="378" font-size="11" fill="white" text-anchor="middle">r02-cn06</text>
+  <text x="170" y="378" font-size="11" fill="white" text-anchor="middle">fairy-r02-cn06</text>
 
-  <!-- U18-17: r02-cn05 (2U) -->
+  <!-- U18-17: fairy-r02-cn05 (2U) -->
   <rect x="42" y="405" width="256" height="50" rx="3" fill="#3b82f6"/>
-  <text x="170" y="430" font-size="11" fill="white" text-anchor="middle">r02-cn05</text>
+  <text x="170" y="430" font-size="11" fill="white" text-anchor="middle">fairy-r02-cn05</text>
 
-  <!-- U16-15: r02-cn04 (2U) -->
+  <!-- U16-15: fairy-r02-cn04 (2U) -->
   <rect x="42" y="457" width="256" height="50" rx="3" fill="#3b82f6"/>
-  <text x="170" y="482" font-size="11" fill="white" text-anchor="middle">r02-cn04</text>
+  <text x="170" y="482" font-size="11" fill="white" text-anchor="middle">fairy-r02-cn04</text>
 
-  <!-- U14-13: r02-cn03 (2U) -->
+  <!-- U14-13: fairy-r02-cn03 (2U) -->
   <rect x="42" y="509" width="256" height="50" rx="3" fill="#3b82f6"/>
-  <text x="170" y="534" font-size="11" fill="white" text-anchor="middle">r02-cn03</text>
+  <text x="170" y="534" font-size="11" fill="white" text-anchor="middle">fairy-r02-cn03</text>
 
-  <!-- U12-11: r02-cn02 (2U) -->
+  <!-- U12-11: fairy-r02-cn02 (2U) -->
   <rect x="42" y="561" width="256" height="50" rx="3" fill="#3b82f6"/>
-  <text x="170" y="586" font-size="11" fill="white" text-anchor="middle">r02-cn02</text>
+  <text x="170" y="586" font-size="11" fill="white" text-anchor="middle">fairy-r02-cn02</text>
 
-  <!-- U10-9: r02-cn01 (2U) -->
+  <!-- U10-9: fairy-r02-cn01 (2U) -->
   <rect x="42" y="613" width="256" height="50" rx="3" fill="#3b82f6"/>
-  <text x="170" y="638" font-size="11" fill="white" text-anchor="middle">r02-cn01</text>
+  <text x="170" y="638" font-size="11" fill="white" text-anchor="middle">fairy-r02-cn01</text>
 
   <!-- U8-7: Reserved for future storage (2U) -->
   <rect x="42" y="665" width="256" height="50" rx="3" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1" stroke-dasharray="4 2"/>
   <text x="170" y="685" font-size="10" fill="#9ca3af" text-anchor="middle">Reserved</text>
   <text x="170" y="699" font-size="8" fill="#b0b8c4" text-anchor="middle">Future storage</text>
 
-  <!-- U6-5: store01 TrueNAS Mini-R (2U) -->
+  <!-- U6-5: fairy-store01 TrueNAS Mini-R (2U) -->
   <rect x="42" y="717" width="256" height="50" rx="3" fill="#059669"/>
-  <text x="170" y="736" font-size="11" fill="white" text-anchor="middle">store01</text>
+  <text x="170" y="736" font-size="11" fill="white" text-anchor="middle">fairy-store01</text>
   <text x="170" y="750" font-size="8" fill="rgba(255,255,255,0.75)" text-anchor="middle">TrueNAS Mini-R</text>
 
-  <!-- U4-3: nvr01 UNVR Pro (2U) -->
+  <!-- U4-3: fairy-nvr01 UNVR Pro (2U) -->
   <rect x="42" y="769" width="256" height="50" rx="3" fill="#64748b"/>
-  <text x="170" y="788" font-size="11" fill="white" text-anchor="middle">nvr01</text>
+  <text x="170" y="788" font-size="11" fill="white" text-anchor="middle">fairy-nvr01</text>
   <text x="170" y="802" font-size="8" fill="rgba(255,255,255,0.75)" text-anchor="middle">UNVR Pro</text>
 
-  <!-- U2-1: r02-ups01 (2U) -->
+  <!-- U2-1: fairy-r02-ups01 (2U) -->
   <rect x="42" y="821" width="256" height="50" rx="3" fill="#b45309"/>
-  <text x="170" y="840" font-size="11" fill="white" text-anchor="middle">r02-ups01</text>
+  <text x="170" y="840" font-size="11" fill="white" text-anchor="middle">fairy-r02-ups01</text>
   <text x="170" y="854" font-size="8" fill="rgba(255,255,255,0.75)" text-anchor="middle">UPS</text>
 
   <!-- ============================================================ -->
   <!-- REAR VIEW                                                     -->
   <!-- ============================================================ -->
 
-  <!-- U32: r02-tor01 Netgear XS724EMv2 (1U) -->
+  <!-- U32: fairy-r02-tor01 Netgear XS724EMv2 (1U) -->
   <rect x="352" y="41" width="256" height="24" rx="3" fill="#d97706"/>
-  <text x="480" y="53" font-size="10" fill="white" text-anchor="middle">r02-tor01 (XS724EMv2)</text>
+  <text x="480" y="53" font-size="10" fill="white" text-anchor="middle">fairy-r02-tor01 (XS724EMv2)</text>
 
-  <!-- U31: r02-msw01 Cisco C1300-24T-4G (1U) -->
+  <!-- U31: fairy-r02-msw01 Cisco C1300-24T-4G (1U) -->
   <rect x="352" y="67" width="256" height="24" rx="3" fill="#d97706"/>
-  <text x="480" y="79" font-size="10" fill="white" text-anchor="middle">r02-msw01 (C1300-24T-4G)</text>
+  <text x="480" y="79" font-size="10" fill="white" text-anchor="middle">fairy-r02-msw01 (C1300-24T-4G)</text>
 
   <!-- U30-27: Empty (4U) -->
 
@@ -165,45 +165,45 @@
   <rect x="352" y="301" width="256" height="50" rx="3" fill="#94a3b8"/>
   <text x="480" y="326" font-size="10" fill="white" text-anchor="middle">AC Infinity Exhaust</text>
 
-  <!-- U20-19: r02-cn06 rear (2U) -->
+  <!-- U20-19: fairy-r02-cn06 rear (2U) -->
   <rect x="352" y="353" width="256" height="50" rx="3" fill="#3b82f6"/>
-  <text x="480" y="378" font-size="11" fill="white" text-anchor="middle">r02-cn06</text>
+  <text x="480" y="378" font-size="11" fill="white" text-anchor="middle">fairy-r02-cn06</text>
 
-  <!-- U18-17: r02-cn05 rear (2U) -->
+  <!-- U18-17: fairy-r02-cn05 rear (2U) -->
   <rect x="352" y="405" width="256" height="50" rx="3" fill="#3b82f6"/>
-  <text x="480" y="430" font-size="11" fill="white" text-anchor="middle">r02-cn05</text>
+  <text x="480" y="430" font-size="11" fill="white" text-anchor="middle">fairy-r02-cn05</text>
 
-  <!-- U16-15: r02-cn04 rear (2U) -->
+  <!-- U16-15: fairy-r02-cn04 rear (2U) -->
   <rect x="352" y="457" width="256" height="50" rx="3" fill="#3b82f6"/>
-  <text x="480" y="482" font-size="11" fill="white" text-anchor="middle">r02-cn04</text>
+  <text x="480" y="482" font-size="11" fill="white" text-anchor="middle">fairy-r02-cn04</text>
 
-  <!-- U14-13: r02-cn03 rear (2U) -->
+  <!-- U14-13: fairy-r02-cn03 rear (2U) -->
   <rect x="352" y="509" width="256" height="50" rx="3" fill="#3b82f6"/>
-  <text x="480" y="534" font-size="11" fill="white" text-anchor="middle">r02-cn03</text>
+  <text x="480" y="534" font-size="11" fill="white" text-anchor="middle">fairy-r02-cn03</text>
 
-  <!-- U12-11: r02-cn02 rear (2U) -->
+  <!-- U12-11: fairy-r02-cn02 rear (2U) -->
   <rect x="352" y="561" width="256" height="50" rx="3" fill="#3b82f6"/>
-  <text x="480" y="586" font-size="11" fill="white" text-anchor="middle">r02-cn02</text>
+  <text x="480" y="586" font-size="11" fill="white" text-anchor="middle">fairy-r02-cn02</text>
 
-  <!-- U10-9: r02-cn01 rear (2U) -->
+  <!-- U10-9: fairy-r02-cn01 rear (2U) -->
   <rect x="352" y="613" width="256" height="50" rx="3" fill="#3b82f6"/>
-  <text x="480" y="638" font-size="11" fill="white" text-anchor="middle">r02-cn01</text>
+  <text x="480" y="638" font-size="11" fill="white" text-anchor="middle">fairy-r02-cn01</text>
 
   <!-- U8-7: Empty (2U) -->
 
-  <!-- U6-5: store01 rear (2U) -->
+  <!-- U6-5: fairy-store01 rear (2U) -->
   <rect x="352" y="717" width="256" height="50" rx="3" fill="#059669"/>
-  <text x="480" y="736" font-size="11" fill="white" text-anchor="middle">store01</text>
+  <text x="480" y="736" font-size="11" fill="white" text-anchor="middle">fairy-store01</text>
   <text x="480" y="750" font-size="8" fill="rgba(255,255,255,0.75)" text-anchor="middle">TrueNAS Mini-R</text>
 
-  <!-- U4-3: nvr01 rear (2U) -->
+  <!-- U4-3: fairy-nvr01 rear (2U) -->
   <rect x="352" y="769" width="256" height="50" rx="3" fill="#64748b"/>
-  <text x="480" y="788" font-size="11" fill="white" text-anchor="middle">nvr01</text>
+  <text x="480" y="788" font-size="11" fill="white" text-anchor="middle">fairy-nvr01</text>
   <text x="480" y="802" font-size="8" fill="rgba(255,255,255,0.75)" text-anchor="middle">UNVR Pro</text>
 
-  <!-- U2-1: r02-ups01 rear (2U) -->
+  <!-- U2-1: fairy-r02-ups01 rear (2U) -->
   <rect x="352" y="821" width="256" height="50" rx="3" fill="#b45309"/>
-  <text x="480" y="840" font-size="11" fill="white" text-anchor="middle">r02-ups01</text>
+  <text x="480" y="840" font-size="11" fill="white" text-anchor="middle">fairy-r02-ups01</text>
   <text x="480" y="854" font-size="8" fill="rgba(255,255,255,0.75)" text-anchor="middle">UPS</text>
 
   <!-- ============================================================ -->
@@ -218,21 +218,21 @@
   <text x="341" y="34" font-size="7" fill="#9ca3af" text-anchor="middle">0U</text>
   <text x="619" y="34" font-size="7" fill="#9ca3af" text-anchor="middle">0U</text>
 
-  <!-- r02-pdu03: left side, ~U29-U20 -->
+  <!-- fairy-r02-pdu03: left side, ~U29-U20 -->
   <rect x="334" y="119" width="14" height="258" rx="2" fill="#b45309"/>
-  <text x="341" y="248" font-size="8" fill="white" text-anchor="middle" transform="rotate(-90, 343, 248)">r02-pdu03</text>
+  <text x="341" y="248" font-size="8" fill="white" text-anchor="middle" transform="rotate(-90, 343, 248)">fairy-r02-pdu03</text>
 
-  <!-- r02-pdu04: right side, ~U29-U20 -->
+  <!-- fairy-r02-pdu04: right side, ~U29-U20 -->
   <rect x="612" y="119" width="14" height="258" rx="2" fill="#b45309"/>
-  <text x="619" y="248" font-size="8" fill="white" text-anchor="middle" transform="rotate(-90, 621, 248)">r02-pdu04</text>
+  <text x="619" y="248" font-size="8" fill="white" text-anchor="middle" transform="rotate(-90, 621, 248)">fairy-r02-pdu04</text>
 
-  <!-- r02-pdu01: left side, ~U16-U7 -->
+  <!-- fairy-r02-pdu01: left side, ~U16-U7 -->
   <rect x="334" y="457" width="14" height="258" rx="2" fill="#b45309"/>
-  <text x="341" y="586" font-size="8" fill="white" text-anchor="middle" transform="rotate(-90, 343, 586)">r02-pdu01</text>
+  <text x="341" y="586" font-size="8" fill="white" text-anchor="middle" transform="rotate(-90, 343, 586)">fairy-r02-pdu01</text>
 
-  <!-- r02-pdu02: right side, ~U16-U7 -->
+  <!-- fairy-r02-pdu02: right side, ~U16-U7 -->
   <rect x="612" y="457" width="14" height="258" rx="2" fill="#b45309"/>
-  <text x="619" y="586" font-size="8" fill="white" text-anchor="middle" transform="rotate(-90, 621, 586)">r02-pdu02</text>
+  <text x="619" y="586" font-size="8" fill="white" text-anchor="middle" transform="rotate(-90, 621, 586)">fairy-r02-pdu02</text>
 
   <!-- ============================================================ -->
   <!-- LEGEND                                                        -->

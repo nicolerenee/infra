@@ -47,29 +47,29 @@
   <rect x="202" y="41" width="256" height="50" rx="3" fill="#d97706"/>
   <text x="330" y="66" font-size="11" fill="white" text-anchor="middle">Patch Panel</text>
 
-  <!-- U7: mdf-vsw01 USW-Pro-Max-16-PoE (1U) -->
+  <!-- U7: fairy-mdf-vsw01 USW-Pro-Max-16-PoE (1U) -->
   <rect x="202" y="93" width="256" height="24" rx="3" fill="#d97706"/>
-  <text x="330" y="105" font-size="10" fill="white" text-anchor="middle">mdf-vsw01 (C1300-8FP-2G)</text>
+  <text x="330" y="105" font-size="10" fill="white" text-anchor="middle">fairy-mdf-vsw01 (C1300-8FP-2G)</text>
 
-  <!-- U6: mdf-asw01 USW-Pro-Max-24-PoE (1U) -->
+  <!-- U6: fairy-mdf-asw01 USW-Pro-Max-24-PoE (1U) -->
   <rect x="202" y="119" width="256" height="24" rx="3" fill="#d97706"/>
-  <text x="330" y="131" font-size="10" fill="white" text-anchor="middle">mdf-asw01 (C1300X-24NGU-4X)</text>
+  <text x="330" y="131" font-size="10" fill="white" text-anchor="middle">fairy-mdf-asw01 (C1300X-24NGU-4X)</text>
 
   <!-- U5: Blank panel (1U) -->
   <rect x="202" y="145" width="256" height="24" rx="3" fill="#f3f4f6"/>
   <text x="330" y="157" font-size="10" fill="#9ca3af" text-anchor="middle">Blank Panel</text>
 
-  <!-- U4: gw01 Firewalla Gold Pro (1U) -->
+  <!-- U4: fairy-gw01 Firewalla Gold Pro (1U) -->
   <rect x="202" y="171" width="256" height="24" rx="3" fill="#d97706"/>
-  <text x="330" y="183" font-size="10" fill="white" text-anchor="middle">gw01 (Firewalla Gold Pro)</text>
+  <text x="330" y="183" font-size="10" fill="white" text-anchor="middle">fairy-gw01 (Firewalla Gold Pro)</text>
 
   <!-- U3: Future cable modem (1U) -->
   <rect x="202" y="197" width="256" height="24" rx="3" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1" stroke-dasharray="4 2"/>
   <text x="330" y="209" font-size="10" fill="#9ca3af" text-anchor="middle">Future: cable modem</text>
 
-  <!-- U2: mdf-pdu01 (1U) -->
+  <!-- U2: fairy-mdf-pdu01 (1U) -->
   <rect x="202" y="223" width="256" height="24" rx="3" fill="#b45309"/>
-  <text x="330" y="235" font-size="10" fill="white" text-anchor="middle">mdf-pdu01</text>
+  <text x="330" y="235" font-size="10" fill="white" text-anchor="middle">fairy-mdf-pdu01</text>
 
   <!-- U1: Open for cable routing (1U) -->
   <rect x="202" y="249" width="256" height="24" rx="3" fill="#f3f4f6"/>

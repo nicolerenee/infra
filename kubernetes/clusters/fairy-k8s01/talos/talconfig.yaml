@@ -15,12 +15,14 @@ cniConfig:
   name: none
 
 nodes:
-  - hostname: cn01
-    ipAddress: 192.168.227.30
+  - hostname: fairy-r02-cn01
+    ipAddress: 192.168.227.16
     controlPlane: true
-    installDisk: /dev/sda
+    installDiskSelector:
+      model: "Samsung SSD 990 PRO*"
     nodeLabels:
       infra.freckle.systems/gpu: i915
+      topology.kubernetes.io/rack: r02
     machineSpec: &cn01-machineSpec
       mode: metal
       arch: amd64
@@ -49,12 +51,14 @@ nodes:
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
 
-  - hostname: cn02
-    ipAddress: 192.168.227.31
+  - hostname: fairy-r02-cn02
+    ipAddress: 192.168.227.17
     controlPlane: false
-    installDisk: /dev/sda
+    installDiskSelector:
+      model: "Samsung SSD 990 PRO*"
     nodeLabels:
       infra.freckle.systems/gpu: i915
+      topology.kubernetes.io/rack: r02
     machineSpec: *cn01-machineSpec
     schematic: *cn01-schematic
     extensionServices:
@@ -63,12 +67,14 @@ nodes:
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
 
-  - hostname: cn03
-    ipAddress: 192.168.227.32
+  - hostname: fairy-r02-cn03
+    ipAddress: 192.168.227.18
     controlPlane: false
-    installDisk: /dev/sda
+    installDiskSelector:
+      model: "Samsung SSD 990 PRO*"
     nodeLabels:
       infra.freckle.systems/gpu: i915
+      topology.kubernetes.io/rack: r02
     machineSpec: *cn01-machineSpec
     schematic: *cn01-schematic
     extensionServices:
@@ -77,12 +83,13 @@ nodes:
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
 
-  - hostname: dgx01
-    ipAddress: 192.168.227.33
+  - hostname: fairy-r02-dgx01
+    ipAddress: 192.168.227.19
     controlPlane: false
     installDisk: /dev/nvme0n1
     nodeLabels:
       infra.freckle.systems/gpu: nvidia
+      topology.kubernetes.io/rack: r02
     nodeTaints:
       nvidia.com/gpu: ":NoSchedule"
     machineSpec: &dgx01-machineSpec
@@ -134,12 +141,13 @@ nodes:
       - ./patches/nvidia-runtime.yaml
       - ./patches/watchdog.yaml
 
-  - hostname: dgx02
-    ipAddress: 192.168.227.34
+  - hostname: fairy-r02-dgx02
+    ipAddress: 192.168.227.20
     controlPlane: false
     installDisk: /dev/nvme0n1
     nodeLabels:
       infra.freckle.systems/gpu: nvidia
+      topology.kubernetes.io/rack: r02
     nodeTaints:
       nvidia.com/gpu: ":NoSchedule"
     machineSpec: *dgx01-machineSpec
@@ -156,12 +164,13 @@ nodes:
       - ./patches/nvidia-runtime.yaml
       - ./patches/watchdog.yaml
 
-  - hostname: dgx03
-    ipAddress: 192.168.227.35
+  - hostname: fairy-r02-dgx03
+    ipAddress: 192.168.227.21
     controlPlane: false
     installDisk: /dev/nvme0n1
     nodeLabels:
       infra.freckle.systems/gpu: nvidia
+      topology.kubernetes.io/rack: r02
     nodeTaints:
       nvidia.com/gpu: ":NoSchedule"
     machineSpec: *dgx01-machineSpec
@@ -176,76 +185,6 @@ nodes:
       - <<: *dgx01-hs-interface-4
     patches:
       - ./patches/nvidia-runtime.yaml
-      - ./patches/watchdog.yaml
-
-  # Original nodes, to be removed once migrated to new hardware
-
-  - hostname: fairy-compute01
-    ipAddress: 10.189.2.67
-    controlPlane: true
-    installDisk: /dev/sda
-
-    machineSpec: *cn01-machineSpec
-    schematic: *cn01-schematic
-    extensionServices:
-      - <<: *cn01-lldp-extension
-
-    networkInterfaces:
-      - &compute01-nic0
-        interface: enp1s0f0np0
-        addresses:
-          - 10.189.2.67/31
-          - fd2b:ec92:e230:20::67/112
-        routes:
-          - network: 0.0.0.0/0
-            gateway: 10.189.2.66
-          - network: ::/0
-            gateway: fe80::def
-        dhcp: false
-        mtu: 1500
-    patches:
-      - ./patches/watchdog.yaml
-
-  - hostname: fairy-compute02
-    ipAddress: 10.189.2.69
-    controlPlane: true
-    installDisk: /dev/sda
-    networkInterfaces:
-      - <<: *compute01-nic0
-        addresses:
-          - 10.189.2.69/31
-          - fd2b:ec92:e230:20::69/112
-        routes:
-          - network: 0.0.0.0/0
-            gateway: 10.189.2.68
-          - network: ::/0
-            gateway: fe80::def
-    machineSpec: *cn01-machineSpec
-    schematic: *cn01-schematic
-    extensionServices:
-      - <<: *cn01-lldp-extension
-    patches:
-      - ./patches/watchdog.yaml
-
-  - hostname: fairy-compute03
-    ipAddress: 10.189.2.71
-    controlPlane: true
-    installDisk: /dev/sda
-    networkInterfaces:
-      - <<: *compute01-nic0
-        addresses:
-          - 10.189.2.71/31
-          - fd2b:ec92:e230:20::71/112
-        routes:
-          - network: 0.0.0.0/0
-            gateway: 10.189.2.70
-          - network: ::/0
-            gateway: fe80::def
-    machineSpec: *cn01-machineSpec
-    schematic: *cn01-schematic
-    extensionServices:
-      - <<: *cn01-lldp-extension
-    patches:
       - ./patches/watchdog.yaml
 
 controlPlane:
