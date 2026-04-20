@@ -1,0 +1,18 @@
+# markdownlint configuration
+# https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.yaml
+
+# MD013 - Line length
+# Disabled for docs — tables, links, and front matter regularly exceed 80 chars
+# and wrapping them hurts readability.
+MD013: false
+
+# MD024 - Multiple headings with the same content
+# Allow duplicate headings in different sections (e.g., "Hardware" under
+# both MDF and r02 on a site page).
+MD024:
+  siblings_only: true
+
+# MD060 - Table column style
+# Disable — enforcing compact vs padded vs aligned style across all tables
+# is not worth the churn.
+MD060: false

@@ -10,7 +10,7 @@ purpose and physical location from its hostname alone.
 
 ## General Format
 
-```
+```text
 {location}-{role}{##}
 ```
 
@@ -63,7 +63,7 @@ Kubernetes clusters follow `{site}-k8s{##}`:
 Out-of-band management interfaces append `-bmc` and optionally a site
 suffix:
 
-```
+```text
 {nodename}-bmc.{site}
 ```
 
