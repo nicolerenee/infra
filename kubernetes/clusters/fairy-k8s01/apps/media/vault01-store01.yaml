@@ -13,7 +13,7 @@ spec:
     namespace: media
   nfs:
     path: /mnt/vault01/media
-    server: 10.189.2.65
+    server: 192.168.227.224
     readOnly: false
 
 ---
