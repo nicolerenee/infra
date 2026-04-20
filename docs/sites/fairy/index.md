@@ -121,7 +121,7 @@ allocations and IP addressing.
   diagram and IP addressing
 - [AT&T 802.1X Bypass](../../guides/att-802.1x-bypass.md) — wpa_supplicant
   on Firewalla Gold Pro
-- [Firmware Upgrades](../../guides/firmware-upgrades.md) — DGX Spark firmware
+- [Firmware Upgrades](../../runbooks/firmware-upgrades.md) — DGX Spark firmware
   updates via fwupd on Talos
 - [Freckle Compute Nodes](../../compute/freckle-compute-nodes.md) — Gen 3.0 and
   3.1 build specs, BOM, and design decisions

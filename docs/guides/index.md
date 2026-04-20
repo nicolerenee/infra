@@ -1,12 +1,10 @@
 ---
-description: Step-by-step guides for infrastructure procedures
+description: One-time setup guides for infrastructure components
 ---
 
 # Guides
 
-Procedural how-to docs for tasks that come up periodically.
+One-time setup procedures and configuration walkthroughs.
 
-- [Firmware Upgrades](firmware-upgrades.md) — DGX Spark firmware updates
-  via fwupd on Talos Linux
 - [AT&T 802.1X Bypass](att-802.1x-bypass.md) — wpa_supplicant on Firewalla
   Gold Pro

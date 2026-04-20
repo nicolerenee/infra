@@ -24,6 +24,7 @@ SECTION_ORDER = [
     "Compute",
     "Networking",
     "Storage",
+    "Runbooks",
     "Guides",
     "Reference",
 ]
@@ -33,6 +34,7 @@ DIR_TO_SECTION = {
     "compute": "Compute",
     "networking": "Networking",
     "storage": "Storage",
+    "runbooks": "Runbooks",
     "guides": "Guides",
 }
 

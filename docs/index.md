@@ -17,10 +17,13 @@ docs you're reading now.
 - [Fairy](sites/fairy/index.md) — primary homelab site with compute rack,
   GPU nodes, and home network infrastructure
 
+## Runbooks
+
+- [Firmware Upgrades](runbooks/firmware-upgrades.md) — DGX Spark firmware
+  updates via fwupd on Talos Linux
+
 ## Guides
 
-- [Firmware Upgrades](guides/firmware-upgrades.md) — DGX Spark firmware
-  updates via fwupd on Talos Linux
 - [AT&T 802.1X Bypass](guides/att-802.1x-bypass.md) — wpa_supplicant on
   Firewalla Gold Pro
 
