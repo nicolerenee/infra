@@ -7,9 +7,22 @@ spec:
   config: |
     {
       "cniVersion": "0.3.1",
-      "name": "trusted",
-      "type": "macvlan",
-      "master": "eno3",
-      "mode": "bridge",
-      "ipam": {}
+      "name": "multus-trusted",
+      "plugins": [
+        {
+          "type": "macvlan",
+          "master": "eno3",
+          "mode": "bridge",
+          "ipam": {
+            "type": "static"
+          }
+        },
+        {
+          "type": "tuning",
+          "capabilities": { "mac": true },
+          "sysctl": {
+            "net.ipv6.conf.IFNAME.accept_ra_rt_info_max_plen": "64"
+          }
+        }
+      ]
     }
