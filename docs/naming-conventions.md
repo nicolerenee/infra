@@ -88,8 +88,7 @@ Out-of-band management interfaces append `-mgmt` to the device name:
 Since the site is already encoded in the device name, no additional site
 suffix is needed.
 
-Example: `atlantis-r01-compute01-mgmt` for the BMC of
-atlantis-r01-compute01.
+Example: `fairy-r02-cn01-mgmt` for the BMC of fairy-r02-cn01.
 
 ## Examples
 
