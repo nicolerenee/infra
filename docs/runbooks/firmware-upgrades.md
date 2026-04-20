@@ -187,17 +187,3 @@ After reboot, redeploy the fwupd pod and check versions:
 task k8s:fwupd node=r02-dgx01
 kubectl exec -n kube-system fwupd-r02-dgx01 -- fwupdtool get-devices --json | jq '.Devices[] | {Name, Version}'
 ```
-
-## Alternative: Stock DGX OS
-
-If a node is still running stock NVIDIA DGX OS (Ubuntu 24.04), firmware updates are
-trivial — fwupd is pre-installed:
-
-```bash
-sudo fwupdmgr refresh
-sudo fwupdmgr get-updates
-sudo fwupdmgr update
-```
-
-This is the easiest path. If you need to do major firmware work, it may be worth
-temporarily reinstalling stock DGX OS, updating firmware, then re-imaging with Talos.
