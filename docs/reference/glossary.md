@@ -28,7 +28,7 @@ description: Glossary of acronyms and terms used throughout the infrastructure d
 | BMC | Baseboard Management Controller — out-of-band management processor on a server motherboard |
 | C2C | Chip-to-Chip — NVIDIA's direct interconnect between Grace CPU and Blackwell GPU on the DGX Spark |
 | DGX Spark | NVIDIA's compact ARM64 AI workstation with a GB10 (Grace Blackwell) SoC |
-| Freckle | Custom-built rackmount compute nodes designed for this homelab |
+| Freckle Node | Custom-built rackmount compute node designed for this homelab |
 | GSP | GPU System Processor — NVIDIA firmware that runs on the GPU for driver offloading |
 | IPMI | Intelligent Platform Management Interface — standard for out-of-band server management |
 | JetKVM | Compact IP KVM device for remote keyboard/video/mouse access |
