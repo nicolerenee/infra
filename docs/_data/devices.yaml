@@ -9,7 +9,7 @@
 #   name       (required)  canonical hostname
 #   site       (required)  site code (must exist in sites map)
 #   rack       (optional)  rack ID within the site (must exist in racks map as "site-rack")
-#   role       (required)  short human-readable role
+#   function   (required)  what the device does (human-readable)
 #   model      (required)  model name
 #   model_doc  (optional)  relative path from docs/reference/ to the model's doc page
 #   status     (optional)  active (default) | planned | decommissioned
@@ -32,126 +32,126 @@ devices:
   - name: fairy-gw01
     site: fairy
     rack: mdf
-    role: Gateway / router
+    function: Router / firewall
     model: Firewalla Gold Pro
 
   - name: fairy-mdf-asw01
     site: fairy
     rack: mdf
-    role: Access switch - home network
+    function: Home network switch
     model: Cisco C1300X-24NGU-4X
 
   - name: fairy-mdf-vsw01
     site: fairy
     rack: mdf
-    role: PoE / video switch - outdoor cameras
+    function: PoE switch - outdoor cameras
     model: Cisco C1300-8FP-2G
 
   - name: fairy-mdf-pdu01
     site: fairy
     rack: mdf
-    role: Power distribution unit
+    function: Power distribution unit
     model: CyberPower PDU81005
 
   # ── Fairy — WiFi ─────────────────────────────────────────────────
   - name: fairy-ap-foyer
     site: fairy
-    role: WiFi AP
+    function: WiFi AP
     model: Firewalla Access Point 7 - Ceiling
 
   - name: fairy-ap-backdoor
     site: fairy
-    role: WiFi AP
+    function: WiFi AP
     model: Firewalla Access Point 7 - Ceiling
 
   - name: fairy-ap-upstairs
     site: fairy
-    role: WiFi AP
+    function: WiFi AP
     model: Firewalla Access Point 7 - Ceiling
 
   # ── Fairy r02 — Networking ─────────────────────────────────────────
   - name: fairy-r02-tor01
     site: fairy
     rack: r02
-    role: Top-of-rack switch
+    function: Top-of-rack switch
     model: Netgear XS724EMv2
 
   - name: fairy-r02-fsw01
     site: fairy
     rack: r02
-    role: Fabric switch - GPU
+    function: GPU fabric switch
     model: MikroTik CRS804-4DDQ
 
   - name: fairy-r02-msw01
     site: fairy
     rack: r02
-    role: Management switch
+    function: Out-of-band management
     model: Cisco Catalyst C1300-24T-4G
 
   # ── Fairy r02 — Compute ───────────────────────────────────────────
   - name: fairy-r02-cn01
     site: fairy
     rack: r02
-    role: Compute node - control plane + worker
-    model: Freckle Gen 3.0
+    function: Control plane + worker
+    model: Freckle Node Gen 3.0
     model_doc: ../compute/freckle-compute-nodes.md
 
   - name: fairy-r02-cn02
     site: fairy
     rack: r02
-    role: Compute node - control plane + worker
-    model: Freckle Gen 3.0
+    function: Control plane + worker
+    model: Freckle Node Gen 3.0
     model_doc: ../compute/freckle-compute-nodes.md
 
   - name: fairy-r02-cn03
     site: fairy
     rack: r02
-    role: Compute node - control plane + worker
-    model: Freckle Gen 3.0
+    function: Control plane + worker
+    model: Freckle Node Gen 3.0
     model_doc: ../compute/freckle-compute-nodes.md
 
   - name: fairy-r02-cn04
     site: fairy
     rack: r02
-    role: Compute node - worker
-    model: Freckle Gen 3.1
+    function: Worker
+    model: Freckle Node Gen 3.1
     model_doc: ../compute/freckle-compute-nodes.md
     status: planned
 
   - name: fairy-r02-cn05
     site: fairy
     rack: r02
-    role: Compute node - worker
-    model: Freckle Gen 3.1
+    function: Worker
+    model: Freckle Node Gen 3.1
     model_doc: ../compute/freckle-compute-nodes.md
     status: planned
 
   - name: fairy-r02-cn06
     site: fairy
     rack: r02
-    role: Compute node - worker
-    model: Freckle Gen 3.1
+    function: Worker
+    model: Freckle Node Gen 3.1
     model_doc: ../compute/freckle-compute-nodes.md
     status: planned
 
   - name: fairy-r02-dgx01
     site: fairy
     rack: r02
-    role: DGX Spark GPU node - inference
+    function: GPU inference
     model: DGX Spark
     model_doc: ../compute/dgx-spark.md
 
   - name: fairy-r02-dgx02
     site: fairy
     rack: r02
-    role: DGX Spark GPU node - inference
+    function: GPU inference
     model: DGX Spark
     model_doc: ../compute/dgx-spark.md
 
   - name: fairy-r02-dgx03
     site: fairy
     rack: r02
-    role: DGX Spark GPU node - inference
+    function: GPU inference
     model: DGX Spark
     model_doc: ../compute/dgx-spark.md
 
@@ -159,26 +159,26 @@ devices:
   - name: fairy-r02-dgx01-mgmt
     site: fairy
     rack: r02
-    role: KVM (DGX Spark)
+    function: Management (KVM)
     model: JetKVM
 
   - name: fairy-r02-dgx02-mgmt
     site: fairy
     rack: r02
-    role: KVM (DGX Spark)
+    function: Management (KVM)
     model: JetKVM
 
   - name: fairy-r02-dgx03-mgmt
     site: fairy
     rack: r02
-    role: KVM (DGX Spark)
+    function: Management (KVM)
     model: JetKVM
 
   # ── Fairy r02 — Storage ────────────────────────────────────────────
   - name: fairy-store01
     site: fairy
     rack: r02
-    role: Storage appliance
+    function: Bulk media storage
     model: TrueNAS Mini-R
     model_doc: ../storage/truenas-mini-r.md
 
@@ -186,36 +186,36 @@ devices:
   - name: fairy-nvr01
     site: fairy
     rack: r02
-    role: Network video recorder
+    function: Network video recorder
     model: UNVR Pro
 
   # ── Fairy r02 — Power ──────────────────────────────────────────────
   - name: fairy-r02-ups01
     site: fairy
     rack: r02
-    role: Uninterruptible power supply
+    function: UPS
     model: CyberPower PR3000RTXL2UHVACN
 
   - name: fairy-r02-pdu01
     site: fairy
     rack: r02
-    role: Power distribution unit
+    function: Power distribution unit
     model: CyberPower PDU81005
 
   - name: fairy-r02-pdu02
     site: fairy
     rack: r02
-    role: Power distribution unit
+    function: Power distribution unit
     model: CyberPower PDU81005
 
   - name: fairy-r02-pdu03
     site: fairy
     rack: r02
-    role: Power distribution unit
+    function: Power distribution unit
     model: CyberPower PDU81005
 
   - name: fairy-r02-pdu04
     site: fairy
     rack: r02
-    role: Power distribution unit
+    function: Power distribution unit
     model: CyberPower PDU81005

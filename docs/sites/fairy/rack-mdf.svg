@@ -73,11 +73,11 @@
 
   <!-- U7: fairy-mdf-vsw01 USW-Pro-Max-16-PoE (1U) -->
   <rect x="202" y="93" width="256" height="24" rx="3" fill="#d97706"/>
-  <text x="330" y="105" font-size="10" fill="white" text-anchor="middle">fairy-mdf-vsw01 (C1300-8FP-2G)</text>
+  <text x="330" y="105" font-size="10" fill="white" text-anchor="middle">fairy-mdf-vsw01 <tspan font-size="8" fill="rgba(255,255,255,0.75)">(C1300-8FP-2G)</tspan></text>
 
   <!-- U6: fairy-mdf-asw01 USW-Pro-Max-24-PoE (1U) -->
   <rect x="202" y="119" width="256" height="24" rx="3" fill="#d97706"/>
-  <text x="330" y="131" font-size="10" fill="white" text-anchor="middle">fairy-mdf-asw01 (C1300X-24NGU-4X)</text>
+  <text x="330" y="131" font-size="10" fill="white" text-anchor="middle">fairy-mdf-asw01 <tspan font-size="8" fill="rgba(255,255,255,0.75)">(C1300X-24NGU-4X)</tspan></text>
 
   <!-- U5: Blank panel (1U) -->
   <rect x="202" y="145" width="256" height="24" rx="3" class="blank"/>
@@ -85,7 +85,7 @@
 
   <!-- U4: fairy-gw01 Firewalla Gold Pro (1U) -->
   <rect x="202" y="171" width="256" height="24" rx="3" fill="#d97706"/>
-  <text x="330" y="183" font-size="10" fill="white" text-anchor="middle">fairy-gw01 (Firewalla Gold Pro)</text>
+  <text x="330" y="183" font-size="10" fill="white" text-anchor="middle">fairy-gw01 <tspan font-size="8" fill="rgba(255,255,255,0.75)">(Firewalla Gold Pro)</tspan></text>
 
   <!-- U3: Future cable modem (1U) -->
   <rect x="202" y="197" width="256" height="24" rx="3" class="blank-stroke" stroke-width="1" stroke-dasharray="4 2"/>

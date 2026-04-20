@@ -25,29 +25,29 @@ for the full picture.
 The main distribution frame rack sits behind the server rack and houses the
 router, switches, and home network management.
 
-### Rack Layout
+### Rack Layout { #mdf-rack-layout }
 
 [Tecmojo 9U Wall Mount Rack](https://www.amazon.com/dp/B0CCJ9ZZKL) (white,
 glass front door).
 
 ![MDF rack diagram](rack-mdf.svg)
 
-### Hardware
+### Hardware { #mdf-hardware }
 
-#### Networking
+#### Networking { #mdf-networking }
 
-| Device | Model | Role |
-|--------|-------|------|
-| fairy-gw01 | Firewalla Gold Pro | Router/firewall, [AT&T 802.1X bypass](../../guides/att-802.1x-bypass.md) |
+| Device | Model | Function |
+|--------|-------|----------|
+| fairy-gw01 | Firewalla Gold Pro | Router / firewall, [AT&T 802.1X bypass](../../guides/att-802.1x-bypass.md) |
 | fairy-mdf-asw01 | Cisco C1300X-24NGU-4X | Home network switch |
-| fairy-mdf-vsw01 | Cisco C1300-8FP-2G | PoE switch for outdoor endpoints (surge isolation) |
-| WiFi APs (x3) | Firewalla AP7 | WiFi 7, ceiling-mount |
+| fairy-mdf-vsw01 | Cisco C1300-8FP-2G | PoE switch - outdoor cameras (surge isolation) |
+| WiFi APs (x3) | Firewalla Access Point 7 - Ceiling | WiFi AP |
 
 The outdoor PoE switch (fairy-mdf-vsw01) is intentionally separate from the home
 network to provide lightning/surge isolation for outdoor camera and AP cable
 runs. It connects back to fairy-mdf-asw01 via fiber to maintain electrical isolation.
 
-#### Power
+#### Power { #mdf-power }
 
 | Device | Model | Notes |
 |--------|-------|-------|
@@ -58,7 +58,7 @@ runs. It connects back to fairy-mdf-asw01 via fiber to maintain electrical isola
 The compute rack houses all Kubernetes nodes, storage, and the 10G/400G network
 fabric for the fairy-k8s01 cluster.
 
-### Rack Layout
+### Rack Layout { #r02-rack-layout }
 
 [StarTech 32U 4-Post Server Rack Cabinet](https://www.amazon.com/dp/B099986PZF)
 (RK3236BKF) with adjustable mounting depth and glass front / mesh rear doors.
@@ -69,12 +69,12 @@ The DGX Spark units are mounted in
 [Racknex UM-NVI-202](https://racknex.com/nvidia-dgx-spark-rack-mount-kit-um-nvi-202/)
 rack mount kits. Each tray holds two units and occupies ~1.33U.
 
-### Hardware
+### Hardware { #r02-hardware }
 
-#### Networking
+#### Networking { #r02-networking }
 
-| Device | Model | Role |
-|--------|-------|------|
+| Device | Model | Function |
+|--------|-------|----------|
 | fairy-r02-tor01 | Netgear XS724EMv2 | Top-of-rack switch (24x 10GBase-T, 4x 10G SFP+) |
 | fairy-r02-fsw01 | MikroTik CRS804-4DDQ | GPU fabric switch (4x 400G QSFP-DD) |
 | fairy-r02-msw01 | Cisco Catalyst C1300-24T-4G | Out-of-band management (IPMI, JetKVM, PDU, vPro) |
@@ -82,38 +82,38 @@ rack mount kits. Each tray holds two units and occupies ~1.33U.
 See [Fairy Network Topology](../../networking/fairy-network.md) for port
 allocations and IP addressing.
 
-#### Compute
+#### Compute { #r02-compute }
 
-| Device | IP | Role | Type |
-|--------|----|------|------|
-| fairy-r02-cn01 | 192.168.227.16 | Control plane + worker | [Freckle Gen 3.0](../../compute/freckle-compute-nodes.md#gen-30) |
-| fairy-r02-cn02 | 192.168.227.17 | Control plane + worker | [Freckle Gen 3.0](../../compute/freckle-compute-nodes.md#gen-30) |
-| fairy-r02-cn03 | 192.168.227.18 | Control plane + worker | [Freckle Gen 3.0](../../compute/freckle-compute-nodes.md#gen-30) |
-| fairy-r02-cn04 | TBD | Worker (planned) | [Freckle Gen 3.1](../../compute/freckle-compute-nodes.md#gen-31-changes) |
-| fairy-r02-cn05 | TBD | Worker (planned) | [Freckle Gen 3.1](../../compute/freckle-compute-nodes.md#gen-31-changes) |
-| fairy-r02-cn06 | TBD | Worker (planned) | [Freckle Gen 3.1](../../compute/freckle-compute-nodes.md#gen-31-changes) |
-| fairy-r02-dgx01 | 192.168.227.19 | Worker (Inference) | [DGX Spark](../../compute/dgx-spark.md) |
-| fairy-r02-dgx02 | 192.168.227.20 | Worker (Inference) | [DGX Spark](../../compute/dgx-spark.md) |
-| fairy-r02-dgx03 | 192.168.227.21 | Worker (Inference) | [DGX Spark](../../compute/dgx-spark.md) |
+| Device | IP | Function | Type |
+|--------|----|----------|------|
+| fairy-r02-cn01 | 192.168.227.16 | Control plane + worker | [Freckle Node Gen 3.0](../../compute/freckle-compute-nodes.md#gen-30) |
+| fairy-r02-cn02 | 192.168.227.17 | Control plane + worker | [Freckle Node Gen 3.0](../../compute/freckle-compute-nodes.md#gen-30) |
+| fairy-r02-cn03 | 192.168.227.18 | Control plane + worker | [Freckle Node Gen 3.0](../../compute/freckle-compute-nodes.md#gen-30) |
+| fairy-r02-cn04 | TBD | Worker (planned) | [Freckle Node Gen 3.1](../../compute/freckle-compute-nodes.md#gen-31-changes) |
+| fairy-r02-cn05 | TBD | Worker (planned) | [Freckle Node Gen 3.1](../../compute/freckle-compute-nodes.md#gen-31-changes) |
+| fairy-r02-cn06 | TBD | Worker (planned) | [Freckle Node Gen 3.1](../../compute/freckle-compute-nodes.md#gen-31-changes) |
+| fairy-r02-dgx01 | 192.168.227.19 | GPU inference | [DGX Spark](../../compute/dgx-spark.md) |
+| fairy-r02-dgx02 | 192.168.227.20 | GPU inference | [DGX Spark](../../compute/dgx-spark.md) |
+| fairy-r02-dgx03 | 192.168.227.21 | GPU inference | [DGX Spark](../../compute/dgx-spark.md) |
 
-#### Storage
+#### Storage { #r02-storage }
 
 | Device | Model | Notes |
 |--------|-------|-------|
 | fairy-store01 | [TrueNAS Mini-R](../../storage/truenas-mini-r.md) | 12x 26TB Exos, 2x 6-wide raidz2 |
 
-#### Appliances
+#### Appliances { #r02-appliances }
 
-| Device | Model | Role |
-|--------|-------|------|
-| fairy-nvr01 | UNVR Pro | UniFi Protect NVR (7x 3.5" bays, 10G SFP+) |
+| Device | Model | Function |
+|--------|-------|----------|
+| fairy-nvr01 | UNVR Pro | Network video recorder (7x 3.5" bays, 10G SFP+) |
 
-#### Power
+#### Power { #r02-power }
 
-| Device | Model | Role |
-|--------|-------|------|
+| Device | Model | Function |
+|--------|-------|----------|
 | fairy-r02-ups01 | CyberPower PR3000RTXL2UHVACN | UPS (2U) |
-| fairy-r02-pdu01–04 | CyberPower PDU81005 | 0U PDUs (mounted on rear side rails) |
+| fairy-r02-pdu01–04 | CyberPower PDU81005 | Power distribution unit (0U, rear side rails) |
 
 ## Related Pages
 

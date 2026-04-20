@@ -67,8 +67,8 @@ def build_table(data: dict) -> str:
         else:
             rack_cell = "\u2014"
 
-        # Role cell
-        role_cell = dev["role"]
+        # Function cell
+        function_cell = dev["function"]
 
         # Model cell — link to model doc if available
         model = dev["model"]
@@ -82,16 +82,16 @@ def build_table(data: dict) -> str:
         status = dev.get("status", "active")
 
         if show_status:
-            rows.append(f"| {name_cell} | {site_cell} | {rack_cell} | {role_cell} | {model_cell} | {status} |")
+            rows.append(f"| {name_cell} | {site_cell} | {rack_cell} | {function_cell} | {model_cell} | {status} |")
         else:
-            rows.append(f"| {name_cell} | {site_cell} | {rack_cell} | {role_cell} | {model_cell} |")
+            rows.append(f"| {name_cell} | {site_cell} | {rack_cell} | {function_cell} | {model_cell} |")
 
     # Header
     if show_status:
-        header = "| Name | Site | Rack | Role | Model | Status |"
+        header = "| Name | Site | Rack | Function | Model | Status |"
         separator = "|------|------|------|------|-------|--------|"
     else:
-        header = "| Name | Site | Rack | Role | Model |"
+        header = "| Name | Site | Rack | Function | Model |"
         separator = "|------|------|------|------|-------|"
 
     return "\n".join([header, separator] + rows)
