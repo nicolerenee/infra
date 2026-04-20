@@ -32,25 +32,25 @@ devices:
   - name: fairy-gw01
     site: fairy
     rack: mdf
-    role: Router / firewall
+    role: Gateway / router
     model: Firewalla Gold Pro
 
   - name: fairy-mdf-asw01
     site: fairy
     rack: mdf
-    role: Home network switch
+    role: Access switch - home network
     model: Cisco C1300X-24NGU-4X
 
   - name: fairy-mdf-vsw01
     site: fairy
     rack: mdf
-    role: PoE switch (outdoor endpoints)
+    role: PoE / video switch - outdoor cameras
     model: Cisco C1300-8FP-2G
 
   - name: fairy-mdf-pdu01
     site: fairy
     rack: mdf
-    role: PDU
+    role: Power distribution unit
     model: CyberPower PDU81005
 
   # ── Fairy — WiFi ─────────────────────────────────────────────────
@@ -79,7 +79,7 @@ devices:
   - name: fairy-r02-fsw01
     site: fairy
     rack: r02
-    role: GPU fabric switch
+    role: Fabric switch - GPU
     model: MikroTik CRS804-4DDQ
 
   - name: fairy-r02-msw01
@@ -92,28 +92,28 @@ devices:
   - name: fairy-r02-cn01
     site: fairy
     rack: r02
-    role: Control plane + worker
+    role: Compute node - control plane + worker
     model: Freckle Gen 3.0
     model_doc: ../compute/freckle-compute-nodes.md
 
   - name: fairy-r02-cn02
     site: fairy
     rack: r02
-    role: Control plane + worker
+    role: Compute node - control plane + worker
     model: Freckle Gen 3.0
     model_doc: ../compute/freckle-compute-nodes.md
 
   - name: fairy-r02-cn03
     site: fairy
     rack: r02
-    role: Control plane + worker
+    role: Compute node - control plane + worker
     model: Freckle Gen 3.0
     model_doc: ../compute/freckle-compute-nodes.md
 
   - name: fairy-r02-cn04
     site: fairy
     rack: r02
-    role: Worker
+    role: Compute node - worker
     model: Freckle Gen 3.1
     model_doc: ../compute/freckle-compute-nodes.md
     status: planned
@@ -121,7 +121,7 @@ devices:
   - name: fairy-r02-cn05
     site: fairy
     rack: r02
-    role: Worker
+    role: Compute node - worker
     model: Freckle Gen 3.1
     model_doc: ../compute/freckle-compute-nodes.md
     status: planned
@@ -129,7 +129,7 @@ devices:
   - name: fairy-r02-cn06
     site: fairy
     rack: r02
-    role: Worker
+    role: Compute node - worker
     model: Freckle Gen 3.1
     model_doc: ../compute/freckle-compute-nodes.md
     status: planned
@@ -137,21 +137,21 @@ devices:
   - name: fairy-r02-dgx01
     site: fairy
     rack: r02
-    role: Worker (Inference)
+    role: DGX Spark GPU node - inference
     model: DGX Spark
     model_doc: ../compute/dgx-spark.md
 
   - name: fairy-r02-dgx02
     site: fairy
     rack: r02
-    role: Worker (Inference)
+    role: DGX Spark GPU node - inference
     model: DGX Spark
     model_doc: ../compute/dgx-spark.md
 
   - name: fairy-r02-dgx03
     site: fairy
     rack: r02
-    role: Worker (Inference)
+    role: DGX Spark GPU node - inference
     model: DGX Spark
     model_doc: ../compute/dgx-spark.md
 
@@ -178,7 +178,7 @@ devices:
   - name: fairy-store01
     site: fairy
     rack: r02
-    role: NAS
+    role: Storage appliance
     model: TrueNAS Mini-R
     model_doc: ../storage/truenas-mini-r.md
 
@@ -186,36 +186,36 @@ devices:
   - name: fairy-nvr01
     site: fairy
     rack: r02
-    role: NVR
+    role: Network video recorder
     model: UNVR Pro
 
   # ── Fairy r02 — Power ──────────────────────────────────────────────
   - name: fairy-r02-ups01
     site: fairy
     rack: r02
-    role: UPS
+    role: Uninterruptible power supply
     model: CyberPower PR3000RTXL2UHVACN
 
   - name: fairy-r02-pdu01
     site: fairy
     rack: r02
-    role: PDU
+    role: Power distribution unit
     model: CyberPower PDU81005
 
   - name: fairy-r02-pdu02
     site: fairy
     rack: r02
-    role: PDU
+    role: Power distribution unit
     model: CyberPower PDU81005
 
   - name: fairy-r02-pdu03
     site: fairy
     rack: r02
-    role: PDU
+    role: Power distribution unit
     model: CyberPower PDU81005
 
   - name: fairy-r02-pdu04
     site: fairy
     rack: r02
-    role: PDU
+    role: Power distribution unit
     model: CyberPower PDU81005
