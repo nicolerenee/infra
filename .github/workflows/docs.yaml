@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/docs.yaml
       - docs/**
+      - scripts/generate-llms-txt.py
       - zensical.toml
   workflow_dispatch:
 
@@ -28,6 +29,7 @@ jobs:
           python-version: 3.x
       - run: pip install zensical
       - run: zensical build --clean
+      - run: python scripts/generate-llms-txt.py
       - uses: actions/upload-pages-artifact@v4
         with:
           path: site
