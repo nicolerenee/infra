@@ -136,8 +136,13 @@ description: Flat reference table of every device across all sites
 
 # Device Inventory
 
-Every named device across all sites. See [Naming Conventions](naming-conventions.md)
-for how device names are structured.
+Every named device across all sites. This list covers physical assets — things
+with their own serial number, warranty, and asset tag. Embedded components like
+BMCs are not listed separately; they're implied by the presence of their host
+device. See [Naming Conventions](naming-conventions.md) for how device names are
+structured. The Function column describes what the device does in plain
+language — the role abbreviation (cn, dgx, tor, etc.) is already encoded in the
+device name.
 
 {table}
 

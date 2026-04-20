@@ -22,10 +22,19 @@ Site-level devices (not tied to a specific rack):
 {site}-{role}{##}
 ```
 
+Location-named devices (placed by physical position rather than rack):
+
+```text
+{site}-{role}-{location}
+```
+
 - **site** — short code identifying the physical site (see below)
 - **rack** — rack or infrastructure location within the site
 - **role** — abbreviated function (see table below)
 - **##** — two-digit instance number, zero-padded (01, 02, etc.)
+- **location** — short name for the device's physical position (e.g.,
+  `foyer`, `upstairs`). Used instead of a rack ID and instance number
+  for devices distributed around a site, like WiFi APs.
 
 Every device name starts with the site code. This avoids ambiguity when
 rack IDs like `r01` or `r02` exist at multiple sites.
@@ -54,6 +63,7 @@ at Atlantis. The site prefix in the device name disambiguates.
 
 | Abbreviation | Meaning | Example |
 |--------------|---------|---------|
+| `ap` | WiFi access point | fairy-ap-foyer |
 | `cn` | Compute node | fairy-r02-cn01 |
 | `dgx` | DGX Spark GPU node | fairy-r02-dgx01 |
 | `gw` | Gateway / router | fairy-gw01 |
@@ -104,6 +114,7 @@ for fairy-r02-dgx01 is `fairy-r02-dgx01-mgmt`.
 | `fairy-r02-dgx01` | Fairy, rack 02, DGX Spark node 1 |
 | `fairy-mdf-asw01` | Fairy, MDF, access switch 1 |
 | `fairy-r02-tor01` | Fairy, rack 02, top-of-rack switch 1 |
+| `fairy-ap-foyer` | Fairy, WiFi AP, foyer (location-named) |
 | `fairy-gw01` | Fairy, gateway 1 (site-level) |
 | `fairy-store01` | Fairy, storage appliance 1 (site-level) |
 | `fairy-k8s01` | Fairy, Kubernetes cluster 1 |
