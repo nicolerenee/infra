@@ -90,6 +90,12 @@ suffix is needed.
 
 Example: `fairy-r02-cn01-mgmt` for the BMC of fairy-r02-cn01.
 
+Not all devices have built-in BMC/IPMI. The DGX Spark nodes
+(fairy-r02-dgx01 through fairy-r02-dgx03) use a
+[JetKVM](https://jetkvm.com/) attached to each unit for out-of-band
+management. The `-mgmt` naming convention still applies — the JetKVM
+for fairy-r02-dgx01 is `fairy-r02-dgx01-mgmt`.
+
 ## Examples
 
 | Name | Reads as |
