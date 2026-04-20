@@ -13,10 +13,10 @@ capsule updates for the next reboot.
 
 ```bash
 # Deploy the fwupd pod on a specific node
-task k8s:fwupd node=fairy-dgx01
+task k8s:fwupd node=r02-dgx01
 
 # Exec into the pod
-kubectl exec -n kube-system -it fwupd-fairy-dgx01 -- bash
+kubectl exec -n kube-system -it fwupd-r02-dgx01 -- bash
 
 # Check for available updates
 fwupdtool get-updates
@@ -25,12 +25,12 @@ fwupdtool get-updates
 fwupdtool update --no-reboot-check
 
 # Clean up
-kubectl delete pod -n kube-system fwupd-fairy-dgx01
+kubectl delete pod -n kube-system fwupd-r02-dgx01
 ```
 
 The `task k8s:fwupd` command creates a privileged pod pinned to the specified node,
 waits for it to be ready (fwupd is installed at startup), and prints the exec
-command. The pod name is derived from the node name (e.g., `fwupd-fairy-dgx01`).
+command. The pod name is derived from the node name (e.g., `fwupd-r02-dgx01`).
 
 To update multiple nodes, clean up the pod and run the task again with a different
 node name. The pod uses `restartPolicy: Never` so it won't reschedule on its own.
@@ -184,8 +184,8 @@ kubectl uncordon <node-name>
 After reboot, redeploy the fwupd pod and check versions:
 
 ```bash
-task k8s:fwupd node=fairy-dgx01
-kubectl exec -n kube-system fwupd-fairy-dgx01 -- fwupdtool get-devices --json | jq '.Devices[] | {Name, Version}'
+task k8s:fwupd node=r02-dgx01
+kubectl exec -n kube-system fwupd-r02-dgx01 -- fwupdtool get-devices --json | jq '.Devices[] | {Name, Version}'
 ```
 
 ## Alternative: Stock DGX OS
