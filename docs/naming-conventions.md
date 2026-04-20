@@ -42,11 +42,13 @@ infrastructure.
 
 ## Rack / Location Identifiers
 
-| Identifier | Site | Meaning |
-|------------|------|---------|
-| `r01` | Atlantis | Server rack |
-| `r02` | Fairy | Compute rack (32U) |
-| `mdf` | Fairy | MDF rack (9U) |
+Rack IDs are scoped per-site — `r01` at Fairy is a different rack than `r01`
+at Atlantis. The site prefix in the device name disambiguates.
+
+| Identifier | Meaning |
+|------------|---------|
+| `r##` | Numbered server/compute rack |
+| `mdf` | Main distribution frame (network rack) |
 
 ## Role Abbreviations
 
