@@ -33,8 +33,13 @@ spec:
           path: /spec/values/controllers/esphome/pod/annotations/k8s.v1.cni.cncf.io~1networks
           value: |
             [{
-              "name":"multus-iot",
+              "name":"multus-trusted",
               "namespace": "networking",
-              "ips": ["192.168.227.43/24"],
+              "ips": ["192.168.227.49/24"],
               "mac": "ae:98:3e:1d:eb:99"
             }]
+
+        - op: add
+          path: /spec/values/controllers/esphome/pod/nodeSelector
+          value:
+            topology.kubernetes.io/rack: r02

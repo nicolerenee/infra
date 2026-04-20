@@ -31,7 +31,7 @@ spec:
       patch: |-
         - op: add
           path: /spec/values/controllers/scrypted/containers/app/env/SCRYPTED_ADMIN_ADDRESS
-          value: 192.168.227.44
+          value: 192.168.227.48
         - op: add
           path: /spec/values/controllers/scrypted/containers/app/env/SCRYPTED_NVR_VOLUME
           value: /nvr
@@ -40,11 +40,16 @@ spec:
           path: /spec/values/controllers/scrypted/pod/annotations/k8s.v1.cni.cncf.io~1networks
           value: |
             [{
-              "name":"multus-iot",
+              "name":"multus-trusted",
               "namespace": "networking",
-              "ips": ["192.168.227.44/24"],
+              "ips": ["192.168.227.48/24"],
               "mac": "ae:98:3e:33:af:6f"
             }]
+
+        - op: add
+          path: /spec/values/controllers/scrypted/pod/nodeSelector
+          value:
+            topology.kubernetes.io/rack: r02
 
         - op: add
           path: /spec/values/persistence/nvr-fast

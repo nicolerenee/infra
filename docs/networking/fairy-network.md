@@ -21,7 +21,15 @@ network runs on VLAN 900 with its own subnet.
 | Subnet | 192.168.227.0/24 |
 | Gateway | 192.168.227.1 |
 | Guest VLAN | 900 |
-| Compute nodes | 192.168.227.16–21 |
+
+Static allocations are carved out of the /24 by purpose:
+
+| Range | CIDR | Purpose |
+|-------|------|---------|
+| .16–.31 | 192.168.227.16/28 | fairy-k8s01 nodes |
+| .32–.39 | 192.168.227.32/29 | Storage nodes |
+| .48–.63 | 192.168.227.48/28 | Kubernetes Multus (L2 pod IPs) |
+| .128–.249 | — | DHCP pool |
 
 ### Pod and Service Networks
 
