@@ -9,7 +9,7 @@ Time Machine backups, and SMB shares.
 
 ## Hardware
 
-- **Form Factor**: 2U rackmount (U3–4 in r02)
+- **Form Factor**: 2U rackmount
 - **Drives**: 12x 26TB Seagate Exos
 - **Pool Layout**: 2x 6-wide raidz2 vdevs
 - **Usable Capacity**: ~208TB

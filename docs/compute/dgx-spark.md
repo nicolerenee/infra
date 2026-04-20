@@ -80,10 +80,9 @@ presenting as two OS interfaces per physical port.
 
 ### Physical Port 0 — GPU fabric via r02-fsw01
 
-Connected via a 400G to 2x200G DAC breakout cable to the
-[GPU fabric switch](../networking/fairy-network.md#gpu-fabric-switch)
-(MikroTik CRS804-4DDQ) for inter-node GPU communication (GPUDirect RDMA,
-tensor/pipeline parallelism).
+Connected via a 400G to 2x200G DAC breakout cable to the GPU fabric switch
+(MikroTik CRS804-4DDQ, r02-fsw01) for inter-node GPU communication
+(GPUDirect RDMA, tensor/pipeline parallelism).
 
 | Interface | MTU |
 |-----------|-----|

@@ -4,9 +4,21 @@ description: Overview of the fairy site — primary homelab with compute rack, G
 
 # Fairy Site
 
-The fairy site is the primary homelab location, housing a compute rack (r02)
-with mixed-architecture Kubernetes nodes, a 10G network fabric, Ceph distributed
-storage, and home network infrastructure.
+Fairy is the primary homelab site - with a 32U compute rack and a
+wall-mounted MDF rack. It runs a single Kubernetes cluster (fairy-k8s01) across
+custom-built AMD64 [Freckle compute nodes](../../compute/freckle-compute-nodes.md)
+and three [NVIDIA DGX Spark](../../compute/dgx-spark.md) ARM64 GPU nodes, all on
+Talos Linux. The compute nodes handle everything from home automation and media
+services to monitoring and storage controllers, while the DGX Sparks run LLM
+inference via vLLM. Storage is split between Ceph (distributed across the compute
+nodes' NVMe OSDs) for Kubernetes workloads and a
+[TrueNAS Mini-R](../../storage/truenas-store01.md) for bulk media.
+
+The network is flat on a single /24 with a
+Firewalla Gold Pro as the router, a 10G
+top-of-rack switch for all node traffic, and a 400G fabric switch for GPU-to-GPU
+communication. See [Fairy Network Topology](../../networking/fairy-network.md)
+for the full picture.
 
 ## MDF
 
@@ -26,9 +38,9 @@ glass front door).
 
 | Device | Model | Role |
 |--------|-------|------|
-| gw01 | Firewalla Gold Pro | Router/firewall, [AT&T 802.1X bypass](../../networking/att-802.1x-bypass.md) |
+| gw01 | Firewalla Gold Pro | Router/firewall, [AT&T 802.1X bypass](../../guides/att-802.1x-bypass.md) |
 | mdf-asw01 | Cisco C1300X-24NGU-4X | Home network switch |
-| mdf-vsw01 | Cisco C1300-8FP-2G | Outdoor PoE switch (surge isolation) |
+| mdf-vsw01 | Cisco C1300-8FP-2G | PoE switch for outdoor endpoints (surge isolation) |
 | WiFi APs (x3) | Firewalla AP7 | WiFi 7, ceiling-mount |
 
 The outdoor PoE switch (mdf-vsw01) is intentionally separate from the home
@@ -80,9 +92,9 @@ allocations and IP addressing.
 | r02-cn04 | TBD | Worker (planned) | [Freckle Gen 3.1](../../compute/freckle-compute-nodes.md#gen-31-changes) |
 | r02-cn05 | TBD | Worker (planned) | [Freckle Gen 3.1](../../compute/freckle-compute-nodes.md#gen-31-changes) |
 | r02-cn06 | TBD | Worker (planned) | [Freckle Gen 3.1](../../compute/freckle-compute-nodes.md#gen-31-changes) |
-| r02-dgx01 | 192.168.227.19 | Worker (GPU) | [DGX Spark](../../compute/dgx-spark.md) |
-| r02-dgx02 | 192.168.227.20 | Worker (GPU) | [DGX Spark](../../compute/dgx-spark.md) |
-| r02-dgx03 | 192.168.227.21 | Worker (GPU) | [DGX Spark](../../compute/dgx-spark.md) |
+| r02-dgx01 | 192.168.227.19 | Worker (Inference) | [DGX Spark](../../compute/dgx-spark.md) |
+| r02-dgx02 | 192.168.227.20 | Worker (Inference) | [DGX Spark](../../compute/dgx-spark.md) |
+| r02-dgx03 | 192.168.227.21 | Worker (Inference) | [DGX Spark](../../compute/dgx-spark.md) |
 
 #### Storage
 
@@ -107,8 +119,10 @@ allocations and IP addressing.
 
 - [Fairy Network Topology](../../networking/fairy-network.md) — topology
   diagram and IP addressing
-- [AT&T 802.1X Bypass](../../networking/att-802.1x-bypass.md) — wpa_supplicant
+- [AT&T 802.1X Bypass](../../guides/att-802.1x-bypass.md) — wpa_supplicant
   on Firewalla Gold Pro
+- [Firmware Upgrades](../../guides/firmware-upgrades.md) — DGX Spark firmware
+  updates via fwupd on Talos
 - [Freckle Compute Nodes](../../compute/freckle-compute-nodes.md) — Gen 3.0 and
   3.1 build specs, BOM, and design decisions
 - [DGX Spark](../../compute/dgx-spark.md) — NVIDIA driver selection, GPU
