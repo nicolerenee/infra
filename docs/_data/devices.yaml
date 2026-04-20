@@ -53,6 +53,22 @@ devices:
     role: PDU
     model: CyberPower PDU81005
 
+  # ── Fairy — WiFi ─────────────────────────────────────────────────
+  - name: fairy-ap-foyer
+    site: fairy
+    role: WiFi AP
+    model: Firewalla Access Point 7 - Ceiling
+
+  - name: fairy-ap-backdoor
+    site: fairy
+    role: WiFi AP
+    model: Firewalla Access Point 7 - Ceiling
+
+  - name: fairy-ap-upstairs
+    site: fairy
+    role: WiFi AP
+    model: Firewalla Access Point 7 - Ceiling
+
   # ── Fairy r02 — Networking ─────────────────────────────────────────
   - name: fairy-r02-tor01
     site: fairy
@@ -138,6 +154,25 @@ devices:
     role: Worker (Inference)
     model: DGX Spark
     model_doc: ../compute/dgx-spark.md
+
+  # ── Fairy r02 — Management ─────────────────────────────────────────
+  - name: fairy-r02-dgx01-mgmt
+    site: fairy
+    rack: r02
+    role: KVM (DGX Spark)
+    model: JetKVM
+
+  - name: fairy-r02-dgx02-mgmt
+    site: fairy
+    rack: r02
+    role: KVM (DGX Spark)
+    model: JetKVM
+
+  - name: fairy-r02-dgx03-mgmt
+    site: fairy
+    rack: r02
+    role: KVM (DGX Spark)
+    model: JetKVM
 
   # ── Fairy r02 — Storage ────────────────────────────────────────────
   - name: fairy-store01

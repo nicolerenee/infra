@@ -11,6 +11,9 @@ for how device names are structured.
 
 | Name | Site | Rack | Role | Model | Status |
 |------|------|------|------|-------|--------|
+| fairy-ap-backdoor | [Fairy](../sites/fairy/) | — | WiFi AP | Firewalla Access Point 7 - Ceiling | active |
+| fairy-ap-foyer | [Fairy](../sites/fairy/) | — | WiFi AP | Firewalla Access Point 7 - Ceiling | active |
+| fairy-ap-upstairs | [Fairy](../sites/fairy/) | — | WiFi AP | Firewalla Access Point 7 - Ceiling | active |
 | fairy-gw01 | [Fairy](../sites/fairy/) | [MDF](../sites/fairy/#mdf) | Router / firewall | Firewalla Gold Pro | active |
 | fairy-mdf-asw01 | [Fairy](../sites/fairy/) | [MDF](../sites/fairy/#mdf) | Home network switch | Cisco C1300X-24NGU-4X | active |
 | fairy-mdf-pdu01 | [Fairy](../sites/fairy/) | [MDF](../sites/fairy/#mdf) | PDU | CyberPower PDU81005 | active |
@@ -23,8 +26,11 @@ for how device names are structured.
 | fairy-r02-cn05 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Worker | [Freckle Gen 3.1](../compute/freckle-compute-nodes.md) | planned |
 | fairy-r02-cn06 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Worker | [Freckle Gen 3.1](../compute/freckle-compute-nodes.md) | planned |
 | fairy-r02-dgx01 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Worker (Inference) | [DGX Spark](../compute/dgx-spark.md) | active |
+| fairy-r02-dgx01-mgmt | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | KVM (DGX Spark) | JetKVM | active |
 | fairy-r02-dgx02 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Worker (Inference) | [DGX Spark](../compute/dgx-spark.md) | active |
+| fairy-r02-dgx02-mgmt | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | KVM (DGX Spark) | JetKVM | active |
 | fairy-r02-dgx03 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Worker (Inference) | [DGX Spark](../compute/dgx-spark.md) | active |
+| fairy-r02-dgx03-mgmt | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | KVM (DGX Spark) | JetKVM | active |
 | fairy-r02-fsw01 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | GPU fabric switch | MikroTik CRS804-4DDQ | active |
 | fairy-r02-msw01 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Management switch | Cisco Catalyst C1300-24T-4G | active |
 | fairy-r02-pdu01 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | PDU | CyberPower PDU81005 | active |
