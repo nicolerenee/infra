@@ -86,9 +86,9 @@ allocations and IP addressing.
 
 | Device | IP | Role | Type |
 |--------|----|------|------|
-| fairy-r02-cn01 | 192.168.227.16 | Control plane | [Freckle Gen 3.0](../../compute/freckle-compute-nodes.md#gen-30) |
-| fairy-r02-cn02 | 192.168.227.17 | Control plane | [Freckle Gen 3.0](../../compute/freckle-compute-nodes.md#gen-30) |
-| fairy-r02-cn03 | 192.168.227.18 | Control plane | [Freckle Gen 3.0](../../compute/freckle-compute-nodes.md#gen-30) |
+| fairy-r02-cn01 | 192.168.227.16 | Control plane + worker | [Freckle Gen 3.0](../../compute/freckle-compute-nodes.md#gen-30) |
+| fairy-r02-cn02 | 192.168.227.17 | Control plane + worker | [Freckle Gen 3.0](../../compute/freckle-compute-nodes.md#gen-30) |
+| fairy-r02-cn03 | 192.168.227.18 | Control plane + worker | [Freckle Gen 3.0](../../compute/freckle-compute-nodes.md#gen-30) |
 | fairy-r02-cn04 | TBD | Worker (planned) | [Freckle Gen 3.1](../../compute/freckle-compute-nodes.md#gen-31-changes) |
 | fairy-r02-cn05 | TBD | Worker (planned) | [Freckle Gen 3.1](../../compute/freckle-compute-nodes.md#gen-31-changes) |
 | fairy-r02-cn06 | TBD | Worker (planned) | [Freckle Gen 3.1](../../compute/freckle-compute-nodes.md#gen-31-changes) |

@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/docs.yaml
       - docs/**
+      - scripts/generate-inventory.py
       - scripts/generate-llms-txt.py
       - zensical.toml
   workflow_dispatch:
@@ -27,7 +28,8 @@ jobs:
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
         with:
           python-version: 3.x
-      - run: pip install zensical
+      - run: pip install pyyaml zensical
+      - run: python scripts/generate-inventory.py
       - run: zensical build --clean
       - run: python scripts/generate-llms-txt.py
       - uses: actions/upload-pages-artifact@v4

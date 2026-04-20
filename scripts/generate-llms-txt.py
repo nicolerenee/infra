@@ -36,6 +36,7 @@ DIR_TO_SECTION = {
     "storage": "Storage",
     "runbooks": "Runbooks",
     "guides": "Guides",
+    "reference": "Reference",
 }
 
 

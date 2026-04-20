@@ -29,6 +29,7 @@ docs you're reading now.
 
 ## Reference
 
-- [Naming Conventions](naming-conventions.md) — device and cluster naming
+- [Device Inventory](reference/inventory.md) — every device across all sites
+- [Naming Conventions](reference/naming-conventions.md) — device and cluster naming
   scheme
-- [Glossary](glossary.md) — acronyms and terms used in these docs
+- [Glossary](reference/glossary.md) — acronyms and terms used in these docs
