@@ -36,7 +36,7 @@ mounting support — in Gen 3.0 the drives are just loose inside the chassis.
 | Chassis | Sliger CX2151a 2U | Single PCIe riser (double-width), SFX PSU |
 | Fans | 4x Arctic P8 Max 80mm | Chassis fans |
 | Rails | iStarUSA TC-RAIL-20 | 20" sliding rail kit |
-| Cooler | Thermalright AXP90-X53 | Low-profile for 2U clearance |
+| Cooler | Thermalright AXP90-X53 Full (copper) | Low-profile for 2U clearance, 145W TDP rating |
 | PSU | Corsair SF750 SFX | 750W |
 
 #### Key Design Points
