@@ -12,7 +12,7 @@ Talos Linux. The compute nodes handle everything from home automation and media
 services to monitoring and storage controllers, while the DGX Sparks run LLM
 inference via vLLM. Storage is split between Ceph (distributed across the compute
 nodes' NVMe OSDs) for Kubernetes workloads and a
-[TrueNAS Mini-R](../../storage/truenas-store01.md) for bulk media.
+[TrueNAS Mini-R](../../storage/truenas-mini-r.md) for bulk media.
 
 The network is flat on a single /24 with a
 Firewalla Gold Pro as the router, a 10G
@@ -100,7 +100,7 @@ allocations and IP addressing.
 
 | Device | Model | Notes |
 |--------|-------|-------|
-| fairy-store01 | [TrueNAS Mini-R](../../storage/truenas-store01.md) | 12x 26TB Exos, 2x 6-wide raidz2 |
+| fairy-store01 | [TrueNAS Mini-R](../../storage/truenas-mini-r.md) | 12x 26TB Exos, 2x 6-wide raidz2 |
 
 #### Appliances
 
