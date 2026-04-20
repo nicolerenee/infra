@@ -15,23 +15,47 @@
   Rack is centered: offset +160px from a 340px layout.
 -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 340" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">
+  <style>
+    .bg { fill: white; }
+    .title { fill: #1f2937; }
+    .rack-outline { stroke: #d1d5db; fill: url(#ugrid); }
+    .grid-line { stroke: #e5e7eb; }
+    .u-label { fill: #9ca3af; }
+    .blank { fill: #f3f4f6; }
+    .blank-stroke { fill: #f3f4f6; stroke: #d1d5db; }
+    .blank-text { fill: #9ca3af; }
+    .legend-swatch-blank { fill: #f3f4f6; stroke: #d1d5db; }
+    .legend-text { fill: #6b7280; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #1e1e2e; }
+      .title { fill: #cdd6f4; }
+      .rack-outline { stroke: #585b70; }
+      .grid-line { stroke: #45475a; }
+      .u-label { fill: #a6adc8; }
+      .blank { fill: #313244; }
+      .blank-stroke { fill: #313244; stroke: #585b70; }
+      .blank-text { fill: #a6adc8; }
+      .legend-swatch-blank { fill: #313244; stroke: #585b70; }
+      .legend-text { fill: #a6adc8; }
+    }
+  </style>
   <defs>
     <pattern id="ugrid" x="0" y="40" width="10" height="26" patternUnits="userSpaceOnUse">
-      <line x1="0" y1="0" x2="10" y2="0" stroke="#e5e7eb" stroke-width="0.5"/>
+      <line x1="0" y1="0" x2="10" y2="0" class="grid-line" stroke-width="0.5"/>
     </pattern>
   </defs>
 
   <!-- Background -->
-  <rect width="660" height="340" fill="white" rx="4"/>
+  <rect width="660" height="340" class="bg" rx="4"/>
 
   <!-- Title -->
-  <text x="330" y="25" font-size="15" font-weight="600" fill="#1f2937" text-anchor="middle">MDF Rack</text>
+  <text x="330" y="25" font-size="15" font-weight="600" class="title" text-anchor="middle">MDF Rack</text>
 
   <!-- Rack outline with U grid -->
-  <rect x="200" y="40" width="260" height="234" fill="url(#ugrid)" stroke="#d1d5db" stroke-width="1.5" rx="2"/>
+  <rect x="200" y="40" width="260" height="234" class="rack-outline" stroke-width="1.5" rx="2"/>
 
   <!-- U Labels -->
-  <g font-size="9" fill="#9ca3af" text-anchor="end">
+  <g font-size="9" class="u-label" text-anchor="end">
     <text x="196" y="53">9</text>
     <text x="196" y="79">8</text>
     <text x="196" y="105">7</text>
@@ -56,34 +80,34 @@
   <text x="330" y="131" font-size="10" fill="white" text-anchor="middle">fairy-mdf-asw01 (C1300X-24NGU-4X)</text>
 
   <!-- U5: Blank panel (1U) -->
-  <rect x="202" y="145" width="256" height="24" rx="3" fill="#f3f4f6"/>
-  <text x="330" y="157" font-size="10" fill="#9ca3af" text-anchor="middle">Blank Panel</text>
+  <rect x="202" y="145" width="256" height="24" rx="3" class="blank"/>
+  <text x="330" y="157" font-size="10" class="blank-text" text-anchor="middle">Blank Panel</text>
 
   <!-- U4: fairy-gw01 Firewalla Gold Pro (1U) -->
   <rect x="202" y="171" width="256" height="24" rx="3" fill="#d97706"/>
   <text x="330" y="183" font-size="10" fill="white" text-anchor="middle">fairy-gw01 (Firewalla Gold Pro)</text>
 
   <!-- U3: Future cable modem (1U) -->
-  <rect x="202" y="197" width="256" height="24" rx="3" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1" stroke-dasharray="4 2"/>
-  <text x="330" y="209" font-size="10" fill="#9ca3af" text-anchor="middle">Future: cable modem</text>
+  <rect x="202" y="197" width="256" height="24" rx="3" class="blank-stroke" stroke-width="1" stroke-dasharray="4 2"/>
+  <text x="330" y="209" font-size="10" class="blank-text" text-anchor="middle">Future: cable modem</text>
 
   <!-- U2: fairy-mdf-pdu01 (1U) -->
   <rect x="202" y="223" width="256" height="24" rx="3" fill="#b45309"/>
   <text x="330" y="235" font-size="10" fill="white" text-anchor="middle">fairy-mdf-pdu01</text>
 
   <!-- U1: Open for cable routing (1U) -->
-  <rect x="202" y="249" width="256" height="24" rx="3" fill="#f3f4f6"/>
-  <text x="330" y="261" font-size="10" fill="#9ca3af" text-anchor="middle">Cable routing</text>
+  <rect x="202" y="249" width="256" height="24" rx="3" class="blank"/>
+  <text x="330" y="261" font-size="10" class="blank-text" text-anchor="middle">Cable routing</text>
 
   <!-- Legend -->
   <g transform="translate(200, 295)">
     <rect x="0" y="0" width="12" height="12" rx="2" fill="#d97706"/>
-    <text x="16" y="10" font-size="9" fill="#6b7280">Network</text>
+    <text x="16" y="10" font-size="9" class="legend-text">Network</text>
 
     <rect x="90" y="0" width="12" height="12" rx="2" fill="#b45309"/>
-    <text x="106" y="10" font-size="9" fill="#6b7280">Power</text>
+    <text x="106" y="10" font-size="9" class="legend-text">Power</text>
 
-    <rect x="170" y="0" width="12" height="12" rx="2" fill="#f3f4f6" stroke="#d1d5db" stroke-width="0.5"/>
-    <text x="186" y="10" font-size="9" fill="#6b7280">Blanking / Reserved</text>
+    <rect x="170" y="0" width="12" height="12" rx="2" class="legend-swatch-blank" stroke-width="0.5"/>
+    <text x="186" y="10" font-size="9" class="legend-text">Blanking / Reserved</text>
   </g>
 </svg>

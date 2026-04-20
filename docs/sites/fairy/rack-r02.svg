@@ -14,25 +14,59 @@
   To add/move a device, calculate y(U) and update the rect + text positions.
 -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 930" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">
+  <style>
+    .bg { fill: white; }
+    .title { fill: #1f2937; }
+    .rack-outline { stroke: #d1d5db; fill: url(#ugrid); }
+    .grid-line { stroke: #e5e7eb; }
+    .u-label { fill: #9ca3af; }
+    .blank { fill: #f3f4f6; }
+    .blank-stroke { fill: #f3f4f6; stroke: #d1d5db; }
+    .blank-text { fill: #9ca3af; }
+    .blank-subtext { fill: #b0b8c4; }
+    .passthrough { fill: #e2e8f0; }
+    .passthrough-text { fill: #64748b; }
+    .side-rail { stroke: #d1d5db; }
+    .side-rail-label { fill: #9ca3af; }
+    .legend-swatch-blank { fill: #f3f4f6; stroke: #d1d5db; }
+    .legend-text { fill: #6b7280; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #1e1e2e; }
+      .title { fill: #cdd6f4; }
+      .rack-outline { stroke: #585b70; }
+      .grid-line { stroke: #45475a; }
+      .u-label { fill: #a6adc8; }
+      .blank { fill: #313244; }
+      .blank-stroke { fill: #313244; stroke: #585b70; }
+      .blank-text { fill: #a6adc8; }
+      .blank-subtext { fill: #7f849c; }
+      .passthrough { fill: #45475a; }
+      .passthrough-text { fill: #a6adc8; }
+      .side-rail { stroke: #585b70; }
+      .side-rail-label { fill: #a6adc8; }
+      .legend-swatch-blank { fill: #313244; stroke: #585b70; }
+      .legend-text { fill: #a6adc8; }
+    }
+  </style>
   <defs>
     <pattern id="ugrid" x="0" y="40" width="10" height="26" patternUnits="userSpaceOnUse">
-      <line x1="0" y1="0" x2="10" y2="0" stroke="#e5e7eb" stroke-width="0.5"/>
+      <line x1="0" y1="0" x2="10" y2="0" class="grid-line" stroke-width="0.5"/>
     </pattern>
   </defs>
 
   <!-- Background -->
-  <rect width="660" height="930" fill="white" rx="4"/>
+  <rect width="660" height="930" class="bg" rx="4"/>
 
   <!-- Titles -->
-  <text x="170" y="25" font-size="15" font-weight="600" fill="#1f2937" text-anchor="middle">Front</text>
-  <text x="480" y="25" font-size="15" font-weight="600" fill="#1f2937" text-anchor="middle">Rear</text>
+  <text x="170" y="25" font-size="15" font-weight="600" class="title" text-anchor="middle">Front</text>
+  <text x="480" y="25" font-size="15" font-weight="600" class="title" text-anchor="middle">Rear</text>
 
   <!-- Rack outlines with U grid -->
-  <rect x="40" y="40" width="260" height="832" fill="url(#ugrid)" stroke="#d1d5db" stroke-width="1.5" rx="2"/>
-  <rect x="350" y="40" width="260" height="832" fill="url(#ugrid)" stroke="#d1d5db" stroke-width="1.5" rx="2"/>
+  <rect x="40" y="40" width="260" height="832" class="rack-outline" stroke-width="1.5" rx="2"/>
+  <rect x="350" y="40" width="260" height="832" class="rack-outline" stroke-width="1.5" rx="2"/>
 
   <!-- U Labels -->
-  <g font-size="9" fill="#9ca3af" text-anchor="end">
+  <g font-size="9" class="u-label" text-anchor="end">
     <text x="36" y="53">32</text>
     <text x="36" y="79">31</text>
     <text x="36" y="105">30</text>
@@ -72,13 +106,13 @@
   <!-- ============================================================ -->
 
   <!-- U32-28: Blanking Panels (5U) -->
-  <rect x="42" y="41" width="256" height="128" rx="3" fill="#f3f4f6"/>
-  <text x="170" y="105" font-size="10" fill="#9ca3af" text-anchor="middle">Blanking Panels</text>
+  <rect x="42" y="41" width="256" height="128" rx="3" class="blank"/>
+  <text x="170" y="105" font-size="10" class="blank-text" text-anchor="middle">Blanking Panels</text>
 
   <!-- U27-25: Future dgx05-08 (3U) -->
-  <rect x="42" y="171" width="256" height="76" rx="3" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1" stroke-dasharray="4 2"/>
-  <text x="170" y="203" font-size="10" fill="#9ca3af" text-anchor="middle">Future: fairy-r02-dgx05–08</text>
-  <text x="170" y="217" font-size="8" fill="#b0b8c4" text-anchor="middle">Blanking Panels</text>
+  <rect x="42" y="171" width="256" height="76" rx="3" class="blank-stroke" stroke-width="1" stroke-dasharray="4 2"/>
+  <text x="170" y="203" font-size="10" class="blank-text" text-anchor="middle">Future: fairy-r02-dgx05–08</text>
+  <text x="170" y="217" font-size="8" class="blank-subtext" text-anchor="middle">Blanking Panels</text>
 
   <!-- U24: fairy-r02-fsw01 CRS804-4DDQ (1U) -->
   <rect x="42" y="249" width="256" height="24" rx="3" fill="#7c3aed"/>
@@ -88,8 +122,8 @@
        dgx01/02 tray:  all of U21 + bottom 1/3 of U22
        dgx03/blank:    top 2/3 of U22 + bottom 2/3 of U23
        cable passthrough: top 1/3 of U23 -->
-  <rect x="42" y="275" width="256" height="8" rx="2" fill="#e2e8f0"/>
-  <text x="170" y="280" font-size="6" fill="#64748b" text-anchor="middle">passthrough</text>
+  <rect x="42" y="275" width="256" height="8" rx="2" class="passthrough"/>
+  <text x="170" y="280" font-size="6" class="passthrough-text" text-anchor="middle">passthrough</text>
 
   <rect x="42" y="284" width="256" height="32" rx="3" fill="#a78bfa"/>
   <text x="170" y="300" font-size="10" fill="white" text-anchor="middle">fairy-r02-dgx03 / blank tray</text>
@@ -122,9 +156,9 @@
   <text x="170" y="638" font-size="11" fill="white" text-anchor="middle">fairy-r02-cn01</text>
 
   <!-- U8-7: Reserved for future storage (2U) -->
-  <rect x="42" y="665" width="256" height="50" rx="3" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1" stroke-dasharray="4 2"/>
-  <text x="170" y="685" font-size="10" fill="#9ca3af" text-anchor="middle">Reserved</text>
-  <text x="170" y="699" font-size="8" fill="#b0b8c4" text-anchor="middle">Future storage</text>
+  <rect x="42" y="665" width="256" height="50" rx="3" class="blank-stroke" stroke-width="1" stroke-dasharray="4 2"/>
+  <text x="170" y="685" font-size="10" class="blank-text" text-anchor="middle">Reserved</text>
+  <text x="170" y="699" font-size="8" class="blank-subtext" text-anchor="middle">Future storage</text>
 
   <!-- U6-5: fairy-store01 TrueNAS Mini-R (2U) -->
   <rect x="42" y="717" width="256" height="50" rx="3" fill="#059669"/>
@@ -211,12 +245,12 @@
   <!-- ============================================================ -->
 
   <!-- Side rail outlines -->
-  <rect x="333" y="40" width="16" height="832" fill="none" stroke="#d1d5db" stroke-width="1" rx="2"/>
-  <rect x="611" y="40" width="16" height="832" fill="none" stroke="#d1d5db" stroke-width="1" rx="2"/>
+  <rect x="333" y="40" width="16" height="832" fill="none" class="side-rail" stroke-width="1" rx="2"/>
+  <rect x="611" y="40" width="16" height="832" fill="none" class="side-rail" stroke-width="1" rx="2"/>
 
   <!-- Side rail labels -->
-  <text x="341" y="34" font-size="7" fill="#9ca3af" text-anchor="middle">0U</text>
-  <text x="619" y="34" font-size="7" fill="#9ca3af" text-anchor="middle">0U</text>
+  <text x="341" y="34" font-size="7" class="side-rail-label" text-anchor="middle">0U</text>
+  <text x="619" y="34" font-size="7" class="side-rail-label" text-anchor="middle">0U</text>
 
   <!-- fairy-r02-pdu03: left side, ~U29-U20 -->
   <rect x="334" y="119" width="14" height="258" rx="2" fill="#b45309"/>
@@ -239,24 +273,24 @@
   <!-- ============================================================ -->
   <g transform="translate(40, 888)">
     <rect x="0" y="0" width="12" height="12" rx="2" fill="#3b82f6"/>
-    <text x="16" y="10" font-size="9" fill="#6b7280">Compute</text>
+    <text x="16" y="10" font-size="9" class="legend-text">Compute</text>
 
     <rect x="80" y="0" width="12" height="12" rx="2" fill="#7c3aed"/>
-    <text x="96" y="10" font-size="9" fill="#6b7280">GPU</text>
+    <text x="96" y="10" font-size="9" class="legend-text">GPU</text>
 
     <rect x="135" y="0" width="12" height="12" rx="2" fill="#059669"/>
-    <text x="151" y="10" font-size="9" fill="#6b7280">Storage</text>
+    <text x="151" y="10" font-size="9" class="legend-text">Storage</text>
 
     <rect x="210" y="0" width="12" height="12" rx="2" fill="#d97706"/>
-    <text x="226" y="10" font-size="9" fill="#6b7280">Network</text>
+    <text x="226" y="10" font-size="9" class="legend-text">Network</text>
 
     <rect x="290" y="0" width="12" height="12" rx="2" fill="#64748b"/>
-    <text x="306" y="10" font-size="9" fill="#6b7280">Appliance</text>
+    <text x="306" y="10" font-size="9" class="legend-text">Appliance</text>
 
     <rect x="400" y="0" width="12" height="12" rx="2" fill="#b45309"/>
-    <text x="416" y="10" font-size="9" fill="#6b7280">Power</text>
+    <text x="416" y="10" font-size="9" class="legend-text">Power</text>
 
-    <rect x="480" y="0" width="12" height="12" rx="2" fill="#f3f4f6" stroke="#d1d5db" stroke-width="0.5"/>
-    <text x="496" y="10" font-size="9" fill="#6b7280">Blanking / Reserved</text>
+    <rect x="480" y="0" width="12" height="12" rx="2" class="legend-swatch-blank" stroke-width="0.5"/>
+    <text x="496" y="10" font-size="9" class="legend-text">Blanking / Reserved</text>
   </g>
 </svg>

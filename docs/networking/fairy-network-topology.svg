@@ -5,17 +5,39 @@
   Matches 660px width of rack diagrams for consistent rendering.
 -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 510" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">
+  <style>
+    .bg { fill: white; }
+    .internet { fill: #f3f4f6; stroke: #d1d5db; }
+    .internet-text { fill: #6b7280; }
+    .conn { stroke: #9ca3af; }
+    .conn-label { fill: #9ca3af; }
+    .planned-fill { fill: #3b82f6; fill-opacity: 0.4; stroke: #3b82f6; }
+    .planned-text { fill: #3b82f6; }
+    .planned-subtext { fill: #93c5fd; }
+    .legend-text { fill: #6b7280; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #1e1e2e; }
+      .internet { fill: #313244; stroke: #585b70; }
+      .internet-text { fill: #a6adc8; }
+      .conn { stroke: #7f849c; }
+      .conn-label { fill: #7f849c; }
+      .planned-fill { fill: #3b82f6; fill-opacity: 0.2; stroke: #3b82f6; }
+      .planned-text { fill: #89b4fa; }
+      .planned-subtext { fill: #89b4fa; }
+      .legend-text { fill: #a6adc8; }
+    }
+  </style>
 
   <!-- Background -->
-  <rect width="660" height="510" fill="white" rx="4"/>
+  <rect width="660" height="510" class="bg" rx="4"/>
 
   <!-- ============================================================ -->
   <!-- DEVICES                                                       -->
   <!-- ============================================================ -->
 
   <!-- Internet -->
-  <rect x="248" y="30" width="114" height="26" rx="13" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
-  <text x="305" y="48" font-size="11" fill="#6b7280" text-anchor="middle">Internet</text>
+  <rect x="248" y="30" width="114" height="26" rx="13" class="internet" stroke-width="1"/>
+  <text x="305" y="48" font-size="11" class="internet-text" text-anchor="middle">Internet</text>
 
   <!-- fairy-gw01 -->
   <rect x="220" y="86" width="170" height="32" rx="5" fill="#d97706"/>
@@ -41,9 +63,9 @@
   <rect x="530" y="148" width="120" height="26" rx="4" fill="#3b82f6"/>
   <text x="590" y="165" font-size="10" fill="white" text-anchor="middle">fairy-r02-cn01–03</text>
 
-  <rect x="530" y="178" width="120" height="26" rx="4" fill="#3b82f6" fill-opacity="0.4" stroke="#3b82f6" stroke-width="1" stroke-dasharray="4 2"/>
-  <text x="590" y="193" font-size="10" fill="#3b82f6" text-anchor="middle">fairy-r02-cn04–06</text>
-  <text x="590" y="202" font-size="7" fill="#93c5fd" text-anchor="middle">planned</text>
+  <rect x="530" y="178" width="120" height="26" rx="4" class="planned-fill" stroke-width="1" stroke-dasharray="4 2"/>
+  <text x="590" y="193" font-size="10" class="planned-text" text-anchor="middle">fairy-r02-cn04–06</text>
+  <text x="590" y="202" font-size="7" class="planned-subtext" text-anchor="middle">planned</text>
 
   <rect x="530" y="208" width="120" height="26" rx="4" fill="#7c3aed"/>
   <text x="590" y="225" font-size="10" fill="white" text-anchor="middle">fairy-r02-dgx01–03</text>
@@ -81,69 +103,69 @@
   <!-- ============================================================ -->
 
   <!-- Internet → fairy-gw01 -->
-  <line x1="305" y1="56" x2="305" y2="86" stroke="#9ca3af" stroke-width="1.5"/>
+  <line x1="305" y1="56" x2="305" y2="86" class="conn" stroke-width="1.5"/>
 
   <!-- fairy-gw01 → fairy-mdf-asw01 -->
-  <line x1="255" y1="118" x2="120" y2="175" stroke="#9ca3af" stroke-width="1.5"/>
+  <line x1="255" y1="118" x2="120" y2="175" class="conn" stroke-width="1.5"/>
 
   <!-- fairy-gw01 → fairy-r02-tor01 -->
-  <line x1="355" y1="118" x2="380" y2="175" stroke="#9ca3af" stroke-width="1.5"/>
-  <text x="375" y="144" font-size="8" fill="#9ca3af">10G</text>
+  <line x1="355" y1="118" x2="380" y2="175" class="conn" stroke-width="1.5"/>
+  <text x="375" y="144" font-size="8" class="conn-label">10G</text>
 
   <!-- fairy-mdf-asw01 → fairy-mdf-vsw01 (fiber — dashed line) -->
-  <line x1="77" y1="207" x2="77" y2="265" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="5 3"/>
-  <text x="88" y="240" font-size="8" fill="#9ca3af">fiber</text>
+  <line x1="77" y1="207" x2="77" y2="265" class="conn" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="88" y="240" font-size="8" class="conn-label">fiber</text>
 
   <!-- fairy-mdf-asw01 → WiFi APs -->
-  <line x1="168" y1="207" x2="217" y2="265" stroke="#9ca3af" stroke-width="1.5"/>
+  <line x1="168" y1="207" x2="217" y2="265" class="conn" stroke-width="1.5"/>
 
   <!-- fairy-r02-tor01 → device bus -->
-  <line x1="470" y1="191" x2="505" y2="191" stroke="#9ca3af" stroke-width="1.5"/>
-  <line x1="505" y1="161" x2="505" y2="281" stroke="#9ca3af" stroke-width="1.5"/>
-  <line x1="505" y1="161" x2="530" y2="161" stroke="#9ca3af" stroke-width="1.5"/>
-  <line x1="505" y1="191" x2="530" y2="191" stroke="#9ca3af" stroke-width="1.5"/>
-  <line x1="505" y1="221" x2="530" y2="221" stroke="#9ca3af" stroke-width="1.5"/>
-  <line x1="505" y1="251" x2="530" y2="251" stroke="#9ca3af" stroke-width="1.5"/>
-  <line x1="505" y1="281" x2="530" y2="281" stroke="#9ca3af" stroke-width="1.5"/>
-  <text x="497" y="228" font-size="8" fill="#9ca3af" text-anchor="end">10G</text>
+  <line x1="470" y1="191" x2="505" y2="191" class="conn" stroke-width="1.5"/>
+  <line x1="505" y1="161" x2="505" y2="281" class="conn" stroke-width="1.5"/>
+  <line x1="505" y1="161" x2="530" y2="161" class="conn" stroke-width="1.5"/>
+  <line x1="505" y1="191" x2="530" y2="191" class="conn" stroke-width="1.5"/>
+  <line x1="505" y1="221" x2="530" y2="221" class="conn" stroke-width="1.5"/>
+  <line x1="505" y1="251" x2="530" y2="251" class="conn" stroke-width="1.5"/>
+  <line x1="505" y1="281" x2="530" y2="281" class="conn" stroke-width="1.5"/>
+  <text x="497" y="228" font-size="8" class="conn-label" text-anchor="end">10G</text>
 
   <!-- fairy-r02-fsw01 → dgx01–03 -->
-  <line x1="470" y1="346" x2="530" y2="346" stroke="#9ca3af" stroke-width="1.5"/>
-  <text x="500" y="340" font-size="8" fill="#9ca3af" text-anchor="middle">400G</text>
+  <line x1="470" y1="346" x2="530" y2="346" class="conn" stroke-width="1.5"/>
+  <text x="500" y="340" font-size="8" class="conn-label" text-anchor="middle">400G</text>
 
   <!-- fairy-r02-msw01 uplink to fairy-r02-tor01 -->
-  <line x1="290" y1="406" x2="282" y2="406" stroke="#9ca3af" stroke-width="1.5"/>
-  <line x1="282" y1="406" x2="282" y2="200" stroke="#9ca3af" stroke-width="1.5"/>
-  <line x1="282" y1="200" x2="290" y2="200" stroke="#9ca3af" stroke-width="1.5"/>
-  <text x="278" y="310" font-size="8" fill="#9ca3af" text-anchor="end">1G</text>
+  <line x1="290" y1="406" x2="282" y2="406" class="conn" stroke-width="1.5"/>
+  <line x1="282" y1="406" x2="282" y2="200" class="conn" stroke-width="1.5"/>
+  <line x1="282" y1="200" x2="290" y2="200" class="conn" stroke-width="1.5"/>
+  <text x="278" y="310" font-size="8" class="conn-label" text-anchor="end">1G</text>
 
   <!-- fairy-r02-msw01 → device bus -->
-  <line x1="470" y1="406" x2="505" y2="406" stroke="#9ca3af" stroke-width="1.5"/>
-  <line x1="505" y1="390" x2="505" y2="450" stroke="#9ca3af" stroke-width="1.5"/>
-  <line x1="505" y1="390" x2="530" y2="390" stroke="#9ca3af" stroke-width="1.5"/>
-  <line x1="505" y1="420" x2="530" y2="420" stroke="#9ca3af" stroke-width="1.5"/>
-  <line x1="505" y1="450" x2="530" y2="450" stroke="#9ca3af" stroke-width="1.5"/>
+  <line x1="470" y1="406" x2="505" y2="406" class="conn" stroke-width="1.5"/>
+  <line x1="505" y1="390" x2="505" y2="450" class="conn" stroke-width="1.5"/>
+  <line x1="505" y1="390" x2="530" y2="390" class="conn" stroke-width="1.5"/>
+  <line x1="505" y1="420" x2="530" y2="420" class="conn" stroke-width="1.5"/>
+  <line x1="505" y1="450" x2="530" y2="450" class="conn" stroke-width="1.5"/>
 
   <!-- ============================================================ -->
   <!-- LEGEND                                                        -->
   <!-- ============================================================ -->
   <g transform="translate(40, 485)">
     <rect x="0" y="0" width="12" height="12" rx="2" fill="#d97706"/>
-    <text x="16" y="10" font-size="9" fill="#6b7280">Network</text>
+    <text x="16" y="10" font-size="9" class="legend-text">Network</text>
 
     <rect x="80" y="0" width="12" height="12" rx="2" fill="#3b82f6"/>
-    <text x="96" y="10" font-size="9" fill="#6b7280">Compute</text>
+    <text x="96" y="10" font-size="9" class="legend-text">Compute</text>
 
     <rect x="170" y="0" width="12" height="12" rx="2" fill="#7c3aed"/>
-    <text x="186" y="10" font-size="9" fill="#6b7280">GPU</text>
+    <text x="186" y="10" font-size="9" class="legend-text">GPU</text>
 
     <rect x="225" y="0" width="12" height="12" rx="2" fill="#059669"/>
-    <text x="241" y="10" font-size="9" fill="#6b7280">Storage</text>
+    <text x="241" y="10" font-size="9" class="legend-text">Storage</text>
 
     <rect x="300" y="0" width="12" height="12" rx="2" fill="#64748b"/>
-    <text x="316" y="10" font-size="9" fill="#6b7280">Appliance</text>
+    <text x="316" y="10" font-size="9" class="legend-text">Appliance</text>
 
     <rect x="400" y="0" width="12" height="12" rx="2" fill="#b45309"/>
-    <text x="416" y="10" font-size="9" fill="#6b7280">Power</text>
+    <text x="416" y="10" font-size="9" class="legend-text">Power</text>
   </g>
 </svg>
