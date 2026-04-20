@@ -1,10 +1,10 @@
 ---
-description: Freckle Compute Nodes — custom-built compute nodes purpose-built for homelab Kubernetes clusters
+description: Freckle Node — custom-built compute node purpose-built for homelab Kubernetes clusters
 ---
 
-# Freckle Compute Nodes
+# Freckle Node
 
-The Freckle Compute Nodes are custom-built rackmount compute nodes purpose-built
+The Freckle Node is a custom-built rackmount compute node purpose-built
 for running Kubernetes workloads across homelab clusters. Each generation is
 designed around specific workload requirements, with minor revisions within a
 generation for chassis or thermal changes.

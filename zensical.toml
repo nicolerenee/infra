@@ -53,7 +53,7 @@ nav = [
   { "Compute" = [
     { "Compute" = "compute/index.md" },
     { "DGX Spark" = "compute/dgx-spark.md" },
-    { "Freckle Compute Nodes" = "compute/freckle-compute-nodes.md" },
+    { "Freckle Node" = "compute/freckle-node.md" },
   ]},
   { "Networking" = [
     { "Networking" = "networking/index.md" },

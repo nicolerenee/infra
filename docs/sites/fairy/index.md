@@ -6,7 +6,7 @@ description: Overview of the fairy site — primary homelab with compute rack, G
 
 Fairy is the primary homelab site, with a 32U compute rack and a
 wall-mounted MDF rack. It runs a single Kubernetes cluster (fairy-k8s01) across
-custom-built AMD64 [Freckle compute nodes](../../compute/freckle-compute-nodes.md)
+custom-built AMD64 [Freckle Node](../../compute/freckle-node.md) compute nodes
 and three [NVIDIA DGX Spark](../../compute/dgx-spark.md) ARM64 GPU nodes, all on
 Talos Linux. The compute nodes handle everything from home automation and media
 services to monitoring and storage controllers, while the DGX Sparks run LLM
@@ -86,12 +86,12 @@ allocations and IP addressing.
 
 | Device | IP | Function | Type |
 |--------|----|----------|------|
-| fairy-r02-cn01 | 192.168.227.16 | Control plane + worker | [Freckle Node Gen 3.0](../../compute/freckle-compute-nodes.md#gen-30) |
-| fairy-r02-cn02 | 192.168.227.17 | Control plane + worker | [Freckle Node Gen 3.0](../../compute/freckle-compute-nodes.md#gen-30) |
-| fairy-r02-cn03 | 192.168.227.18 | Control plane + worker | [Freckle Node Gen 3.0](../../compute/freckle-compute-nodes.md#gen-30) |
-| fairy-r02-cn04 | TBD | Worker (planned) | [Freckle Node Gen 3.1](../../compute/freckle-compute-nodes.md#gen-31-changes) |
-| fairy-r02-cn05 | TBD | Worker (planned) | [Freckle Node Gen 3.1](../../compute/freckle-compute-nodes.md#gen-31-changes) |
-| fairy-r02-cn06 | TBD | Worker (planned) | [Freckle Node Gen 3.1](../../compute/freckle-compute-nodes.md#gen-31-changes) |
+| fairy-r02-cn01 | 192.168.227.16 | Control plane + worker | [Freckle Node Gen 3.0](../../compute/freckle-node.md#gen-30) |
+| fairy-r02-cn02 | 192.168.227.17 | Control plane + worker | [Freckle Node Gen 3.0](../../compute/freckle-node.md#gen-30) |
+| fairy-r02-cn03 | 192.168.227.18 | Control plane + worker | [Freckle Node Gen 3.0](../../compute/freckle-node.md#gen-30) |
+| fairy-r02-cn04 | TBD | Worker (planned) | [Freckle Node Gen 3.1](../../compute/freckle-node.md#gen-31-changes) |
+| fairy-r02-cn05 | TBD | Worker (planned) | [Freckle Node Gen 3.1](../../compute/freckle-node.md#gen-31-changes) |
+| fairy-r02-cn06 | TBD | Worker (planned) | [Freckle Node Gen 3.1](../../compute/freckle-node.md#gen-31-changes) |
 | fairy-r02-dgx01 | 192.168.227.19 | GPU inference | [DGX Spark](../../compute/dgx-spark.md) |
 | fairy-r02-dgx02 | 192.168.227.20 | GPU inference | [DGX Spark](../../compute/dgx-spark.md) |
 | fairy-r02-dgx03 | 192.168.227.21 | GPU inference | [DGX Spark](../../compute/dgx-spark.md) |
@@ -123,7 +123,7 @@ allocations and IP addressing.
   on Firewalla Gold Pro
 - [Firmware Upgrades](../../runbooks/firmware-upgrades.md) — DGX Spark firmware
   updates via fwupd on Talos
-- [Freckle Compute Nodes](../../compute/freckle-compute-nodes.md) — Gen 3.0 and
-  3.1 build specs, BOM, and design decisions
+- [Freckle Node](../../compute/freckle-node.md) — Gen 3.0 and 3.1 build
+  specs, BOM, and design decisions
 - [DGX Spark](../../compute/dgx-spark.md) — NVIDIA driver selection, GPU
   operator configuration

@@ -19,12 +19,12 @@ for how device names are structured.
 | fairy-mdf-pdu01 | [Fairy](../sites/fairy/) | [MDF](../sites/fairy/#mdf) | Power distribution unit | CyberPower PDU81005 | active |
 | fairy-mdf-vsw01 | [Fairy](../sites/fairy/) | [MDF](../sites/fairy/#mdf) | PoE switch - outdoor cameras | Cisco C1300-8FP-2G | active |
 | fairy-nvr01 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Network video recorder | UNVR Pro | active |
-| fairy-r02-cn01 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Control plane + worker | [Freckle Node Gen 3.0](../compute/freckle-compute-nodes.md) | active |
-| fairy-r02-cn02 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Control plane + worker | [Freckle Node Gen 3.0](../compute/freckle-compute-nodes.md) | active |
-| fairy-r02-cn03 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Control plane + worker | [Freckle Node Gen 3.0](../compute/freckle-compute-nodes.md) | active |
-| fairy-r02-cn04 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Worker | [Freckle Node Gen 3.1](../compute/freckle-compute-nodes.md) | planned |
-| fairy-r02-cn05 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Worker | [Freckle Node Gen 3.1](../compute/freckle-compute-nodes.md) | planned |
-| fairy-r02-cn06 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Worker | [Freckle Node Gen 3.1](../compute/freckle-compute-nodes.md) | planned |
+| fairy-r02-cn01 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Control plane + worker | [Freckle Node Gen 3.0](../compute/freckle-node.md) | active |
+| fairy-r02-cn02 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Control plane + worker | [Freckle Node Gen 3.0](../compute/freckle-node.md) | active |
+| fairy-r02-cn03 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Control plane + worker | [Freckle Node Gen 3.0](../compute/freckle-node.md) | active |
+| fairy-r02-cn04 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Worker | [Freckle Node Gen 3.1](../compute/freckle-node.md) | planned |
+| fairy-r02-cn05 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Worker | [Freckle Node Gen 3.1](../compute/freckle-node.md) | planned |
+| fairy-r02-cn06 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Worker | [Freckle Node Gen 3.1](../compute/freckle-node.md) | planned |
 | fairy-r02-dgx01 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | GPU inference | [DGX Spark](../compute/dgx-spark.md) | active |
 | fairy-r02-dgx01-mgmt | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Management (KVM) | JetKVM | active |
 | fairy-r02-dgx02 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | GPU inference | [DGX Spark](../compute/dgx-spark.md) | active |

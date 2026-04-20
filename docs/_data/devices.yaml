@@ -94,28 +94,28 @@ devices:
     rack: r02
     function: Control plane + worker
     model: Freckle Node Gen 3.0
-    model_doc: ../compute/freckle-compute-nodes.md
+    model_doc: ../compute/freckle-node.md
 
   - name: fairy-r02-cn02
     site: fairy
     rack: r02
     function: Control plane + worker
     model: Freckle Node Gen 3.0
-    model_doc: ../compute/freckle-compute-nodes.md
+    model_doc: ../compute/freckle-node.md
 
   - name: fairy-r02-cn03
     site: fairy
     rack: r02
     function: Control plane + worker
     model: Freckle Node Gen 3.0
-    model_doc: ../compute/freckle-compute-nodes.md
+    model_doc: ../compute/freckle-node.md
 
   - name: fairy-r02-cn04
     site: fairy
     rack: r02
     function: Worker
     model: Freckle Node Gen 3.1
-    model_doc: ../compute/freckle-compute-nodes.md
+    model_doc: ../compute/freckle-node.md
     status: planned
 
   - name: fairy-r02-cn05
@@ -123,7 +123,7 @@ devices:
     rack: r02
     function: Worker
     model: Freckle Node Gen 3.1
-    model_doc: ../compute/freckle-compute-nodes.md
+    model_doc: ../compute/freckle-node.md
     status: planned
 
   - name: fairy-r02-cn06
@@ -131,7 +131,7 @@ devices:
     rack: r02
     function: Worker
     model: Freckle Node Gen 3.1
-    model_doc: ../compute/freckle-compute-nodes.md
+    model_doc: ../compute/freckle-node.md
     status: planned
 
   - name: fairy-r02-dgx01

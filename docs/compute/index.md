@@ -6,7 +6,7 @@ description: Compute node specifications, GPU configuration, and hardware design
 
 Hardware specs and configuration for the compute nodes across clusters.
 
-- [Freckle Compute Nodes](freckle-compute-nodes.md) — custom-built
-  rackmount nodes for Kubernetes (Gen 3.0 / 3.1)
+- [Freckle Node](freckle-node.md) — custom-built rackmount compute node
+  for Kubernetes (Gen 3.0 / 3.1)
 - [DGX Spark (GB10)](dgx-spark.md) — NVIDIA driver selection, GPU operator
   configuration on Talos Linux
