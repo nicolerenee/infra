@@ -3,27 +3,23 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app vllm-gpt-oss
-  namespace: &namespace inference
-  labels:
-    infra.freckle.systems/post-build-variables: enabled
+  name: &app nvidia-dra-driver
+  namespace: &namespace gpu-operator
 spec:
   targetNamespace: *namespace
+  dependsOn:
+    - name: nvidia-gpu-operator
+      namespace: gpu-operator
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  dependsOn:
-    - name: resource-claims
-      namespace: inference
-    - name: nvidia-gpu-operator
-      namespace: gpu-operator
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/inference/vllm-gpt-oss
+  path: ./kubernetes/apps/devices/nvidia-dra-driver
   interval: 2m
   retryInterval: 1m
-  timeout: 30m
+  timeout: 5m
   prune: true
   wait: true

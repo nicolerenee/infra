@@ -1,0 +1,156 @@
+---
+apiVersion: leaderworkerset.x-k8s.io/v1
+kind: LeaderWorkerSet
+metadata:
+  name: vllm-gpt-oss-2node
+spec:
+  replicas: 1
+  leaderWorkerTemplate:
+    size: 2
+    restartPolicy: RecreateGroupOnPodRestart
+    leaderTemplate:
+      metadata:
+        labels:
+          app.kubernetes.io/name: vllm-gpt-oss-2node
+          app.kubernetes.io/component: leader
+      spec:
+        runtimeClassName: nvidia
+        tolerations:
+          - key: nvidia.com/gpu
+            operator: Exists
+            effect: NoSchedule
+        resourceClaims:
+          - name: gpu-rdma
+            resourceClaimTemplateName: gpu-rdma
+        containers:
+          - name: vllm
+            image: nvcr.io/nvidia/vllm:26.03-py3
+            command:
+              - bash
+              - -c
+              - |
+                ray start --head --port=6379 --dashboard-host=0.0.0.0 &&
+                until [ "$(ray status 2>/dev/null | grep -c 'GPU: 1.0')" -ge 2 ]; do
+                  echo "Waiting for 2 GPU workers to join..."
+                  sleep 5
+                done &&
+                echo "All workers joined, starting vLLM..." &&
+                vllm serve openai/gpt-oss-120b \
+                  --tool-call-parser openai \
+                  --reasoning-parser openai_gptoss \
+                  --enable-auto-tool-choice \
+                  --gpu-memory-utilization 0.7 \
+                  --enable-prefix-caching \
+                  --quantization mxfp4 \
+                  --kv-cache-dtype fp8 \
+                  --max-num-batched-tokens 8192 \
+                  --tensor-parallel-size 2 \
+                  --host 0.0.0.0 \
+                  --port 8000
+            env:
+              - name: VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8
+                value: "1"
+              - name: HF_HOME
+                value: /models
+              # NCCL: use RDMA over ConnectX-7 fabric
+              - name: NCCL_IB_HCA
+                value: mlx5
+              - name: NCCL_NET_GDR_LEVEL
+                value: "2"
+            envFrom:
+              - secretRef:
+                  name: huggingface
+            ports:
+              - containerPort: 8000
+                name: http
+              - containerPort: 6379
+                name: ray-gcs
+            startupProbe:
+              httpGet:
+                path: /health
+                port: http
+              initialDelaySeconds: 60
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 360
+            livenessProbe:
+              httpGet:
+                path: /health
+                port: http
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 3
+            readinessProbe:
+              httpGet:
+                path: /health
+                port: http
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 3
+            resources:
+              claims:
+                - name: gpu-rdma
+            volumeMounts:
+              - name: models
+                mountPath: /models
+              - name: shm
+                mountPath: /dev/shm
+        volumes:
+          - name: models
+            persistentVolumeClaim:
+              claimName: models
+          - name: shm
+            emptyDir:
+              medium: Memory
+              sizeLimit: 16Gi
+    workerTemplate:
+      metadata:
+        labels:
+          app.kubernetes.io/name: vllm-gpt-oss-2node
+          app.kubernetes.io/component: worker
+      spec:
+        runtimeClassName: nvidia
+        tolerations:
+          - key: nvidia.com/gpu
+            operator: Exists
+            effect: NoSchedule
+        resourceClaims:
+          - name: gpu-rdma
+            resourceClaimTemplateName: gpu-rdma
+        containers:
+          - name: vllm
+            image: nvcr.io/nvidia/vllm:26.03-py3
+            command:
+              - bash
+              - -c
+              - |
+                # LWS sets the leader's hostname as LWS_LEADER_ADDRESS
+                ray start \
+                  --address=${LWS_LEADER_ADDRESS}:6379 \
+                  --block
+            env:
+              - name: HF_HOME
+                value: /models
+              - name: NCCL_IB_HCA
+                value: mlx5
+              - name: NCCL_NET_GDR_LEVEL
+                value: "2"
+            envFrom:
+              - secretRef:
+                  name: huggingface
+            resources:
+              claims:
+                - name: gpu-rdma
+            volumeMounts:
+              - name: models
+                mountPath: /models
+              - name: shm
+                mountPath: /dev/shm
+        volumes:
+          - name: models
+            persistentVolumeClaim:
+              claimName: models
+          - name: shm
+            emptyDir:
+              medium: Memory
+              sizeLimit: 16Gi

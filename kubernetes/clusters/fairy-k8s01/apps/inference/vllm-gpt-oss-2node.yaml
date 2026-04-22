@@ -3,7 +3,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app vllm-gpt-oss
+  name: &app vllm-gpt-oss-2node
   namespace: &namespace inference
   labels:
     infra.freckle.systems/post-build-variables: enabled
@@ -13,6 +13,8 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
+    - name: leader-worker-set
+      namespace: inference
     - name: resource-claims
       namespace: inference
     - name: nvidia-gpu-operator
@@ -21,7 +23,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/inference/vllm-gpt-oss
+  path: ./kubernetes/apps/inference/vllm-gpt-oss-2node
   interval: 2m
   retryInterval: 1m
   timeout: 30m

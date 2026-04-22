@@ -42,9 +42,17 @@ spec:
     # Talos provides NVIDIA drivers via system extensions
     driver:
       enabled: false
+      manager:
+        env:
+          - name: NODE_LABEL_FOR_GPU_POD_EVICTION
+            value: nvidia.com/dra-kubelet-plugin
 
     # Talos provides NVIDIA container toolkit via system extensions
     toolkit:
+      enabled: false
+
+    # Disable device plugin — replaced by DRA driver
+    devicePlugin:
       enabled: false
 
     # Disable GPU operator's NFD - use kube-system NFD instead

@@ -16,11 +16,12 @@ cniConfig:
 
 nodes:
   - hostname: fairy-r02-cn01
-    ipAddress: 192.168.227.16
+    ipAddress: 10.189.3.16
     controlPlane: true
     installDiskSelector:
       model: "Samsung SSD 990 PRO*"
     nodeLabels:
+      infra.freckle.systems/vlan-bridge: "true"
       infra.freckle.systems/gpu: i915
       topology.kubernetes.io/rack: r02
     machineSpec: &cn01-machineSpec
@@ -47,48 +48,156 @@ nodes:
               unconfigure lldp management-addresses-advertisements
               unconfigure lldp capabilities-advertisements
               configure system description "Talos Compute Node"
+    networkInterfaces:
+      - &cn01-10g-1
+        interface: eno3
+        dhcp: false
+        mtu: 9000
+      - &cn01-bridge
+        interface: br0
+        dhcp: false
+        mtu: 9000
+        addresses:
+          - 10.189.3.16/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.189.3.1
+            metric: 1024
+        bridge:
+          interfaces:
+            - eno3
+          stp:
+            enabled: false
+          # talhelper 3.1.7 doesn't render vlan config to generated config
+          # vlan:
+          #   vlanFiltering: true
     patches:
+      - ./patches/bridge-vlan-filtering.yaml
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
 
   - hostname: fairy-r02-cn02
-    ipAddress: 192.168.227.17
-    controlPlane: false
+    ipAddress: 10.189.3.17
+    controlPlane: true
     installDiskSelector:
       model: "Samsung SSD 990 PRO*"
     nodeLabels:
+      infra.freckle.systems/vlan-bridge: "true"
       infra.freckle.systems/gpu: i915
       topology.kubernetes.io/rack: r02
     machineSpec: *cn01-machineSpec
     schematic: *cn01-schematic
     extensionServices:
       - <<: *cn01-lldp-extension
+    networkInterfaces:
+      - <<: *cn01-10g-1
+      - <<: *cn01-bridge
+        addresses:
+          - 10.189.3.17/24
     patches:
+      - ./patches/bridge-vlan-filtering.yaml
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
 
   - hostname: fairy-r02-cn03
-    ipAddress: 192.168.227.18
-    controlPlane: false
+    ipAddress: 10.189.3.18
+    controlPlane: true
     installDiskSelector:
       model: "Samsung SSD 990 PRO*"
     nodeLabels:
+      infra.freckle.systems/vlan-bridge: "true"
       infra.freckle.systems/gpu: i915
       topology.kubernetes.io/rack: r02
     machineSpec: *cn01-machineSpec
     schematic: *cn01-schematic
     extensionServices:
       - <<: *cn01-lldp-extension
+    networkInterfaces:
+      - <<: *cn01-10g-1
+      - <<: *cn01-bridge
+        addresses:
+          - 10.189.3.18/24
     patches:
+      - ./patches/bridge-vlan-filtering.yaml
+      - ./patches/tpm-encryption.yaml
+      - ./patches/watchdog.yaml
+
+  - hostname: fairy-r02-cn04
+    ipAddress: 10.189.3.19
+    controlPlane: true
+    installDiskSelector:
+      model: "Samsung SSD 990 PRO*"
+    nodeLabels:
+      infra.freckle.systems/vlan-bridge: "true"
+      infra.freckle.systems/gpu: i915
+      topology.kubernetes.io/rack: r02
+    machineSpec: *cn01-machineSpec
+    schematic: *cn01-schematic
+    extensionServices:
+      - <<: *cn01-lldp-extension
+    networkInterfaces:
+      - <<: *cn01-10g-1
+      - <<: *cn01-bridge
+        addresses:
+          - 10.189.3.19/24
+    patches:
+      - ./patches/bridge-vlan-filtering.yaml
+      - ./patches/tpm-encryption.yaml
+      - ./patches/watchdog.yaml
+
+  - hostname: fairy-r02-cn05
+    ipAddress: 10.189.3.20
+    controlPlane: true
+    installDiskSelector:
+      model: "Samsung SSD 990 PRO*"
+    nodeLabels:
+      infra.freckle.systems/vlan-bridge: "true"
+      infra.freckle.systems/gpu: i915
+      topology.kubernetes.io/rack: r02
+    machineSpec: *cn01-machineSpec
+    schematic: *cn01-schematic
+    extensionServices:
+      - <<: *cn01-lldp-extension
+    networkInterfaces:
+      - <<: *cn01-10g-1
+      - <<: *cn01-bridge
+        addresses:
+          - 10.189.3.20/24
+    patches:
+      - ./patches/bridge-vlan-filtering.yaml
+      - ./patches/tpm-encryption.yaml
+      - ./patches/watchdog.yaml
+
+  - hostname: fairy-r02-cn06
+    ipAddress: 10.189.3.21
+    controlPlane: true
+    installDiskSelector:
+      model: "Samsung SSD 990 PRO*"
+    nodeLabels:
+      infra.freckle.systems/vlan-bridge: "true"
+      infra.freckle.systems/gpu: i915
+      topology.kubernetes.io/rack: r02
+    machineSpec: *cn01-machineSpec
+    schematic: *cn01-schematic
+    extensionServices:
+      - <<: *cn01-lldp-extension
+    networkInterfaces:
+      - <<: *cn01-10g-1
+      - <<: *cn01-bridge
+        addresses:
+          - 10.189.3.21/24
+    patches:
+      - ./patches/bridge-vlan-filtering.yaml
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
 
   - hostname: fairy-r02-dgx01
-    ipAddress: 192.168.227.19
+    ipAddress: 10.189.3.22
     controlPlane: false
     installDisk: /dev/nvme0n1
     nodeLabels:
       infra.freckle.systems/gpu: nvidia
+      nvidia.com/dra-kubelet-plugin: "true"
       topology.kubernetes.io/rack: r02
     nodeTaints:
       nvidia.com/gpu: ":NoSchedule"
@@ -121,32 +230,42 @@ nodes:
               unconfigure lldp capabilities-advertisements
               configure system description "Talos DGX Spark Node"
     networkInterfaces:
-      - &dgx01-mgmt-interface
+      - &dgx01-10g-1
         interface: enP7s7
-        dhcp: true
-        mtu: 1500
-      - &dgx01-hs-interface-1
+        dhcp: false
+        addresses:
+          - 10.189.3.22/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.189.3.1
+            metric: 1024
+      - &dgx01-cx7-1-1
         interface: enp1s0f0np0
+        dhcp: false
         mtu: 9000
-      - &dgx01-hs-interface-2
+      - &dgx01-cx7-1-2
         interface: enP2p1s0f0np0
+        dhcp: false
         mtu: 9000
-      - &dgx01-hs-interface-3
+      - &dgx01-cx7-2-1
         interface: enp1s0f1np1
+        dhcp: false
         mtu: 9000
-      - &dgx01-hs-interface-4
+      - &dgx01-cx7-2-2
         interface: enP2p1s0f1np1
+        dhcp: false
         mtu: 9000
     patches:
       - ./patches/nvidia-runtime.yaml
       - ./patches/watchdog.yaml
 
   - hostname: fairy-r02-dgx02
-    ipAddress: 192.168.227.20
+    ipAddress: 10.189.3.23
     controlPlane: false
     installDisk: /dev/nvme0n1
     nodeLabels:
       infra.freckle.systems/gpu: nvidia
+      nvidia.com/dra-kubelet-plugin: "true"
       topology.kubernetes.io/rack: r02
     nodeTaints:
       nvidia.com/gpu: ":NoSchedule"
@@ -155,21 +274,24 @@ nodes:
     extensionServices:
       - <<: *dgx01-lldp-extension
     networkInterfaces:
-      - <<: *dgx01-mgmt-interface
-      - <<: *dgx01-hs-interface-1
-      - <<: *dgx01-hs-interface-2
-      - <<: *dgx01-hs-interface-3
-      - <<: *dgx01-hs-interface-4
+      - <<: *dgx01-10g-1
+        addresses:
+          - 10.189.3.23/24
+      - <<: *dgx01-cx7-1-1
+      - <<: *dgx01-cx7-1-2
+      - <<: *dgx01-cx7-2-1
+      - <<: *dgx01-cx7-2-2
     patches:
       - ./patches/nvidia-runtime.yaml
       - ./patches/watchdog.yaml
 
   - hostname: fairy-r02-dgx03
-    ipAddress: 192.168.227.21
+    ipAddress: 10.189.3.24
     controlPlane: false
     installDisk: /dev/nvme0n1
     nodeLabels:
       infra.freckle.systems/gpu: nvidia
+      nvidia.com/dra-kubelet-plugin: "true"
       topology.kubernetes.io/rack: r02
     nodeTaints:
       nvidia.com/gpu: ":NoSchedule"
@@ -178,11 +300,13 @@ nodes:
     extensionServices:
       - <<: *dgx01-lldp-extension
     networkInterfaces:
-      - <<: *dgx01-mgmt-interface
-      - <<: *dgx01-hs-interface-1
-      - <<: *dgx01-hs-interface-2
-      - <<: *dgx01-hs-interface-3
-      - <<: *dgx01-hs-interface-4
+      - <<: *dgx01-10g-1
+        addresses:
+          - 10.189.3.24/24
+      - <<: *dgx01-cx7-1-1
+      - <<: *dgx01-cx7-1-2
+      - <<: *dgx01-cx7-2-1
+      - <<: *dgx01-cx7-2-2
     patches:
       - ./patches/nvidia-runtime.yaml
       - ./patches/watchdog.yaml
@@ -285,9 +409,7 @@ controlPlane:
         kubelet:
           nodeIP:
             validSubnets:
-            - 10.189.2.64/27
-            - fd2b:ec92:e230:20::67/96
-            - 192.168.227.0/24  # For cn01 DHCP network
+            - 10.189.3.0/24
           extraArgs: {}
           extraConfig:
             # Let IPv6 RAs through on 'net1' for thread announcements getting to HA additional NIC

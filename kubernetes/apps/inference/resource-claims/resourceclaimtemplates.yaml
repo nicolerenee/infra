@@ -1,0 +1,28 @@
+---
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata:
+  name: gpu
+spec:
+  spec:
+    devices:
+      requests:
+        - name: gpu
+          deviceClassName: gpu.nvidia.com
+---
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata:
+  name: gpu-rdma
+spec:
+  spec:
+    devices:
+      requests:
+        - name: gpu
+          deviceClassName: gpu.nvidia.com
+        - name: rdma
+          deviceClassName: dranet.net
+          selectors:
+            - cel:
+                expression: device.attributes["dra.net"].rdma == true
+          count: 2

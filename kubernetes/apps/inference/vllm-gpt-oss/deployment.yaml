@@ -1,0 +1,97 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-gpt-oss
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vllm-gpt-oss
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: vllm-gpt-oss
+    spec:
+      runtimeClassName: nvidia
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+      resourceClaims:
+        - name: gpu
+          resourceClaimTemplateName: gpu
+      containers:
+        - name: vllm
+          image: nvcr.io/nvidia/vllm:26.03-py3
+          command:
+            - vllm
+            - serve
+            - openai/gpt-oss-120b
+            - --tool-call-parser
+            - openai
+            - --reasoning-parser
+            - openai_gptoss
+            - --enable-auto-tool-choice
+            - --gpu-memory-utilization
+            - "0.7"
+            - --enable-prefix-caching
+            - --quantization
+            - mxfp4
+            - --kv-cache-dtype
+            - fp8
+            - --max-num-batched-tokens
+            - "8192"
+            - --host
+            - 0.0.0.0
+            - --port
+            - "8000"
+          env:
+            - name: VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8
+              value: "1"
+            - name: HF_HOME
+              value: /models
+          envFrom:
+            - secretRef:
+                name: huggingface
+          ports:
+            - containerPort: 8000
+              name: http
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 180
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            claims:
+              - name: gpu
+          volumeMounts:
+            - name: models
+              mountPath: /models
+            - name: shm
+              mountPath: /dev/shm
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: models
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Gi
