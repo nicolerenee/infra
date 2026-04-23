@@ -32,8 +32,8 @@ spec:
     remediation:
       retries: 3
   values:
-    # Talos mounts drivers at /usr/local/glibc/usr/lib
-    nvidiaDriverRoot: /
+    # Talos installs drivers via system extensions under /usr/local/glibc
+    nvidiaDriverRoot: /usr/local/glibc
     gpuResourcesEnabledOverride: true
     kubeletPlugin:
       nodeSelector:
