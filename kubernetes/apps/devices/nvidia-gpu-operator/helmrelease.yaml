@@ -61,6 +61,6 @@ spec:
     node-feature-discovery:
       enabled: false
 
-    # Talos mounts drivers at /usr/local/glibc/usr/lib
+    # Talos installs drivers via system extensions under /usr/local
     hostPaths:
-      driverInstallDir: /usr/local/glibc/usr/lib
+      driverInstallDir: /usr/local
