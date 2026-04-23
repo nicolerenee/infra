@@ -266,7 +266,6 @@ nodes:
         dhcp: false
         mtu: 9000
     patches:
-      - ./patches/nri.yaml
       - ./patches/nvidia-runtime.yaml
       - ./patches/watchdog.yaml
 
@@ -293,7 +292,6 @@ nodes:
       - <<: *dgx01-cx7-2-1
       - <<: *dgx01-cx7-2-2
     patches:
-      - ./patches/nri.yaml
       - ./patches/nvidia-runtime.yaml
       - ./patches/watchdog.yaml
 
@@ -320,7 +318,6 @@ nodes:
       - <<: *dgx01-cx7-2-1
       - <<: *dgx01-cx7-2-2
     patches:
-      - ./patches/nri.yaml
       - ./patches/nvidia-runtime.yaml
       - ./patches/watchdog.yaml
 
@@ -382,8 +379,7 @@ controlPlane:
             # * https://github.com/siderolabs/talos/pull/9200
             forwardKubeDNSToHost: false
             resolveMemberNames: true
-        # Configure containerd for GPU support
-        # Talos 1.13+ has built-in CDI support, just ensure device ownership is set
+        # Containerd customization
         files:
           - op: create
             path: /etc/cri/conf.d/20-customization.part
@@ -392,6 +388,8 @@ controlPlane:
                 discard_unpacked_layers = false
               [plugins."io.containerd.cri.v1.runtime"]
                 device_ownership_from_security_context = true
+              [plugins."io.containerd.nri.v1.nri"]
+                disable = false
         sysctls:
           # Kubernetes essentials
           fs.inotify.max_user_watches: 1048576
