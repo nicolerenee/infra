@@ -30,14 +30,14 @@ spec:
               apk add --no-cache iproute2 bridge-utils
 
               # Configure VLAN membership on bridge ports
-              # br0 VLAN filtering is enabled via Talos BridgeConfig patch
+              # bridge1 VLAN filtering is enabled via Talos BridgeConfig patch
               apply_vlans() {
                 # eno3: PVID 1 untagged for native traffic, VLAN 300 tagged for pods
                 bridge vlan add dev eno3 vid 1 pvid untagged master
                 bridge vlan add dev eno3 vid 300 master
 
-                # br0 self: participate in VLAN 1
-                bridge vlan add dev br0 vid 1 pvid untagged self
+                # bridge1 self: participate in VLAN 1
+                bridge vlan add dev bridge1 vid 1 pvid untagged self
               }
 
               apply_vlans

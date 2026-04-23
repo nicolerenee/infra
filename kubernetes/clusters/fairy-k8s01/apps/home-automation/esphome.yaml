@@ -42,4 +42,4 @@ spec:
         - op: add
           path: /spec/values/controllers/esphome/pod/nodeSelector
           value:
-            topology.kubernetes.io/rack: r02
+            infra.freckle.systems/vlan-bridge: "true"

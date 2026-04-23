@@ -23,7 +23,7 @@ nodes:
     nodeLabels:
       infra.freckle.systems/vlan-bridge: "true"
       infra.freckle.systems/gpu: i915
-      topology.kubernetes.io/rack: r02
+      topology.freckle.systems/rack: r02
     machineSpec: &cn01-machineSpec
       mode: metal
       arch: amd64
@@ -54,7 +54,7 @@ nodes:
         dhcp: false
         mtu: 9000
       - &cn01-bridge
-        interface: br0
+        interface: bridge1
         dhcp: false
         mtu: 9000
         addresses:
@@ -71,6 +71,10 @@ nodes:
           # talhelper 3.1.7 doesn't render vlan config to generated config
           # vlan:
           #   vlanFiltering: true
+        vlans:
+          - &cn01-vlan-home
+            vlanId: 300
+            mtu: 1500
     patches:
       - ./patches/bridge-vlan-filtering.yaml
       - ./patches/tpm-encryption.yaml
@@ -84,7 +88,7 @@ nodes:
     nodeLabels:
       infra.freckle.systems/vlan-bridge: "true"
       infra.freckle.systems/gpu: i915
-      topology.kubernetes.io/rack: r02
+      topology.freckle.systems/rack: r02
     machineSpec: *cn01-machineSpec
     schematic: *cn01-schematic
     extensionServices:
@@ -107,7 +111,7 @@ nodes:
     nodeLabels:
       infra.freckle.systems/vlan-bridge: "true"
       infra.freckle.systems/gpu: i915
-      topology.kubernetes.io/rack: r02
+      topology.freckle.systems/rack: r02
     machineSpec: *cn01-machineSpec
     schematic: *cn01-schematic
     extensionServices:
@@ -130,7 +134,7 @@ nodes:
     nodeLabels:
       infra.freckle.systems/vlan-bridge: "true"
       infra.freckle.systems/gpu: i915
-      topology.kubernetes.io/rack: r02
+      topology.freckle.systems/rack: r02
     machineSpec: *cn01-machineSpec
     schematic: *cn01-schematic
     extensionServices:
@@ -153,7 +157,7 @@ nodes:
     nodeLabels:
       infra.freckle.systems/vlan-bridge: "true"
       infra.freckle.systems/gpu: i915
-      topology.kubernetes.io/rack: r02
+      topology.freckle.systems/rack: r02
     machineSpec: *cn01-machineSpec
     schematic: *cn01-schematic
     extensionServices:
@@ -176,7 +180,7 @@ nodes:
     nodeLabels:
       infra.freckle.systems/vlan-bridge: "true"
       infra.freckle.systems/gpu: i915
-      topology.kubernetes.io/rack: r02
+      topology.freckle.systems/rack: r02
     machineSpec: *cn01-machineSpec
     schematic: *cn01-schematic
     extensionServices:
@@ -198,7 +202,7 @@ nodes:
     nodeLabels:
       infra.freckle.systems/gpu: nvidia
       nvidia.com/dra-kubelet-plugin: "true"
-      topology.kubernetes.io/rack: r02
+      topology.freckle.systems/rack: r02
     nodeTaints:
       nvidia.com/gpu: ":NoSchedule"
     machineSpec: &dgx01-machineSpec
@@ -266,7 +270,7 @@ nodes:
     nodeLabels:
       infra.freckle.systems/gpu: nvidia
       nvidia.com/dra-kubelet-plugin: "true"
-      topology.kubernetes.io/rack: r02
+      topology.freckle.systems/rack: r02
     nodeTaints:
       nvidia.com/gpu: ":NoSchedule"
     machineSpec: *dgx01-machineSpec
@@ -292,7 +296,7 @@ nodes:
     nodeLabels:
       infra.freckle.systems/gpu: nvidia
       nvidia.com/dra-kubelet-plugin: "true"
-      topology.kubernetes.io/rack: r02
+      topology.freckle.systems/rack: r02
     nodeTaints:
       nvidia.com/gpu: ":NoSchedule"
     machineSpec: *dgx01-machineSpec
@@ -399,6 +403,11 @@ controlPlane:
           net.ipv4.tcp_keepalive_time: 600
           net.ipv4.tcp_keepalive_intvl: 30
           net.ipv4.tcp_keepalive_probes: 10
+
+          # Suppress IPv6 on bridge1.300 (home VLAN) — L2 only, no host addressing
+          net.ipv6.conf.bridge1/300.accept_ra: "0"
+          net.ipv6.conf.bridge1/300.autoconf: "0"
+          net.ipv6.conf.bridge1/300.addr_gen_mode: "3"
 
           # NFS optimations
           sunrpc.tcp_slot_table_entries: 128

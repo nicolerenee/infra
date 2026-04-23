@@ -1,8 +1,8 @@
 ---
-# Enable VLAN filtering on br0
+# Enable VLAN filtering on bridge1
 # Workaround: talhelper 3.1.7 doesn't render vlan config in BridgeConfig
 apiVersion: v1alpha1
 kind: BridgeConfig
-name: br0
+name: bridge1
 vlan:
   filtering: true
