@@ -20,7 +20,7 @@ spec:
         - operator: Exists
       containers:
         - name: vlan-config
-          image: alpine:3.21
+          image: alpine:3.23
           securityContext:
             privileged: true
           command:
