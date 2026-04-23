@@ -56,8 +56,8 @@ spec:
       enabled: false
 
     # Disable GPU operator's NFD - use kube-system NFD instead
-    # The kube-system NFD runs on all nodes and has custom Intel GPU rules,
-    # while this one has no custom configuration and would be redundant
+    nfd:
+      enabled: false
     node-feature-discovery:
       enabled: false
 
