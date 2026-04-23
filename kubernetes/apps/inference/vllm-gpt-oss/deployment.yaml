@@ -18,9 +18,6 @@ spec:
         - key: nvidia.com/gpu
           operator: Exists
           effect: NoSchedule
-      resourceClaims:
-        - name: gpu
-          resourceClaimTemplateName: gpu
       containers:
         - name: vllm
           image: nvcr.io/nvidia/vllm:26.03-py3
@@ -80,8 +77,8 @@ spec:
             timeoutSeconds: 5
             failureThreshold: 3
           resources:
-            claims:
-              - name: gpu
+            limits:
+              nvidia.com/gpu: 1
           volumeMounts:
             - name: models
               mountPath: /models

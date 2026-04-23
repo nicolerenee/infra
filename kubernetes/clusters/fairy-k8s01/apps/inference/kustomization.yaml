@@ -9,6 +9,6 @@ resources:
   - ./leader-worker-set.yaml
   - ./litellm.yaml
   - ./models-pvc.yaml
-  - ./resource-claims.yaml
+  - ./gpu-fabric-nad.yaml
   - ./vllm-gpt-oss.yaml
   - ./vllm-gpt-oss-2node.yaml

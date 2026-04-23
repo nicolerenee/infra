@@ -3,21 +3,18 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app resource-claims
-  namespace: &namespace inference
+  name: &app rdma-shared-device-plugin
+  namespace: &namespace gpu-operator
 spec:
   targetNamespace: *namespace
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  dependsOn:
-    - name: nvidia-dra-driver
-      namespace: gpu-operator
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/inference/resource-claims
+  path: ./kubernetes/apps/devices/rdma-shared-device-plugin
   interval: 2m
   retryInterval: 1m
   timeout: 5m

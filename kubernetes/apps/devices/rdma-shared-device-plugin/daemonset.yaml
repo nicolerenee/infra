@@ -1,0 +1,44 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: rdma-shared-device-plugin
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: rdma-shared-device-plugin
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: rdma-shared-device-plugin
+    spec:
+      hostNetwork: true
+      priorityClassName: system-node-critical
+      nodeSelector:
+        infra.freckle.systems/gpu: nvidia
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: rdma-shared-device-plugin
+          image: ghcr.io/mellanox/k8s-rdma-shared-dev-plugin:v1.6.1
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: device-plugin
+              mountPath: /var/lib/kubelet/device-plugins
+            - name: config
+              mountPath: /k8s-rdma-shared-dev-plugin
+            - name: devinfiniband
+              mountPath: /dev/infiniband
+      volumes:
+        - name: device-plugin
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+        - name: config
+          configMap:
+            name: rdma-devices
+        - name: devinfiniband
+          hostPath:
+            path: /dev/infiniband

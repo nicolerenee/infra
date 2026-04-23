@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rdma-devices
+data:
+  config.json: |
+    {
+      "configList": [
+        {
+          "resourceName": "rdma_shared_device_a",
+          "rdmaHcaMax": 63,
+          "selectors": {
+            "vendors": ["15b3"],
+            "ifNames": ["enp1s0f0np0", "enP2p1s0f0np0"]
+          }
+        }
+      ]
+    }

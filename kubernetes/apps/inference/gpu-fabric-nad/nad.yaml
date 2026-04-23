@@ -1,0 +1,21 @@
+---
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: gpu-fabric
+spec:
+  config: |
+    {
+      "cniVersion": "0.3.1",
+      "name": "gpu-fabric",
+      "plugins": [
+        {
+          "type": "macvlan",
+          "master": "enp1s0f0np0",
+          "mode": "bridge",
+          "ipam": {
+            "type": "static"
+          }
+        }
+      ]
+    }

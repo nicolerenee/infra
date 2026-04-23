@@ -3,20 +3,23 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app dranet
-  namespace: &namespace kube-system
+  name: &app gpu-fabric-nad
+  namespace: &namespace inference
 spec:
+  targetNamespace: *namespace
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  interval: 1h
-  path: ./kubernetes/apps/networking/dranet
-  prune: true
-  retryInterval: 2m
+  dependsOn:
+    - name: multus
+      namespace: kube-system
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  targetNamespace: *namespace
+  path: ./kubernetes/apps/inference/gpu-fabric-nad
+  interval: 2m
+  retryInterval: 1m
   timeout: 5m
+  prune: true
   wait: true

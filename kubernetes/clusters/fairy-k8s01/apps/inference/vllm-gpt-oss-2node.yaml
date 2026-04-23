@@ -13,9 +13,9 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: leader-worker-set
+    - name: gpu-fabric-nad
       namespace: inference
-    - name: resource-claims
+    - name: leader-worker-set
       namespace: inference
     - name: nvidia-gpu-operator
       namespace: gpu-operator

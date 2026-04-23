@@ -13,15 +13,14 @@ spec:
         labels:
           app.kubernetes.io/name: vllm-gpt-oss-2node
           app.kubernetes.io/component: leader
+        annotations:
+          k8s.v1.cni.cncf.io/networks: gpu-fabric
       spec:
         runtimeClassName: nvidia
         tolerations:
           - key: nvidia.com/gpu
             operator: Exists
             effect: NoSchedule
-        resourceClaims:
-          - name: gpu-rdma
-            resourceClaimTemplateName: gpu-rdma
         containers:
           - name: vllm
             image: nvcr.io/nvidia/vllm:26.03-py3
@@ -87,9 +86,14 @@ spec:
               periodSeconds: 30
               timeoutSeconds: 5
               failureThreshold: 3
+            securityContext:
+              capabilities:
+                add:
+                  - IPC_LOCK
             resources:
-              claims:
-                - name: gpu-rdma
+              limits:
+                nvidia.com/gpu: 1
+                rdma/rdma_shared_device_a: 2
             volumeMounts:
               - name: models
                 mountPath: /models
@@ -108,15 +112,14 @@ spec:
         labels:
           app.kubernetes.io/name: vllm-gpt-oss-2node
           app.kubernetes.io/component: worker
+        annotations:
+          k8s.v1.cni.cncf.io/networks: gpu-fabric
       spec:
         runtimeClassName: nvidia
         tolerations:
           - key: nvidia.com/gpu
             operator: Exists
             effect: NoSchedule
-        resourceClaims:
-          - name: gpu-rdma
-            resourceClaimTemplateName: gpu-rdma
         containers:
           - name: vllm
             image: nvcr.io/nvidia/vllm:26.03-py3
@@ -138,9 +141,14 @@ spec:
             envFrom:
               - secretRef:
                   name: huggingface
+            securityContext:
+              capabilities:
+                add:
+                  - IPC_LOCK
             resources:
-              claims:
-                - name: gpu-rdma
+              limits:
+                nvidia.com/gpu: 1
+                rdma/rdma_shared_device_a: 2
             volumeMounts:
               - name: models
                 mountPath: /models

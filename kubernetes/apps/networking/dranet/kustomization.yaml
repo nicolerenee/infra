@@ -1,7 +1,0 @@
----
-# DRANet v1.2.0 — no published Helm chart yet, using upstream install manifest
-# https://github.com/kubernetes-sigs/dranet/releases/tag/v1.2.0
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-  - ./install.yaml
