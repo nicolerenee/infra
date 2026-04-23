@@ -4,7 +4,7 @@
 machine:
   files:
     - op: create
-      path: /etc/cri/conf.d/30-nri.part
+      path: /etc/cri/conf.d/20-nri.part
       content: |
         [plugins."io.containerd.nri.v1.nri"]
           disable = false

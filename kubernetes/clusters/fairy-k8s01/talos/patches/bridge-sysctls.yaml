@@ -1,0 +1,7 @@
+---
+# Suppress IPv6 on bridge1.300 (home VLAN) — L2 only, no host addressing
+machine:
+  sysctls:
+    net.ipv6.conf.bridge1/300.accept_ra: "0"
+    net.ipv6.conf.bridge1/300.autoconf: "0"
+    net.ipv6.conf.bridge1/300.addr_gen_mode: "3"

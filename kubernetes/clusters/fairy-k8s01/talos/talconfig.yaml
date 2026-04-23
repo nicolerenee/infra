@@ -76,6 +76,7 @@ nodes:
             vlanId: 300
             mtu: 1500
     patches:
+      - ./patches/bridge-sysctls.yaml
       - ./patches/bridge-vlan-filtering.yaml
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
@@ -99,6 +100,7 @@ nodes:
         addresses:
           - 10.189.3.17/24
     patches:
+      - ./patches/bridge-sysctls.yaml
       - ./patches/bridge-vlan-filtering.yaml
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
@@ -122,6 +124,7 @@ nodes:
         addresses:
           - 10.189.3.18/24
     patches:
+      - ./patches/bridge-sysctls.yaml
       - ./patches/bridge-vlan-filtering.yaml
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
@@ -145,6 +148,7 @@ nodes:
         addresses:
           - 10.189.3.19/24
     patches:
+      - ./patches/bridge-sysctls.yaml
       - ./patches/bridge-vlan-filtering.yaml
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
@@ -168,6 +172,7 @@ nodes:
         addresses:
           - 10.189.3.20/24
     patches:
+      - ./patches/bridge-sysctls.yaml
       - ./patches/bridge-vlan-filtering.yaml
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
@@ -191,6 +196,7 @@ nodes:
         addresses:
           - 10.189.3.21/24
     patches:
+      - ./patches/bridge-sysctls.yaml
       - ./patches/bridge-vlan-filtering.yaml
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
@@ -406,11 +412,6 @@ controlPlane:
           net.ipv4.tcp_keepalive_time: 600
           net.ipv4.tcp_keepalive_intvl: 30
           net.ipv4.tcp_keepalive_probes: 10
-
-          # Suppress IPv6 on bridge1.300 (home VLAN) — L2 only, no host addressing
-          net.ipv6.conf.bridge1/300.accept_ra: "0"
-          net.ipv6.conf.bridge1/300.autoconf: "0"
-          net.ipv6.conf.bridge1/300.addr_gen_mode: "3"
 
           # NFS optimations
           sunrpc.tcp_slot_table_entries: 128
