@@ -35,6 +35,9 @@ spec:
     # Talos installs drivers via system extensions under /usr/local
     nvidiaDriverRoot: /usr/local
     gpuResourcesEnabledOverride: true
+    resources:
+      gpus:
+        enabled: true
     kubeletPlugin:
       nodeSelector:
         nvidia.com/dra-kubelet-plugin: "true"
