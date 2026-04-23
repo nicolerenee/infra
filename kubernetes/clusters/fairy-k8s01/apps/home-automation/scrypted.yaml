@@ -49,7 +49,7 @@ spec:
         - op: add
           path: /spec/values/controllers/scrypted/pod/nodeSelector
           value:
-            infra.freckle.systems/vlan-bridge: "true"
+            networks.freckle.systems/home-lan: present
 
         - op: add
           path: /spec/values/persistence/nvr-fast

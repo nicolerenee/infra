@@ -42,4 +42,4 @@ spec:
         - op: add
           path: /spec/values/controllers/esphome/pod/nodeSelector
           value:
-            infra.freckle.systems/vlan-bridge: "true"
+            networks.freckle.systems/home-lan: present

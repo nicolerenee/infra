@@ -15,7 +15,7 @@ spec:
       hostNetwork: true
       priorityClassName: system-node-critical
       nodeSelector:
-        infra.freckle.systems/gpu: nvidia
+        nvidia.com/gpu.present: "true"
       tolerations:
         - key: nvidia.com/gpu
           operator: Exists

@@ -7,7 +7,6 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
-  - ./bridge-vlan-config.yaml
   - ./cilium.yaml
   - ./cilium-gw-config.yaml
   - ./descheduler.yaml
