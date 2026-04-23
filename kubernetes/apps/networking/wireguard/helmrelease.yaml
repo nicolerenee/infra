@@ -35,10 +35,10 @@ spec:
               requests:
                 cpu: 10m
                 memory: 64Mi
-                squat.ai/tun: "1"
+                devic.es/tun: "1"
               limits:
                 memory: 256Mi
-                squat.ai/tun: "1"
+                devic.es/tun: "1"
     defaultPodOptions:
       securityContext:
         runAsNonRoot: false
