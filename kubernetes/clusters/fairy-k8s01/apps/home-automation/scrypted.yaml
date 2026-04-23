@@ -42,7 +42,7 @@ spec:
             [{
               "name":"multus-trusted",
               "namespace": "networking",
-              "ips": ["192.168.227.48/24"],
+              "ips": ["10.189.10.40/24"],
               "mac": "ae:98:3e:33:af:6f"
             }]
 
