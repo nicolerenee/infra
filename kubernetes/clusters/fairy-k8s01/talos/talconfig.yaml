@@ -260,6 +260,7 @@ nodes:
         dhcp: false
         mtu: 9000
     patches:
+      - ./patches/nri.yaml
       - ./patches/nvidia-runtime.yaml
       - ./patches/watchdog.yaml
 
@@ -286,6 +287,7 @@ nodes:
       - <<: *dgx01-cx7-2-1
       - <<: *dgx01-cx7-2-2
     patches:
+      - ./patches/nri.yaml
       - ./patches/nvidia-runtime.yaml
       - ./patches/watchdog.yaml
 
@@ -312,6 +314,7 @@ nodes:
       - <<: *dgx01-cx7-2-1
       - <<: *dgx01-cx7-2-2
     patches:
+      - ./patches/nri.yaml
       - ./patches/nvidia-runtime.yaml
       - ./patches/watchdog.yaml
 
