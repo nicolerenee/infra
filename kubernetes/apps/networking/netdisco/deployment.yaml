@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: docker.io/netdisco/netdisco:2.098002-web
+          image: mirror.gcr.io/netdisco/netdisco:2.098002-web
           envFrom:
             - secretRef:
                 name: netdisco
@@ -76,7 +76,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: docker.io/netdisco/netdisco:2.098002-backend
+          image: mirror.gcr.io/netdisco/netdisco:2.098002-backend
           envFrom:
             - secretRef:
                 name: netdisco
