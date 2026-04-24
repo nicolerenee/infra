@@ -4,10 +4,12 @@ kind: Service
 metadata:
   name: vllm-gpt-oss-2node
 spec:
+  clusterIP: None
   selector:
     app.kubernetes.io/name: vllm-gpt-oss-2node
-    app.kubernetes.io/component: leader
   ports:
     - name: http
       port: 8000
       targetPort: http
+    - name: ray-gcs
+      port: 6379
