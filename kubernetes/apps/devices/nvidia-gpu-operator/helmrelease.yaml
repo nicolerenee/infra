@@ -53,6 +53,10 @@ spec:
     node-feature-discovery:
       enabled: false
 
+    dcgmExporter:
+      serviceMonitor:
+        enabled: true
+
     # Talos installs drivers via system extensions under /usr/local
     hostPaths:
       driverInstallDir: /usr/local
