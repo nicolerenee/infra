@@ -1,0 +1,101 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netdisco-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: netdisco
+      app.kubernetes.io/component: web
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: netdisco
+        app.kubernetes.io/component: web
+    spec:
+      containers:
+        - name: web
+          image: docker.io/netdisco/netdisco:2.098002-web
+          envFrom:
+            - secretRef:
+                name: netdisco
+          env:
+            - name: NETDISCO_DB_HOST
+              value: netdisco-rw
+            - name: NETDISCO_DB_NAME
+              value: app
+            - name: NETDISCO_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: netdisco-db-secret
+                  key: username
+            - name: NETDISCO_DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: netdisco-db-secret
+                  key: password
+          ports:
+            - containerPort: 5000
+              name: http
+          volumeMounts:
+            - name: data
+              mountPath: /home/netdisco
+      securityContext:
+        runAsUser: 901
+        runAsGroup: 901
+        fsGroup: 901
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: netdisco-data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netdisco-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: netdisco
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: netdisco
+        app.kubernetes.io/component: backend
+    spec:
+      containers:
+        - name: backend
+          image: docker.io/netdisco/netdisco:2.098002-backend
+          envFrom:
+            - secretRef:
+                name: netdisco
+          env:
+            - name: NETDISCO_DB_HOST
+              value: netdisco-rw
+            - name: NETDISCO_DB_NAME
+              value: app
+            - name: NETDISCO_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: netdisco-db-secret
+                  key: username
+            - name: NETDISCO_DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: netdisco-db-secret
+                  key: password
+          volumeMounts:
+            - name: data
+              mountPath: /home/netdisco
+      securityContext:
+        runAsUser: 901
+        runAsGroup: 901
+        fsGroup: 901
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: netdisco-data

@@ -1,0 +1,15 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: netdisco
+spec:
+  instances: 1
+  storage:
+    size: 10Gi
+    storageClass: ceph-block
+  enableSuperuserAccess: true
+  superuserSecret:
+    name: netdisco-db-secret
+  monitoring:
+    enablePodMonitor: true
