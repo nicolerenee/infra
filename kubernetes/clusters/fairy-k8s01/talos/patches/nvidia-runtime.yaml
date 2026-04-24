@@ -6,5 +6,7 @@ machine:
       - name: nvidia_uvm
       - name: nvidia_drm
       - name: nvidia_modeset
+      - name: rdma_ucm
+      - name: ib_umad
   sysctls:
     net.core.bpf_jit_enable: 1

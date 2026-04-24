@@ -13,9 +13,7 @@ spec:
           "type": "macvlan",
           "master": "enp1s0f0np0",
           "mode": "bridge",
-          "ipam": {
-            "type": "static"
-          }
+          "ipam": {}
         }
       ]
     }
