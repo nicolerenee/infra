@@ -5,6 +5,7 @@ metadata:
   name: vllm-gpt-oss-2node
 spec:
   clusterIP: None
+  publishNotReadyAddresses: true
   selector:
     app.kubernetes.io/name: vllm-gpt-oss-2node
   ports:
