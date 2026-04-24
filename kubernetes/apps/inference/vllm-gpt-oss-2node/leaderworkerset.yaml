@@ -29,7 +29,7 @@ spec:
               - -c
               - |
                 ray start --head --port=6379 --dashboard-host=0.0.0.0 &&
-                until [ "$(ray status 2>/dev/null | grep -c 'GPU: 1.0')" -ge 2 ]; do
+                until ray status 2>/dev/null | grep -q '0.0/2.0 GPU'; do
                   echo "Waiting for 2 GPU workers to join..."
                   sleep 5
                 done &&
