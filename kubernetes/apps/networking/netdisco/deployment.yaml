@@ -41,7 +41,14 @@ spec:
               name: http
           volumeMounts:
             - name: data
-              mountPath: /home/netdisco
+              mountPath: /home/netdisco/nd-site-local
+              subPath: nd-site-local
+            - name: data
+              mountPath: /home/netdisco/environments
+              subPath: environments
+            - name: data
+              mountPath: /home/netdisco/logs
+              subPath: logs
       securityContext:
         runAsUser: 901
         runAsGroup: 901
@@ -90,7 +97,14 @@ spec:
                   key: password
           volumeMounts:
             - name: data
-              mountPath: /home/netdisco
+              mountPath: /home/netdisco/nd-site-local
+              subPath: nd-site-local
+            - name: data
+              mountPath: /home/netdisco/environments
+              subPath: environments
+            - name: data
+              mountPath: /home/netdisco/logs
+              subPath: logs
       securityContext:
         runAsUser: 901
         runAsGroup: 901
