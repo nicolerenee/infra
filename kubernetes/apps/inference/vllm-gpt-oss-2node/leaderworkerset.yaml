@@ -129,7 +129,7 @@ spec:
               - |
                 # LWS sets the leader's hostname as LWS_LEADER_ADDRESS
                 ray start \
-                  --address=${LWS_LEADER_ADDRESS}:6379 \
+                  --address=$${LWS_LEADER_ADDRESS}:6379 \
                   --block
             env:
               - name: HF_HOME
