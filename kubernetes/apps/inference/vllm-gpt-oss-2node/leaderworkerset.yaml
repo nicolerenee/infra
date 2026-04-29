@@ -23,7 +23,7 @@ spec:
             effect: NoSchedule
         containers:
           - name: vllm
-            image: nvcr.io/nvidia/vllm:26.03-py3
+            image: nvcr.io/nvidia/vllm:26.04-py3
             command:
               - bash
               - -c
@@ -122,7 +122,7 @@ spec:
             effect: NoSchedule
         containers:
           - name: vllm
-            image: nvcr.io/nvidia/vllm:26.03-py3
+            image: nvcr.io/nvidia/vllm:26.04-py3
             command:
               - bash
               - -c
