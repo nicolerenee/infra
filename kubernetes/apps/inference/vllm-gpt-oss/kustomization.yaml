@@ -6,3 +6,4 @@ resources:
   - ./deployment.yaml
   - ./externalsecret.yaml
   - ./service.yaml
+  - ./vmservicescrape.yaml

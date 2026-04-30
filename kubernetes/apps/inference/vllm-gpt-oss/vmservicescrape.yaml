@@ -1,0 +1,19 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: vllm-gpt-oss
+spec:
+  endpoints:
+    - interval: 30s
+      port: http
+      path: /metrics
+      relabelConfigs:
+        - targetLabel: vllm_deployment
+          replacement: vllm-gpt-oss
+  namespaceSelector:
+    matchNames:
+      - inference
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vllm-gpt-oss

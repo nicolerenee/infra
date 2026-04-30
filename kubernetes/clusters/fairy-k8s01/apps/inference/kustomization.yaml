@@ -10,5 +10,4 @@ resources:
   - ./litellm.yaml
   - ./models-pvc.yaml
   - ./gpu-fabric-nad.yaml
-  - ./vllm-gpt-oss.yaml
   - ./vllm-gpt-oss-2node.yaml

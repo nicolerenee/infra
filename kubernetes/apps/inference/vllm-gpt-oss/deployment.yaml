@@ -5,6 +5,8 @@ metadata:
   name: vllm-gpt-oss
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app.kubernetes.io/name: vllm-gpt-oss
@@ -20,7 +22,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: vllm
-          image: nvcr.io/nvidia/vllm:26.03-py3
+          image: nvcr.io/nvidia/vllm:26.04-py3
           command:
             - vllm
             - serve
@@ -44,7 +46,7 @@ spec:
             - --port
             - "8000"
           env:
-            - name: VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8
+            - name: VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8_CUTLASS
               value: "1"
             - name: HF_HOME
               value: /models
