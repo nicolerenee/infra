@@ -8,6 +8,7 @@ spec:
   talos:
     version: ${TALOS_VERSION}
   policy:
+    placement: hard
     rebootMode: powercycle
   healthChecks:
     - apiVersion: ceph.rook.io/v1
