@@ -23,6 +23,10 @@ spec:
     kind: OCIRepository
     name: tuppr
   interval: 1h
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
   values:
     replicaCount: 2
     monitoring:
