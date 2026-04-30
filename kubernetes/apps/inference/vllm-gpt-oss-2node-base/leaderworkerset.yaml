@@ -2,7 +2,7 @@
 apiVersion: leaderworkerset.x-k8s.io/v1
 kind: LeaderWorkerSet
 metadata:
-  name: vllm-gpt-oss-2node
+  name: vllm-gpt-oss-2node-base
 spec:
   replicas: 1
   leaderWorkerTemplate:
@@ -11,7 +11,7 @@ spec:
     leaderTemplate:
       metadata:
         labels:
-          app.kubernetes.io/name: vllm-gpt-oss-2node
+          app.kubernetes.io/name: vllm-gpt-oss-2node-base
           app.kubernetes.io/component: leader
         annotations:
           k8s.v1.cni.cncf.io/networks: gpu-fabric
@@ -23,7 +23,7 @@ spec:
             effect: NoSchedule
         containers:
           - name: vllm
-            image: ghcr.io/nicolerenee/spark-vllm-mxfp4:202604241738
+            image: nvcr.io/nvidia/vllm:26.04-py3
             command:
               - bash
               - -c
@@ -35,11 +35,7 @@ spec:
                   --tensor-parallel-size 2 \
                   --gpu-memory-utilization 0.7 \
                   --enable-prefix-caching \
-                  --load-format fastsafetensors \
                   --quantization mxfp4 \
-                  --mxfp4-backend CUTLASS \
-                  --mxfp4-layers moe,qkv,o \
-                  --attention-backend FLASHINFER \
                   --kv-cache-dtype fp8 \
                   --max-num-batched-tokens 8192 \
                   --nnodes 2 \
@@ -49,7 +45,7 @@ spec:
                   --host 0.0.0.0 \
                   --port 8000
             env:
-              - name: VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8
+              - name: VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8_CUTLASS
                 value: "1"
               - name: HF_HOME
                 value: /models
@@ -112,7 +108,7 @@ spec:
     workerTemplate:
       metadata:
         labels:
-          app.kubernetes.io/name: vllm-gpt-oss-2node
+          app.kubernetes.io/name: vllm-gpt-oss-2node-base
           app.kubernetes.io/component: worker
         annotations:
           k8s.v1.cni.cncf.io/networks: gpu-fabric
@@ -124,7 +120,7 @@ spec:
             effect: NoSchedule
         containers:
           - name: vllm
-            image: ghcr.io/nicolerenee/spark-vllm-mxfp4:202604241738
+            image: nvcr.io/nvidia/vllm:26.04-py3
             command:
               - bash
               - -c
@@ -136,11 +132,7 @@ spec:
                   --tensor-parallel-size 2 \
                   --gpu-memory-utilization 0.7 \
                   --enable-prefix-caching \
-                  --load-format fastsafetensors \
                   --quantization mxfp4 \
-                  --mxfp4-backend CUTLASS \
-                  --mxfp4-layers moe,qkv,o \
-                  --attention-backend FLASHINFER \
                   --kv-cache-dtype fp8 \
                   --max-num-batched-tokens 8192 \
                   --nnodes 2 \
@@ -151,7 +143,7 @@ spec:
                   --host 0.0.0.0 \
                   --port 8000
             env:
-              - name: VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8
+              - name: VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8_CUTLASS
                 value: "1"
               - name: HF_HOME
                 value: /models
