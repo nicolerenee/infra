@@ -27,7 +27,8 @@ spec:
     cdi:
       staticPath: /run/cdi
       dynamicPath: /run/cdi
-    healthMonitoring:
-      enabled: false
+    kubeletPlugin:
+      healthMonitoring:
+        enabled: false
     nodeFeatureRules:
       enabled: true
