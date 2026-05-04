@@ -36,8 +36,6 @@ spec:
         enabled: true
         grafanaOperator:
           enabled: true
-          spec:
-            instanceSelector:
-              matchLabels:
-                dashboards: grafana
-            allowCrossNamespaceImport: true
+          allowCrossNamespaceImport: true
+          matchLabels:
+            dashboards: grafana
