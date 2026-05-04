@@ -11,6 +11,7 @@ resources:
   - ./cilium-gw-config.yaml
   - ./descheduler.yaml
   - ./generic-device-plugin.yaml
+  - ./intel-gpu-exporter.yaml
   - ./intel-gpu-resource-driver.yaml
   - ./kubelet-csr-approver.yaml
   - ./metrics-server.yaml
