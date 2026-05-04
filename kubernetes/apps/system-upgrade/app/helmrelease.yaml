@@ -32,12 +32,12 @@ spec:
     monitoring:
       serviceMonitor:
         enabled: true
-    dashboards:
-      enabled: true
-      grafanaOperator:
+      dashboards:
         enabled: true
-        spec:
-          instanceSelector:
-            matchLabels:
-              dashboards: grafana
-          allowCrossNamespaceImport: true
+        grafanaOperator:
+          enabled: true
+          spec:
+            instanceSelector:
+              matchLabels:
+                dashboards: grafana
+            allowCrossNamespaceImport: true
