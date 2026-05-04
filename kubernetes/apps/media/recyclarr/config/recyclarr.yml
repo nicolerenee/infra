@@ -14,8 +14,7 @@ sonarr:
         daily: default
         anime: default
 
-    delete_old_custom_formats: true
-    replace_existing_custom_formats: true
+
     include:
       # Comment out any of the following includes to disable them
       - template: sonarr-quality-definition-series
@@ -72,8 +71,7 @@ radarr:
   radarr:
     base_url: http://radarr
     api_key: !env_var RADARR_API_KEY
-    delete_old_custom_formats: true
-    replace_existing_custom_formats: true
+
 
     media_naming:
       folder: jellyfin
