@@ -1,0 +1,426 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: vllm-overview
+spec:
+  folder: Inference
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "links": [],
+      "panels": [
+        {
+          "title": "Request Rate",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps",
+              "custom": { "fillOpacity": 20 }
+            }
+          },
+          "targets": [{
+            "expr": "sum by (vllm_deployment) (rate(vllm:request_success_total{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval]))",
+            "legendFormat": "{{vllm_deployment}}"
+          }]
+        },
+        {
+          "title": "Requests Running / Waiting",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "fillOpacity": 20 }
+            },
+            "overrides": [{
+              "matcher": { "id": "byRegexp", "options": "waiting" },
+              "properties": [{ "id": "custom.fillOpacity", "value": 40 }]
+            }]
+          },
+          "targets": [
+            {
+              "expr": "sum by (vllm_deployment) (vllm:num_requests_running{model_name=~\"$model\", vllm_deployment=~\"$deployment\"})",
+              "legendFormat": "{{vllm_deployment}} running"
+            },
+            {
+              "expr": "sum by (vllm_deployment) (vllm:num_requests_waiting{model_name=~\"$model\", vllm_deployment=~\"$deployment\"})",
+              "legendFormat": "{{vllm_deployment}} waiting"
+            }
+          ]
+        },
+        {
+          "title": "Running Concurrency Distribution",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "fillOpacity": 10 }
+            },
+            "overrides": [
+              {
+                "matcher": { "id": "byRegexp", "options": "max" },
+                "properties": [{ "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 10] } }]
+              },
+              {
+                "matcher": { "id": "byRegexp", "options": "min" },
+                "properties": [{ "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [4, 6] } }]
+              }
+            ]
+          },
+          "targets": [
+            {
+              "expr": "sum by (vllm_deployment) (vllm:num_requests_running{model_name=~\"$model\", vllm_deployment=~\"$deployment\"})",
+              "legendFormat": "{{vllm_deployment}} current"
+            },
+            {
+              "expr": "max_over_time(sum by (vllm_deployment) (vllm:num_requests_running{model_name=~\"$model\", vllm_deployment=~\"$deployment\"})[5m:])",
+              "legendFormat": "{{vllm_deployment}} max (5m)"
+            },
+            {
+              "expr": "min_over_time(sum by (vllm_deployment) (vllm:num_requests_running{model_name=~\"$model\", vllm_deployment=~\"$deployment\"})[5m:])",
+              "legendFormat": "{{vllm_deployment}} min (5m)"
+            }
+          ]
+        },
+        {
+          "title": "Total Token Throughput",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": { "fillOpacity": 20, "axisLabel": "tokens/s" }
+            }
+          },
+          "targets": [{
+            "expr": "sum by (vllm_deployment) (rate(vllm:prompt_tokens_total{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval]) + rate(vllm:generation_tokens_total{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval]))",
+            "legendFormat": "{{vllm_deployment}} total"
+          }]
+        },
+        {
+          "title": "Token Throughput (Prefill)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": { "fillOpacity": 20, "axisLabel": "tokens/s" }
+            }
+          },
+          "targets": [{
+            "expr": "sum by (vllm_deployment) (rate(vllm:prompt_tokens_total{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval]))",
+            "legendFormat": "{{vllm_deployment}}"
+          }]
+        },
+        {
+          "title": "Token Throughput (Generation)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": { "fillOpacity": 20, "axisLabel": "tokens/s" }
+            }
+          },
+          "targets": [{
+            "expr": "sum by (vllm_deployment) (rate(vllm:generation_tokens_total{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval]))",
+            "legendFormat": "{{vllm_deployment}}"
+          }]
+        },
+        {
+          "title": "Time to First Token (p50 / p95 / p99)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms",
+              "decimals": 0,
+              "custom": { "fillOpacity": 10 }
+            }
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, sum by (le, vllm_deployment) (rate(vllm:time_to_first_token_seconds_bucket{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval]))) * 1000",
+              "legendFormat": "{{vllm_deployment}} p50"
+            },
+            {
+              "expr": "histogram_quantile(0.95, sum by (le, vllm_deployment) (rate(vllm:time_to_first_token_seconds_bucket{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval]))) * 1000",
+              "legendFormat": "{{vllm_deployment}} p95"
+            },
+            {
+              "expr": "histogram_quantile(0.99, sum by (le, vllm_deployment) (rate(vllm:time_to_first_token_seconds_bucket{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval]))) * 1000",
+              "legendFormat": "{{vllm_deployment}} p99"
+            }
+          ]
+        },
+        {
+          "title": "Inter-Token Latency (p50 / p95 / p99)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms",
+              "decimals": 1,
+              "custom": { "fillOpacity": 10 }
+            }
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, sum by (le, vllm_deployment) (rate(vllm:inter_token_latency_seconds_bucket{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval]))) * 1000",
+              "legendFormat": "{{vllm_deployment}} p50"
+            },
+            {
+              "expr": "histogram_quantile(0.95, sum by (le, vllm_deployment) (rate(vllm:inter_token_latency_seconds_bucket{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval]))) * 1000",
+              "legendFormat": "{{vllm_deployment}} p95"
+            },
+            {
+              "expr": "histogram_quantile(0.99, sum by (le, vllm_deployment) (rate(vllm:inter_token_latency_seconds_bucket{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval]))) * 1000",
+              "legendFormat": "{{vllm_deployment}} p99"
+            }
+          ]
+        },
+        {
+          "title": "E2E Request Latency (p50 / p95 / p99)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "decimals": 2,
+              "custom": { "fillOpacity": 10 }
+            }
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, sum by (le, vllm_deployment) (rate(vllm:e2e_request_latency_seconds_bucket{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval])))",
+              "legendFormat": "{{vllm_deployment}} p50"
+            },
+            {
+              "expr": "histogram_quantile(0.95, sum by (le, vllm_deployment) (rate(vllm:e2e_request_latency_seconds_bucket{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval])))",
+              "legendFormat": "{{vllm_deployment}} p95"
+            },
+            {
+              "expr": "histogram_quantile(0.99, sum by (le, vllm_deployment) (rate(vllm:e2e_request_latency_seconds_bucket{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval])))",
+              "legendFormat": "{{vllm_deployment}} p99"
+            }
+          ]
+        },
+        {
+          "title": "Queue Time (p50 / p95 / p99)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms",
+              "decimals": 0,
+              "custom": { "fillOpacity": 10 }
+            }
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, sum by (le, vllm_deployment) (rate(vllm:request_queue_time_seconds_bucket{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval]))) * 1000",
+              "legendFormat": "{{vllm_deployment}} p50"
+            },
+            {
+              "expr": "histogram_quantile(0.95, sum by (le, vllm_deployment) (rate(vllm:request_queue_time_seconds_bucket{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval]))) * 1000",
+              "legendFormat": "{{vllm_deployment}} p95"
+            },
+            {
+              "expr": "histogram_quantile(0.99, sum by (le, vllm_deployment) (rate(vllm:request_queue_time_seconds_bucket{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval]))) * 1000",
+              "legendFormat": "{{vllm_deployment}} p99"
+            }
+          ]
+        },
+        {
+          "title": "KV Cache Usage",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 8, "x": 0, "y": 32 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "min": 0, "max": 1,
+              "custom": { "fillOpacity": 20 },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 0.8 },
+                  { "color": "red", "value": 0.95 }
+                ]
+              }
+            }
+          },
+          "targets": [{
+            "expr": "vllm:kv_cache_usage_perc{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}",
+            "legendFormat": "{{vllm_deployment}}"
+          }]
+        },
+        {
+          "title": "Prefix Cache Hit Rate",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 8, "x": 8, "y": 32 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "min": 0, "max": 1,
+              "custom": { "fillOpacity": 20 }
+            }
+          },
+          "targets": [{
+            "expr": "sum by (vllm_deployment) (rate(vllm:prefix_cache_hits_total{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval])) / clamp_min(sum by (vllm_deployment) (rate(vllm:prefix_cache_queries_total{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval])), 1)",
+            "legendFormat": "{{vllm_deployment}}"
+          }]
+        },
+        {
+          "title": "Avg Tokens per Request",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 8, "x": 16, "y": 32 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": { "fillOpacity": 10, "axisLabel": "tokens" }
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum by (vllm_deployment) (rate(vllm:prompt_tokens_total{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval])) / clamp_min(sum by (vllm_deployment) (rate(vllm:request_success_total{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval])), 0.001)",
+              "legendFormat": "{{vllm_deployment}} prompt"
+            },
+            {
+              "expr": "sum by (vllm_deployment) (rate(vllm:generation_tokens_total{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval])) / clamp_min(sum by (vllm_deployment) (rate(vllm:request_success_total{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval])), 0.001)",
+              "legendFormat": "{{vllm_deployment}} generation"
+            }
+          ]
+        },
+        {
+          "title": "Requests by Finish Reason",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 8, "x": 0, "y": 40 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps",
+              "custom": { "fillOpacity": 20, "stacking": { "mode": "normal" } }
+            }
+          },
+          "targets": [{
+            "expr": "sum by (finished_reason, vllm_deployment) (rate(vllm:request_success_total{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval]))",
+            "legendFormat": "{{vllm_deployment}} {{finished_reason}}"
+          }]
+        },
+        {
+          "title": "Preemptions",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 8, "x": 8, "y": 40 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "fillOpacity": 20 },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 1 }
+                ]
+              }
+            }
+          },
+          "targets": [{
+            "expr": "sum by (vllm_deployment) (rate(vllm:num_preemptions_total{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval]))",
+            "legendFormat": "{{vllm_deployment}}"
+          }]
+        },
+        {
+          "title": "Prompt Tokens by Source",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 8, "x": 16, "y": 40 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": { "fillOpacity": 20, "stacking": { "mode": "normal" }, "axisLabel": "tokens/s" }
+            }
+          },
+          "targets": [{
+            "expr": "sum by (source, vllm_deployment) (rate(vllm:prompt_tokens_by_source_total{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval]))",
+            "legendFormat": "{{vllm_deployment}} {{source}}"
+          }]
+        },
+        {
+          "title": "Tokens per Engine Step",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 48 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "fillOpacity": 10 }
+            }
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, sum by (le, vllm_deployment) (rate(vllm:iteration_tokens_total_bucket{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval])))",
+              "legendFormat": "{{vllm_deployment}} p50"
+            },
+            {
+              "expr": "histogram_quantile(0.95, sum by (le, vllm_deployment) (rate(vllm:iteration_tokens_total_bucket{model_name=~\"$model\", vllm_deployment=~\"$deployment\"}[$__rate_interval])))",
+              "legendFormat": "{{vllm_deployment}} p95"
+            }
+          ]
+        }
+      ],
+      "schemaVersion": 39,
+      "templating": {
+        "list": [
+          {
+            "name": "datasource",
+            "type": "datasource",
+            "query": "prometheus",
+            "current": { "text": "VictoriaMetrics", "value": "VictoriaMetrics" }
+          },
+          {
+            "name": "deployment",
+            "label": "Deployment",
+            "type": "query",
+            "datasource": { "type": "prometheus", "uid": "${datasource}" },
+            "query": "label_values(vllm:num_requests_running, vllm_deployment)",
+            "includeAll": true,
+            "multi": true,
+            "current": { "text": "All", "value": "$__all" }
+          },
+          {
+            "name": "model",
+            "label": "Model",
+            "type": "query",
+            "datasource": { "type": "prometheus", "uid": "${datasource}" },
+            "query": "label_values(vllm:num_requests_running{vllm_deployment=~\"$deployment\"}, model_name)",
+            "includeAll": true,
+            "multi": true,
+            "current": { "text": "All", "value": "$__all" }
+          }
+        ]
+      },
+      "time": { "from": "now-3h", "to": "now" },
+      "timepicker": {},
+      "timezone": "",
+      "title": "vLLM Overview",
+      "uid": "vllm-overview"
+    }

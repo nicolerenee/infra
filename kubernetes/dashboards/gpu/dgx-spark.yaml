@@ -1,0 +1,372 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: dgx-spark
+spec:
+  folder: GPU
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "links": [],
+      "panels": [
+        {
+          "title": "GPU Utilization",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0, "max": 100,
+              "custom": { "fillOpacity": 20 }
+            }
+          },
+          "targets": [{
+            "expr": "max by (Hostname) (DCGM_FI_DEV_GPU_UTIL{Hostname=~\"$node\"})",
+            "legendFormat": "{{Hostname}}"
+          }]
+        },
+        {
+          "title": "GPU Power Usage",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "watt",
+              "custom": { "fillOpacity": 20 }
+            }
+          },
+          "targets": [{
+            "expr": "max by (Hostname) (DCGM_FI_DEV_POWER_USAGE{Hostname=~\"$node\"})",
+            "legendFormat": "{{Hostname}}"
+          }]
+        },
+        {
+          "title": "GPU Temperature",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "celsius",
+              "custom": { "fillOpacity": 10 },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 70 },
+                  { "color": "red", "value": 85 }
+                ]
+              }
+            }
+          },
+          "targets": [
+            {
+              "expr": "max by (Hostname) (DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$node\"})",
+              "legendFormat": "{{Hostname}} GPU"
+            }
+          ]
+        },
+        {
+          "title": "GPU SM Clock",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "MHz",
+              "custom": { "fillOpacity": 10 }
+            }
+          },
+          "targets": [{
+            "expr": "max by (Hostname) (DCGM_FI_DEV_SM_CLOCK{Hostname=~\"$node\"})",
+            "legendFormat": "{{Hostname}}"
+          }]
+        },
+        {
+          "title": "GPU Energy Rate",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "watt",
+              "custom": { "fillOpacity": 10 }
+            }
+          },
+          "targets": [{
+            "expr": "rate(DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION{Hostname=~\"$node\", gpu=\"0\"}[$__rate_interval]) / 1000",
+            "legendFormat": "{{Hostname}}"
+          }]
+        },
+        {
+          "title": "10G Management Network (enP7s7)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bps",
+              "custom": { "fillOpacity": 10 }
+            },
+            "overrides": [{
+              "matcher": { "id": "byRegexp", "options": "TX$" },
+              "properties": [{ "id": "custom.transform", "value": "negative-Y" }]
+            }]
+          },
+          "targets": [
+            {
+              "expr": "rate(node_network_receive_bytes_total{instance=~\"$instance\", device=\"enP7s7\"}[$__rate_interval]) * 8",
+              "legendFormat": "{{instance}} RX"
+            },
+            {
+              "expr": "rate(node_network_transmit_bytes_total{instance=~\"$instance\", device=\"enP7s7\"}[$__rate_interval]) * -8",
+              "legendFormat": "{{instance}} TX"
+            }
+          ]
+        },
+        {
+          "title": "ConnectX-7 RDMA Fabric Traffic",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bps",
+              "custom": { "fillOpacity": 10 }
+            },
+            "overrides": [{
+              "matcher": { "id": "byRegexp", "options": "TX" },
+              "properties": [{ "id": "custom.transform", "value": "negative-Y" }]
+            }]
+          },
+          "targets": [
+            {
+              "expr": "sum by (instance) (rate(node_infiniband_port_data_received_bytes_total{instance=~\"$instance\"}[$__rate_interval])) * 8",
+              "legendFormat": "{{instance}} RX"
+            },
+            {
+              "expr": "sum by (instance) (rate(node_infiniband_port_data_transmitted_bytes_total{instance=~\"$instance\"}[$__rate_interval])) * -8",
+              "legendFormat": "{{instance}} TX"
+            }
+          ]
+        },
+        {
+          "title": "ConnectX-7 RDMA Traffic Per HCA",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bps",
+              "custom": { "fillOpacity": 10 }
+            },
+            "overrides": [{
+              "matcher": { "id": "byRegexp", "options": "TX" },
+              "properties": [{ "id": "custom.transform", "value": "negative-Y" }]
+            }]
+          },
+          "targets": [
+            {
+              "expr": "rate(node_infiniband_port_data_received_bytes_total{instance=~\"$instance\"}[$__rate_interval]) * 8",
+              "legendFormat": "{{instance}} {{device}} RX"
+            },
+            {
+              "expr": "rate(node_infiniband_port_data_transmitted_bytes_total{instance=~\"$instance\"}[$__rate_interval]) * -8",
+              "legendFormat": "{{instance}} {{device}} TX"
+            }
+          ]
+        },
+        {
+          "title": "RDMA Packets",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "pps",
+              "custom": { "fillOpacity": 10 }
+            },
+            "overrides": [{
+              "matcher": { "id": "byRegexp", "options": "TX" },
+              "properties": [{ "id": "custom.transform", "value": "negative-Y" }]
+            }]
+          },
+          "targets": [
+            {
+              "expr": "sum by (instance) (rate(node_infiniband_port_packets_received_total{instance=~\"$instance\"}[$__rate_interval]))",
+              "legendFormat": "{{instance}} RX"
+            },
+            {
+              "expr": "sum by (instance) (rate(node_infiniband_port_packets_transmitted_total{instance=~\"$instance\"}[$__rate_interval])) * -1",
+              "legendFormat": "{{instance}} TX"
+            }
+          ]
+        },
+        {
+          "title": "System Thermals",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "celsius",
+              "custom": { "fillOpacity": 10 },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 70 },
+                  { "color": "red", "value": 90 }
+                ]
+              }
+            }
+          },
+          "targets": [{
+            "expr": "node_hwmon_temp_celsius{instance=~\"$instance\"}",
+            "legendFormat": "{{instance}} {{sensor}}"
+          }]
+        },
+        {
+          "title": "CPU Utilization",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 40 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0, "max": 100,
+              "custom": { "fillOpacity": 20 }
+            }
+          },
+          "targets": [{
+            "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{instance=~\"$instance\", mode=\"idle\"}[$__rate_interval])) * 100)",
+            "legendFormat": "{{instance}}"
+          }]
+        },
+        {
+          "title": "Fan Speed",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 40 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "rotrpm",
+              "custom": { "fillOpacity": 10 }
+            }
+          },
+          "targets": [{
+            "expr": "node_hwmon_fan_rpm{instance=~\"$instance\"}",
+            "legendFormat": "{{instance}} {{sensor}}"
+          }]
+        },
+        {
+          "title": "Network Errors & Drops",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 48 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "fillOpacity": 10 }
+            }
+          },
+          "targets": [
+            {
+              "expr": "rate(node_network_receive_errs_total{instance=~\"$instance\", device=\"enP7s7\"}[$__rate_interval])",
+              "legendFormat": "{{instance}} 10G RX errors"
+            },
+            {
+              "expr": "rate(node_network_transmit_errs_total{instance=~\"$instance\", device=\"enP7s7\"}[$__rate_interval])",
+              "legendFormat": "{{instance}} 10G TX errors"
+            },
+            {
+              "expr": "rate(node_infiniband_port_errors_received_total{instance=~\"$instance\"}[$__rate_interval])",
+              "legendFormat": "{{instance}} {{device}} IB RX errors"
+            },
+            {
+              "expr": "rate(node_infiniband_symbol_error_total{instance=~\"$instance\"}[$__rate_interval])",
+              "legendFormat": "{{instance}} {{device}} IB symbol errors"
+            },
+            {
+              "expr": "rate(node_infiniband_packet_sequence_errors_total{instance=~\"$instance\"}[$__rate_interval])",
+              "legendFormat": "{{instance}} {{device}} IB seq errors"
+            }
+          ]
+        },
+        {
+          "title": "PCIe Replay Counter",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 12, "x": 0, "y": 56 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "targets": [{
+            "expr": "max by (Hostname) (DCGM_FI_DEV_PCIE_REPLAY_COUNTER{Hostname=~\"$node\"})",
+            "legendFormat": "{{Hostname}}"
+          }]
+        },
+        {
+          "title": "Encoder / Decoder Utilization",
+          "type": "timeseries",
+          "gridPos": { "h": 4, "w": 12, "x": 12, "y": 56 },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0, "max": 100
+            }
+          },
+          "targets": [
+            {
+              "expr": "max by (Hostname) (DCGM_FI_DEV_ENC_UTIL{Hostname=~\"$node\"})",
+              "legendFormat": "{{Hostname}} Encoder"
+            },
+            {
+              "expr": "max by (Hostname) (DCGM_FI_DEV_DEC_UTIL{Hostname=~\"$node\"})",
+              "legendFormat": "{{Hostname}} Decoder"
+            }
+          ]
+        }
+      ],
+      "schemaVersion": 39,
+      "templating": {
+        "list": [
+          {
+            "name": "datasource",
+            "type": "datasource",
+            "query": "prometheus",
+            "current": { "text": "VictoriaMetrics", "value": "VictoriaMetrics" }
+          },
+          {
+            "name": "node",
+            "label": "DGX Node",
+            "type": "query",
+            "datasource": { "type": "prometheus", "uid": "${datasource}" },
+            "query": "label_values(DCGM_FI_DEV_GPU_UTIL, Hostname)",
+            "includeAll": true,
+            "multi": true,
+            "current": { "text": "All", "value": "$__all" }
+          },
+          {
+            "name": "instance",
+            "label": "Node Exporter Instance",
+            "type": "query",
+            "datasource": { "type": "prometheus", "uid": "${datasource}" },
+            "query": "label_values(node_network_receive_bytes_total{device=\"enP7s7\"}, instance)",
+            "includeAll": true,
+            "multi": true,
+            "current": { "text": "All", "value": "$__all" }
+          }
+        ]
+      },
+      "time": { "from": "now-3h", "to": "now" },
+      "timepicker": {},
+      "timezone": "",
+      "title": "DGX Spark Overview",
+      "uid": "dgx-spark-overview"
+    }

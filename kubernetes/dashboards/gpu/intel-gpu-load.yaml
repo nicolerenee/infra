@@ -1,0 +1,169 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: intel-gpu-load
+spec:
+  folder: GPU
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "links": [],
+      "panels": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "max": 1500, "min": 0,
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "#EAB839", "value": 1200 }, { "color": "red", "value": 1400 }] },
+              "unit": "rotmhz"
+            }
+          },
+          "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
+          "id": 4,
+          "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] }, "showPercentChange": false, "textMode": "auto" },
+          "targets": [{ "expr": "avg (gpumon_frequency{type=\"actual\",node=~\"^$node$\"}) by (node)", "legendFormat": "{{node}}" }],
+          "title": "Frequency",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": { "mode": "percentage", "steps": [{ "color": "green", "value": 0 }, { "color": "orange", "value": 80 }, { "color": "red", "value": 95 }] },
+              "unit": "watt"
+            }
+          },
+          "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
+          "id": 8,
+          "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] }, "showPercentChange": false, "textMode": "auto" },
+          "targets": [{ "expr": "avg (gpumon_power{node=~\"^$node$\", type=\"gpu\"}) by (type, node)", "legendFormat": "{{node}}" }],
+          "title": "Power",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "red", "value": 80 }] }
+            }
+          },
+          "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+          "id": 6,
+          "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] }, "showPercentChange": false, "textMode": "auto" },
+          "targets": [{ "expr": "sum (gpumon_clients_count{node=~\"^$node$\"}) by (name, node)", "legendFormat": "{{name}}" }],
+          "title": "Clients",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 1, "max": 100, "min": 0,
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "orange", "value": 80 }, { "color": "red", "value": 95 }] },
+              "unit": "percent"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "id": 3,
+          "options": { "displayMode": "lcd", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"] }, "showUnfilled": true },
+          "targets": [{ "expr": "avg by (engine) (gpumon_engine_usage{attrib=\"busy\", node=~\"^$node$\"})", "legendFormat": "{{engine}}" }],
+          "title": "Load",
+          "type": "bargauge"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "drawStyle": "line", "fillOpacity": 0, "lineWidth": 1, "showPoints": "never", "spanNulls": false },
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "red", "value": 80 }] },
+              "unit": "percent"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "id": 5,
+          "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "single", "sort": "none" } },
+          "targets": [{ "expr": "avg by (engine) (gpumon_engine_usage{attrib=\"busy\", node=~\"^$node$\"})", "legendFormat": "{{engine}}" }],
+          "title": "Load",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": { "mode": "percentage", "steps": [{ "color": "green", "value": 0 }, { "color": "red", "value": 80 }] },
+              "unit": "MiBs"
+            }
+          },
+          "gridPos": { "h": 7, "w": 12, "x": 0, "y": 16 },
+          "id": 7,
+          "options": { "displayMode": "lcd", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"] }, "showUnfilled": true },
+          "targets": [
+            { "expr": "avg (gpumon_imc_read{node=~\"^$node$\"}) by (node)", "instant": true, "legendFormat": "read" },
+            { "expr": "avg (gpumon_imc_write{node=~\"^$node$\"}) by (node)", "instant": true, "legendFormat": "write" }
+          ],
+          "title": "IMC Bandwidth",
+          "type": "bargauge"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "drawStyle": "line", "fillOpacity": 0, "lineWidth": 1, "showPoints": "auto", "spanNulls": false },
+              "min": 0,
+              "thresholds": { "mode": "percentage", "steps": [{ "color": "green", "value": 0 }, { "color": "red", "value": 80 }] },
+              "unit": "MiBs"
+            }
+          },
+          "gridPos": { "h": 7, "w": 12, "x": 12, "y": 16 },
+          "id": 9,
+          "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "single", "sort": "none" } },
+          "targets": [
+            { "expr": "avg (gpumon_imc_read{node=~\"^$node$\"}) by (node)", "legendFormat": "read" },
+            { "expr": "avg (gpumon_imc_write{node=~\"^$node$\"}) by (node)", "legendFormat": "write" }
+          ],
+          "title": "IMC Bandwidth",
+          "type": "timeseries"
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 42,
+      "tags": ["gpu", "intel"],
+      "templating": {
+        "list": [
+          {
+            "name": "datasource",
+            "type": "datasource",
+            "query": "prometheus",
+            "current": { "text": "VictoriaMetrics", "value": "VictoriaMetrics" }
+          },
+          {
+            "datasource": { "type": "prometheus", "uid": "${datasource}" },
+            "definition": "label_values(gpumon_engine_usage,node)",
+            "includeAll": true,
+            "multi": true,
+            "name": "node",
+            "query": { "qryType": 1, "query": "label_values(gpumon_engine_usage,node)" },
+            "refresh": 1,
+            "type": "query"
+          }
+        ]
+      },
+      "time": { "from": "now-6h", "to": "now" },
+      "timezone": "browser",
+      "title": "Intel GPU Load",
+      "uid": "intel-gpu-load"
+    }
+  resyncPeriod: 10m0s
