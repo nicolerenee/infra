@@ -32,6 +32,7 @@ spec:
     monitoring:
       serviceMonitor:
         enabled: true
+      # monitoring.dashboards controls the ConfigMap + gate for grafanaOperator
       dashboards:
         enabled: true
         grafanaOperator:
@@ -41,3 +42,12 @@ spec:
               matchLabels:
                 dashboards: grafana
             allowCrossNamespaceImport: true
+      # monitoring.dashboard (singular) is referenced by the GrafanaDashboard
+      # template due to a chart bug (dashboards vs dashboard mismatch)
+      dashboard:
+        namespace: ""
+        grafanaDashboard:
+          instanceSelector:
+            matchLabels:
+              dashboards: grafana
+          allowCrossNamespaceImport: true
