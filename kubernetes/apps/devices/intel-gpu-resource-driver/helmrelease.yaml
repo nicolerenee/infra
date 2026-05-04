@@ -27,5 +27,7 @@ spec:
     cdi:
       staticPath: /run/cdi
       dynamicPath: /run/cdi
+    healthMonitoring:
+      enabled: false
     nodeFeatureRules:
       enabled: true
