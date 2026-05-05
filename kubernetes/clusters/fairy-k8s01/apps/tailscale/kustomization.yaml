@@ -9,6 +9,7 @@ components:
 resources:
   - ./tailscale-operator.yaml
   - ./tailscale-proxyclass.yaml
+  - ./tailscale-proxygroup.yaml
   - ./tailscale-routers.yaml
 patches:
   - target:
