@@ -35,5 +35,4 @@ spec:
             loadBalancer:
               algorithm: maglev
             gatewayAPI:
-              enabled: true
-              enableAlpn: true
+              enabled: false

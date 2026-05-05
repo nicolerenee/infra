@@ -45,8 +45,7 @@ releases:
       - operator:
           replicas: 1
         gatewayAPI:
-          enabled: true
-          enableAlpn: true
+          enabled: false
         bandwidthManager:
           enabled: true
           bbr: true

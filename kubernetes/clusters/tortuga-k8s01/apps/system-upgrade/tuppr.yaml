@@ -20,3 +20,10 @@ spec:
   retryInterval: 2m
   timeout: 5m
   wait: true
+  patches:
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: replace
+          path: /spec/values/replicaCount
+          value: 1
