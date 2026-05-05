@@ -177,6 +177,7 @@ controlPlane:
   nodeLabels: {}
   patches:
     - ./patches/watchdog.yaml
+    - ./patches/vxlan-vpn.yaml
 
     # Cluster configuration
     - |-
@@ -300,6 +301,7 @@ controlPlane:
 worker:
   patches:
     - ./patches/watchdog.yaml
+    - ./patches/vxlan-vpn.yaml
     - *disableSearchDomainPatch
     - *nameServersPatch
     - *machinePatches
