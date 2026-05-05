@@ -6,6 +6,7 @@ metadata:
   namespace: flux-system
   annotations:
     tailscale.com/funnel: "true"
+    tailscale.com/proxy-group: ingress-proxy
 spec:
   ingressClassName: tailscale
   tls:
