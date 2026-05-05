@@ -86,6 +86,9 @@ spec:
     defaultPodOptions:
       automountServiceAccountToken: false
       dnsPolicy: None
+      dnsConfig:
+        nameservers:
+          - "1.1.1.1"
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
