@@ -1,0 +1,33 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/source.toolkit.fluxcd.io/ocirepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: local-path-provisioner
+spec:
+  interval: 5m
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
+  ref:
+    tag: 0.0.33
+  url: oci://ghcr.io/home-operations/charts-mirror/local-path-provisioner
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: local-path-provisioner
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: local-path-provisioner
+  interval: 1h
+  values:
+    storageClass:
+      name: local-path
+      defaultClass: true
+    nodePathMap:
+      - node: DEFAULT_PATH_ON_NODE
+        paths:
+          - /var/local-path-provisioner

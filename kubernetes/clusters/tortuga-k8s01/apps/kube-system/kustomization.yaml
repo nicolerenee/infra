@@ -9,6 +9,7 @@ resources:
   - ./cilium.yaml
   - ./generic-device-plugin.yaml
   - ./kubelet-csr-approver.yaml
+  - ./local-path-provisioner.yaml
   - ./metrics-server.yaml
   - ./reflector.yaml
   - ./reloader.yaml
