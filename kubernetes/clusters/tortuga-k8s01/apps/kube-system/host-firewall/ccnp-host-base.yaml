@@ -17,11 +17,13 @@ spec:
               family: IPv4
             - type: 128
               family: IPv6
-    # Allow Talos API from fairy and atlantis
+    # Allow Talos API and Kubernetes API from fairy and atlantis
     - fromCIDRSet:
         - cidrGroupRef: site-fairy-public
         - cidrGroupRef: site-atlantis-public
       toPorts:
         - ports:
+            - port: "6443"
+              protocol: TCP
             - port: "50000"
               protocol: TCP
