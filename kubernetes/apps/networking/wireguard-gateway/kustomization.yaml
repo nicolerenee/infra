@@ -5,5 +5,4 @@ kind: Kustomization
 resources:
   - ./ccnp.yaml
   - ./externalsecret.yaml
-  - ./externalsecret-vars.yaml
   - ./helmrelease.yaml

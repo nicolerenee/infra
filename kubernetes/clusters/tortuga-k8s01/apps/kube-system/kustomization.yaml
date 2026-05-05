@@ -15,3 +15,4 @@ resources:
   - ./metrics-server.yaml
   - ./reflector.yaml
   - ./reloader.yaml
+  - ./site-public-ips.yaml

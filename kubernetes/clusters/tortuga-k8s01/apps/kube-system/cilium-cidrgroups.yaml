@@ -13,8 +13,7 @@ spec:
       app.kubernetes.io/name: *app
   targetNamespace: *namespace
   dependsOn:
-    - name: external-secrets-apps
-      namespace: external-secrets
+    - name: site-public-ips
   sourceRef:
     kind: GitRepository
     name: flux-system

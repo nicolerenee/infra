@@ -3,28 +3,23 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app wireguard-gateway
-  namespace: &namespace networking
-  labels:
-    infra.freckle.systems/post-build-variables: enabled
+  name: &app site-public-ips
+  namespace: &namespace kube-system
 spec:
-  targetNamespace: *namespace
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  targetNamespace: *namespace
   dependsOn:
-    - name: wireguard-gateway-vars
+    - name: external-secrets-apps
+      namespace: external-secrets
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/networking/wireguard-gateway
+  path: ./kubernetes/clusters/tortuga-k8s01/apps/kube-system/site-public-ips
   interval: 2m
   retryInterval: 1m
   timeout: 5m
   prune: true
   wait: true
-  postBuild:
-    substituteFrom:
-      - kind: Secret
-        name: wireguard-gateway-vars
