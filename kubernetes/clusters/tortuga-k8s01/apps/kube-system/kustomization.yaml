@@ -7,6 +7,7 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - ./cilium.yaml
+  - ./generic-device-plugin.yaml
   - ./kubelet-csr-approver.yaml
   - ./metrics-server.yaml
   - ./reflector.yaml
