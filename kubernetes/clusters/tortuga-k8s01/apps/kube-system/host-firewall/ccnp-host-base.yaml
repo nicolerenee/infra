@@ -1,17 +1,23 @@
 ---
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumclusterwidenetworkpolicy_v2.json
-# Allow Talos API access from fairy and atlantis site public IPs.
+# Base host firewall policy for tortuga: default deny with ICMP and Talos API allowed.
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
-  name: host-allow-talos-api
+  name: host-base-policy
 spec:
   nodeSelector:
     matchLabels:
       kubernetes.io/hostname: tortuga-cn01
-  enableDefaultDeny:
-    ingress: false
   ingress:
+    # Allow ICMP (ping) from anywhere
+    - icmps:
+        - fields:
+            - type: 8
+              family: IPv4
+            - type: 128
+              family: IPv6
+    # Allow Talos API from fairy and atlantis
     - fromCIDRSet:
         - cidrGroupRef: site-fairy-public
         - cidrGroupRef: site-atlantis-public
