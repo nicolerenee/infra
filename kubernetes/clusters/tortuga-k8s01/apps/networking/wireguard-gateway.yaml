@@ -5,8 +5,6 @@ kind: Kustomization
 metadata:
   name: &app wireguard-gateway
   namespace: &namespace networking
-  labels:
-    infra.freckle.systems/post-build-variables: enabled
 spec:
   targetNamespace: *namespace
   commonMetadata:

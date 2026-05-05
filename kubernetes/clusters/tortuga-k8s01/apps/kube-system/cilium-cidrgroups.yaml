@@ -5,8 +5,6 @@ kind: Kustomization
 metadata:
   name: &app cilium-cidrgroups
   namespace: &namespace kube-system
-  labels:
-    infra.freckle.systems/post-build-variables: enabled
 spec:
   commonMetadata:
     labels:
