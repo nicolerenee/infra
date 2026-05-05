@@ -48,3 +48,7 @@ spec:
               algorithm: maglev
             gatewayAPI:
               enabled: false
+            operator:
+              replicas: 1
+              updateStrategy:
+                type: Recreate
