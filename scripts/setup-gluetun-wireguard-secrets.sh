@@ -86,6 +86,7 @@ echo ""
 # WireGuard server item — used by ExternalSecret on tortuga for WireGuard gateway
 op_upsert "$TORTUGA_VAULT" "wg-server" "wireguard,tortuga" \
     "private_key=$SERVER_PRIVATE_KEY" \
+    "listen_port=$TORTUGA_PORT" \
     "qbt_reel_pubkey=$REEL_PUBLIC_KEY" \
     "qbt_reel_psk=$REEL_PSK" \
     "qbt_ink_pubkey=$INK_PUBLIC_KEY" \
