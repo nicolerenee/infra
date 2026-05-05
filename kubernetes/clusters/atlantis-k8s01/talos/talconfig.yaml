@@ -52,11 +52,10 @@ nodes:
         interface: enp1s0d1
       - &compute01-bond0
         interface: bond0
-        bond:
-          deviceSelectors:
-            # Mellanox ConnectX 10GB adapter (enp#s0 and enp#s0d1 (1 on compute01, 2 on others))
-            - driver: "mlx4_core"
-              physical: true
+        bond: &bond-config
+          interfaces:
+            - enp1s0
+            - enp1s0d1
           mode: 802.3ad
           xmitHashPolicy: layer3+4
           lacpRate: fast
@@ -88,6 +87,11 @@ nodes:
       - <<: *compute01-nic
         interface: enp2s0d1
       - <<: *compute01-bond0
+        bond:
+          <<: *bond-config
+          interfaces:
+            - enp2s0
+            - enp2s0d1
         addresses:
           - 172.26.3.6/24
           - 2607:fc88:200:403:202:3333::802/64
@@ -107,6 +111,11 @@ nodes:
       - <<: *compute01-nic
         interface: enp2s0d1
       - <<: *compute01-bond0
+        bond:
+          <<: *bond-config
+          interfaces:
+            - enp2s0
+            - enp2s0d1
         addresses:
           - 172.26.3.7/24
           - 2607:fc88:200:403:202:3333::803/64
@@ -126,6 +135,11 @@ nodes:
       - <<: *compute01-nic
         interface: enp2s0d1
       - <<: *compute01-bond0
+        bond:
+          <<: *bond-config
+          interfaces:
+            - enp2s0
+            - enp2s0d1
         addresses:
           - 172.26.3.8/24
           - 2607:fc88:200:403:202:3333::804/64
@@ -145,6 +159,11 @@ nodes:
       - <<: *compute01-nic
         interface: enp2s0d1
       - <<: *compute01-bond0
+        bond:
+          <<: *bond-config
+          interfaces:
+            - enp2s0
+            - enp2s0d1
         addresses:
           - 172.26.3.9/24
           - 2607:fc88:200:403:202:3333::805/64
