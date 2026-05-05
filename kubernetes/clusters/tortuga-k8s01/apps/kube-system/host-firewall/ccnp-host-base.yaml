@@ -17,6 +17,9 @@ spec:
               family: IPv4
             - type: 128
               family: IPv6
+    # Allow all cluster-internal traffic to the host
+    - fromEntities:
+        - cluster
     # Allow Talos API and Kubernetes API from fairy and atlantis
     - fromCIDRSet:
         - cidrGroupRef: site-fairy-public
