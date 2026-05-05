@@ -6,9 +6,7 @@ kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: host-base-policy
 spec:
-  nodeSelector:
-    matchLabels:
-      kubernetes.io/hostname: tortuga-cn01
+  nodeSelector: {}
   enableDefaultDeny:
     ingress: true
   ingress:
