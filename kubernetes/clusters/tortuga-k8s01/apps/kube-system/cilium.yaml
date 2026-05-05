@@ -40,6 +40,8 @@ spec:
             bpf:
               datapathMode: netkit
               preallocateMaps: true
+            devices:
+              - ens3
             hostFirewall:
               enabled: true
             loadBalancer:
