@@ -23,3 +23,14 @@ spec:
   interval: 1h
   retryInterval: 2m
   timeout: 5m
+  patches:
+    - target:
+        kind: ExternalSecret
+        name: flux-receiver-token
+      patch: |-
+        - op: replace
+          path: /spec/secretStoreRef/name
+          value: op-cluster-vault
+        - op: replace
+          path: /spec/data/0/remoteRef/key
+          value: flux-receiver
