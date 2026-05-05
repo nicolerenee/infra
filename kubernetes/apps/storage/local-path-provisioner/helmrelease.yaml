@@ -28,6 +28,6 @@ spec:
       name: local-path
       defaultClass: true
     nodePathMap:
-      - node: DEFAULT_PATH_ON_NODE
+      - node: DEFAULT_PATH_FOR_NON_LISTED_NODES
         paths:
           - /var/mnt/local-path-provisioner
