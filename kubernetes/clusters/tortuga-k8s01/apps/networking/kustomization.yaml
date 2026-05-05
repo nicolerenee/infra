@@ -6,5 +6,4 @@ namespace: networking
 components:
   - ../../../../components/flux-post-build-variables
 resources:
-  - ./wireguard-gateway-vars.yaml
   - ./wireguard-gateway.yaml

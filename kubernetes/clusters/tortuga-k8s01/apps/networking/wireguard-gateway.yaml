@@ -10,8 +10,6 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  dependsOn:
-    - name: wireguard-gateway-vars
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -22,7 +20,3 @@ spec:
   timeout: 5m
   prune: true
   wait: true
-  postBuild:
-    substituteFrom:
-      - kind: Secret
-        name: wireguard-gateway-vars
