@@ -29,4 +29,4 @@ spec:
   retryInterval: 1m
   timeout: 5m
   prune: true
-  wait: true
+  wait: false
