@@ -1,13 +1,16 @@
 ---
-# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/source.toolkit.fluxcd.io/helmrepository_v1.json
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/source.toolkit.fluxcd.io/ocirepository_v1.json
 apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
+kind: OCIRepository
 metadata:
   name: local-path-provisioner
-  namespace: flux-system
 spec:
-  interval: 1h
-  type: oci
+  interval: 15m
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
+  ref:
+    tag: 0.0.35
   url: oci://ghcr.io/rancher/local-path-provisioner/charts/local-path-provisioner
 ---
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
@@ -16,15 +19,10 @@ kind: HelmRelease
 metadata:
   name: local-path-provisioner
 spec:
+  chartRef:
+    kind: OCIRepository
+    name: local-path-provisioner
   interval: 1h
-  chart:
-    spec:
-      chart: local-path-provisioner
-      version: 0.0.35
-      sourceRef:
-        kind: HelmRepository
-        name: local-path-provisioner
-        namespace: flux-system
   values:
     storageClass:
       name: local-path
