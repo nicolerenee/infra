@@ -1,0 +1,11 @@
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyGroup
+metadata:
+  name: ingress-proxy
+spec:
+  type: ingress
+  hostnamePrefix: tortuga-k8s01-ingress
+  replicas: 1
+  tags:
+    - tag:tortuga-k8s01-ingress

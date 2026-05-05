@@ -9,3 +9,4 @@ resources:
   - ./tailscale-connectors.yaml
   - ./tailscale-operator.yaml
   - ./tailscale-proxyclass.yaml
+  - ./tailscale-proxygroup.yaml
