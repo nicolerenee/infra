@@ -36,6 +36,9 @@ patches:
       - op: replace
         path: /spec/values/controllers/qbittorrent/containers/gluetun/env/FIREWALL_VPN_INPUT_PORTS
         value: "51847"
+      - op: add
+        path: /spec/values/controllers/qbittorrent/containers/gluetun/env/FIREWALL_OUTBOUND_SUBNETS
+        value: "10.244.0.0/16,fd2b:ec21:3ff2::/48"
 
       - op: replace
         path: /spec/values/persistence/config/suffix
