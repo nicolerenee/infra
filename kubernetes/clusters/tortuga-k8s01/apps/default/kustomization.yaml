@@ -5,3 +5,4 @@ kind: Kustomization
 namespace: default
 resources:
   - ./k8s-cluster-info.yaml
+  - ./k8s-cluster-secrets.yaml
