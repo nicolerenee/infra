@@ -5,6 +5,5 @@ name: local-path-provisioner
 provisioning:
   diskSelector:
     match: disk.transport == "virtio"
-  minSize: 150Gi
-  maxSize: 150Gi
-  grow: false
+  minSize: 1Gi
+  grow: true
