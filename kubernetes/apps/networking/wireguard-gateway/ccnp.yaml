@@ -16,5 +16,5 @@ spec:
         - cidrGroupRef: site-atlantis-public
       toPorts:
         - ports:
-            - port: "${WG_LISTEN_PORT}"
+            - port: "57381"
               protocol: UDP
