@@ -1,0 +1,23 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumclusterwidenetworkpolicy_v2.json
+# Allow port-forwarded torrent ports from the world.
+# These are DNAT'd through the WireGuard gateway to VPN clients.
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: host-allow-torrent-ports
+spec:
+  nodeSelector: {}
+  enableDefaultDeny:
+    ingress: false
+  ingress:
+    - toPorts:
+        - ports:
+            - port: "51847"
+              protocol: TCP
+            - port: "51847"
+              protocol: UDP
+            - port: "54182"
+              protocol: TCP
+            - port: "54182"
+              protocol: UDP
