@@ -1,0 +1,9 @@
+---
+apiVersion: cilium.io/v2alpha1
+kind: CiliumCIDRGroup
+metadata:
+  name: site-tortuga-public
+spec:
+  externalCIDRs:
+    - ${SITE_TORTUGA_PUBLIC_V4}/32
+    - ${SITE_TORTUGA_PUBLIC_V6}/128

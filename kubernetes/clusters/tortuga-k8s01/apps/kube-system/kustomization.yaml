@@ -6,6 +6,8 @@ namespace: kube-system
 components:
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./cilium-cidrgroups.yaml
+  - ./cilium-host-firewall.yaml
   - ./cilium.yaml
   - ./generic-device-plugin.yaml
   - ./kubelet-csr-approver.yaml

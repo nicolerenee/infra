@@ -40,6 +40,8 @@ spec:
             bpf:
               datapathMode: netkit
               preallocateMaps: true
+            hostFirewall:
+              enabled: true
             loadBalancer:
               algorithm: maglev
             gatewayAPI:

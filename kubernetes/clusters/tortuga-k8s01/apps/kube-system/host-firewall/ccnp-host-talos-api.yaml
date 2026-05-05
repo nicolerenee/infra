@@ -1,0 +1,21 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumclusterwidenetworkpolicy_v2.json
+# Allow Talos API access from fairy and atlantis site public IPs.
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: host-allow-talos-api
+spec:
+  nodeSelector:
+    matchLabels:
+      kubernetes.io/hostname: tortuga-cn01
+  enableDefaultDeny:
+    ingress: false
+  ingress:
+    - fromCIDRSet:
+        - cidrGroupRef: site-fairy-public
+        - cidrGroupRef: site-atlantis-public
+      toPorts:
+        - ports:
+            - port: "50000"
+              protocol: TCP
