@@ -30,6 +30,7 @@ nodes:
         dhcpOptions:
           ipv6: false
     patches:
+      - ./patches/local-storage.yaml
       - ./patches/watchdog.yaml
 
 controlPlane:

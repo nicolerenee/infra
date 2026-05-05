@@ -1,0 +1,10 @@
+---
+apiVersion: v1alpha1
+kind: UserVolumeConfig
+name: local-path-provisioner
+provisioning:
+  diskSelector:
+    match: disk.transport == "virtio"
+  minSize: 150Gi
+  maxSize: 150Gi
+  grow: false
