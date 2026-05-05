@@ -7,6 +7,7 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./cilium-cidrgroups.yaml
   - ./cilium.yaml
   - ./cilium-gw-config.yaml
   - ./descheduler.yaml
@@ -19,3 +20,4 @@ resources:
   - ./node-feature-discovery.yaml
   - ./reflector.yaml
   - ./reloader.yaml
+  - ./site-public-ips.yaml

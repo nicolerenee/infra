@@ -29,41 +29,35 @@ patches:
         path: /spec/values/defaultPodOptions/securityContext/fsGroup
         value: 943
 
-      # Attach VXLAN overlay for torrent transfer traffic (bypasses Cilium SNAT)
-      - op: add
-        path: /spec/values/defaultPodOptions/annotations
-        value:
-          k8s.v1.cni.cncf.io/networks: '[{"name": "vxlan-vpn", "namespace": "networking", "ips": ["10.66.5.10/24", "fd66:5::10/64"]}]'
-
-      # LoadBalancer service for transfer port (DNAT target from VyOS)
-      - op: add
-        path: /spec/values/service/transfer-port
-        value:
-          controller: qbittorrent
-          type: LoadBalancer
-          ipFamilyPolicy: PreferDualStack
-          labels:
-            ipam.freckle.systems/lb-pool: internal
-          ports:
-            transfer-port:
-              port: 51847
-              protocol: TCP
-
       - op: replace
         path: /spec/values/controllers/qbittorrent/containers/app/env/QBT_TORRENTING_PORT
         value: 51847
+
       - op: replace
-        path: /spec/values/controllers/qbittorrent/containers/app/ports
-        value:
-          - name: transfer-tcp
-            containerPort: 51847
-            hostPort: 51847
-            protocol: TCP
-          - name: transfer-udp
-            containerPort: 51847
-            hostPort: 51847
-            protocol: UDP
+        path: /spec/values/controllers/qbittorrent/containers/gluetun/env/FIREWALL_VPN_INPUT_PORTS
+        value: "51847"
 
       - op: replace
         path: /spec/values/persistence/config/suffix
         value: config
+
+  - target:
+      kind: ExternalSecret
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: gluetun-qbt-reel
+      - op: replace
+        path: /spec/target/name
+        value: gluetun-qbt-reel
+      - op: replace
+        path: /spec/dataFrom/0/extract/key
+        value: gluetun-qbt-reel
+  - target:
+      kind: HelmRelease
+    patch: |-
+      - op: replace
+        path: /spec/values/controllers/qbittorrent/containers/gluetun/envFrom
+        value:
+          - secretRef:
+              name: gluetun-qbt-reel

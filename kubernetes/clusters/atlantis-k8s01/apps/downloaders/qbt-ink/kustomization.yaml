@@ -29,35 +29,35 @@ patches:
         path: /spec/values/defaultPodOptions/securityContext/fsGroup
         value: 943
 
-      # LoadBalancer service for transfer port (DNAT target from VyOS)
-      - op: add
-        path: /spec/values/service/transfer-port
-        value:
-          controller: qbittorrent
-          type: LoadBalancer
-          ipFamilyPolicy: PreferDualStack
-          labels:
-            ipam.freckle.systems/lb-pool: internal
-          ports:
-            transfer-port:
-              port: 54182
-              protocol: TCP
-
       - op: replace
         path: /spec/values/controllers/qbittorrent/containers/app/env/QBT_TORRENTING_PORT
         value: 54182
+
       - op: replace
-        path: /spec/values/controllers/qbittorrent/containers/app/ports
-        value:
-          - name: transfer-tcp
-            containerPort: 54182
-            hostPort: 54182
-            protocol: TCP
-          - name: transfer-udp
-            containerPort: 54182
-            hostPort: 54182
-            protocol: UDP
+        path: /spec/values/controllers/qbittorrent/containers/gluetun/env/FIREWALL_VPN_INPUT_PORTS
+        value: "54182"
 
       - op: replace
         path: /spec/values/persistence/config/suffix
         value: config
+
+  - target:
+      kind: ExternalSecret
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: gluetun-qbt-ink
+      - op: replace
+        path: /spec/target/name
+        value: gluetun-qbt-ink
+      - op: replace
+        path: /spec/dataFrom/0/extract/key
+        value: gluetun-qbt-ink
+  - target:
+      kind: HelmRelease
+    patch: |-
+      - op: replace
+        path: /spec/values/controllers/qbittorrent/containers/gluetun/envFrom
+        value:
+          - secretRef:
+              name: gluetun-qbt-ink

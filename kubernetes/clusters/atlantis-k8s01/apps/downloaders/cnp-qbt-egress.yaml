@@ -1,0 +1,25 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+# Restrict qBittorrent pods to only egress to the WireGuard gateway.
+# Prevents traffic from leaking outside the VPN tunnel.
+# DNS access is granted by the cluster-wide intercept-all-dns CCNP.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: qbt-vpn-egress
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values:
+          - qbt-reel
+          - qbt-ink
+  egress:
+    # Allow WireGuard gateway on tortuga
+    - toCIDRSet:
+        - cidrGroupRef: site-tortuga-public
+      toPorts:
+        - ports:
+            - port: "57381"
+              protocol: UDP
