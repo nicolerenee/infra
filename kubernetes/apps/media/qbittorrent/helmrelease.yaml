@@ -78,8 +78,10 @@ spec:
               requests:
                 cpu: 10m
                 memory: 64Mi
+                devic.es/tun: "1"
               limits:
                 memory: 256Mi
+                devic.es/tun: "1"
     defaultPodOptions:
       automountServiceAccountToken: false
       securityContext:
