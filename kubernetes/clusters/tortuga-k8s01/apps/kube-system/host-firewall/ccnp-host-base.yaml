@@ -9,6 +9,8 @@ spec:
   nodeSelector:
     matchLabels:
       kubernetes.io/hostname: tortuga-cn01
+  enableDefaultDeny:
+    ingress: true
   ingress:
     # Allow ICMP (ping) from anywhere
     - icmps:
