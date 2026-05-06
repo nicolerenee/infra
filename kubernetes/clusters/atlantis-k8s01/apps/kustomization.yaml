@@ -11,7 +11,6 @@ resources:
   - ./default
   - ./envoy-gateway-system
   - ./external-dns
-  - ./external-secrets
   - ./flux-system
   - ./freckle-id
   - ./garage
