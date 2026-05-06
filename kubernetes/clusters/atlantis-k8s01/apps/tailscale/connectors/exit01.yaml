@@ -1,0 +1,11 @@
+apiVersion: tailscale.com/v1alpha1
+kind: Connector
+metadata:
+  name: atlantis-exit01
+  namespace: tailscale
+spec:
+  proxyClass: tailscale-tun
+  hostname: atlantis-exit01
+  exitNode: true
+  tags:
+    - tag:atlantis-k8s01-exit-node

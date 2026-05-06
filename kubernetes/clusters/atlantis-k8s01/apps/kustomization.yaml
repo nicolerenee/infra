@@ -23,4 +23,3 @@ resources:
   - ./rook-ceph
   - ./spegel
   - ./system-upgrade
-  - ./tailscale

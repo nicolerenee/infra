@@ -12,7 +12,7 @@ spec:
   dependsOn:
     - name: generic-device-plugin
       namespace: kube-system
-    - name: onepassword-store
+    - name: onepassword-stores
       namespace: external-secrets
   commonMetadata:
     labels:
@@ -27,3 +27,21 @@ spec:
   timeout: 5m
   prune: true
   wait: true
+  patches:
+    - target:
+        kind: ExternalSecret
+      patch: |-
+        - op: replace
+          path: /spec/secretStoreRef/name
+          value: op-cluster-vault
+        - op: replace
+          path: /spec/dataFrom/0/extract/key
+          value: tailscale-operator
+    - target:
+        kind: HelmRelease
+        name: tailscale-operator
+      patch: |-
+        - op: replace
+          path: /spec/values/apiServerProxyConfig
+          value:
+            allowImpersonation: "true"
