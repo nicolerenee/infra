@@ -1,0 +1,25 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app cross-seed
+  namespace: &namespace media
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: onepassword-stores
+      namespace: external-secrets
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/media/cross-seed
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true
