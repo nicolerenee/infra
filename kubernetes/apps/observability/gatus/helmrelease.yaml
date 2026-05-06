@@ -22,6 +22,8 @@ spec:
       gatus:
         annotations:
           reloader.stakater.com/auto: "true"
+        pod:
+          automountServiceAccountToken: true
         initContainers:
           gatus-sidecar:
             image:
