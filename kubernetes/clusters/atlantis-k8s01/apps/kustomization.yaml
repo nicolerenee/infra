@@ -17,7 +17,6 @@ resources:
   - ./gateway-system
   - ./it-tools
   - ./kube-system
-  - ./media
   - ./rook-ceph
   - ./spegel
   - ./system-upgrade

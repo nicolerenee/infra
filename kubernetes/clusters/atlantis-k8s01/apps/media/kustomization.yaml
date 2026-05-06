@@ -4,7 +4,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: media
 components:
-  - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
   - ./autobrr.yaml
@@ -13,9 +12,7 @@ resources:
   - ./domains-externalsecrets.yaml
   - ./emby.yaml
   - ./flaresolverr.yaml
-  - ./jellyfin.yaml
   - ./plex.yaml
-  - ./auth/ks.yaml
   - ./prowlarr.yaml
   - ./qui.yaml
   - ./radarr.yaml
@@ -24,8 +21,6 @@ resources:
   - ./seerr.yaml
   - ./sonarr.yaml
   - ./sonarr-anime.yaml
-  - ./jellystat.yaml
   - ./tautulli.yaml
   - ./unpackerr.yaml
-  - ./watchstate.yaml
   - ./webhook.yaml
