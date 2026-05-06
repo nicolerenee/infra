@@ -6,6 +6,7 @@ namespace: media
 components:
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./audiobookshelf.yaml
   - ./autobrr.yaml
   - ./bazarr.yaml
   - ./domains-externalsecrets.yaml
