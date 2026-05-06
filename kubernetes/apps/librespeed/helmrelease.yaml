@@ -89,7 +89,8 @@ spec:
           tailscale.com/proxy-group: ingress-proxy
           tailscale.com/tags: "tag:speedtest"
         hosts:
-          - paths:
+          - host: "*"
+            paths:
               - path: /
                 pathType: Prefix
                 service:
@@ -104,7 +105,8 @@ spec:
           tailscale.com/proxy-group: ingress-proxy
           tailscale.com/tags: "tag:speedtest"
         hosts:
-          - paths:
+          - host: "*"
+            paths:
               - path: /
                 pathType: Prefix
                 service:
