@@ -19,7 +19,6 @@ resources:
   - ./it-tools
   - ./kube-system
   - ./media
-  - ./observability
   - ./rook-ceph
   - ./spegel
   - ./system-upgrade

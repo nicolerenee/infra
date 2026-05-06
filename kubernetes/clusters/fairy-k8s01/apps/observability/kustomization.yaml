@@ -16,6 +16,7 @@ resources:
   - ./silences.yaml
   - ./victoria-logs.yaml
   - ./vm-operator-crds.yaml
+  - ./vm-secrets.yaml
   - ./vm-k8s-stack.yaml
 patches:
   - target:

@@ -13,6 +13,7 @@ spec:
     - name: prometheus-operator-crds
     - name: vm-operator-crds
     - name: grafana-operator
+    - name: vm-secrets
   targetNamespace: *namespace
   path: ./kubernetes/apps/observability/victoria-metrics/k8s-stack
   postBuild:
