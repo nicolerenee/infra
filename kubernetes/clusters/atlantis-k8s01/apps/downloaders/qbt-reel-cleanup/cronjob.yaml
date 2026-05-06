@@ -24,7 +24,7 @@ spec:
                 - |
                   import json, os, time, urllib.request, urllib.parse
 
-                  QBT_URL = "http://qbt-reel-app.downloaders.svc.cluster.local:80"
+                  QBT_URL = "http://qbt-reel-app.downloaders.svc:80"
                   KEEP_DAYS = 7
 
                   # Get all torrents
