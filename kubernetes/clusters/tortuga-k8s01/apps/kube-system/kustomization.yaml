@@ -9,6 +9,7 @@ resources:
   - ./cilium-cidrgroups.yaml
   - ./cilium-host-firewall.yaml
   - ./cilium.yaml
+  - ./descheduler.yaml
   - ./generic-device-plugin.yaml
   - ./kubelet-csr-approver.yaml
   - ./local-path-provisioner.yaml
