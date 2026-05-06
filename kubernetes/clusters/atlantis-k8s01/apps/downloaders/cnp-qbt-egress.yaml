@@ -9,12 +9,8 @@ metadata:
   name: qbt-vpn-egress
 spec:
   endpointSelector:
-    matchExpressions:
-      - key: app.kubernetes.io/name
-        operator: In
-        values:
-          - qbt-reel
-          - qbt-ink
+    matchLabels:
+      app.kubernetes.io/name: qbt-ink
   egress:
     # Allow WireGuard gateway on tortuga
     - toCIDRSet:
