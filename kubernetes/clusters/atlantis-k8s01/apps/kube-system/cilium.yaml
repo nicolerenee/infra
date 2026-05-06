@@ -33,7 +33,6 @@ spec:
           value:
             bandwidthManager:
               enabled: true
-              bbr: true
             # BGP enabled for LoadBalancer IP advertisement only (not pod routes)
             bgpControlPlane:
               enabled: true
