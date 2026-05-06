@@ -47,25 +47,25 @@ patches:
         path: /spec/values/controllers/qbittorrent/containers/app/env/QBT_TORRENTING_PORT
         value: 51847
 
-      # Ensure app service keeps its name when adding a second service
-      - op: add
-        path: /spec/values/service/app/nameOverride
-        value: ""
-
-      # LoadBalancer service for transfer port
-      - op: add
-        path: /spec/values/service/transfer-port
+      # Replace the single app service with explicitly named services
+      - op: replace
+        path: /spec/values/service
         value:
-          controller: qbittorrent
-          nameOverride: transfer-port
-          type: LoadBalancer
-          ipFamilyPolicy: PreferDualStack
-          labels:
-            ipam.freckle.systems/lb-pool: internal
-          ports:
-            transfer-port:
-              port: 51847
-              protocol: TCP
+          app:
+            controller: qbittorrent
+            ports:
+              http:
+                port: 80
+          transfer-port:
+            controller: qbittorrent
+            type: LoadBalancer
+            ipFamilyPolicy: PreferDualStack
+            labels:
+              ipam.freckle.systems/lb-pool: internal
+            ports:
+              transfer-port:
+                port: 51847
+                protocol: TCP
 
       - op: replace
         path: /spec/values/persistence/config/suffix
