@@ -1,0 +1,99 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: qbt-reel-cleanup
+spec:
+  schedule: "0 6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400
+      template:
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          containers:
+            - name: cleanup
+              image: python:3.13-alpine
+              command:
+                - python3
+                - -c
+                - |
+                  import json, os, time, urllib.request, urllib.parse
+
+                  QBT_URL = "http://qbt-reel-app.downloaders.svc.cluster.local:80"
+                  KEEP_DAYS = 7
+
+                  # Get all torrents
+                  torrents = json.loads(urllib.request.urlopen(f"{QBT_URL}/api/v2/torrents/info").read())
+                  cutoff = time.time() - (KEEP_DAYS * 86400)
+                  orphan_hashes = []
+                  orphan_size = 0
+
+                  for t in torrents:
+                      if t["added_on"] > cutoff:
+                          continue
+
+                      content_path = t["content_path"]
+
+                      if os.path.isfile(content_path):
+                          if os.stat(content_path).st_nlink == 1:
+                              orphan_hashes.append(t["hash"])
+                              orphan_size += t["completed"]
+                      elif os.path.isdir(content_path):
+                          all_orphaned = True
+                          for root, dirs, files in os.walk(content_path):
+                              for f in files:
+                                  fp = os.path.join(root, f)
+                                  try:
+                                      if os.stat(fp).st_nlink > 1:
+                                          all_orphaned = False
+                                          break
+                                  except:
+                                      pass
+                              if not all_orphaned:
+                                  break
+                          if all_orphaned:
+                              orphan_hashes.append(t["hash"])
+                              orphan_size += t["completed"]
+                      else:
+                          orphan_hashes.append(t["hash"])
+
+                  print(f"Total torrents: {len(torrents)}")
+                  print(f"Orphaned torrents: {len(orphan_hashes)}")
+                  print(f"Orphaned size: {orphan_size / (1024**4):.2f} TiB")
+
+                  if not orphan_hashes:
+                      print("Nothing to clean up")
+                      exit(0)
+
+                  # Delete in batches
+                  for i in range(0, len(orphan_hashes), 50):
+                      batch = orphan_hashes[i:i+50]
+                      data = urllib.parse.urlencode({
+                          "hashes": "|".join(batch),
+                          "deleteFiles": "true"
+                      }).encode()
+                      req = urllib.request.Request(f"{QBT_URL}/api/v2/torrents/delete", data=data)
+                      urllib.request.urlopen(req)
+                      print(f"  Deleted batch {i//50 + 1}: {len(batch)} torrents")
+
+                  print("Cleanup complete")
+              volumeMounts:
+                - name: media
+                  mountPath: /store01/downloads/qbt-reel
+                  subPath: qbt-reel
+                  readOnly: true
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 64Mi
+                limits:
+                  memory: 256Mi
+          volumes:
+            - name: media
+              persistentVolumeClaim:
+                claimName: store01-downloads

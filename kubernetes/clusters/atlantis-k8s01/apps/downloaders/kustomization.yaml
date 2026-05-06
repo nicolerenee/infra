@@ -11,3 +11,4 @@ resources:
   - ./pvc-store01.yaml
   - ./qbt-ink.yaml
   - ./qbt-reel.yaml
+  - ./qbt-reel-cleanup.yaml
