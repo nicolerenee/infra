@@ -47,26 +47,26 @@ spec:
               {
                 "name": "Fairy (Dallas, TX)",
                 "server": "https://fairy-k8s01-speedtest.${TAILNET_DNS_NAME}/",
-                "dlURL": "garbage.php",
-                "ulURL": "empty.php",
-                "pingURL": "empty.php",
-                "getIpURL": "getIP.php"
+                "dlURL": "backend/garbage.php",
+                "ulURL": "backend/empty.php",
+                "pingURL": "backend/empty.php",
+                "getIpURL": "backend/getIP.php"
               },
               {
                 "name": "Atlantis (Denver, CO)",
                 "server": "https://atlantis-k8s01-speedtest.${TAILNET_DNS_NAME}/",
-                "dlURL": "garbage.php",
-                "ulURL": "empty.php",
-                "pingURL": "empty.php",
-                "getIpURL": "getIP.php"
+                "dlURL": "backend/garbage.php",
+                "ulURL": "backend/empty.php",
+                "pingURL": "backend/empty.php",
+                "getIpURL": "backend/getIP.php"
               },
               {
                 "name": "Tortuga (Montreal, QC)",
                 "server": "https://tortuga-k8s01-speedtest.${TAILNET_DNS_NAME}/",
-                "dlURL": "garbage.php",
-                "ulURL": "empty.php",
-                "pingURL": "empty.php",
-                "getIpURL": "getIP.php"
+                "dlURL": "backend/garbage.php",
+                "ulURL": "backend/empty.php",
+                "pingURL": "backend/empty.php",
+                "getIpURL": "backend/getIP.php"
               }
             ]
     persistence:
@@ -89,7 +89,7 @@ spec:
           tailscale.com/proxy-group: ingress-proxy
           tailscale.com/tags: "tag:speedtest"
         hosts:
-          - host: "*"
+          - host: "${CLUSTER_NAME}-speedtest"
             paths:
               - path: /
                 pathType: Prefix
@@ -105,7 +105,7 @@ spec:
           tailscale.com/proxy-group: ingress-proxy
           tailscale.com/tags: "tag:speedtest"
         hosts:
-          - host: "*"
+          - host: speedtest
             paths:
               - path: /
                 pathType: Prefix
