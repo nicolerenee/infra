@@ -12,7 +12,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: onepassword-store
+    - name: onepassword-stores
       namespace: external-secrets
     - name: barman-cloud-plugin
       namespace: cnpg-system

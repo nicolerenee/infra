@@ -14,7 +14,7 @@ spec:
   dependsOn:
     - name: mariadb-operator
       namespace: db
-    - name: onepassword-store
+    - name: onepassword-stores
       namespace: external-secrets
   path: ./kubernetes/clusters/atlantis-k8s01/apps/db/mariadb-clusters
   targetNamespace: *namespace
