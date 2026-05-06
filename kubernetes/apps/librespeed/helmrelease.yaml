@@ -74,7 +74,7 @@ spec:
     persistence:
       servers:
         type: configMap
-        name: librespeed-servers
+        name: librespeed
         globalMounts:
           - path: /servers.json
             subPath: servers.json
