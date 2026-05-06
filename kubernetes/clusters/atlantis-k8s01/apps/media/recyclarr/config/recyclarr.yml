@@ -10,7 +10,7 @@ sonarr:
       propers_and_repacks: do_not_prefer
 
     media_naming:
-      series: jellyfin
+      series: plex-imdb
       season: default
       episodes:
         rename: true
@@ -58,10 +58,10 @@ radarr:
       propers_and_repacks: do_not_prefer
 
     media_naming:
-      folder: jellyfin
+      folder: plex-imdb
       movie:
         rename: true
-        standard: default
+        standard: plex-imdb
 
     quality_definition:
       type: sqp-uhd
@@ -74,8 +74,7 @@ radarr:
     custom_formats:
       - # HDR10+ Boost — Samsung S95F supports HDR10+
         trash_ids:
-          - b17886cb4158d9fea189859409975758  # HDR10Plus Boost
-          - 55a5b50cb416dea5a50c4955896217ab  # DV HDR10+ Boost
+          - caa37d0df9c348912df1fb1d88f9273a  # HDR10+ Boost
         assign_scores_to:
           - trash_id: 5128baeb2b081b72126bc8482b2a86a0  # [SQP] SQP-1 (2160p)
 
@@ -89,7 +88,6 @@ radarr:
         trash_ids:
           - b6832f586342ef70d9c128d40c07b872  # Bad Dual Groups
           - cc444569854e9de0b084ab2b8b1532b2  # Black and White Editions
-          - 90cedc1fea7ea5d11298bebd3d1d3223  # EVO (no WEBDL)
           - ae9b7c9ebde1f3bd336a8cbd1ec4c5e5  # No-RlsGroup
           - 7357cf5161efbf8c4d5d0c30b4815ee2  # Obfuscated
           - 5c44f52a8714fdd79bb4d98e2673be1f  # Retags
