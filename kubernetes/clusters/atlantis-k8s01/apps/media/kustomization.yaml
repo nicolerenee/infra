@@ -8,7 +8,6 @@ components:
 resources:
   - ./autobrr.yaml
   - ./bazarr.yaml
-  - ./bookshelf.yaml
   - ./domains-externalsecrets.yaml
   - ./emby.yaml
   - ./flaresolverr.yaml
