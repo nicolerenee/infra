@@ -25,6 +25,10 @@ spec:
               QUI__PORT: &port 80
               QUI__LOG_LEVEL: INFO
               TZ: America/Chicago
+              QUI__OIDC_ENABLED: "true"
+              QUI__OIDC_ISSUER: "https://freckle.id"
+              QUI__OIDC_REDIRECT_URL: "https://{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media/api/auth/oidc/callback"
+              QUI__OIDC_DISABLE_BUILT_IN_LOGIN: "true"
             envFrom:
               - secretRef:
                   name: "{{ .Release.Name }}-secret"
@@ -65,10 +69,10 @@ spec:
     route:
       app:
         hostnames:
-          - "{{ .Release.Name }}.${CLUSTER_DOMAIN}"
+          - "{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"
         parentRefs:
-          - name: tailscale-media-mgmt
-            namespace: gateway
+          - name: tailnet
+            namespace: gateway-system
     persistence:
       config:
         enabled: true
