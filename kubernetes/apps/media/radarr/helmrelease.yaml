@@ -92,13 +92,34 @@ spec:
           app:
             port: *port
     route:
-      app:
+      # UI route — catch-all paths. Will receive OIDC SecurityPolicy
+      # on atlantis when the gateway migration to envoy is done.
+      ui:
         hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
         parentRefs:
           - name: tailscale-media-mgmt
             namespace: gateway
         rules:
           - backendRefs:
+              - identifier: app
+                port: *port
+      # API route — kept off any future OIDC SecurityPolicy so external
+      # scripts can authenticate via the X-Api-Key header instead of
+      # the browser-based OIDC flow.
+      api:
+        hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
+        parentRefs:
+          - name: tailscale-media-mgmt
+            namespace: gateway
+        rules:
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /api
+              - path:
+                  type: PathPrefix
+                  value: /ping
+            backendRefs:
               - identifier: app
                 port: *port
     persistence:
