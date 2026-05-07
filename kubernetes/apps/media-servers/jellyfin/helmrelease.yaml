@@ -90,6 +90,10 @@ spec:
     service:
       app:
         controller: jellyfin
+        ipFamilyPolicy: PreferDualStack
+        ipFamilies:
+          - IPv4
+          - IPv6
         ports:
           http:
             port: 80
