@@ -29,7 +29,7 @@ spec:
               repository: ghcr.io/jellyfin/jellyfin
               tag: 10.11.8@sha256:93227545077893cc9516f28b3adb733b67bc4691f41b6167428a2a0e3220b81c
             env:
-              JELLYFIN_PublishedServerUrl: https://{{ .Release.Name }}.${CLUSTER_MEDIA_DOMAIN}
+              JELLYFIN_PublishedServerUrl: https://watch.freckle.media
               TZ: America/Chicago
             ports:
               - containerPort: 8096
@@ -47,7 +47,7 @@ spec:
                     port: http
                   initialDelaySeconds: 0
                   timeoutSeconds: 1
-                  # this gives us 150s (5*30) to start then liveness and readiness checks begin
+                  # 150s (5*30) to start before liveness/readiness kick in
                   periodSeconds: 5
                   failureThreshold: 30
               liveness: &probes
@@ -100,10 +100,11 @@ spec:
     route:
       app:
         hostnames:
-          - "{{ .Release.Name }}.${CLUSTER_MEDIA_DOMAIN}"
+          - "{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"
+          - "watch.freckle.media"
         parentRefs:
-          - name: media-public
-            namespace: gateway
+          - name: public
+            namespace: gateway-system
         rules:
           - backendRefs:
               - identifier: app
@@ -119,7 +120,7 @@ spec:
         enabled: true
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
-        size: 100Gi
+        size: 20Gi
         retain: true
       tmp:
         type: emptyDir

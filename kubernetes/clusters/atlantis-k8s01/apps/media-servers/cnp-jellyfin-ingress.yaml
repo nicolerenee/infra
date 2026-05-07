@@ -1,0 +1,24 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+# Permissive starting baseline for jellyfin pod ingress. Narrow as we
+# learn what actually needs to reach it. Allowed sources:
+#   - public envoy gateway pods (the gateway terminates external
+#     traffic and forwards in-cluster to jellyfin Service IP)
+#   - media namespace pods (legacy ns where the arr stack still lives;
+#     remove this once arr/downloaders are split out of media)
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: jellyfin-ingress
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: jellyfin
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: gateway-system
+            gateway.networking.k8s.io/gateway-name: public
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: media

@@ -1,0 +1,35 @@
+---
+# Static NFS-backed PV+PVC for the mass-media library, mirroring the
+# pattern used in apps/downloaders/pvc-store01.yaml. Multiple namespaces
+# can have their own PV pointing at the same TrueNAS export because the
+# underlying access mode is RWX.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: media-servers-store01-media
+spec:
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: 1Ti
+  claimRef:
+    name: store01-media
+    namespace: media-servers
+  nfs:
+    path: /mnt/store01/warehouse20/media/
+    server: 172.25.2.4
+    readOnly: false
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: store01-media
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Ti
+  volumeName: media-servers-store01-media
