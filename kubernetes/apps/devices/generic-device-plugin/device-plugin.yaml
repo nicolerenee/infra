@@ -22,7 +22,7 @@ spec:
         - operator: "Exists"
           effect: "NoSchedule"
       containers:
-        - image: squat/generic-device-plugin:latest@sha256:d9e098e33a20c32a561adb1ef8cace7d5912cd5ffb38f07dd9f83af4bdf38505
+        - image: squat/generic-device-plugin:latest@sha256:face0477a34f4eb49502226a28d126403b844c2eaee7ce691e7b9529ca8ab123
           args:
             - --device
             - |
