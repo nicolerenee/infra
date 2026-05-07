@@ -59,10 +59,12 @@ spec:
     provider:
       name: cloudflare
     domainFilters:
+      - freckle.chat
       - freckle.family
-      - freckle.vision
+      - freckle.media
       - freckle.services
       - freckle.systems
+      - freckle.vision
       - warehouse43.com
     env:
       - name: CF_API_TOKEN
