@@ -16,6 +16,8 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  driftDetection:
+    mode: enabled
   interval: 1h
   values:
     controllers:
@@ -25,19 +27,18 @@ spec:
         containers:
           app:
             image:
-              # repository: ghcr.io/seerr-team/seerr
-              # tag: develop@sha256:2c48a3d8b8a54c9935dc837fb6f279a7aaac41731a399b748b45d10abbf6956f
-              repository: mirror.gcr.io/fallenbagel/jellyseerr
-              tag: preview-OIDC@sha256:9f3195998306da6548fc3b2420d114dda64a6e904f41e911168788fb410a7972
+              # seerr-team fork (jellyseerr split) — preview-new-oidc tag
+              # bundles v3.2.0 + the OIDC PR (#2715). Pinned to the
+              # 2026-04-29 community-recommended digest. See
+              # https://github.com/seerr-team/seerr/discussions/2721.
+              repository: ghcr.io/seerr-team/seerr
+              tag: preview-new-oidc@sha256:a14a9c326881fdce70b00df3fc095f5b5b128f5552677f677cd3788e757fb4e6
             env:
               TZ: America/Chicago
-              LOG_LEVEL: "info"
+              LOG_LEVEL: info
             ports:
-              - containerPort: 5055
+              - containerPort: &port 5055
                 name: http
-            # envFrom:
-            #   - secretRef:
-            #       name: "{{ .Release.Name }}-secret"
             probes:
               liveness: &probes
                 enabled: true
@@ -45,7 +46,7 @@ spec:
                 spec:
                   httpGet:
                     path: /api/v1/status
-                    port: http
+                    port: *port
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
@@ -67,20 +68,26 @@ spec:
         runAsGroup: 1000
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
     service:
       app:
+        ipFamilyPolicy: PreferDualStack
+        ipFamilies:
+          - IPv4
+          - IPv6
         ports:
           http:
             port: 80
-            targetPort: 5055
+            targetPort: *port
     route:
       app:
         annotations:
           gatus.home-operations.com/endpoint: |-
             conditions: ["[STATUS] == 200"]
         hostnames:
-          - "{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"
-          - "requests.${CLUSTER_SUBDOMAIN}.freckle.media"
+          - seerr.atlantis.freckle.media
+          - requests.atlantis.freckle.media
         parentRefs:
           - name: public
             namespace: gateway-system
@@ -91,7 +98,7 @@ spec:
         accessMode: ReadWriteOnce
         size: 10Gi
         retain: true
-        suffix: "config"
+        suffix: config
         globalMounts:
           - path: /app/config
       tmp:
