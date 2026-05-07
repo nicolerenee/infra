@@ -1,0 +1,43 @@
+---
+# Tailscale-only gateway. Uses the envoy-tailscale GatewayClass which
+# provisions the LB Service with `loadBalancerClass: tailscale`, so the
+# tailscale operator handles LB IP allocation. The `proxy-group`
+# annotation routes through the existing ingress-proxy ProxyGroup so we
+# don't spawn dedicated tailscale-running pods.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/gateway.networking.k8s.io/gateway_v1.json
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  annotations: {}
+  labels:
+    gateway.freckle.systems/dns: cloudflare
+  name: tailnet
+spec:
+  gatewayClassName: envoy-tailscale
+  infrastructure:
+    annotations:
+      tailscale.com/hostname: ${CLUSTER_NAME}-envoy-gw
+      tailscale.com/proxy-group: ingress-proxy
+      tailscale.com/tags: "tag:${CLUSTER_NAME}-gw"
+    labels: {}
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: https
+      protocol: HTTPS
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        certificateRefs:
+          - kind: Secret
+            name: media-tls
+          - kind: Secret
+            name: auth-tls
+          - kind: Secret
+            name: cluster-svcs-tls

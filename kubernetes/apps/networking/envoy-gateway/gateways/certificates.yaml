@@ -31,3 +31,19 @@ spec:
     - "${MEDIA_DOMAIN}"
     - "*.${MEDIA_DOMAIN}"
     - "*.${CLUSTER_MEDIA_DOMAIN}"
+
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: auth-tls
+spec:
+  secretName: auth-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "${AUTH_DOMAIN}"
+  dnsNames:
+    - "${AUTH_DOMAIN}"
+    - "*.${AUTH_DOMAIN}"

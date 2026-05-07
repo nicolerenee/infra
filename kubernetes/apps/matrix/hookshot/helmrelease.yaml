@@ -76,7 +76,7 @@ spec:
         hostnames:
           - "hookshot.${CHAT_DOMAIN}"
         parentRefs:
-          - name: envoy-public
+          - name: public
             namespace: gateway-system
         rules:
           - backendRefs:

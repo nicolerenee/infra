@@ -88,7 +88,7 @@ spec:
         hostnames:
           - "matrix.${CHAT_DOMAIN}"
         parentRefs:
-          - name: envoy-public
+          - name: public
             namespace: gateway-system
         rules:
           - matches:
@@ -104,7 +104,7 @@ spec:
         hostnames:
           - "${CHAT_DOMAIN}"
         parentRefs:
-          - name: envoy-public
+          - name: public
             namespace: gateway-system
         rules:
           - matches:

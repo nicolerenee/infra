@@ -66,7 +66,7 @@ spec:
       app:
         hostnames: ["{{ .Release.Name }}.${CLUSTER_SVCS_DOMAIN}"]
         parentRefs:
-          - name: envoy-public
+          - name: public
             namespace: gateway-system
         rules:
           - backendRefs:

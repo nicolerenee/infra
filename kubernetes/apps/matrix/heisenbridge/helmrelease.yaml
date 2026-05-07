@@ -45,7 +45,7 @@ spec:
       app:
         hostnames: ["matrix.${CHAT_DOMAIN}"]
         parentRefs:
-          - name: envoy-public
+          - name: public
             namespace: gateway-system
         rules:
           - matches:

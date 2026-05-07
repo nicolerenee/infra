@@ -5,6 +5,7 @@ kind: Component
 resources:
   - ./certificates.yaml
   - ./envoy-proxy.yaml
-  - ./gw-envoy-media.yaml
-  - ./gw-envoy-public.yaml
+  - ./gw-public.yaml
+  - ./gw-tailnet.yaml
+  - ./gw-tunnel.yaml
   - ./redirect.yaml

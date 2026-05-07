@@ -8,9 +8,11 @@ metadata:
     external-dns.alpha.kubernetes.io/controller: none
 spec:
   parentRefs:
-    - name: envoy-media
+    - name: public
       sectionName: http
-    - name: envoy-public
+    - name: tailnet
+      sectionName: http
+    - name: tunnel
       sectionName: http
   rules:
     - filters:
