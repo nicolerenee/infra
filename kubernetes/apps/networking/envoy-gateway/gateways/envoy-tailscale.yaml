@@ -1,0 +1,52 @@
+---
+# Tailscale-tuned EnvoyProxy: provisions the Service with
+# `loadBalancerClass: tailscale` so the tailscale operator handles LB IP
+# allocation onto the tailnet. Combined with the `tailscale.com/proxy-group`
+# annotation on the Gateway, traffic rides the existing ingress-proxy
+# ProxyGroup instead of spawning new tailscale pods.
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/envoyproxy_v1alpha1.json
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: envoy-tailscale
+spec:
+  ipFamily: DualStack
+  logging:
+    level:
+      default: info
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        replicas: 2
+        container:
+          imageRepository: mirror.gcr.io/envoyproxy/envoy
+          resources:
+            requests:
+              cpu: 100m
+            limits:
+              memory: 1Gi
+      envoyService:
+        externalTrafficPolicy: Local
+        loadBalancerClass: tailscale
+  shutdown:
+    drainTimeout: 180s
+  telemetry:
+    metrics:
+      prometheus:
+        compression:
+          type: Zstd
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/gateway.networking.k8s.io/gatewayclass_v1.json
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: envoy-tailscale
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  description: Envoy GatewayClass with a Tailscale-classed LoadBalancer Service
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: envoy-tailscale
+    namespace: gateway-system

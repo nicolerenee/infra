@@ -1,0 +1,49 @@
+---
+# ClusterIP-only EnvoyProxy. For gateways reached only from in-cluster
+# clients (e.g. cloudflared forwarding tunnel traffic to the gateway
+# Service), so we don't allocate a LoadBalancer IP we'll never use.
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/envoyproxy_v1alpha1.json
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: envoy-clusterip
+spec:
+  ipFamily: DualStack
+  logging:
+    level:
+      default: info
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        replicas: 2
+        container:
+          imageRepository: mirror.gcr.io/envoyproxy/envoy
+          resources:
+            requests:
+              cpu: 100m
+            limits:
+              memory: 1Gi
+      envoyService:
+        type: ClusterIP
+  shutdown:
+    drainTimeout: 180s
+  telemetry:
+    metrics:
+      prometheus:
+        compression:
+          type: Zstd
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/gateway.networking.k8s.io/gatewayclass_v1.json
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: envoy-clusterip
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  description: Envoy GatewayClass with a ClusterIP-only Service
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: envoy-clusterip
+    namespace: gateway-system

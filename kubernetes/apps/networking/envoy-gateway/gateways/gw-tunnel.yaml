@@ -1,8 +1,8 @@
 ---
 # Cloudflare-tunneled gateway. cloudflared runs in-cluster and forwards
-# inbound tunnel traffic to this gateway's ClusterIP. No LB IP allocation
-# (no `ipam.freckle.systems/lb-pool` label) since we don't need an external
-# IP — cloudflared reaches the Service via cluster-internal routing.
+# inbound tunnel traffic to this gateway's ClusterIP. Uses the
+# envoy-clusterip GatewayClass so the Service is ClusterIP-only — no
+# LB IP allocated since we don't need an external IP.
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/gateway.networking.k8s.io/gateway_v1.json
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
@@ -12,7 +12,7 @@ metadata:
     gateway.freckle.systems/dns: cloudflare
   name: tunnel
 spec:
-  gatewayClassName: envoy
+  gatewayClassName: envoy-clusterip
   infrastructure:
     annotations: {}
     labels: {}
