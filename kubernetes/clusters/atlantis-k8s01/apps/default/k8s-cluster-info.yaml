@@ -7,6 +7,7 @@ metadata:
     reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
 data:
   CLUSTER_NAME: "atlantis-k8s01"
+  CLUSTER_SUBDOMAIN: "atlantis"
   CLUSTER_DOMAIN: "atlantis.freckle.systems"
   CLUSTER_SVCS_DOMAIN: "atlantis.freckle.services"
   GARAGE_S3_REGION: "us-den1"
