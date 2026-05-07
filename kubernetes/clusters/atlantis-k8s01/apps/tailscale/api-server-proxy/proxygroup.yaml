@@ -2,7 +2,7 @@
 apiVersion: tailscale.com/v1alpha1
 kind: ProxyGroup
 metadata:
-  name: kube-apiserver
+  name: atlantis-k8s01-kube-apiserver
 spec:
   type: kube-apiserver
   replicas: 2
