@@ -92,13 +92,35 @@ spec:
           app:
             port: *port
     route:
-      app:
+      # UI route — receives OIDC enforcement via SecurityPolicy on
+      # atlantis. Default catch-all (no path matches) so any non-/api
+      # request lands here.
+      ui:
         hostnames: ["{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"]
         parentRefs:
           - name: tailnet
             namespace: gateway-system
         rules:
           - backendRefs:
+              - name: ${APP:=sonarr}
+                port: *port
+      # API route — explicitly NOT covered by the OIDC SecurityPolicy
+      # so external clients (scripts, ad-hoc curl) can authenticate via
+      # the X-Api-Key header that sonarr already requires for /api.
+      api:
+        hostnames: ["{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"]
+        parentRefs:
+          - name: tailnet
+            namespace: gateway-system
+        rules:
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /api
+              - path:
+                  type: PathPrefix
+                  value: /ping
+            backendRefs:
               - name: ${APP:=sonarr}
                 port: *port
     persistence:
