@@ -82,8 +82,8 @@ spec:
         hostnames:
           - "freckle.id"
         parentRefs:
-          - name: external
-            namespace: gateway
+          - name: public
+            namespace: gateway-system
         rules:
           - backendRefs:
               - identifier: app
