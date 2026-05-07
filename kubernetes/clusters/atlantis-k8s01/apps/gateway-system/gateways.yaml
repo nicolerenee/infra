@@ -24,3 +24,68 @@ spec:
   interval: 1h
   retryInterval: 2m
   timeout: 5m
+  patches:
+    # Dedicated freckle.id listener restricted to HTTPRoutes from the
+    # freckle-id namespace. Keeps the auth surface firewalled off from
+    # any other namespace's routes attaching to it.
+    - target:
+        kind: Gateway
+        name: public
+      patch: |-
+        - op: add
+          path: /spec/listeners/-
+          value:
+            name: https-auth-root
+            protocol: HTTPS
+            port: 443
+            hostname: "freckle.id"
+            allowedRoutes:
+              namespaces:
+                from: Selector
+                selector:
+                  matchLabels:
+                    kubernetes.io/metadata.name: freckle-id
+            tls:
+              certificateRefs:
+                - kind: Secret
+                  name: auth-tls
+    # Dedicated freckle.chat listeners (root + wildcard) restricted to
+    # HTTPRoutes from the matrix namespace.
+    - target:
+        kind: Gateway
+        name: public
+      patch: |-
+        - op: add
+          path: /spec/listeners/-
+          value:
+            name: https-chat-root
+            protocol: HTTPS
+            port: 443
+            hostname: "freckle.chat"
+            allowedRoutes:
+              namespaces:
+                from: Selector
+                selector:
+                  matchLabels:
+                    kubernetes.io/metadata.name: matrix
+            tls:
+              certificateRefs:
+                - kind: Secret
+                  name: chat-tls
+        - op: add
+          path: /spec/listeners/-
+          value:
+            name: https-chat-wildcard
+            protocol: HTTPS
+            port: 443
+            hostname: "*.freckle.chat"
+            allowedRoutes:
+              namespaces:
+                from: Selector
+                selector:
+                  matchLabels:
+                    kubernetes.io/metadata.name: matrix
+            tls:
+              certificateRefs:
+                - kind: Secret
+                  name: chat-tls

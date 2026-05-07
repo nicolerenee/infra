@@ -1,33 +1,36 @@
 ---
-# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cert-manager.io/certificate_v1.json
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: cluster-svcs-tls
-spec:
-  secretName: cluster-svcs-tls
-  issuerRef:
-    name: letsencrypt-production
-    kind: ClusterIssuer
-  commonName: "${SVCS_DOMAIN}"
-  dnsNames:
-    - "${SVCS_DOMAIN}"
-    - "*.${SVCS_DOMAIN}"
-    - "*.${CLUSTER_SVCS_DOMAIN}"
+# Atlantis-only certs that don't belong on every cluster's gateway. Lives
+# alongside gateways.yaml so the patches there can reference these names
+# without polluting the shared gateway base.
 
 ---
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cert-manager.io/certificate_v1.json
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: media-tls
+  name: auth-tls
 spec:
-  secretName: media-tls
+  secretName: auth-tls
   issuerRef:
     name: letsencrypt-production
     kind: ClusterIssuer
-  commonName: "${MEDIA_DOMAIN}"
+  commonName: "freckle.id"
   dnsNames:
-    - "${MEDIA_DOMAIN}"
-    - "*.${MEDIA_DOMAIN}"
-    - "*.${CLUSTER_MEDIA_DOMAIN}"
+    - freckle.id
+    - "*.freckle.id"
+
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: chat-tls
+spec:
+  secretName: chat-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "freckle.chat"
+  dnsNames:
+    - freckle.chat
+    - "*.freckle.chat"

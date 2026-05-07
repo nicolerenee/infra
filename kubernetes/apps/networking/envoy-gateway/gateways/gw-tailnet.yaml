@@ -38,6 +38,4 @@ spec:
           - kind: Secret
             name: media-tls
           - kind: Secret
-            name: auth-tls
-          - kind: Secret
             name: cluster-svcs-tls

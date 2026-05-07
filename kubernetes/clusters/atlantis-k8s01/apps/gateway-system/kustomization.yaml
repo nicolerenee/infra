@@ -6,4 +6,5 @@ namespace: gateway-system
 components:
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./certificates.yaml
   - ./gateways.yaml
