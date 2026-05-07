@@ -29,6 +29,17 @@ spec:
     substitute:
       APP: *app
   patches:
+    # The atlantis sonarr instance was migrated to a non-cluster-suffixed
+    # 1Password item (just `sonarr`) when oidc_client_id/secret were
+    # added. The other sonarr instances (fairy, sonarr-anime) still use
+    # the legacy sonarr-${CLUSTER_NAME} key, so the override is here.
+    - target:
+        kind: ExternalSecret
+        name: sonarr
+      patch: |-
+        - op: replace
+          path: /spec/dataFrom/0/extract/key
+          value: sonarr
     - target:
         kind: HelmRelease
       patch: |-

@@ -1,0 +1,51 @@
+---
+# OIDC client credentials for sonarr, pulled from the cluster vault.
+# Same 1Password item as sonarr's API key; oidc_client_id and
+# oidc_client_secret are additional fields on it.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/external-secrets.io/externalsecret_v1.json
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: sonarr-oidc
+spec:
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: onepassword
+  target:
+    template:
+      data:
+        client-id: "{{ .oidc_client_id }}"
+        client-secret: "{{ .oidc_client_secret }}"
+  dataFrom:
+    - extract:
+        key: sonarr
+---
+# Forces all browser traffic to sonarr.atlantis.freckle.media through
+# OIDC against pocket-id. Internal cluster traffic to the sonarr Service
+# (recyclarr, prowlarr, etc.) bypasses the gateway and is unaffected.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: sonarr-oidc
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: sonarr
+  oidc:
+    provider:
+      issuer: https://freckle.id
+    clientIDRef:
+      group: ""
+      kind: Secret
+      name: sonarr-oidc
+    clientSecret:
+      group: ""
+      kind: Secret
+      name: sonarr-oidc
+    redirectURL: https://sonarr.atlantis.freckle.media/oauth2/callback
+    logoutPath: /logout
+    scopes:
+      - openid
+      - email
+      - profile
