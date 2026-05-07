@@ -79,11 +79,11 @@ spec:
           gatus.home-operations.com/endpoint: |-
             conditions: ["[STATUS] == 200"]
         hostnames:
-          - "{{ .Release.Name }}.${CLUSTER_MEDIA_DOMAIN}"
-          - requests.${CLUSTER_MEDIA_DOMAIN}
+          - "{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"
+          - "requests.${CLUSTER_SUBDOMAIN}.freckle.media"
         parentRefs:
-          - name: media-public
-            namespace: gateway
+          - name: public
+            namespace: gateway-system
     persistence:
       config:
         enabled: true
