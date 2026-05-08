@@ -1,0 +1,130 @@
+---
+# Atlantis-specific homepage layout. {{HOMEPAGE_VAR_*}} tokens are NOT
+# Helm syntax — homepage substitutes them at runtime against env vars
+# from homepage-secrets.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homepage-config
+data:
+  settings.yaml: |
+    title: Atlantis
+    subtitle: Site overview
+    theme: dark
+    color: slate
+    headerStyle: clean
+    target: _blank
+    hideVersion: true
+    disableUpdateCheck: true
+    statusStyle: dot
+    layout:
+      Media Servers:
+        style: row
+        columns: 3
+      Other:
+        style: row
+        columns: 4
+      Downloaders:
+        style: row
+        columns: 3
+
+  services.yaml: |
+    - Media Servers:
+        - Jellyfin:
+            href: https://watch.freckle.media
+            siteMonitor: http://jellyfin.media-servers
+            icon: jellyfin.png
+            description: Movies & TV
+            widget:
+              type: jellyfin
+              url: http://jellyfin.media-servers
+              key: "{{HOMEPAGE_VAR_JELLYFIN_API_KEY}}"
+        - Plex:
+            href: https://plex.freckle.vision
+            siteMonitor: http://plex.media
+            icon: plex.png
+            description: Backup — transcode fallback
+        - Audiobookshelf:
+            href: https://audiobookshelf.atlantis.freckle.services
+            siteMonitor: http://audiobookshelf.media
+            icon: audiobookshelf.png
+            description: Audiobooks & podcasts
+
+    - Other:
+        - Jellyseerr:
+            href: https://requests.atlantis.freckle.media
+            siteMonitor: http://seerr.media-tools
+            icon: jellyseerr.png
+            description: Request movies & TV
+            widget:
+              type: jellyseerr
+              url: http://seerr.media-tools
+              key: "{{HOMEPAGE_VAR_JELLYSEERR_API_KEY}}"
+
+    - Downloaders:
+        - SABnzbd:
+            href: https://sabnzbd.atlantis.freckle.systems
+            siteMonitor: http://sabnzbd.media
+            icon: sabnzbd.png
+            description: Usenet
+            widget:
+              type: sabnzbd
+              url: http://sabnzbd.media
+              key: "{{HOMEPAGE_VAR_SABNZBD_API_KEY}}"
+        - qbt-reel:
+            href: https://qui.atlantis.freckle.media
+            icon: qbittorrent.png
+            description: TV & movies
+            widget:
+              type: qbittorrent
+              url: "{{HOMEPAGE_VAR_QBT_REEL_URL}}"
+        - qbt-ink:
+            href: https://qui.atlantis.freckle.media
+            icon: qbittorrent.png
+            description: Audiobooks & ebooks
+            widget:
+              type: qbittorrent
+              url: "{{HOMEPAGE_VAR_QBT_INK_URL}}"
+
+  widgets.yaml: |
+    - search:
+        provider: duckduckgo
+        target: _blank
+    - datetime:
+        text_size: xl
+        format:
+          timeStyle: short
+          hourCycle: h23
+
+  bookmarks.yaml: |
+    []
+---
+# Pulls only the API keys / proxy URLs we already have. Add more
+# (jellyfin_api_key, audiobookshelf_api_key, jellyseerr_api_key) to the
+# homepage-media 1Password item later to enable widgets on those tiles.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/external-secrets.io/externalsecret_v1.json
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: homepage-secrets
+spec:
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: onepassword
+  target:
+    template:
+      data:
+        HOMEPAGE_VAR_SABNZBD_API_KEY: "{{ .sabnzbd_api_key }}"
+        HOMEPAGE_VAR_QBT_REEL_URL: '{{ index . "qbt-reel-proxy-url" }}'
+        HOMEPAGE_VAR_QBT_INK_URL: '{{ index . "qbt-ink-proxy-url" }}'
+        HOMEPAGE_VAR_JELLYSEERR_API_KEY: '{{ index . "seer-api-key" }}'
+        HOMEPAGE_VAR_JELLYFIN_API_KEY: '{{ index . "jellyfin-api-key" }}'
+  dataFrom:
+    - extract:
+        key: sabnzbd-atlantis-k8s01
+      rewrite:
+        - regexp:
+            source: "(.*)"
+            target: "sabnzbd_$1"
+    - extract:
+        key: homepage-media

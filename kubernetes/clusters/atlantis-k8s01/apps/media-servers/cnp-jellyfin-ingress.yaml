@@ -6,6 +6,7 @@
 #     traffic and forwards in-cluster to jellyfin Service IP)
 #   - media namespace pods (legacy ns where the arr stack still lives;
 #     remove this once arr/downloaders are split out of media)
+#   - any pod in media-tools (homepage, future user-facing tools)
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -22,3 +23,6 @@ spec:
     - fromEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: media
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: media-tools
