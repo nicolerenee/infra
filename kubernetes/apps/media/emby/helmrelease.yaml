@@ -5,7 +5,6 @@ kind: HelmRelease
 metadata:
   name: emby
 spec:
-  interval: 1h
   chartRef:
     kind: OCIRepository
     name: app-template
@@ -17,6 +16,11 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths: ["/spec/replicas"]
+  interval: 1h
   values:
     controllers:
       emby:
@@ -31,8 +35,13 @@ spec:
             env:
               TZ: America/Chicago
             ports:
-              - containerPort: 8096
+              - containerPort: &port 8096
                 name: http
+              - containerPort: 8920
+                name: emby
+              - containerPort: 7359
+                protocol: UDP
+                name: discovery
             probes:
               startup:
                 enabled: true
@@ -40,10 +49,9 @@ spec:
                 spec:
                   httpGet:
                     path: /web/index.html
-                    port: http
+                    port: *port
                   initialDelaySeconds: 0
                   timeoutSeconds: 1
-                  # this gives us 150s (5*30) to start then liveness and readiness checks begin
                   periodSeconds: 5
                   failureThreshold: 30
               liveness: &probes
@@ -52,7 +60,7 @@ spec:
                 spec:
                   httpGet:
                     path: /web/index.html
-                    port: http
+                    port: *port
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
@@ -62,6 +70,9 @@ spec:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
             resources:
               claims:
                 - name: gpu
@@ -72,24 +83,31 @@ spec:
                 cpu: 1
                 memory: 1Gi
     defaultPodOptions:
+      automountServiceAccountToken: false
       resourceClaims:
         - name: gpu
           resourceClaimTemplateName: emby
       securityContext:
         runAsNonRoot: true
-        runAsUser: 3000
-        runAsGroup: 3000
-        fsGroup: 3000
+        runAsUser: ${VOLSYNC_UID}
+        runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID}}
+        fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID}}
         fsGroupChangePolicy: OnRootMismatch
         supplementalGroups:
           - 44
+        seccompProfile:
+          type: RuntimeDefault
     service:
       app:
         controller: emby
+        ipFamilyPolicy: PreferDualStack
+        ipFamilies:
+          - IPv4
+          - IPv6
         ports:
           http:
             port: 80
-            targetPort: 8096
+            targetPort: *port
           emby:
             port: 8920
             targetPort: 8920
@@ -97,33 +115,21 @@ spec:
             port: 7359
             protocol: UDP
     route:
-      app:
-        hostnames:
-          - "{{ .Release.Name }}.${CLUSTER_MEDIA_DOMAIN}"
+      ui:
+        hostnames: ["{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"]
         parentRefs:
-          - name: media-public
-            namespace: gateway
-        rules:
-          - backendRefs:
-              - identifier: app
-                port: 80
-      ts:
-        hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
-        parentRefs:
-          - name: tailscale
-            namespace: gateway
+          - name: tailnet
+            namespace: gateway-system
         rules:
           - backendRefs:
               - identifier: app
                 port: 80
     persistence:
       config:
-        enabled: true
-        type: persistentVolumeClaim
-        accessMode: ReadWriteOnce
-        size: 100Gi
-        retain: true
-        suffix: "config"
+        existingClaim: ${APP:=emby}${VOLSYNC_PVC_SUFFIX:=}
+        globalMounts:
+          - path: /config
+            subPath: config
       tmp:
         type: emptyDir
         globalMounts:
@@ -133,6 +139,6 @@ spec:
         globalMounts:
           - path: /transcode
       media:
-        type: emptyDir
+        existingClaim: ${MEDIA_PVC:=store01-media}
         globalMounts:
-          - path: /media
+          - path: /store01
