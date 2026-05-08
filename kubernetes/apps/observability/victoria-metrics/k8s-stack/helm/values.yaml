@@ -28,6 +28,13 @@ vmsingle:
       resources:
         requests:
           storage: 100Gi
+    resources:
+      requests:
+        cpu: 150m
+        memory: 1Gi
+      limits:
+        cpu: 1200m
+        memory: 3Gi
 
 defaultDashboards:
   enabled: true
