@@ -1,0 +1,16 @@
+---
+# Internal LAN/VLAN subnets at the den1 (Denver) site. Reusable
+# group so policies that need to block (or allow) on-site internal
+# traffic can reference this by name instead of duplicating CIDR
+# lists. Includes the LAN range plus three internal /20 blocks
+# used for management, storage, etc.
+apiVersion: cilium.io/v2alpha1
+kind: CiliumCIDRGroup
+metadata:
+  name: site-den1-internal
+spec:
+  externalCIDRs:
+    - 10.140.0.0/16
+    - 172.20.0.0/20
+    - 172.25.0.0/20
+    - 172.26.0.0/20

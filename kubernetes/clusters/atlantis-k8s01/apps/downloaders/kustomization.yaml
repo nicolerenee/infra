@@ -6,8 +6,10 @@ namespace: downloaders
 components:
   - ../../../../components/flux-post-build-variables
 resources:
-  - ./cnp-default-egress.yaml
+  - ./cnp-default-deny-egress.yaml
+  - ./cnp-qbittorrent-egress.yaml
   - ./cnp-qbt-egress.yaml
+  - ./cnp-qbt-reel-cleanup-egress.yaml
   - ./pvc-store01.yaml
   - ./qbt-ink.yaml
   - ./qbt-reel.yaml
