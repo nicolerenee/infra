@@ -28,9 +28,6 @@ spec:
       VOLSYNC_UID: "3000"
       VOLSYNC_CAPACITY: 100Gi
       VOLSYNC_SCHEDULE: "37 * * * *"
-      # Legacy `-config` PVC name; migrate to bare `${APP}` PVC with
-      # subPath mounts during the next jellyfin rework.
-      VOLSYNC_PVC_SUFFIX: -config
   patches:
     - target:
         kind: HelmRelease
