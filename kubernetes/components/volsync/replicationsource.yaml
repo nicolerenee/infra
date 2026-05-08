@@ -1,0 +1,31 @@
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: ${APP}${VOLSYNC_PVC_SUFFIX:=-config}
+spec:
+  sourcePVC: ${APP}${VOLSYNC_PVC_SUFFIX:=-config}
+  trigger:
+    schedule: "${VOLSYNC_SCHEDULE:=37 * * * *}"
+  restic:
+    moverSecurityContext:
+      runAsUser: ${VOLSYNC_UID}
+      runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID}}
+      fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID}}
+      fsGroupChangePolicy: OnRootMismatch
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    repository: ${APP}-volsync
+    copyMethod: Snapshot
+    volumeSnapshotClassName: csi-ceph-blockpool
+    storageClassName: ceph-block
+    accessModes: [ReadWriteOnce]
+    cacheCapacity: 1Gi
+    cacheStorageClassName: ceph-block
+    cacheAccessModes: [ReadWriteOnce]
+    pruneIntervalDays: 7
+    retain:
+      hourly: 24
+      daily: 7
+      weekly: 4

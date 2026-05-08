@@ -1,28 +1,24 @@
 ---
-# Bootstrap target: when a PVC references this via dataSourceRef,
-# volsync's volume populator triggers a one-shot restore from the
-# latest restic snapshot in the seer repo. Reused on any future
-# PVC recreation (cluster rebuild, etc.).
 apiVersion: volsync.backube/v1alpha1
 kind: ReplicationDestination
 metadata:
-  name: seerr-config-bootstrap
+  name: ${APP}${VOLSYNC_PVC_SUFFIX:=-config}-bootstrap
 spec:
   trigger:
-    manual: bootstrap-2026-05-08
+    manual: bootstrap-${APP}
   restic:
     moverSecurityContext:
-      runAsUser: 1000
-      runAsGroup: 1000
-      fsGroup: 1000
+      runAsUser: ${VOLSYNC_UID}
+      runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID}}
+      fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID}}
       fsGroupChangePolicy: OnRootMismatch
       runAsNonRoot: true
       seccompProfile:
         type: RuntimeDefault
-    repository: seerr-volsync
+    repository: ${APP}-volsync
     copyMethod: Snapshot
     accessModes: [ReadWriteOnce]
-    capacity: 10Gi
+    capacity: ${VOLSYNC_CAPACITY:=10Gi}
     storageClassName: ceph-block
     volumeSnapshotClassName: csi-ceph-blockpool
     cacheCapacity: 1Gi

@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ${APP}${VOLSYNC_PVC_SUFFIX:=-config}
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: ${VOLSYNC_CAPACITY:=10Gi}
+  storageClassName: ceph-block
+  dataSourceRef:
+    apiGroup: volsync.backube
+    kind: ReplicationDestination
+    name: ${APP}${VOLSYNC_PVC_SUFFIX:=-config}-bootstrap

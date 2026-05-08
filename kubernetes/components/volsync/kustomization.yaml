@@ -1,0 +1,33 @@
+---
+# Volsync component — adds the four resources every restic-backed app
+# needs (ExternalSecret + ReplicationSource + ReplicationDestination +
+# PVC with dataSourceRef). Apps include this component and supply
+# postBuild substitutions on their Flux Kustomization to fill in the
+# app-specific values.
+#
+# Required substitutes (no defaults — must be set on the cluster
+# overlay Flux KS):
+#   APP                       The app name. Drives resource naming.
+#   VOLSYNC_USER              The rest-server htpasswd user (also the
+#                             restic repo path). Often == APP, but
+#                             not always (e.g. seer != seerr).
+#   VOLSYNC_PASSWORD_FIELD    The 1Password field on the `volsync`
+#                             item that holds this user's password.
+#   VOLSYNC_UID               The UID the mover should run as. Should
+#                             match the app's runAsUser so restic
+#                             skips chown attempts (it can't, the
+#                             mover container drops CAP_CHOWN).
+#
+# Optional substitutes (have defaults):
+#   VOLSYNC_GID               Defaults to VOLSYNC_UID if you set both
+#                             on the Flux KS to the same value.
+#   VOLSYNC_FSGROUP           Same.
+#   VOLSYNC_CAPACITY          PVC + RD destination capacity. Default 10Gi.
+#   VOLSYNC_SCHEDULE          Cron schedule for the RS. Default off-peak hourly.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - ./externalsecret.yaml
+  - ./replicationdestination.yaml
+  - ./pvc.yaml
+  - ./replicationsource.yaml

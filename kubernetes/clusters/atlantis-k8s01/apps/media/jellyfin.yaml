@@ -22,6 +22,14 @@ spec:
   timeout: 5m
   prune: true
   wait: true
+  postBuild:
+    substitute:
+      APP: jellyfin
+      VOLSYNC_USER: jellyfin
+      VOLSYNC_PASSWORD_FIELD: jellyfin_password
+      VOLSYNC_UID: "3000"
+      VOLSYNC_CAPACITY: 100Gi
+      VOLSYNC_SCHEDULE: "37 * * * *"
   patches:
     - target:
         kind: HelmRelease
