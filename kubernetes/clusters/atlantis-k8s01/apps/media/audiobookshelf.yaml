@@ -38,6 +38,8 @@ spec:
         kind: HelmRelease
         name: audiobookshelf
       patch: |-
-        - op: add
-          path: /spec/values/route/app/hostnames/-
-          value: read.freckle.media
+        - op: replace
+          path: /spec/values/route/app/hostnames
+          value:
+            - "{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"
+            - read.freckle.media
