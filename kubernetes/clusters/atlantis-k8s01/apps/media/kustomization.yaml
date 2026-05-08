@@ -21,6 +21,7 @@ resources:
   - ./mousehole.yaml
   - ./plex.yaml
   - ./prowlarr.yaml
+  - ./qbt-ink.yaml
   - ./qui.yaml
   - ./radarr.yaml
   - ./recyclarr.yaml

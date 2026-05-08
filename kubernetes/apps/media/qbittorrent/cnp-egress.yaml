@@ -1,0 +1,20 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+# Egress: world entity (everything outside the cluster — internet, LAN,
+# etc.) minus the site's internal subnets, so qbittorrent can't reach
+# on-site management/storage networks. Cluster-wide intercept-all-dns
+# CCNP covers DNS.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: ${APP}-egress
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: ${APP}
+  egress:
+    - toEntities:
+        - world
+  egressDeny:
+    - toCIDRSet:
+        - cidrGroupRef: site-den1-internal

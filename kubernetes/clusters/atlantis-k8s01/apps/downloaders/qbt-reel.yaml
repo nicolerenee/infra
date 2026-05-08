@@ -22,6 +22,8 @@ spec:
   retryInterval: 2m
   timeout: 5m
   postBuild:
+    substitute:
+      QBT_TRANSFER_PORT: "51847"
     substituteFrom:
       - kind: ConfigMap
         name: k8s-cluster-info

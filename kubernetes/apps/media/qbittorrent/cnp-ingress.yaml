@@ -1,0 +1,29 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+# Webui (HTTP): only qui — it fronts the UI externally and is the only
+# in-cluster client that needs to reach the qbittorrent API.
+# Transfer port: open to everything — peers come from the internet, the
+# LAN, anywhere. The LB handles external; this rule covers the pod side.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: ${APP}-ingress
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: ${APP}
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: media
+            app.kubernetes.io/name: qui
+      toPorts:
+        - ports:
+            - port: http
+              protocol: TCP
+    - fromEntities:
+        - all
+      toPorts:
+        - ports:
+            - port: transfer
+              protocol: TCP

@@ -3,12 +3,21 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: qbittorrent
+  name: ${APP}
 spec:
   chartRef:
     kind: OCIRepository
     name: app-template
     namespace: default
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  driftDetection:
+    mode: enabled
   interval: 1h
   values:
     controllers:
@@ -23,7 +32,13 @@ spec:
             env:
               TZ: America/Chicago
               QBT_WEBUI_PORT: &port 80
-              QBT_TORRENTING_PORT: &transferPort 50469
+              QBT_TORRENTING_PORT: ${QBT_TRANSFER_PORT}
+            ports:
+              - name: http
+                containerPort: *port
+              - name: transfer
+                containerPort: ${QBT_TRANSFER_PORT}
+                protocol: TCP
             probes:
               liveness: &probes
                 enabled: true
@@ -54,65 +69,39 @@ spec:
                 cpu: 100m
               limits:
                 memory: 18Gi
-          gluetun:
-            image:
-              repository: ghcr.io/qdm12/gluetun
-              tag: v3.41.1
-            envFrom:
-              - secretRef:
-                  name: gluetun-config
-            env:
-              VPN_SERVICE_PROVIDER: custom
-              VPN_TYPE: wireguard
-              FIREWALL_VPN_INPUT_PORTS: *transferPort
-              FIREWALL_INPUT_PORTS: *port
-            securityContext:
-              runAsUser: 0
-              runAsGroup: 0
-              runAsNonRoot: false
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: false
-              capabilities:
-                drop: ["ALL"]
-                add: ["NET_ADMIN"]
-            resources:
-              requests:
-                cpu: 10m
-                memory: 64Mi
-                devic.es/tun: "1"
-              limits:
-                memory: 256Mi
-                devic.es/tun: "1"
     defaultPodOptions:
       automountServiceAccountToken: false
-      dnsPolicy: None
-      dnsConfig:
-        nameservers:
-          - "1.1.1.1"
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
+        runAsUser: ${VOLSYNC_UID:=1000}
+        runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID:=1000}}
+        fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID:=1000}}
         fsGroupChangePolicy: OnRootMismatch
         seccompProfile:
           type: RuntimeDefault
     service:
       app:
+        controller: qbittorrent
+        ipFamilyPolicy: PreferDualStack
+        ipFamilies:
+          - IPv4
+          - IPv6
         ports:
           http:
             port: *port
-    route:
-      app:
-        hostnames:
-          - "{{ .Release.Name }}.${CLUSTER_DOMAIN}"
-        parentRefs:
-          - name: tailscale-media-mgmt
-            namespace: gateway
-        rules:
-          - backendRefs:
-              - identifier: app
-                port: *port
+      transfer-port:
+        controller: qbittorrent
+        type: LoadBalancer
+        ipFamilyPolicy: PreferDualStack
+        ipFamilies:
+          - IPv4
+          - IPv6
+        labels:
+          ipam.freckle.systems/lb-pool: internal
+        ports:
+          transfer-port:
+            port: ${QBT_TRANSFER_PORT}
+            protocol: TCP
     configMaps:
       config:
         data:
@@ -121,21 +110,11 @@ spec:
             addr = "http://localhost:80"
     persistence:
       config:
-        enabled: true
-        type: persistentVolumeClaim
-        accessMode: ReadWriteOnce
-        size: 10Gi
-        retain: true
-        suffix: "config"
+        existingClaim: ${APP}-config
       media:
-        type: emptyDir
+        existingClaim: ${MEDIA_PVC:=store01-media}
         globalMounts:
-          - path: /media
-      gluetun-tmp:
-        type: emptyDir
-        advancedMounts:
-          qbittorrent:
-            gluetun:
-              - path: /tmp/gluetun
+          - path: /store01/downloads/${APP}
+            subPath: ${MEDIA_SUBPATH:=downloads/${APP}}
       tmp:
         type: emptyDir
