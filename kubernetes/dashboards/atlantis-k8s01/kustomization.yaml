@@ -6,3 +6,4 @@ resources:
   - ../storage/ceph-cluster.yaml
   - ../storage/ceph-osd-single.yaml
   - ../storage/ceph-pools.yaml
+  - ../storage/volsync.yaml

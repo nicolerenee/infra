@@ -1,0 +1,24 @@
+---
+# Imports a community VolSync dashboard from grafana.com instead of
+# embedding JSON inline like the ceph-* dashboards in this folder.
+# The dashboard is maintained upstream — pinning revision keeps it
+# stable until we deliberately bump.
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: volsync
+spec:
+  folder: Storage
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  datasources:
+    - inputName: DS_PROMETHEUS
+      datasourceName: VictoriaMetrics
+  envs:
+    - name: VAR_REPLICATIONDESTNAME
+      value: .*-dst
+  grafanaCom:
+    id: 21356
+    revision: 3

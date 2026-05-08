@@ -114,12 +114,11 @@ spec:
               - identifier: app
                 port: 80
     persistence:
+      # Config PVC is managed via Kustomize alongside this HelmRelease
+      # (see pvc.yaml) so it can carry a dataSourceRef pointing at the
+      # volsync ReplicationDestination for restore-on-recreate.
       config:
-        enabled: true
-        type: persistentVolumeClaim
-        accessMode: ReadWriteOnce
-        size: 100Gi
-        retain: true
+        existingClaim: jellyfin-config
       cache:
         enabled: true
         type: persistentVolumeClaim

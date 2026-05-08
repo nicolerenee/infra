@@ -1,0 +1,52 @@
+---
+# Daily backup of the jellyfin-config PVC to the off-cluster Restic
+# REST Server on TrueNAS. Uses VolumeSnapshot copyMethod so backups
+# work despite the source PVC being RWO and in active use by the
+# jellyfin pod — volsync clones a read-only snapshot, mounts it in
+# its mover pod, and runs restic backup against the clone.
+#
+# Schedule is hourly on the hour. Incremental backups are tiny
+# (~20 MiB / 80s for jellyfin's config when nothing changed) so the
+# bandwidth + storage cost is trivial vs. the RPO improvement over
+# daily.
+#
+# Retention: 24 hourly + 7 daily + 4 weekly. No monthly band — we're
+# unlikely to ever restore data >1 month old; if we do, snapshots
+# older than the retention window are gone.
+# pruneIntervalDays controls how often restic forget+prune runs.
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: jellyfin-config
+spec:
+  sourcePVC: jellyfin-config
+  trigger:
+    # :37 — random off-peak minute (not 0/5/10/etc.) to avoid clashing
+    # with anything else scheduled on tidy intervals.
+    schedule: "37 * * * *"
+  restic:
+    # Match the mover UID to jellyfin's so file metadata reads work
+    # consistently and restic doesn't attempt chown ops it can't perform.
+    moverSecurityContext:
+      runAsUser: 3000
+      runAsGroup: 3000
+      fsGroup: 3000
+      # OnRootMismatch avoids kubelet recursively chown-ing every
+      # file on each mover startup — was taking ~2min on 48k files.
+      fsGroupChangePolicy: OnRootMismatch
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    repository: jellyfin-volsync
+    copyMethod: Snapshot
+    volumeSnapshotClassName: csi-ceph-blockpool
+    storageClassName: ceph-block
+    accessModes: [ReadWriteOnce]
+    cacheCapacity: 1Gi
+    cacheStorageClassName: ceph-block
+    cacheAccessModes: [ReadWriteOnce]
+    pruneIntervalDays: 7
+    retain:
+      hourly: 24
+      daily: 7
+      weekly: 4

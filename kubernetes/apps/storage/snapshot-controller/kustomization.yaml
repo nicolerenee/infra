@@ -3,9 +3,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ./resourceclaimtemplate.yaml
-  - ./externalsecret.yaml
-  - ./replicationdestination.yaml
-  - ./pvc.yaml
+  - ./ocirepository.yaml
   - ./helmrelease.yaml
-  - ./replicationsource.yaml
+  - ./volumesnapshotclasses.yaml

@@ -1,0 +1,17 @@
+---
+# Pairs with the ceph-block StorageClass (rook-ceph RBD). Used by
+# volsync's restic mover to snapshot a PVC before backing it up.
+# Add cephfs/democratic-csi classes here when those backends need
+# snapshot support.
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: csi-ceph-blockpool
+  annotations:
+    snapshot.storage.kubernetes.io/is-default-class: "true"
+driver: rook-ceph.rbd.csi.ceph.com
+deletionPolicy: Delete
+parameters:
+  clusterID: rook-ceph
+  csi.storage.k8s.io/snapshotter-secret-name: rook-csi-rbd-provisioner
+  csi.storage.k8s.io/snapshotter-secret-namespace: rook-ceph

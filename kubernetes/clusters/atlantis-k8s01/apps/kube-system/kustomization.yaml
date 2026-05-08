@@ -20,3 +20,4 @@ resources:
   - ./reflector.yaml
   - ./reloader.yaml
   - ./site-public-ips.yaml
+  - ./snapshot-controller.yaml

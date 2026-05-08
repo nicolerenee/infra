@@ -1,0 +1,43 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: volsync-rules
+spec:
+  groups:
+    - name: volsync.rules
+      rules:
+        # Operator gone from target discovery — backups stop without warning.
+        - alert: VolsyncComponentAbsent
+          expr: |-
+            absent(up{job="volsync-metrics"})
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: >-
+              VolSync operator has disappeared from Prometheus target discovery
+
+        # Specific RS/RD has flagged itself out of sync — most recent run failed.
+        - alert: VolsyncVolumeOutOfSync
+          expr: |-
+            volsync_volume_out_of_sync == 1
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: >-
+              {{ $labels.obj_namespace }}/{{ $labels.obj_name }} backup is out of sync
+
+        # Scheduled backup didn't run — usually means the operator is up but
+        # missed the trigger window (chart drift, mover stuck, etc.).
+        - alert: VolsyncMissedSchedule
+          expr: |-
+            increase(volsync_missed_intervals_total[1h]) > 0
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: >-
+              VolSync missed a scheduled backup for {{ $labels.obj_namespace }}/{{ $labels.obj_name }}
