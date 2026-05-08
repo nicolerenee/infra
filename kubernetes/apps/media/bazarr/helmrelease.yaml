@@ -5,7 +5,6 @@ kind: HelmRelease
 metadata:
   name: bazarr
 spec:
-  interval: 1h
   chartRef:
     kind: OCIRepository
     name: app-template
@@ -17,6 +16,9 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  driftDetection:
+    mode: enabled
+  interval: 1h
   values:
     controllers:
       bazarr:
@@ -29,6 +31,9 @@ spec:
               tag: 1.5.6@sha256:79fc37491f55c7e24427bcd669bce3df2d7415ca432a47ce9d53cc5988af8411
             env:
               TZ: America/Chicago
+            ports:
+              - name: http
+                containerPort: &port 6767
             probes:
               liveness: &probes
                 enabled: true
@@ -36,7 +41,7 @@ spec:
                 spec:
                   httpGet:
                     path: /health
-                    port: &port 6767
+                    port: *port
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
@@ -46,46 +51,70 @@ spec:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
             resources:
               requests:
                 cpu: 10m
               limits:
                 memory: 1Gi
     defaultPodOptions:
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: 3000
-        runAsGroup: 3000
-        fsGroup: 3000
+        runAsUser: ${VOLSYNC_UID}
+        runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID}}
+        fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID}}
         fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
     service:
       app:
         controller: bazarr
+        ipFamilyPolicy: PreferDualStack
+        ipFamilies:
+          - IPv4
+          - IPv6
         ports:
           http:
             port: *port
     route:
-      app:
-        hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
+      # UI route — receives OIDC enforcement via SecurityPolicy.
+      ui:
+        hostnames: ["{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"]
         parentRefs:
-          - name: tailscale-media-mgmt
-            namespace: gateway
+          - name: tailnet
+            namespace: gateway-system
         rules:
           - backendRefs:
-              - name: bazarr
+              - identifier: app
+                port: *port
+      # API route — explicitly NOT covered by the OIDC SecurityPolicy
+      # so external clients (X-Api-Key) keep working.
+      api:
+        hostnames: ["{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"]
+        parentRefs:
+          - name: tailnet
+            namespace: gateway-system
+        rules:
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /api
+            backendRefs:
+              - identifier: app
                 port: *port
     persistence:
       config:
-        enabled: true
-        type: persistentVolumeClaim
-        accessMode: ReadWriteOnce
-        size: 10Gi
-        retain: true
-        suffix: "config"
-      media:
-        type: emptyDir
+        existingClaim: bazarr${VOLSYNC_PVC_SUFFIX:=}
         globalMounts:
-          - path: /media
+          - path: /config
+            subPath: config
+      media:
+        existingClaim: ${MEDIA_PVC:=store01-media}
+        globalMounts:
+          - path: /store01
       tmpfs:
         type: emptyDir
         advancedMounts:
