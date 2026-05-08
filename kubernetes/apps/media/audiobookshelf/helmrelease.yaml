@@ -3,9 +3,8 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: audiobookshelf
+  name: ${APP:=audiobookshelf}
 spec:
-  interval: 1h
   chartRef:
     kind: OCIRepository
     name: app-template
@@ -17,6 +16,9 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  driftDetection:
+    mode: enabled
+  interval: 1h
   values:
     controllers:
       audiobookshelf:
@@ -29,6 +31,9 @@ spec:
               tag: 2.34.0
             env:
               TZ: America/Chicago
+            ports:
+              - name: http
+                containerPort: &port 80
             probes:
               liveness: &probes
                 enabled: true
@@ -36,12 +41,19 @@ spec:
                 spec:
                   httpGet:
                     path: /healthcheck
-                    port: &port 80
+                    port: *port
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
                   failureThreshold: 3
               readiness: *probes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
             resources:
               requests:
                 cpu: 100m
@@ -52,13 +64,19 @@ spec:
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: 943
-        runAsGroup: 943
-        fsGroup: 943
+        runAsUser: ${VOLSYNC_UID}
+        runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID}}
+        fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID}}
         fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
     service:
       app:
         controller: audiobookshelf
+        ipFamilyPolicy: PreferDualStack
+        ipFamilies:
+          - IPv4
+          - IPv6
         ports:
           http:
             port: *port
@@ -74,14 +92,18 @@ spec:
                 port: *port
     persistence:
       config:
-        existingClaim: audiobookshelf-config
+        existingClaim: ${APP:=audiobookshelf}${VOLSYNC_PVC_SUFFIX:=}
         globalMounts:
           - path: /config
+            subPath: config
       metadata:
-        existingClaim: audiobookshelf-metadata
+        existingClaim: ${APP:=audiobookshelf}${VOLSYNC_PVC_SUFFIX:=}
         globalMounts:
           - path: /metadata
+            subPath: metadata
       media:
-        existingClaim: store01-media
+        existingClaim: ${MEDIA_PVC:=store01-media}
         globalMounts:
           - path: /store01
+      tmp:
+        type: emptyDir
