@@ -18,6 +18,8 @@ spec:
       retries: 3
   driftDetection:
     mode: enabled
+    ignore:
+      - paths: ["/spec/replicas"]
   interval: 1h
   values:
     controllers:

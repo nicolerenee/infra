@@ -3,6 +3,12 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: ${APP}${VOLSYNC_PVC_SUFFIX:=}
+  annotations:
+    # Match Helm's `retain: true` behavior — Flux must NOT auto-prune
+    # this PVC even if the manifest is removed or the volsync component
+    # is dropped. App data is durable; explicit `kubectl delete pvc` is
+    # the only way to remove it.
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   accessModes: [ReadWriteOnce]
   resources:
