@@ -8,24 +8,26 @@ metadata:
   labels:
     infra.freckle.systems/post-build-variables: enabled
 spec:
-  targetNamespace: *namespace
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  dependsOn:
+    - name: rook-ceph-cluster
+      namespace: rook-ceph
+  interval: 1h
+  path: ./kubernetes/apps/media/prowlarr
+  prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/media/prowlarr
-  dependsOn:
-    - name: onepassword-stores
-      namespace: external-secrets
-    - name: tailscale-proxyclass
-      namespace: tailscale
-    - name: rook-ceph-cluster
-      namespace: rook-ceph
-  interval: 2m
-  retryInterval: 1m
+  targetNamespace: *namespace
   timeout: 5m
-  prune: true
-  wait: true
+  wait: false
+  postBuild:
+    substitute:
+      APP: *app
+      VOLSYNC_UID: "1000"
+      VOLSYNC_CAPACITY: 1Gi
+      VOLSYNC_SCHEDULE: "6 * * * *"

@@ -25,27 +25,9 @@ spec:
   targetNamespace: *namespace
   timeout: 5m
   wait: false
-  patches:
-    - target:
-        kind: HelmRelease
-      patch: |-
-        - op: replace
-          path: /spec/values/persistence/config/size
-          value: 100Gi
-
-        - op: replace
-          path: /spec/values/persistence/media
-          value:
-            existingClaim: store01-media
-            globalMounts:
-              - path: /store01
-
-        - op: replace
-          path: /spec/values/defaultPodOptions/securityContext/runAsUser
-          value: 943
-        - op: replace
-          path: /spec/values/defaultPodOptions/securityContext/runAsGroup
-          value: 943
-        - op: replace
-          path: /spec/values/defaultPodOptions/securityContext/fsGroup
-          value: 943
+  postBuild:
+    substitute:
+      APP: *app
+      VOLSYNC_UID: "943"
+      VOLSYNC_CAPACITY: 30Gi
+      VOLSYNC_SCHEDULE: "16 * * * *"

@@ -5,7 +5,6 @@ kind: HelmRelease
 metadata:
   name: sabnzbd
 spec:
-  interval: 1h
   chartRef:
     kind: OCIRepository
     name: app-template
@@ -17,6 +16,9 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  driftDetection:
+    mode: enabled
+  interval: 1h
   values:
     controllers:
       sabnzbd:
@@ -30,7 +32,12 @@ spec:
             env:
               SABNZBD__PORT: &port 80
               SABNZBD__HOST_WHITELIST_ENTRIES: >-
-                sabnzbd
+                sabnzbd,
+                sabnzbd.media,
+                sabnzbd.media.svc,
+                sabnzbd.media.svc.cluster,
+                sabnzbd.media.svc.cluster.local,
+                sabnzbd.${CLUSTER_SUBDOMAIN}.freckle.media
               TZ: America/Chicago
             envFrom:
               - secretRef:
@@ -55,6 +62,9 @@ spec:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
             resources:
               requests:
                 cpu: 100m
@@ -63,38 +73,40 @@ spec:
                 cpu: 4
                 memory: 4Gi
     defaultPodOptions:
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: 3000
-        runAsGroup: 3000
-        fsGroup: 3000
+        runAsUser: ${VOLSYNC_UID}
+        runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID}}
+        fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID}}
         fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
     service:
       app:
         controller: sabnzbd
+        ipFamilyPolicy: PreferDualStack
+        ipFamilies:
+          - IPv4
+          - IPv6
         ports:
           app:
             port: *port
     route:
-      # UI route — catch-all paths. Will receive OIDC SecurityPolicy
-      # on atlantis when the gateway migration to envoy is done.
       ui:
-        hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
+        hostnames: ["{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"]
         parentRefs:
-          - name: tailscale-media-mgmt
-            namespace: gateway
+          - name: tailnet
+            namespace: gateway-system
         rules:
           - backendRefs:
               - identifier: app
                 port: *port
-      # API route — kept off any future OIDC SecurityPolicy so external
-      # scripts can authenticate via the apikey query/header that
-      # sabnzbd already requires for /api.
       api:
-        hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
+        hostnames: ["{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"]
         parentRefs:
-          - name: tailscale-media-mgmt
-            namespace: gateway
+          - name: tailnet
+            namespace: gateway-system
         rules:
           - matches:
               - path:
@@ -105,15 +117,14 @@ spec:
                 port: *port
     persistence:
       config:
-        enabled: true
-        type: persistentVolumeClaim
-        accessMode: ReadWriteOnce
-        size: 10Gi
-        retain: true
-        suffix: "config"
-      media:
-        type: emptyDir
+        existingClaim: sabnzbd${VOLSYNC_PVC_SUFFIX:=}
         globalMounts:
-          - path: /media
+          - path: /config
+            subPath: config
+      media:
+        existingClaim: ${MEDIA_PVC:=store01-media}
+        globalMounts:
+          - path: /store01/downloads/sabnzbd
+            subPath: downloads/sabnzbd
       tmp:
         type: emptyDir
