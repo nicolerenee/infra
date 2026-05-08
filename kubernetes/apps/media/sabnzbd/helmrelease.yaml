@@ -31,11 +31,6 @@ spec:
               tag: 5.0.1@sha256:c22ada9eb6f6306a4e94d3372c784a5330818f2021b2fa9233ff4ae92d9f3582
             env:
               SABNZBD__PORT: &port 80
-              # Bind dual-stack (sabnzbd.ini `host = ::`); without
-              # this the Python webserver defaults to IPv4 only and
-              # envoy's dual-stack endpoint resolution gets connection
-              # refused on the IPv6 endpoint.
-              SABNZBD__HOST: "::"
               SABNZBD__HOST_WHITELIST_ENTRIES: >-
                 sabnzbd,
                 sabnzbd.media,
@@ -90,10 +85,13 @@ spec:
     service:
       app:
         controller: sabnzbd
-        ipFamilyPolicy: PreferDualStack
-        ipFamilies:
-          - IPv4
-          - IPv6
+        # SABnzbd's IPv6 binding is broken even with `host = ::`,
+        # `SABNZBD__ADDRESS=[::]`, and `ipv6_hosting = 1` set —
+        # sabnzbd ends up serving IPv6 on `::1` (localhost) instead
+        # of `[::]` (all interfaces), so envoy gets connection
+        # refused on the IPv6 endpoint and the UI flaps between
+        # working (IPv4) and dead (IPv6). Stay IPv4-only here until
+        # upstream fixes the bind logic.
         ports:
           app:
             port: *port
