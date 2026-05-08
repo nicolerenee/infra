@@ -5,21 +5,29 @@ kind: Kustomization
 metadata:
   name: &app cross-seed
   namespace: &namespace media
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
 spec:
-  targetNamespace: *namespace
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: onepassword-stores
-      namespace: external-secrets
+    - name: rook-ceph-cluster
+      namespace: rook-ceph
+  interval: 1h
+  path: ./kubernetes/apps/media/cross-seed
+  prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/media/cross-seed
-  interval: 2m
-  retryInterval: 1m
+  targetNamespace: *namespace
   timeout: 5m
-  prune: true
-  wait: true
+  wait: false
+  postBuild:
+    substitute:
+      APP: *app
+      VOLSYNC_UID: "943"
+      VOLSYNC_CAPACITY: 1Gi
+      VOLSYNC_SCHEDULE: "43 * * * *"
