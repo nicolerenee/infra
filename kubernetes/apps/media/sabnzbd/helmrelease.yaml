@@ -90,8 +90,11 @@ spec:
         # sabnzbd ends up serving IPv6 on `::1` (localhost) instead
         # of `[::]` (all interfaces), so envoy gets connection
         # refused on the IPv6 endpoint and the UI flaps between
-        # working (IPv4) and dead (IPv6). Stay IPv4-only here until
-        # upstream fixes the bind logic.
+        # working (IPv4) and dead (IPv6). Force SingleStack IPv4
+        # explicitly because the cluster default is dual-stack.
+        ipFamilyPolicy: SingleStack
+        ipFamilies:
+          - IPv4
         ports:
           app:
             port: *port
