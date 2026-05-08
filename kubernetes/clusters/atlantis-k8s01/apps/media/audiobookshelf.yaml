@@ -40,8 +40,6 @@ spec:
     - target:
         kind: HelmRelease
       patch: |-
-        - op: replace
-          path: /spec/values/route/app/hostnames
-          value:
-            - "{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"
-            - read.freckle.media
+        - op: add
+          path: /spec/values/route/app/hostnames/-
+          value: read.freckle.media
