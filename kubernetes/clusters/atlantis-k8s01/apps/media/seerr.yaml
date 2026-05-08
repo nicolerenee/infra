@@ -28,8 +28,6 @@ spec:
   postBuild:
     substitute:
       APP: seerr
-      VOLSYNC_USER: seer
-      VOLSYNC_PASSWORD_FIELD: seer_password
       VOLSYNC_UID: "1000"
       VOLSYNC_CAPACITY: 10Gi
       VOLSYNC_SCHEDULE: "13 * * * *"
