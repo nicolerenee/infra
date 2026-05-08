@@ -1,0 +1,18 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+# Mousehole is reached only via the tailnet gateway (Tailscale-only
+# exposure). Ingress is restricted to the tailnet gateway pods —
+# nothing else in the cluster has any business hitting it.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: mousehole-ingress
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: mousehole
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: gateway-system
+            gateway.networking.k8s.io/gateway-name: tailnet

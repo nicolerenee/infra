@@ -9,6 +9,15 @@ spec:
     kind: OCIRepository
     name: app-template
     namespace: default
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  driftDetection:
+    mode: enabled
   interval: 1h
   values:
     controllers:
@@ -69,26 +78,25 @@ spec:
     service:
       app:
         controller: mousehole
+        ipFamilyPolicy: PreferDualStack
+        ipFamilies:
+          - IPv4
+          - IPv6
         ports:
           http:
             port: 80
             targetPort: *port
-    ingress:
+    route:
       app:
-        className: tailscale
-        annotations:
-          tailscale.com/proxy-group: ingress-proxy
-          tailscale.com/tags: tag:mousehole
-        hosts:
-          - host: mousehole
-            paths:
-              - path: /
-                service:
-                  identifier: app
-                  port: http
-        tls:
-          - hosts:
-              - mousehole
+        hostnames:
+          - "{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"
+        parentRefs:
+          - name: tailnet
+            namespace: gateway-system
+        rules:
+          - backendRefs:
+              - identifier: app
+                port: 80
     persistence:
       data:
         enabled: true

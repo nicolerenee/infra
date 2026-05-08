@@ -18,6 +18,7 @@ resources:
   - ./homepage-oidc.yaml
   - ./jellyfin.yaml
   - ./cnp-jellyfin-ingress.yaml
+  - ./mousehole.yaml
   - ./plex.yaml
   - ./prowlarr.yaml
   - ./qui.yaml

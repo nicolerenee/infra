@@ -5,5 +5,4 @@ kind: Kustomization
 namespace: download-tools
 components:
   - ../../../../components/flux-post-build-variables
-resources:
-  - ./mousehole.yaml
+resources: []
