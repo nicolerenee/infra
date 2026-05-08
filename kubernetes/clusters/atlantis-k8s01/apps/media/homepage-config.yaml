@@ -53,12 +53,12 @@ data:
     - Other:
         - Jellyseerr:
             href: https://requests.atlantis.freckle.media
-            siteMonitor: http://seerr.media-tools
+            siteMonitor: http://seerr.media
             icon: jellyseerr.png
             description: Request movies & TV
             widget:
               type: jellyseerr
-              url: http://seerr.media-tools
+              url: http://seerr.media
               key: "{{HOMEPAGE_VAR_JELLYSEERR_API_KEY}}"
 
     - Downloaders:

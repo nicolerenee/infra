@@ -92,13 +92,11 @@ spec:
           - name: public
             namespace: gateway-system
     persistence:
+      # Config PVC managed via Kustomize alongside this HelmRelease
+      # (see pvc.yaml) so it can carry a dataSourceRef pointing at
+      # the volsync ReplicationDestination for restore-on-recreate.
       config:
-        enabled: true
-        type: persistentVolumeClaim
-        accessMode: ReadWriteOnce
-        size: 10Gi
-        retain: true
-        suffix: config
+        existingClaim: seerr-config
         globalMounts:
           - path: /app/config
       tmp:

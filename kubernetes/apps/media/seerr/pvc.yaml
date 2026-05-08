@@ -1,0 +1,20 @@
+---
+# Seerr's config PVC, managed here (not by the Helm chart) so the
+# dataSourceRef can point at the volsync ReplicationDestination.
+# On creation the volume populator restores the latest restic
+# snapshot into this PVC; on every future recreate of this PVC
+# the same path applies.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: seerr-config
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: ceph-block
+  dataSourceRef:
+    apiGroup: volsync.backube
+    kind: ReplicationDestination
+    name: seerr-config-bootstrap

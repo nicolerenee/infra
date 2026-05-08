@@ -2,8 +2,9 @@
 # yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: media-tools
-components:
-  - ../../../../components/flux-post-build-variables
 resources:
-  - ./seerr.yaml
+  - externalsecret.yaml
+  - replicationdestination.yaml
+  - pvc.yaml
+  - helmrelease.yaml
+  - replicationsource.yaml
