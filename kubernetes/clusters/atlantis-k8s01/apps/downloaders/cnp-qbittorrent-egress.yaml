@@ -1,9 +1,15 @@
 ---
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
 # Egress allow for qBittorrent pods (qbt-reel, qbt-ink, any future
-# instance). Permits public internet (trackers, peers) while blocking
-# RFC1918 / CGNAT so a compromised qbt can't pivot inside the cluster
-# or leak to LAN. Layered on top of the namespace's default-deny.
+# instance). Allows the world entity (everything outside the cluster:
+# internet, LAN, etc.), then explicitly denies the den1 internal
+# subnets so qbt can't reach on-site management/storage networks.
+# Layered on top of the namespace's default-deny.
+#
+# egressDeny takes precedence over egress allow, so the world-entity
+# allow + den1-internal deny composes to "anywhere external except
+# den1 internal." Cluster-internal pods aren't in the world entity,
+# so they remain blocked by the default-deny umbrella.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -13,17 +19,8 @@ spec:
     matchLabels:
       app.kubernetes.io/controller: qbittorrent
   egress:
-    # Public internet (IPv4), blocking private/internal ranges
+    - toEntities:
+        - world
+  egressDeny:
     - toCIDRSet:
-        - cidr: 0.0.0.0/0
-          except:
-            - 10.0.0.0/8       # RFC1918
-            - 172.16.0.0/12    # RFC1918
-            - 192.168.0.0/16   # RFC1918
-            - 100.64.0.0/10    # CGNAT (Tailscale)
-    # Public internet (IPv6)
-    - toCIDRSet:
-        - cidr: "::/0"
-          except:
-            - "fc00::/7"   # Unique local addresses
-            - "fe80::/10"  # Link-local addresses
+        - cidrGroupRef: site-den1-internal
