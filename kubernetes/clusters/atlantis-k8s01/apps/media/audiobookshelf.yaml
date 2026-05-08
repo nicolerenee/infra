@@ -33,10 +33,12 @@ spec:
       VOLSYNC_SCHEDULE: "8 * * * *"
   patches:
     # One-off: atlantis also publishes audiobookshelf at read.freckle.media
-    # as a friendly household-facing alias.
+    # as a friendly household-facing alias. Name filter is omitted because
+    # the HR's metadata.name is `${APP:=audiobookshelf}` at patch time
+    # (postBuild substitution runs after patches), so a literal name match
+    # against the unsubstituted string would fail. Only one HR in this path.
     - target:
         kind: HelmRelease
-        name: audiobookshelf
       patch: |-
         - op: replace
           path: /spec/values/route/app/hostnames
