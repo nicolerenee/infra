@@ -72,10 +72,14 @@ spec:
     service:
       app:
         controller: tautulli
-        # Tautulli's Python webserver only binds 0.0.0.0:8181 (IPv4
-        # only), so a dual-stack service has envoy try IPv6 first and
-        # get connection refused. Stay IPv4-only here until upstream
-        # supports listening on `::` (or we set it via config.ini).
+        # Tautulli binds dual-stack only when its config.ini has
+        # `http_host = ::`. The /config volume must be edited offline
+        # (with the deployment scaled to 0) since tautulli rewrites
+        # the file back on shutdown.
+        ipFamilyPolicy: PreferDualStack
+        ipFamilies:
+          - IPv4
+          - IPv6
         ports:
           http:
             port: 80
