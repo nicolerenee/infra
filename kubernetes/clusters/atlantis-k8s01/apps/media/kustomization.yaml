@@ -13,6 +13,9 @@ resources:
   - ./domains-externalsecrets.yaml
   - ./emby.yaml
   - ./flaresolverr.yaml
+  - ./homepage.yaml
+  - ./homepage-config.yaml
+  - ./homepage-oidc.yaml
   - ./jellyfin.yaml
   - ./cnp-jellyfin-ingress.yaml
   - ./plex.yaml

@@ -6,7 +6,4 @@ namespace: media-tools
 components:
   - ../../../../components/flux-post-build-variables
 resources:
-  - ./homepage.yaml
-  - ./homepage-config.yaml
-  - ./homepage-oidc.yaml
   - ./seerr.yaml
