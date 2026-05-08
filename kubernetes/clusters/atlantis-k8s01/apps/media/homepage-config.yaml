@@ -110,7 +110,7 @@ metadata:
 spec:
   secretStoreRef:
     kind: ClusterSecretStore
-    name: onepassword
+    name: op-cluster-vault
   target:
     template:
       data:
