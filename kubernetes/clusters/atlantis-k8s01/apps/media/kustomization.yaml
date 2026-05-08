@@ -22,6 +22,8 @@ resources:
   - ./plex.yaml
   - ./prowlarr.yaml
   - ./qbt-ink.yaml
+  - ./qbt-reel.yaml
+  - ./qbt-reel-cleanup.yaml
   - ./qui.yaml
   - ./radarr.yaml
   - ./recyclarr.yaml

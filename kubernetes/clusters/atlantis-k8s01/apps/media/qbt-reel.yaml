@@ -4,26 +4,31 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: &app qbt-reel
-  namespace: &namespace downloaders
+  namespace: &namespace media
   labels:
     infra.freckle.systems/post-build-variables: enabled
 spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  targetNamespace: *namespace
-  path: ./kubernetes/clusters/atlantis-k8s01/apps/downloaders/qbt-reel
+  dependsOn:
+    - name: rook-ceph-cluster
+      namespace: rook-ceph
+  interval: 1h
+  path: ./kubernetes/apps/media/qbittorrent
   prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  interval: 1h
-  retryInterval: 2m
+  targetNamespace: *namespace
   timeout: 5m
+  wait: false
   postBuild:
     substitute:
+      APP: *app
+      VOLSYNC_UID: "943"
+      VOLSYNC_CAPACITY: 10Gi
+      VOLSYNC_SCHEDULE: "47 * * * *"
       QBT_TRANSFER_PORT: "51847"
-    substituteFrom:
-      - kind: ConfigMap
-        name: k8s-cluster-info

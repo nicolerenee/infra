@@ -21,13 +21,16 @@ spec:
           containers:
             - name: cleanup
               image: python:3.14-alpine
+              envFrom:
+                - secretRef:
+                    name: qbt-reel-cleanup
               command:
                 - python3
                 - -c
                 - |
                   import json, os, time, urllib.request, urllib.parse
 
-                  QBT_URL = "http://qbt-reel-app.downloaders.svc:80"
+                  QBT_URL = os.environ["QBT_URL"].rstrip("/")
                   KEEP_DAYS = 7
 
                   # Get all torrents
@@ -88,7 +91,7 @@ spec:
               volumeMounts:
                 - name: media
                   mountPath: /store01/downloads/qbt-reel
-                  subPath: qbt-reel
+                  subPath: downloads/qbt-reel
                   readOnly: true
               resources:
                 requests:
@@ -99,4 +102,4 @@ spec:
           volumes:
             - name: media
               persistentVolumeClaim:
-                claimName: store01-downloads
+                claimName: store01-media

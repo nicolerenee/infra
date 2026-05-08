@@ -1,0 +1,21 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+# Allow cross-seed to call the qbt-reel webui API. The qbittorrent base
+# locks ingress to qui-only by default; this is an additive policy that
+# extends the allowed sources for qbt-reel pods specifically.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: cross-seed-to-qbt-reel
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: qbt-reel
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: cross-seed
+      toPorts:
+        - ports:
+            - port: http
+              protocol: TCP
