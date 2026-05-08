@@ -29,9 +29,6 @@ spec:
     substitute:
       APP: *app
       VOLSYNC_UID: "943"
-      VOLSYNC_CAPACITY: 10Gi
+      VOLSYNC_CAPACITY: 1Gi
       VOLSYNC_SCHEDULE: "23 * * * *"
       QBT_TRANSFER_PORT: "54182"
-      # Legacy `-config` PVC name; migrate to bare `${APP}` PVC with
-      # subPath mounts during the next qbt rework.
-      VOLSYNC_PVC_SUFFIX: -config

@@ -110,7 +110,10 @@ spec:
             addr = "http://localhost:80"
     persistence:
       config:
-        existingClaim: ${APP}-config
+        existingClaim: ${APP}${VOLSYNC_PVC_SUFFIX:=}
+        globalMounts:
+          - path: /config
+            subPath: config
       media:
         existingClaim: ${MEDIA_PVC:=store01-media}
         globalMounts:
