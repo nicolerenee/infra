@@ -31,3 +31,13 @@ spec:
       VOLSYNC_UID: "943"
       VOLSYNC_CAPACITY: 5Gi
       VOLSYNC_SCHEDULE: "8 * * * *"
+  patches:
+    # One-off: atlantis also publishes audiobookshelf at read.freckle.media
+    # as a friendly household-facing alias.
+    - target:
+        kind: HelmRelease
+        name: audiobookshelf
+      patch: |-
+        - op: add
+          path: /spec/values/route/app/hostnames/-
+          value: read.freckle.media
