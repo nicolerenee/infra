@@ -13,6 +13,8 @@ resources:
   - ./domains-externalsecrets.yaml
   - ./emby.yaml
   - ./flaresolverr.yaml
+  - ./jellyfin.yaml
+  - ./cnp-jellyfin-ingress.yaml
   - ./plex.yaml
   - ./prowlarr.yaml
   - ./qui.yaml

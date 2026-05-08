@@ -26,9 +26,13 @@ spec:
     - target:
         kind: HelmRelease
       patch: |-
+        # Mount the TrueNAS media export read-only — jellyfin only reads,
+        # never writes, and this prevents any accidental modifications
+        # (orphan .nfo files, deletes, etc.).
         - op: replace
           path: /spec/values/persistence/media
           value:
-            existingClaim: store01-vault01-media
+            existingClaim: store01-media
             globalMounts:
-              - path: /store01/vault01
+              - path: /store01
+                readOnly: true

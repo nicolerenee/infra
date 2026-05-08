@@ -32,12 +32,12 @@ data:
     - Media Servers:
         - Jellyfin:
             href: https://watch.freckle.media
-            siteMonitor: http://jellyfin.media-servers
+            siteMonitor: http://jellyfin.media
             icon: jellyfin.png
             description: Movies & TV
             widget:
               type: jellyfin
-              url: http://jellyfin.media-servers
+              url: http://jellyfin.media
               key: "{{HOMEPAGE_VAR_JELLYFIN_API_KEY}}"
         - Plex:
             href: https://plex.freckle.vision

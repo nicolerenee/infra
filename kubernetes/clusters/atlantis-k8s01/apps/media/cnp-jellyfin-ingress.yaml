@@ -4,8 +4,10 @@
 # learn what actually needs to reach it. Allowed sources:
 #   - public envoy gateway pods (the gateway terminates external
 #     traffic and forwards in-cluster to jellyfin Service IP)
-#   - media namespace pods (legacy ns where the arr stack still lives;
-#     remove this once arr/downloaders are split out of media)
+#   - any pod in media namespace (post-collapse home of jellyfin and
+#     the apps that need to reach it: *arr stack, seerr eventually,
+#     etc. Same-ns traffic is NOT auto-allowed when a CNP with
+#     ingress rules targets a pod — must be listed.)
 #   - any pod in media-tools (homepage, future user-facing tools)
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
