@@ -8,36 +8,39 @@ metadata:
   labels:
     infra.freckle.systems/post-build-variables: enabled
 spec:
-  targetNamespace: *namespace
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  dependsOn:
+    - name: rook-ceph-cluster
+      namespace: rook-ceph
+  interval: 1h
+  path: ./kubernetes/clusters/atlantis-k8s01/apps/media/recyclarr
+  prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/clusters/atlantis-k8s01/apps/media/recyclarr
-  dependsOn:
-    - name: onepassword-stores
-      namespace: external-secrets
-  interval: 2m
-  retryInterval: 1m
+  targetNamespace: *namespace
   timeout: 5m
-  prune: true
-  wait: true
+  wait: false
   patches:
+    # atlantis also has a sonarr-anime instance — extend the base ES with
+    # its API key so recyclarr can sync that profile too. Name filter is
+    # omitted because the ES's metadata.name is `recyclarr` literal here
+    # but kept for the future-proof case where ${APP} is used.
     - target:
         kind: ExternalSecret
       patch: |-
         - op: add
           path: /spec/target/template/data/SONARR_ANIME_API_KEY
           value: "{{ .sonarr_anime_api_key }}"
-
         - op: add
-          path: /spec/dataFrom/0
+          path: /spec/dataFrom/-
           value:
             extract:
-              key: sonarr-anime-${CLUSTER_NAME}
+              key: sonarr-anime
             rewrite:
               - regexp:
                   source: "(.*)"

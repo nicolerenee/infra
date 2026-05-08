@@ -25,3 +25,9 @@ spec:
   targetNamespace: *namespace
   timeout: 5m
   wait: false
+  postBuild:
+    substitute:
+      APP: *app
+      VOLSYNC_UID: "1000"
+      VOLSYNC_CAPACITY: 1Gi
+      VOLSYNC_SCHEDULE: "28 * * * *"
