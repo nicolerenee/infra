@@ -1,16 +1,15 @@
 ---
-# OIDC client credentials for sonarr, pulled from the cluster vault.
-# Same 1Password item as sonarr's API key; oidc_client_id and
-# oidc_client_secret are additional fields on it.
+# OIDC client credentials for ${APP}, pulled from the same 1P item as the
+# API key (oidc_client_id and oidc_client_secret are additional fields).
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/external-secrets.io/externalsecret_v1.json
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
-  name: sonarr-oidc
+  name: ${APP:=sonarr}-oidc
 spec:
   secretStoreRef:
     kind: ClusterSecretStore
-    name: onepassword
+    name: op-cluster-vault
   target:
     template:
       data:
@@ -18,32 +17,33 @@ spec:
         client-secret: "{{ .oidc_client_secret }}"
   dataFrom:
     - extract:
-        key: sonarr
+        key: ${APP:=sonarr}
 ---
-# Forces all browser traffic to sonarr.atlantis.freckle.media through
-# OIDC against pocket-id. Internal cluster traffic to the sonarr Service
-# (recyclarr, prowlarr, etc.) bypasses the gateway and is unaffected.
+# Forces all browser traffic to the UI HTTPRoute through OIDC. Internal
+# cluster traffic to the Service (recyclarr, prowlarr, etc.) bypasses the
+# gateway and is unaffected. The api HTTPRoute is intentionally left
+# unprotected so X-Api-Key clients still work.
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
 metadata:
-  name: sonarr-oidc
+  name: ${APP:=sonarr}-oidc
 spec:
   targetRefs:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
-      name: sonarr-ui
+      name: ${APP:=sonarr}-ui
   oidc:
     provider:
       issuer: https://freckle.id
     clientIDRef:
       group: ""
       kind: Secret
-      name: sonarr-oidc
+      name: ${APP:=sonarr}-oidc
     clientSecret:
       group: ""
       kind: Secret
-      name: sonarr-oidc
-    redirectURL: https://sonarr.atlantis.freckle.media/oauth2/callback
+      name: ${APP:=sonarr}-oidc
+    redirectURL: https://${APP:=sonarr}.${CLUSTER_SUBDOMAIN}.freckle.media/oauth2/callback
     logoutPath: /logout
     scopes:
       - openid

@@ -31,3 +31,6 @@ spec:
       VOLSYNC_UID: "1000"
       VOLSYNC_CAPACITY: 10Gi
       VOLSYNC_SCHEDULE: "13 * * * *"
+      # Legacy `-config` PVC name; migrate to bare `${APP}` PVC with
+      # subPath mounts during the next seerr rework.
+      VOLSYNC_PVC_SUFFIX: -config

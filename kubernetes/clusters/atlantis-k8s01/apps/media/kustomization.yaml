@@ -30,7 +30,6 @@ resources:
   - ./sabnzbd.yaml
   - ./seerr.yaml
   - ./sonarr.yaml
-  - ./sonarr-oidc.yaml
   - ./sonarr-anime.yaml
   - ./tautulli.yaml
   - ./unpackerr.yaml

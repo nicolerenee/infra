@@ -23,8 +23,13 @@
 #   VOLSYNC_CAPACITY    PVC + RD destination capacity. Default 10Gi.
 #   VOLSYNC_SCHEDULE    Cron schedule for the RS. Default :37 hourly.
 #                       Pick a different minute per app to spread load.
-#   VOLSYNC_PVC_SUFFIX  PVC name suffix. Default `-config`. Set to
-#                       empty for plain `${APP}` PVCs.
+#   VOLSYNC_PVC_SUFFIX  PVC name suffix. Default empty — PVC is named
+#                       just `${APP}`. Apps with multiple data dirs
+#                       use subPath mounts on this single PVC. A
+#                       sibling PVC (e.g. `${APP}-cache`) is the
+#                       signal that data is intentionally not backed
+#                       up. Legacy apps still on `${APP}-config` PVCs
+#                       set this to `-config` until they're migrated.
 apiVersion: kustomize.config.k8s.io/v1alpha1
 kind: Component
 resources:

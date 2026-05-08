@@ -32,3 +32,6 @@ spec:
       VOLSYNC_CAPACITY: 10Gi
       VOLSYNC_SCHEDULE: "47 * * * *"
       QBT_TRANSFER_PORT: "51847"
+      # Legacy `-config` PVC name; migrate to bare `${APP}` PVC with
+      # subPath mounts during the next qbt rework.
+      VOLSYNC_PVC_SUFFIX: -config

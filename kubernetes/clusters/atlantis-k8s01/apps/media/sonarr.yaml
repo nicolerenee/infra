@@ -28,38 +28,6 @@ spec:
   postBuild:
     substitute:
       APP: *app
-  patches:
-    # The atlantis sonarr instance was migrated to a non-cluster-suffixed
-    # 1Password item (just `sonarr`) when oidc_client_id/secret were
-    # added. The other sonarr instances (fairy, sonarr-anime) still use
-    # the legacy sonarr-${CLUSTER_NAME} key, so the override is here.
-    - target:
-        kind: ExternalSecret
-        name: sonarr
-      patch: |-
-        - op: replace
-          path: /spec/dataFrom/0/extract/key
-          value: sonarr
-    - target:
-        kind: HelmRelease
-      patch: |-
-        - op: replace
-          path: /spec/values/persistence/config/size
-          value: 30Gi
-
-        - op: replace
-          path: /spec/values/persistence/media
-          value:
-            existingClaim: store01-media
-            globalMounts:
-              - path: /store01
-
-        - op: replace
-          path: /spec/values/defaultPodOptions/securityContext/runAsUser
-          value: 943
-        - op: replace
-          path: /spec/values/defaultPodOptions/securityContext/runAsGroup
-          value: 943
-        - op: replace
-          path: /spec/values/defaultPodOptions/securityContext/fsGroup
-          value: 943
+      VOLSYNC_UID: "943"
+      VOLSYNC_CAPACITY: 30Gi
+      VOLSYNC_SCHEDULE: "3 * * * *"

@@ -5,7 +5,6 @@ kind: HelmRelease
 metadata:
   name: ${APP:=sonarr}
 spec:
-  interval: 1h
   chartRef:
     kind: OCIRepository
     name: app-template
@@ -17,6 +16,9 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  driftDetection:
+    mode: enabled
+  interval: 1h
   values:
     controllers:
       sonarr:
@@ -71,6 +73,9 @@ spec:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
             resources:
               requests:
                 cpu: 100m
@@ -79,15 +84,25 @@ spec:
                 cpu: 4
                 memory: 4Gi
     defaultPodOptions:
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: 3000
-        runAsGroup: 3000
-        fsGroup: 3000
+        # UID/GID/fsGroup must match VOLSYNC_UID set on the cluster KS so
+        # the restic mover and the app run as the same user. Required
+        # substitute — no defaults (mirrors the volsync component contract).
+        runAsUser: ${VOLSYNC_UID}
+        runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID}}
+        fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID}}
         fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
     service:
       app:
         controller: sonarr
+        ipFamilyPolicy: PreferDualStack
+        ipFamilies:
+          - IPv4
+          - IPv6
         ports:
           app:
             port: *port
@@ -125,15 +140,13 @@ spec:
                 port: *port
     persistence:
       config:
-        enabled: true
-        type: persistentVolumeClaim
-        accessMode: ReadWriteOnce
-        size: 10Gi
-        retain: true
-        suffix: "config"
-      media:
-        type: emptyDir
+        existingClaim: ${APP:=sonarr}${VOLSYNC_PVC_SUFFIX:=}
         globalMounts:
-          - path: /media
+          - path: /config
+            subPath: config
+      media:
+        existingClaim: ${MEDIA_PVC:=store01-media}
+        globalMounts:
+          - path: /store01
       tmp:
         type: emptyDir

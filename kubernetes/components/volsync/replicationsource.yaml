@@ -2,9 +2,9 @@
 apiVersion: volsync.backube/v1alpha1
 kind: ReplicationSource
 metadata:
-  name: ${APP}${VOLSYNC_PVC_SUFFIX:=-config}
+  name: ${APP}${VOLSYNC_PVC_SUFFIX:=}
 spec:
-  sourcePVC: ${APP}${VOLSYNC_PVC_SUFFIX:=-config}
+  sourcePVC: ${APP}${VOLSYNC_PVC_SUFFIX:=}
   trigger:
     schedule: "${VOLSYNC_SCHEDULE:=37 * * * *}"
   restic:
