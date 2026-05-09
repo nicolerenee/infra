@@ -68,6 +68,16 @@ radarr:
 
     quality_profiles:
       - trash_id: 5128baeb2b081b72126bc8482b2a86a0  # [SQP] SQP-1 (2160p)
+        # SQP-1 defaults min_format_score to 1000, which is great for new
+        # downloads when good releases exist — but many older / niche
+        # movies have NO release scoring above 1000, so we end up with
+        # nothing or stuck on a -20k disaster file. Lowering to 10 still
+        # filters the explicitly-bad releases (No-RlsGroup, Obfuscated,
+        # Bad Dual Groups, etc. all score deep negative) AND requires
+        # the release to score at least slightly positive — i.e. some
+        # custom format had something nice to say about it, not just
+        # neutral zero.
+        min_format_score: 10
         reset_unmatched_scores:
           enabled: true
 
