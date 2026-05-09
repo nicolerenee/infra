@@ -8,51 +8,38 @@ metadata:
   labels:
     infra.freckle.systems/post-build-variables: enabled
 spec:
-  targetNamespace: *namespace
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  dependsOn:
+    - name: rook-ceph-cluster
+      namespace: rook-ceph
+  interval: 1h
+  path: ./kubernetes/apps/media/plex
+  prune: true
+  retryInterval: 2m
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/media/plex
-  interval: 2m
-  retryInterval: 1m
+  targetNamespace: *namespace
   timeout: 5m
-  prune: true
-  wait: true
+  wait: false
+  postBuild:
+    substitute:
+      APP: *app
+      VOLSYNC_UID: "943"
+      VOLSYNC_CAPACITY: 100Gi
+      VOLSYNC_SCHEDULE: "1 * * * *"
   patches:
+    # One-off: plex is publicly available at plex.freckle.vision via
+    # the legacy `external` cilium gateway. The freckle.vision listener
+    # hasn't migrated to the envoy public gateway yet, so this route
+    # stays on the old gateway. Drop the patch when freckle.vision
+    # joins gateway-system/public.
     - target:
         kind: HelmRelease
       patch: |-
-        - op: replace
-          path: /spec/values/persistence/config/size
-          value: 800Gi
-        - op: replace
-          path: /spec/values/persistence/media
-          value:
-            existingClaim: store01-media
-            globalMounts:
-              - path: /store01
-        - op: replace
-          path: /spec/values/defaultPodOptions/securityContext/runAsUser
-          value: 943
-        - op: replace
-          path: /spec/values/defaultPodOptions/securityContext/runAsGroup
-          value: 943
-        - op: replace
-          path: /spec/values/defaultPodOptions/securityContext/fsGroup
-          value: 943
-        - op: replace
-          path: /spec/values/controllers/plex/containers/app/env
-          value:
-            - name: ADVERTISE_IP
-              value: https://plex.freckle.vision/,http://plex/
-            - name: PLEX_PREFERENCE_1
-              value: FriendlyName=atlantis
-            - name: TZ
-              value: UTC
         - op: add
           path: /spec/values/route/public
           value:

@@ -1,0 +1,27 @@
+---
+# Static plex-cache PVC manifest. The PVC is provisioned out-of-band
+# during migration via CSI clone from a plex-config snapshot, NOT
+# through Flux/dataSource. After provisioning, this committed manifest
+# matches the in-cluster spec via SSA — Flux never tries to mutate the
+# already-populated PVC, but tracks it in the rendered output so it
+# isn't pruned.
+#
+# kustomize.toolkit.fluxcd.io/prune: disabled annotation is belt-and-
+# suspenders: even if this manifest gets removed, Flux won't auto-
+# delete the PVC. Cache data may take days to regenerate.
+#
+# This PVC sibling pattern (`<APP>` backed up, `<APP>-cache` not) is
+# the canonical "skip from backups" signal — see
+# feedback_pvc_naming_pattern.md.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: plex-cache
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 800Gi
+  storageClassName: ceph-block

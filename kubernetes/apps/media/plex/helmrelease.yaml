@@ -5,7 +5,6 @@ kind: HelmRelease
 metadata:
   name: plex
 spec:
-  interval: 1h
   chartRef:
     kind: OCIRepository
     name: app-template
@@ -17,6 +16,11 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths: ["/spec/replicas"]
+  interval: 1h
   values:
     controllers:
       plex:
@@ -30,10 +34,10 @@ spec:
               tag: 1.43.1.10611@sha256:a9c3723cb31cc9621df27cf5801184c290293adf1df2bfaea4b8b6fc01dbfd96
             env:
               TZ: America/Chicago
-              ADVERTISE_IP: https://{{ .Release.Name }}.${CLUSTER_DOMAIN}/,http://plex/
-              PLEX_PREFERENCE_1: FriendlyName=${CLUSTER_NAME}
+              ADVERTISE_IP: https://plex.freckle.vision/,http://plex/
+              PLEX_PREFERENCE_1: FriendlyName=atlantis
             ports:
-              - containerPort: 32400
+              - containerPort: &port 32400
                 name: http
             probes:
               startup:
@@ -42,7 +46,7 @@ spec:
                 spec:
                   httpGet:
                     path: /identity
-                    port: http
+                    port: *port
                   initialDelaySeconds: 0
                   timeoutSeconds: 1
                   periodSeconds: 5
@@ -53,7 +57,7 @@ spec:
                 spec:
                   httpGet:
                     path: /identity
-                    port: http
+                    port: *port
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
@@ -63,6 +67,9 @@ spec:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
             resources:
               claims:
                 - name: gpu
@@ -73,47 +80,66 @@ spec:
                 cpu: 1
                 memory: 2Gi
     defaultPodOptions:
+      automountServiceAccountToken: false
       resourceClaims:
         - name: gpu
           resourceClaimTemplateName: plex
       securityContext:
         runAsNonRoot: true
-        runAsUser: 3000
-        runAsGroup: 3000
-        fsGroup: 3000
+        runAsUser: ${VOLSYNC_UID}
+        runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID}}
+        fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID}}
         fsGroupChangePolicy: OnRootMismatch
         supplementalGroups:
           - 44
+        seccompProfile:
+          type: RuntimeDefault
     service:
       app:
         controller: plex
+        ipFamilyPolicy: PreferDualStack
+        ipFamilies:
+          - IPv4
+          - IPv6
         ports:
           http:
             port: 80
-            targetPort: 32400
+            targetPort: *port
     route:
-      app:
-        hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
+      ui:
+        hostnames: ["{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"]
         parentRefs:
-          - name: tailscale
-            namespace: gateway
+          - name: tailnet
+            namespace: gateway-system
         rules:
           - backendRefs:
               - identifier: app
                 port: 80
     persistence:
+      # Backed-up config PVC (volsync-managed). Holds Plug-in Support
+      # (library DB, watch state), Metadata (artwork), Codecs, etc.
       config:
-        enabled: true
-        type: persistentVolumeClaim
-        accessMode: ReadWriteOnce
-        size: 100Gi
-        retain: true
-        suffix: "config"
+        existingClaim: ${APP:=plex}${VOLSYNC_PVC_SUFFIX:=}
+        globalMounts:
+          - path: /config
+            subPath: config
+      # Sibling cache PVC — explicitly NOT backed up. Holds Media/
+      # (preview thumbs, ~608G — regenerable, slow to rebuild) and
+      # Cache/. The plex-cache PVC's root has /Media and /Cache
+      # directly (flat layout); subPaths overlay them at the nested
+      # paths plex expects.
+      cache:
+        existingClaim: plex-cache
+        globalMounts:
+          - path: "/config/Library/Application Support/Plex Media Server/Media"
+            subPath: media
+          - path: "/config/Library/Application Support/Plex Media Server/Cache"
+            subPath: cache
+      media:
+        existingClaim: ${MEDIA_PVC:=store01-media}
+        globalMounts:
+          - path: /store01
       tmp:
         type: emptyDir
         globalMounts:
           - path: /tmp
-      media:
-        type: emptyDir
-        globalMounts:
-          - path: /media
