@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: autobrr
+  name: ${APP:=autobrr}
 spec:
   chartRef:
     kind: OCIRepository
@@ -71,9 +71,9 @@ spec:
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: ${VOLSYNC_UID:=1000}
-        runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID:=1000}}
-        fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID:=1000}}
+        runAsUser: ${VOLSYNC_UID}
+        runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID}}
+        fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID}}
         fsGroupChangePolicy: OnRootMismatch
         seccompProfile:
           type: RuntimeDefault
@@ -99,7 +99,7 @@ spec:
                 port: *port
     persistence:
       config:
-        existingClaim: autobrr${VOLSYNC_PVC_SUFFIX:=}
+        existingClaim: ${APP:=autobrr}${VOLSYNC_PVC_SUFFIX:=}
         globalMounts:
           - path: /config
             subPath: config

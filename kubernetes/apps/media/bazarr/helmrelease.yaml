@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: bazarr
+  name: ${APP:=bazarr}
 spec:
   chartRef:
     kind: OCIRepository
@@ -109,7 +109,7 @@ spec:
                 port: *port
     persistence:
       config:
-        existingClaim: bazarr${VOLSYNC_PVC_SUFFIX:=}
+        existingClaim: ${APP:=bazarr}${VOLSYNC_PVC_SUFFIX:=}
         globalMounts:
           - path: /config
             subPath: config

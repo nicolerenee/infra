@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: tautulli
+  name: ${APP:=tautulli}
 spec:
   chartRef:
     kind: OCIRepository
@@ -65,9 +65,9 @@ spec:
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: ${VOLSYNC_UID:=1000}
-        runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID:=1000}}
-        fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID:=1000}}
+        runAsUser: ${VOLSYNC_UID}
+        runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID}}
+        fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID}}
         fsGroupChangePolicy: OnRootMismatch
         seccompProfile:
           type: RuntimeDefault
@@ -98,7 +98,7 @@ spec:
                 port: 80
     persistence:
       config:
-        existingClaim: tautulli${VOLSYNC_PVC_SUFFIX:=}
+        existingClaim: ${APP:=tautulli}${VOLSYNC_PVC_SUFFIX:=}
         globalMounts:
           - path: /config
             subPath: config

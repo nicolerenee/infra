@@ -75,9 +75,9 @@ spec:
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: ${VOLSYNC_UID:=1000}
-        runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID:=1000}}
-        fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID:=1000}}
+        runAsUser: ${VOLSYNC_UID}
+        runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID}}
+        fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID}}
         fsGroupChangePolicy: OnRootMismatch
         seccompProfile:
           type: RuntimeDefault

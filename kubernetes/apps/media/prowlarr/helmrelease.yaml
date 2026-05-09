@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: prowlarr
+  name: ${APP:=prowlarr}
 spec:
   chartRef:
     kind: OCIRepository
@@ -42,7 +42,7 @@ spec:
               TZ: America/Chicago
             envFrom:
               - secretRef:
-                  name: prowlarr
+                  name: ${APP:=prowlarr}
             ports:
               - containerPort: *port
                 name: http
@@ -132,7 +132,7 @@ spec:
                 port: *port
     persistence:
       config:
-        existingClaim: prowlarr${VOLSYNC_PVC_SUFFIX:=}
+        existingClaim: ${APP:=prowlarr}${VOLSYNC_PVC_SUFFIX:=}
         globalMounts:
           - path: /config
             subPath: config

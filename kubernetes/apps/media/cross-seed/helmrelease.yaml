@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: cross-seed
+  name: ${APP:=cross-seed}
 spec:
   chartRef:
     kind: OCIRepository
@@ -86,7 +86,7 @@ spec:
             targetPort: *port
     persistence:
       config:
-        existingClaim: cross-seed${VOLSYNC_PVC_SUFFIX:=}
+        existingClaim: ${APP:=cross-seed}${VOLSYNC_PVC_SUFFIX:=}
         globalMounts:
           - path: /config
             subPath: config
