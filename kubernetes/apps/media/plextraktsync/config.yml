@@ -1,0 +1,46 @@
+cache:
+  path: $PTS_CACHE_DIR/trakt_cache
+
+excluded-libraries:
+  - Private
+  - Family Holidays
+
+config:
+  dotenv_override: true
+
+plex:
+  timeout: 30
+
+logging:
+  append: true
+  console_time: false
+  debug: false
+  filename: plextraktsync.log
+  rotation:
+    enable: true
+    max_bytes: 10485760
+    backup_count: 5
+
+# One-way: Trakt → Plex. Trakt is the source of truth for this account.
+sync:
+  rating_priority: trakt
+  plex_to_trakt:
+    collection: false
+    clear_collected: false
+    ratings: false
+    watched_status: false
+    watchlist: false
+  trakt_to_plex:
+    liked_lists: true
+    ratings: true
+    watched_status: true
+    watchlist: true
+    watchlist_as_playlist: false
+    playback_status: false
+
+liked_lists:
+  keep_watched: true
+
+xbmc-providers:
+  movies: imdb
+  shows: tvdb
