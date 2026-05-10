@@ -1,0 +1,38 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app promptbook
+  namespace: &namespace media
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: rook-ceph-cluster
+      namespace: rook-ceph
+  interval: 1h
+  path: ./kubernetes/apps/media/promptbook
+  prune: true
+  retryInterval: 2m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: *namespace
+  timeout: 5m
+  wait: false
+  postBuild:
+    substitute:
+      APP: *app
+      # Stub runs as root so the volsync mover must also run as root —
+      # mover drops CAP_CHOWN, so its UID has to match the app's UID.
+      # runAsNonRoot has to flip with the UID or the mover pod errors
+      # with CreateContainerConfigError.
+      VOLSYNC_UID: "0"
+      VOLSYNC_RUN_AS_NON_ROOT: "false"
+      VOLSYNC_CAPACITY: 5Gi
+      VOLSYNC_SCHEDULE: "27 * * * *"

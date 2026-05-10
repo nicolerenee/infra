@@ -20,6 +20,7 @@ resources:
   - ./cnp-jellyfin-ingress.yaml
   - ./mousehole.yaml
   - ./plex.yaml
+  - ./promptbook.yaml
   - ./prowlarr.yaml
   - ./qbt-ink.yaml
   - ./qbt-reel.yaml

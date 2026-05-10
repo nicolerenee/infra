@@ -1,0 +1,109 @@
+---
+# Stub deployment for promptbook (Encora catalog tool, lives at
+# github.com/nicolerenee/promptbook). Not yet containerized — runs an
+# ubuntu image with `sleep infinity` so the Go binary can be
+# `kubectl cp`'d in and run interactively. Root + writable rootfs are
+# intentional so apt install works during testing. Probes are off
+# because nothing's actually listening until the binary is started.
+# When promptbook ships a real image this manifest gets rewritten;
+# the bare `${APP}` PVC name keeps backups working from day one.
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ${APP:=promptbook}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: default
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths: ["/spec/replicas"]
+  interval: 1h
+  values:
+    controllers:
+      promptbook:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ubuntu
+              tag: "26.04"
+            command: ["sleep"]
+            args: ["infinity"]
+            env:
+              TZ: America/Chicago
+            ports:
+              - containerPort: &port 8080
+                name: http
+            probes:
+              liveness:
+                enabled: false
+              readiness:
+                enabled: false
+              startup:
+                enabled: false
+            securityContext:
+              # Stub deployment — apt install needs writable rootfs and
+              # root. Reverted when a real promptbook image lands.
+              allowPrivilegeEscalation: true
+              readOnlyRootFilesystem: false
+              runAsNonRoot: false
+              runAsUser: 0
+              runAsGroup: 0
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64Mi
+              limits:
+                memory: 1Gi
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: false
+        runAsUser: 0
+        runAsGroup: 0
+        fsGroup: 0
+        fsGroupChangePolicy: OnRootMismatch
+    service:
+      app:
+        controller: promptbook
+        ipFamilyPolicy: PreferDualStack
+        ipFamilies:
+          - IPv4
+          - IPv6
+        ports:
+          http:
+            port: *port
+    route:
+      app:
+        hostnames: ["{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"]
+        parentRefs:
+          - name: tailnet
+            namespace: gateway-system
+        rules:
+          - backendRefs:
+              - identifier: app
+                port: *port
+    persistence:
+      config:
+        existingClaim: ${APP:=promptbook}${VOLSYNC_PVC_SUFFIX:=}
+        globalMounts:
+          - path: /config
+            subPath: config
+      media:
+        existingClaim: ${MEDIA_PVC:=store01-media}
+        globalMounts:
+          - path: /store01
+      tmp:
+        type: emptyDir
