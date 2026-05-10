@@ -47,7 +47,7 @@ spec:
               - secretRef:
                   name: ${APP:=promptbook}
             ports:
-              - containerPort: &port 8080
+              - containerPort: &targetPort 8080
                 name: http
             probes:
               liveness:
@@ -91,7 +91,8 @@ spec:
           - IPv6
         ports:
           http:
-            port: *port
+            port: &port 80
+            targetPort: *targetPort
     route:
       app:
         hostnames: ["{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"]
