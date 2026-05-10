@@ -43,6 +43,9 @@ spec:
             args: ["infinity"]
             env:
               TZ: America/Chicago
+            envFrom:
+              - secretRef:
+                  name: ${APP:=promptbook}
             ports:
               - containerPort: &port 8080
                 name: http
@@ -69,6 +72,10 @@ spec:
                 memory: 1Gi
     defaultPodOptions:
       automountServiceAccountToken: false
+      # `sleep infinity` ignores SIGTERM and waits for the full grace
+      # period before kubelet sends SIGKILL — drop to 5s so pod
+      # restarts/rolls don't hang for the default 30s.
+      terminationGracePeriodSeconds: 5
       securityContext:
         runAsNonRoot: false
         runAsUser: 0
