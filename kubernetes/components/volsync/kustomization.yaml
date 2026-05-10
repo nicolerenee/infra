@@ -30,6 +30,11 @@
 #                       signal that data is intentionally not backed
 #                       up. Legacy apps still on `${APP}-config` PVCs
 #                       set this to `-config` until they're migrated.
+#   VOLSYNC_RUN_AS_NON_ROOT  Mover runAsNonRoot. Default true. Set to
+#                       "false" only when VOLSYNC_UID is "0" — the
+#                       kubelet rejects runAsNonRoot:true with
+#                       runAsUser:0 (CreateContainerConfigError) so
+#                       the two must move together.
 apiVersion: kustomize.config.k8s.io/v1alpha1
 kind: Component
 resources:

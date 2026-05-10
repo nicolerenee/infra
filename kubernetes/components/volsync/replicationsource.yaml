@@ -13,7 +13,7 @@ spec:
       runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID}}
       fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID}}
       fsGroupChangePolicy: OnRootMismatch
-      runAsNonRoot: true
+      runAsNonRoot: ${VOLSYNC_RUN_AS_NON_ROOT:=true}
       seccompProfile:
         type: RuntimeDefault
     repository: ${APP}-volsync
