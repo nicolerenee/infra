@@ -116,5 +116,7 @@ spec:
           - path: /store01/Movies
             subPath: Movies
             readOnly: true
+          - path: /store01/downloads/qbt-reel
+            subPath: downloads/qbt-reel
       tmp:
         type: emptyDir
