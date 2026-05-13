@@ -32,3 +32,21 @@ spec:
       VOLSYNC_CAPACITY: 1Gi
       VOLSYNC_SCHEDULE: "47 * * * *"
       QBT_TRANSFER_PORT: "51847"
+  patches:
+    # qbt-reel-only: read-only access to the TV and Movies libraries.
+    # Main qbt deliberately doesn't get these — only reel needs them.
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: add
+          path: /spec/values/persistence/media/globalMounts/-
+          value:
+            path: /store01/TV
+            subPath: TV
+            readOnly: true
+        - op: add
+          path: /spec/values/persistence/media/globalMounts/-
+          value:
+            path: /store01/Movies
+            subPath: Movies
+            readOnly: true

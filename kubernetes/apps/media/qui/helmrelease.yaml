@@ -107,5 +107,14 @@ spec:
         globalMounts:
           - path: /config
             subPath: config
+      media:
+        existingClaim: ${MEDIA_PVC:=store01-media}
+        globalMounts:
+          - path: /store01/TV
+            subPath: TV
+            readOnly: true
+          - path: /store01/Movies
+            subPath: Movies
+            readOnly: true
       tmp:
         type: emptyDir
