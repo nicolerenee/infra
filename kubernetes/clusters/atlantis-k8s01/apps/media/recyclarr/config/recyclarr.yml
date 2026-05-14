@@ -10,7 +10,7 @@ sonarr:
       propers_and_repacks: do_not_prefer
 
     media_naming:
-      series: plex-imdb
+      series: jellyfin-tvdb
       season: default
       episodes:
         rename: true
@@ -58,10 +58,10 @@ radarr:
       propers_and_repacks: do_not_prefer
 
     media_naming:
-      folder: plex-imdb
+      folder: plex-tmdb
       movie:
         rename: true
-        standard: plex-imdb
+        standard: plex-tmdb
 
     quality_definition:
       type: sqp-uhd
