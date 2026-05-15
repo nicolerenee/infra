@@ -32,3 +32,15 @@ spec:
       VOLSYNC_CAPACITY: 1Gi
       VOLSYNC_SCHEDULE: "23 * * * *"
       QBT_TRANSFER_PORT: "54182"
+  patches:
+    # qbt-ink's tracker whitelists specific qBittorrent versions and lags
+    # upstream. Pin the image tag here so qbt-ink can stay on a supported
+    # version while the shared HR (consumed by other qbt instances) tracks
+    # upstream. Bump this tag only after the tracker clears the new version.
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: replace
+          path: /spec/values/controllers/qbittorrent/containers/app/image/tag
+          # renovate: datasource=docker depName=ghcr.io/home-operations/qbittorrent
+          value: 5.1.4@sha256:bb82ad6668f8eda1d0fcce6c1341498bfa879155bb1295cd9d314a2c35c07a01
