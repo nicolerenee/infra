@@ -12,3 +12,10 @@ spec:
   cluster:
     name: hedgehog-db
   ensure: present
+  # CNPG creates extensions as superuser, so the hedgehog role doesn't
+  # need elevated privileges. Migrations can assume both exist.
+  extensions:
+    - name: vector
+      ensure: present
+    - name: citext
+      ensure: present
