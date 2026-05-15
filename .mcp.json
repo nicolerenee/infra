@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "flux-operator": {
+      "type": "sse",
+      "url": "https://flux-mcp.atlantis.freckle.services/sse"
+    }
+  }
+}

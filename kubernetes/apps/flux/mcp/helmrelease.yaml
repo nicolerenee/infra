@@ -1,0 +1,46 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: flux-operator-mcp
+spec:
+  interval: 10m
+  url: oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator-mcp
+  ref:
+    tag: 0.49.0
+  verify:
+    provider: cosign
+    matchOIDCIdentity:
+      - issuer: ^https://token.actions.githubusercontent.com$
+        subject: ^https://github.com/controlplaneio-fluxcd/charts.*$
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: flux-operator-mcp
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: flux-operator-mcp
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  # Read-only for now. Server has cluster-admin RBAC (chart default), so it
+  # can read everything — disabling state-modifying tools keeps mutations
+  # out of the agent's hands until we're ready to relax that.
+  values:
+    readonly: true
+    transport: sse
+    httpRoute:
+      enabled: true
+      parentRefs:
+        - name: tailnet
+          namespace: gateway-system
+          sectionName: https
+      hostnames:
+        - flux-mcp.${CLUSTER_SUBDOMAIN}.freckle.services
