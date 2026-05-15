@@ -5,7 +5,7 @@
 # When the hedgehog repo cuts semver releases (v0.x.y), add a second policy
 # beside this one with `policy.semver` and decide which channel the
 # OCIRepository tracks (main builds vs releases).
-apiVersion: image.toolkit.fluxcd.io/v1beta2
+apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: hedgehog
