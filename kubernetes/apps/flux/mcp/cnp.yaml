@@ -1,0 +1,22 @@
+---
+# Tightly-scoped ingress: only the tailnet envoy gateway pods (not all of
+# gateway-system). The chart's bundled NetworkPolicy can only filter by
+# namespace, hence this replacement scoped by pod label too.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: flux-operator-mcp-ingress
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: flux-operator-mcp
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: gateway-system
+            gateway.envoyproxy.io/owning-gateway-name: tailnet
+      toPorts:
+        - ports:
+            - port: http
+              protocol: TCP

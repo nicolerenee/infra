@@ -36,14 +36,11 @@ spec:
   values:
     readonly: true
     transport: sse
+    # Chart's NetworkPolicy can only filter by namespace; we want
+    # pod-label scoping (only the tailnet envoy gateway pods, not all of
+    # gateway-system). See cnp.yaml in this dir for the replacement.
     networkPolicy:
-      create: true
-      ingress:
-        # Envoy gateway lives in gateway-system; it needs to reach the MCP
-        # service. Default empty list = same-ns-only, which blocks the
-        # tailnet HTTPRoute traffic.
-        namespaces:
-          - gateway-system
+      create: false
     httpRoute:
       enabled: true
       parentRefs:
