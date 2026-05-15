@@ -21,7 +21,7 @@ spec:
     capacity: ${VOLSYNC_CAPACITY:=10Gi}
     storageClassName: ceph-block
     volumeSnapshotClassName: csi-ceph-blockpool
-    cacheCapacity: 1Gi
+    cacheCapacity: ${VOLSYNC_CACHE_CAPACITY:=1Gi}
     cacheStorageClassName: ceph-block
     cacheAccessModes: [ReadWriteOnce]
     cleanupCachePVC: true

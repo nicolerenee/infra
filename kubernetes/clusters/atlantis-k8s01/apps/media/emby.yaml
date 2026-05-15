@@ -30,6 +30,7 @@ spec:
       APP: *app
       VOLSYNC_UID: "943"
       VOLSYNC_CAPACITY: 200Gi
+      VOLSYNC_CACHE_CAPACITY: 25Gi
       VOLSYNC_SCHEDULE: "58 * * * *"
   patches:
     # One-off: emby is publicly available at watch.freckle.vision via

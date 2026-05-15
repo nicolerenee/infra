@@ -21,7 +21,7 @@ spec:
     volumeSnapshotClassName: csi-ceph-blockpool
     storageClassName: ceph-block
     accessModes: [ReadWriteOnce]
-    cacheCapacity: 1Gi
+    cacheCapacity: ${VOLSYNC_CACHE_CAPACITY:=1Gi}
     cacheStorageClassName: ceph-block
     cacheAccessModes: [ReadWriteOnce]
     pruneIntervalDays: 7
