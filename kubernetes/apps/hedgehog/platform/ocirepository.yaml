@@ -1,4 +1,3 @@
----
 # Source for hedgehog's kustomize manifests. The app repo publishes an OCI
 # artifact at release time alongside the container image; both share the
 # same tag so a release advances them atomically.
@@ -17,6 +16,6 @@ spec:
   interval: 5m
   url: oci://ghcr.io/nicolerenee/hedgehog-manifests
   ref:
-    tag: main-20260515T104611Z-0ae1796 # {"$imagepolicy": "flux-system:hedgehog:tag"}
+    tag: main-20260515T112714Z-6dfb962 # {"$imagepolicy": "flux-system:hedgehog:tag"}
   secretRef:
     name: ghcr-login-secret
