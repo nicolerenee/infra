@@ -32,7 +32,7 @@ This repository manages two Kubernetes clusters using a GitOps approach:
 ```text
 kubernetes/
 ├── apps/                   # Application definitions (shared across clusters)
-│   ├── auth/               # Authentication services (Authentik, LLDAP)
+│   ├── auth/               # Authentication services (Pocket ID, LLDAP)
 │   ├── cert-manager/       # Certificate management
 │   ├── flux/               # Flux operator and instance configs
 │   ├── home-automation/    # Home Assistant, ESPHome, Zigbee2MQTT
@@ -66,7 +66,7 @@ kubernetes/
 - **External Secrets Operator** syncs secrets from 1Password to Kubernetes
 - **Cert-Manager** with Let's Encrypt for automatic TLS certificate
   provisioning
-- **Authentik** provides SSO and identity management
+- **Pocket ID** provides SSO and identity management
 
 ### High Availability Storage
 
@@ -124,9 +124,8 @@ kubernetes/
 
 ### Infrastructure Services
 
-- **Authentik**: Identity provider and SSO
+- **Pocket ID**: Identity provider and SSO
 - **LLDAP**: Lightweight LDAP server
-- **Pocket ID**: Identity management platform
 - **External DNS**: Automatic DNS record management
 - **Cloudflare Tunnel**: Secure tunnel for external access
 - **System Upgrade Controller**: Automated node updates (Kubernetes and Talos)

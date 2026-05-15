@@ -7,5 +7,4 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
-  - ./authentik-remote.yaml
   - ./lldap.yaml
