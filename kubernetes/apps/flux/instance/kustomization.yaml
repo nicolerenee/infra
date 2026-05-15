@@ -5,7 +5,6 @@ kind: Kustomization
 resources:
   - ./github-app-externalsecret.yaml
   - ./helmrelease.yaml
-  - ./imageupdateautomation.yaml
   - ./webhook/
 configMapGenerator:
   - name: flux-instance-values
