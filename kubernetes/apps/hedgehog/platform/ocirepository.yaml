@@ -16,6 +16,6 @@ spec:
   interval: 5m
   url: oci://ghcr.io/nicolerenee/hedgehog-manifests
   ref:
-    tag: main-20260515T162204Z-6b16daf # {"$imagepolicy": "flux-system:hedgehog:tag"}
+    tag: main-20260515T164114Z-6202721 # {"$imagepolicy": "flux-system:hedgehog:tag"}
   secretRef:
     name: ghcr-login-secret
