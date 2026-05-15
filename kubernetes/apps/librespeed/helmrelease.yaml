@@ -59,14 +59,6 @@ spec:
                 "ulURL": "backend/empty.php",
                 "pingURL": "backend/empty.php",
                 "getIpURL": "backend/getIP.php"
-              },
-              {
-                "name": "Tortuga (Montreal, QC)",
-                "server": "https://tortuga-k8s01-speedtest.${TAILNET_DNS_NAME}/",
-                "dlURL": "backend/garbage.php",
-                "ulURL": "backend/empty.php",
-                "pingURL": "backend/empty.php",
-                "getIpURL": "backend/getIP.php"
               }
             ]
     persistence:

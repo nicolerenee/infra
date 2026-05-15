@@ -6,4 +6,3 @@ resources:
   - ./site-atlantis-public.yaml
   - ./site-den1-internal.yaml
   - ./site-fairy-public.yaml
-  - ./site-tortuga-public.yaml
