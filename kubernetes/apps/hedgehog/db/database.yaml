@@ -1,0 +1,14 @@
+---
+# Declarative database. CNPG ensures the DB exists and is owned by the
+# `hedgehog` role (created by `managed.roles` on the Cluster). Owner gets
+# implicit full privileges — no GRANT step needed.
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: hedgehog
+spec:
+  name: hedgehog
+  owner: hedgehog
+  cluster:
+    name: hedgehog-db
+  ensure: present

@@ -1,0 +1,12 @@
+---
+# Rook OBC: provisions `hedgehog-db-backups` in Ceph RGW and creates a
+# Secret + ConfigMap of the same name as this OBC. The Secret contains
+# AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY scoped to this bucket — the
+# barmancloud ObjectStore consumes that secret directly.
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: hedgehog-db-bucket
+spec:
+  bucketName: hedgehog-db-backups
+  storageClassName: ceph-bucket

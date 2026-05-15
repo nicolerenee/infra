@@ -1,0 +1,75 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: hedgehog-db
+spec:
+  instances: 2
+  # CNPG "standard" image — bundles pgvector, PGAudit, Failover Slots, locales, JIT.
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.3-standard-trixie@sha256:9f9f53c9e07e5b2924945e6eaeb9168f7e856786d221839866ac85ccd703b3ba
+  primaryUpdateStrategy: unsupervised
+  primaryUpdateMethod: switchover
+  storage:
+    size: 20Gi
+    storageClass: ceph-block
+  superuserSecret:
+    name: hedgehog-db-secrets
+  enableSuperuserAccess: true
+  postgresql:
+    parameters:
+      max_connections: "200"
+      shared_buffers: 256MB
+  nodeMaintenanceWindow:
+    inProgress: false
+    reusePVC: true
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      memory: 2Gi
+  monitoring:
+    enablePodMonitor: true
+
+  managed:
+    roles:
+      - name: hedgehog
+        ensure: present
+        login: true
+        passwordSecret:
+          name: hedgehog-app-db-role
+
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: ceph-store
+        # Bump the version suffix when recovering from a prior cluster.
+        serverName: hedgehog-db-v1
+
+  # When recovering from a prior cluster, uncomment and set source/serverName
+  # to the previous cluster's serverName.
+  # bootstrap:
+  #   recovery:
+  #     source: &previousCluster hedgehog-db-v0
+  # externalClusters:
+  #   - name: *previousCluster
+  #     plugin:
+  #       name: barman-cloud.cloudnative-pg.io
+  #       parameters:
+  #         barmanObjectName: ceph-store
+  #         serverName: *previousCluster
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: hedgehog-db-backup
+spec:
+  schedule: "0 0 * * *"
+  backupOwnerReference: self
+  cluster:
+    name: hedgehog-db
+  target: prefer-standby
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io

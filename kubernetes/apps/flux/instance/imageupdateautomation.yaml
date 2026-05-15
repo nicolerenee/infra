@@ -1,0 +1,30 @@
+---
+# Single ImageUpdateAutomation for the whole repo. Scans `kubernetes/` for
+# setter-marker comments (`# {"$imagepolicy": "ns:name:field"}`) and rewrites
+# the marked field to the latest tag selected by the referenced ImagePolicy.
+# Push is direct to main — review happens on the PRs that introduce the
+# manifests in the first place; tag bumps are mechanical.
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageUpdateAutomation
+metadata:
+  name: flux-system
+spec:
+  interval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        name: nicolerenee-flux
+        email: flux@nicole.dev
+      messageTemplate: |
+        chore(images): update {{ range $image, $_ := .Updated.Images }}{{ $image }} {{ end }}
+    push:
+      branch: main
+  update:
+    path: ./kubernetes
+    strategy: Setters

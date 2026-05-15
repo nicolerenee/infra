@@ -1,0 +1,13 @@
+---
+# Scans the hedgehog manifests OCI registry on a schedule. Lives in the
+# `hedgehog` namespace so it can use the same ghcr-login-secret as the
+# OCIRepository and workload image pulls.
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: hedgehog
+spec:
+  image: ghcr.io/nicolerenee/hedgehog-manifests
+  interval: 5m
+  secretRef:
+    name: ghcr-login-secret

@@ -1,0 +1,30 @@
+---
+# Barman target: Ceph RGW via the OBC-provisioned bucket.
+# - destinationPath uses the explicit bucket name set in bucket.yaml.
+# - access/secret come from the Rook-generated secret (`hedgehog-db-bucket`).
+# - region comes from hedgehog-db-secrets (templated to "us-east-1" — Ceph
+#   doesn't enforce a region, but the AWS SDK requires one for signing).
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: ceph-store
+spec:
+  configuration:
+    destinationPath: s3://hedgehog-db-backups/
+    endpointURL: http://rook-ceph-rgw-ceph-objectstore.rook-ceph.svc:80
+    s3Credentials:
+      region:
+        name: hedgehog-db-secrets
+        key: s3-region
+      accessKeyId:
+        name: hedgehog-db-bucket
+        key: AWS_ACCESS_KEY_ID
+      secretAccessKey:
+        name: hedgehog-db-bucket
+        key: AWS_SECRET_ACCESS_KEY
+    wal:
+      compression: bzip2
+      maxParallel: 8
+    data:
+      compression: bzip2
+  retentionPolicy: "30d"

@@ -1,0 +1,22 @@
+---
+# Source for hedgehog's kustomize manifests. The app repo publishes an OCI
+# artifact at release time alongside the container image; both share the
+# same tag so a release advances them atomically.
+#
+# Tag strategy:
+#   - For now, bump `ref.tag` manually on each release. Tags are immutable
+#     (e.g. v0.1.0 or main-<unix-ts>-<short-sha>) — no "main"/"latest".
+#   - Once image-reflector-controller and image-automation-controller are
+#     added to the FluxInstance, an ImageRepository + ImagePolicy +
+#     ImageUpdateAutomation can rewrite this field automatically.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: hedgehog
+spec:
+  interval: 5m
+  url: oci://ghcr.io/nicolerenee/hedgehog-manifests
+  ref:
+    tag: main-20260515T104611Z-0ae1796 # {"$imagepolicy": "hedgehog:hedgehog:tag"}
+  secretRef:
+    name: ghcr-login-secret

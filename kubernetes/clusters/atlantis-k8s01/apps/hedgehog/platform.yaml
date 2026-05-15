@@ -1,0 +1,25 @@
+---
+# Platform-side scaffolding: OCIRepository pointing at the manifest bundle
+# published by the hedgehog app repo, plus the GHCR pull secret used by both
+# the OCI pull and the workload pods.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app hedgehog-platform
+  namespace: &namespace hedgehog
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  targetNamespace: *namespace
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/hedgehog/platform
+  interval: 1h
+  retryInterval: 2m
+  timeout: 5m
+  prune: true
+  wait: true
