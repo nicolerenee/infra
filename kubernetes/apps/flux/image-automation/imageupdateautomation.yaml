@@ -22,11 +22,15 @@ spec:
         name: nicolerenee-flux
         email: flux@nicole.dev
       messageTemplate: |
-        chore(images): update tags
+        chore(iua): {{ range $i, $c := .Changed.Changes }}{{ if $i }}, {{ end }}{{ index (splitList ":" $c.Setter) 1 }} → {{ $c.NewValue }}{{ end }}
 
+        Changes:
+        {{ range $c := .Changed.Changes -}}
+        - {{ $c.Setter }}: {{ $c.OldValue }} → {{ $c.NewValue }}
+        {{ end -}}
         Files:
-        {{ range $filename, $_ := .Changed.FileChanges -}}
-        - {{ $filename }}
+        {{ range $f, $_ := .Changed.FileChanges -}}
+        - {{ $f }}
         {{ end -}}
     push:
       branch: main
