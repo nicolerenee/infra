@@ -300,6 +300,51 @@ jobs:
             echo "🎉 All cluster app subdirectory kustomization.yaml files are complete!"
           fi
 
+      - name: Check Namespace-Flux Wiring (new-pattern clusters)
+        run: |
+          echo "🔍 Checking new-pattern clusters: every apps/<ns>/ must have a Flux Kustomization in flux/ that loads it..."
+
+          orphans_found=false
+
+          for cluster_dir in kubernetes/clusters/*/; do
+            cluster=$(basename "$cluster_dir")
+            flux_dir="${cluster_dir}flux"
+            apps_dir="${cluster_dir}apps"
+
+            # New-pattern criteria: no apps/kustomization.yaml AND a flux/ directory exists
+            [ -f "${apps_dir}/kustomization.yaml" ] && continue
+            [ ! -d "$flux_dir" ] && continue
+            [ ! -d "$apps_dir" ] && continue
+
+            echo "Checking cluster: $cluster"
+
+            # Build a set of paths referenced by any Flux Kustomization in flux/
+            referenced_paths=$(awk '/^[[:space:]]*path:[[:space:]]+/{ print $2 }' "$flux_dir"/*.yaml 2>/dev/null | sort -u)
+
+            for ns_dir in "$apps_dir"/*/; do
+              [ ! -d "$ns_dir" ] && continue
+              ns=$(basename "$ns_dir")
+              expected_path="./kubernetes/clusters/$cluster/apps/$ns"
+
+              if echo "$referenced_paths" | grep -qFx "$expected_path"; then
+                echo "  ✅ apps/$ns wired"
+              else
+                echo "  ❌ apps/$ns has no Flux Kustomization in $flux_dir referencing path: $expected_path"
+                orphans_found=true
+              fi
+            done
+          done
+
+          if [ "$orphans_found" = "true" ]; then
+            echo ""
+            echo "💥 Found namespace directories without corresponding Flux pointers."
+            echo "Add a Namespace + Flux Kustomization YAML to the cluster's flux/ directory referencing the namespace path."
+            exit 1
+          fi
+
+          echo ""
+          echo "🎉 All new-pattern namespaces have proper Flux wiring!"
+
       - name: Check for Orphaned YAML Files
         run: |
           echo "🔍 Checking for orphaned YAML files not included in any kustomization..."
