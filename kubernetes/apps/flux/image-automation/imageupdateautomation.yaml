@@ -22,7 +22,12 @@ spec:
         name: nicolerenee-flux
         email: flux@nicole.dev
       messageTemplate: |
-        chore(images): update {{ range $image, $_ := .Updated.Images }}{{ $image }} {{ end }}
+        chore(images): update tags
+
+        Files:
+        {{ range $filename, $_ := .Changed.FileChanges -}}
+        - {{ $filename }}
+        {{ end -}}
     push:
       branch: main
   update:
