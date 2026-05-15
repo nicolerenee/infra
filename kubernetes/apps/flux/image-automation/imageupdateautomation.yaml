@@ -4,7 +4,7 @@
 # the marked field to the latest tag selected by the referenced ImagePolicy.
 # Push is direct to main — review happens on the PRs that introduce the
 # manifests in the first place; tag bumps are mechanical.
-apiVersion: image.toolkit.fluxcd.io/v1beta2
+apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageUpdateAutomation
 metadata:
   name: flux-system
