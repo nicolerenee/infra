@@ -36,6 +36,14 @@ spec:
   values:
     readonly: true
     transport: sse
+    networkPolicy:
+      create: true
+      ingress:
+        # Envoy gateway lives in gateway-system; it needs to reach the MCP
+        # service. Default empty list = same-ns-only, which blocks the
+        # tailnet HTTPRoute traffic.
+        namespaces:
+          - gateway-system
     httpRoute:
       enabled: true
       parentRefs:
