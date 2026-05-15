@@ -5,5 +5,4 @@ kind: Kustomization
 resources:
   - ./ghcr-login.externalsecret.yaml
   - ./imagerepository.yaml
-  - ./imagepolicy.yaml
   - ./ocirepository.yaml
