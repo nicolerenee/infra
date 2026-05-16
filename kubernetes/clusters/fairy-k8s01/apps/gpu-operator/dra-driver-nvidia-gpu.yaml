@@ -3,21 +3,21 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app gpu-fabric-nad
-  namespace: &namespace inference
+  name: &app dra-driver-nvidia-gpu
+  namespace: &namespace gpu-operator
 spec:
   targetNamespace: *namespace
+  dependsOn:
+    - name: nvidia-gpu-operator
+      namespace: gpu-operator
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  dependsOn:
-    - name: multus
-      namespace: kube-system
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/inference/gpu-fabric-nad
+  path: ./kubernetes/apps/devices/dra-driver-nvidia-gpu
   interval: 2m
   retryInterval: 1m
   timeout: 5m

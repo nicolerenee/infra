@@ -7,4 +7,4 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - ./nvidia-gpu-operator.yaml
-  - ./rdma-shared-device-plugin.yaml
+  - ./dra-driver-nvidia-gpu.yaml

@@ -10,6 +10,7 @@ resources:
   - ./cilium.yaml
   - ./cilium-gw-config.yaml
   - ./descheduler.yaml
+  - ./dranet.yaml
   - ./generic-device-plugin.yaml
   - ./intel-gpu-exporter.yaml
   - ./intel-gpu-resource-driver.yaml

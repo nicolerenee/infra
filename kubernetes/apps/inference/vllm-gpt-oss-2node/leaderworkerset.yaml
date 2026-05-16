@@ -13,14 +13,15 @@ spec:
         labels:
           app.kubernetes.io/name: vllm-gpt-oss-2node
           app.kubernetes.io/component: leader
-        annotations:
-          k8s.v1.cni.cncf.io/networks: gpu-fabric
       spec:
         runtimeClassName: nvidia
         tolerations:
           - key: nvidia.com/gpu
             operator: Exists
             effect: NoSchedule
+        resourceClaims:
+          - name: gpu-rdma
+            resourceClaimTemplateName: gpu-rdma
         containers:
           - name: vllm
             image: ghcr.io/nicolerenee/spark-vllm-mxfp4:202604241738
@@ -93,9 +94,8 @@ spec:
                 add:
                   - IPC_LOCK
             resources:
-              limits:
-                nvidia.com/gpu: 1
-                rdma/rdma_shared_device_a: 2
+              claims:
+                - name: gpu-rdma
             volumeMounts:
               - name: models
                 mountPath: /models
@@ -114,14 +114,15 @@ spec:
         labels:
           app.kubernetes.io/name: vllm-gpt-oss-2node
           app.kubernetes.io/component: worker
-        annotations:
-          k8s.v1.cni.cncf.io/networks: gpu-fabric
       spec:
         runtimeClassName: nvidia
         tolerations:
           - key: nvidia.com/gpu
             operator: Exists
             effect: NoSchedule
+        resourceClaims:
+          - name: gpu-rdma
+            resourceClaimTemplateName: gpu-rdma
         containers:
           - name: vllm
             image: ghcr.io/nicolerenee/spark-vllm-mxfp4:202604241738
@@ -167,9 +168,8 @@ spec:
                 add:
                   - IPC_LOCK
             resources:
-              limits:
-                nvidia.com/gpu: 1
-                rdma/rdma_shared_device_a: 2
+              claims:
+                - name: gpu-rdma
             volumeMounts:
               - name: models
                 mountPath: /models

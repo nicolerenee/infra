@@ -13,6 +13,8 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
+    - name: resource-claims
+      namespace: inference
     - name: nvidia-gpu-operator
       namespace: gpu-operator
   sourceRef:

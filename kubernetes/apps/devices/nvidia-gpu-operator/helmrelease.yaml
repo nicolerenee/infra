@@ -47,6 +47,10 @@ spec:
     toolkit:
       enabled: false
 
+    # Disable device plugin — replaced by the DRA GPU driver
+    devicePlugin:
+      enabled: false
+
     # Disable GPU operator's NFD - use kube-system NFD instead
     nfd:
       enabled: false

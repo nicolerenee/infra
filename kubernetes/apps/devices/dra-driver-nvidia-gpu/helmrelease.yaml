@@ -1,0 +1,49 @@
+---
+# DRA Driver for NVIDIA GPUs. Project moved from the NVIDIA org to
+# kubernetes-sigs/dra-driver-nvidia-gpu in v0.4.0 and the chart was
+# renamed from nvidia-dra-driver-gpu to dra-driver-nvidia-gpu. We adopt
+# the new name everywhere (fresh deploy, no in-cluster state to preserve).
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: dra-driver-nvidia-gpu
+spec:
+  interval: 1h
+  url: oci://registry.k8s.io/dra-driver-nvidia/charts/dra-driver-nvidia-gpu
+  ref:
+    tag: 0.4.0
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: dra-driver-nvidia-gpu
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: dra-driver-nvidia-gpu
+  interval: 1h
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: -1
+  upgrade:
+    crds: CreateReplace
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    # Talos installs drivers via system extensions under /usr/local
+    nvidiaDriverRoot: /usr/local
+    gpuResourcesEnabledOverride: true
+    resources:
+      gpus:
+        enabled: true
+    # Chart's default affinity already targets GPU nodes via NFD/GPU
+    # operator labels (pci-10de.present, nvidia.com/gpu.present, etc.) —
+    # no nodeSelector needed. We only add a toleration for the
+    # nvidia.com/gpu:NoSchedule taint that Talos sets on DGX nodes.
+    kubeletPlugin:
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
