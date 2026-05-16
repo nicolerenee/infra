@@ -66,6 +66,7 @@ spec:
     configMaps:
       config:
         enabled: true
+        suffix: config
         data:
           rtl_433.conf: |
             report_meta time:iso:usec:tz

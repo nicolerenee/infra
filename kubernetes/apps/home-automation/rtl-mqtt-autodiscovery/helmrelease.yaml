@@ -49,6 +49,7 @@ spec:
     configMaps:
       scripts:
         enabled: true
+        suffix: scripts
         data:
           run.sh: |
             #!/bin/bash
