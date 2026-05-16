@@ -26,3 +26,14 @@ spec:
   interval: 1h
   retryInterval: 2m
   timeout: 5m
+  patches:
+    # tag:fairy-k8s01-gw isn't registered in the tailnet ACLs — reuse
+    # tag:fairy-k8s01-ingress (already used by the ingress-proxy
+    # ProxyGroup) so the operator can provision the Tailscale Service.
+    - target:
+        kind: Gateway
+        name: tailnet
+      patch: |-
+        - op: replace
+          path: /spec/infrastructure/annotations/tailscale.com~1tags
+          value: "tag:${CLUSTER_NAME}-ingress"
