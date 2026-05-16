@@ -4,6 +4,5 @@ kind: Kustomization
 resources:
   - ./cnp.yaml
   - ./deployment.yaml
-  - ./externalsecret.yaml
   - ./service.yaml
   - ./vmservicescrape.yaml

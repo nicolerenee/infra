@@ -6,6 +6,7 @@ namespace: inference
 components:
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./huggingface.yaml
   - ./leader-worker-set.yaml
   - ./litellm.yaml
   - ./models-pvc.yaml
