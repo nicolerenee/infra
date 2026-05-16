@@ -22,6 +22,27 @@ spec:
         annotations:
           reloader.stakater.com/auto: "true"
         strategy: Recreate
+        initContainers:
+          # mosquitto's password_file expects mosquitto_passwd-hashed entries;
+          # plaintext lines (which is what the ES templates) silently fail authn.
+          # Copy the secret-mounted plaintext file into an emptyDir and hash it
+          # in place with `mosquitto_passwd -U` so the main container reads a
+          # valid hashed file.
+          hash-passwords:
+            image:
+              repository: public.ecr.aws/docker/library/eclipse-mosquitto
+              tag: 2.0.22
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                set -eu
+                cp /tmp/password-plain/password.txt /mosquitto/password/password.txt
+                chmod 0600 /mosquitto/password/password.txt
+                mosquitto_passwd -U /mosquitto/password/password.txt
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
         containers:
           app:
             image:
@@ -83,7 +104,9 @@ spec:
           mosquitto:
             app:
               - path: /mosquitto/data
-      # Templated config (from ES). Two keys mapped to two paths via subPath.
+      # Templated config (from ES). mosquitto.conf is mounted directly to the
+      # main container; password.txt is only mounted into the init container
+      # as a plaintext source — the init hashes it into the password emptyDir.
       config:
         type: secret
         name: mosquitto-secret
@@ -93,6 +116,17 @@ spec:
               - path: /mosquitto/config/mosquitto.conf
                 subPath: mosquitto.conf
                 readOnly: true
-              - path: /mosquitto/password/password.txt
+            hash-passwords:
+              - path: /tmp/password-plain/password.txt
                 subPath: password.txt
+                readOnly: true
+      # Hashed password file lives here. Init container writes; main reads.
+      password:
+        type: emptyDir
+        advancedMounts:
+          mosquitto:
+            hash-passwords:
+              - path: /mosquitto/password
+            app:
+              - path: /mosquitto/password
                 readOnly: true
