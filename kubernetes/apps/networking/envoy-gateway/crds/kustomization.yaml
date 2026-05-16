@@ -1,0 +1,25 @@
+---
+# Envoy-specific CRDs vendored from the gateway-helm chart's `crds/`
+# subchart (charts/crds/crds/generated/). The HR installs the chart with
+# `crds: Skip` because the chart also bundles experimental-channel
+# gateway-api CRDs that conflict with the standard channel installed via
+# the gateway-api Flux KS — so the chart's whole crds/ dir is skipped
+# and we apply just the envoy-proxy CRDs here.
+#
+# When bumping the chart version, regenerate by:
+#   helm pull oci://mirror.gcr.io/envoyproxy/gateway-helm --version <tag> -d /tmp
+#   tar -xzf /tmp/gateway-helm-<tag>.tgz -C /tmp
+#   cp /tmp/gateway-helm/charts/crds/crds/generated/*.yaml \
+#      kubernetes/apps/networking/envoy-gateway/crds/
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./gateway.envoyproxy.io_backends.yaml
+  - ./gateway.envoyproxy.io_backendtrafficpolicies.yaml
+  - ./gateway.envoyproxy.io_clienttrafficpolicies.yaml
+  - ./gateway.envoyproxy.io_envoyextensionpolicies.yaml
+  - ./gateway.envoyproxy.io_envoypatchpolicies.yaml
+  - ./gateway.envoyproxy.io_envoyproxies.yaml
+  - ./gateway.envoyproxy.io_httproutefilters.yaml
+  - ./gateway.envoyproxy.io_securitypolicies.yaml
