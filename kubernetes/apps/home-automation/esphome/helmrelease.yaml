@@ -32,6 +32,21 @@ spec:
         annotations:
           reloader.stakater.com/auto: "true"
 
+        pod:
+          # annotations + nodeSelector are added by the fairy cluster KS
+          # patches (multus network + home-lan node selector); keep the
+          # placeholder so the JSON `add` ops resolve.
+          annotations: {}
+          automountServiceAccountToken: false
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 3000
+            runAsGroup: 3000
+            fsGroup: 3000
+            fsGroupChangePolicy: OnRootMismatch
+            seccompProfile:
+              type: RuntimeDefault
+
         containers:
           app:
             image:
@@ -61,16 +76,6 @@ spec:
               runAsNonRoot: true
               seccompProfile:
                 type: RuntimeDefault
-    defaultPodOptions:
-      automountServiceAccountToken: false
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 3000
-        runAsGroup: 3000
-        fsGroup: 3000
-        fsGroupChangePolicy: OnRootMismatch
-        seccompProfile:
-          type: RuntimeDefault
 
     service:
       app:
