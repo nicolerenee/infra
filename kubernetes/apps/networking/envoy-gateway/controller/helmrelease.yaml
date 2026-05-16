@@ -11,6 +11,14 @@ spec:
   driftDetection:
     ignore:
       - paths: [/spec/replicas]
+  install:
+    # The envoy-gateway chart bundles experimental-channel gateway-api
+    # CRDs, but we install the standard channel via the gateway-api KS.
+    # The standard-channel safe-upgrades ValidatingAdmissionPolicy then
+    # blocks the chart's CRD upgrade. Skip CRDs in the chart entirely.
+    crds: Skip
+  upgrade:
+    crds: Skip
   interval: 1h
   values:
     global:
