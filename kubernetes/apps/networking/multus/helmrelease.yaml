@@ -45,6 +45,11 @@ spec:
               privileged: true
     defaultPodOptions:
       hostNetwork: true
+      # app-template v5 flipped this default to false; multus needs a SA
+      # token mounted to read NetworkAttachmentDefinitions and Pod
+      # annotations from the API. Without it the pod never reaches
+      # Ready and the helm upgrade times out on DaemonSet rollout.
+      automountServiceAccountToken: true
     persistence:
       etc-cni-net-d:
         type: hostPath
