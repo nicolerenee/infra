@@ -9,3 +9,8 @@ variable "clusters" {
   }))
   default = {}
 }
+
+variable "cloudflare_account_id" {
+  description = "Cloudflare account ID hosting the R2 bucket. Set via TF_VAR_cloudflare_account_id."
+  type        = string
+}

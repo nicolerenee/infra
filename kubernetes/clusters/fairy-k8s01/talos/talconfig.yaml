@@ -301,6 +301,15 @@ controlPlane:
     # Cluster configuration
     - |-
       cluster:
+        apiServer:
+          extraArgs:
+            # SA token issuer is decoupled from the cluster's API endpoint
+            # so external validators (Tailscale, GCP WIF) can fetch the
+            # OIDC discovery + JWKS over the public internet. Hosted on
+            # Cloudflare R2 via the k8s-oidc.freckle.systems custom domain.
+            # Update `task wif:publish CLUSTER=fairy-k8s01` whenever the
+            # cluster's SA signing key rotates (rare on talos).
+            service-account-issuer: "https://k8s-oidc.freckle.systems/fairy-k8s01"
         etcd:
           extraArgs:
             listen-metrics-urls: "http://0.0.0.0:2381"

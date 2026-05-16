@@ -1,0 +1,13 @@
+{
+  "issuer": "https://k8s-oidc.freckle.systems/fairy-k8s01",
+  "jwks_uri": "https://k8s-oidc.freckle.systems/fairy-k8s01/openid/v1/jwks",
+  "response_types_supported": [
+    "id_token"
+  ],
+  "subject_types_supported": [
+    "public"
+  ],
+  "id_token_signing_alg_values_supported": [
+    "RS256"
+  ]
+}

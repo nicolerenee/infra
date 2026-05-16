@@ -5,45 +5,80 @@ version: "3"
 vars:
   TOFU_DIR: "{{.ROOT_DIR}}/tofu"
   CLUSTERS_FILE: "{{.ROOT_DIR}}/tofu/clusters.auto.tfvars.json"
+  # Public OIDC discovery + JWKS host. Tokens have iss=<OIDC_HOST>/<cluster>.
+  # Served from a Cloudflare R2 bucket with this hostname as the custom domain.
+  OIDC_HOST: "https://k8s-oidc.freckle.systems"
+  # R2 bucket name (whatever you named the bucket; custom domain is separate).
+  R2_BUCKET: "k8s-oidc"
 
 tasks:
   bootstrap:
-    desc: "Fetch a cluster's OIDC issuer + JWKS and merge into tofu/clusters.auto.tfvars.json."
+    desc: "Fetch a cluster's JWKS and build an OIDC discovery doc with the public issuer URL. Writes to tofu/jwks/<cluster>/ and updates tofu/clusters.auto.tfvars.json."
     summary: |
-      Pulls /.well-known/openid-configuration and /openid/v1/jwks from the
-      named cluster's apiserver and writes them into the per-cluster entry
-      in tofu/clusters.auto.tfvars.json. Tofu then registers the WIF
-      provider with inline JWKS — no public bucket or DRS bypass needed.
+      Pulls /openid/v1/jwks from the cluster's apiserver (signing keys —
+      these are stable, only change on CA rotation) and assembles a
+      discovery doc with issuer = ${OIDC_HOST}/<cluster>.
+
+      The JWKS itself doesn't depend on the cluster's --service-account-issuer
+      flag, so you can run this BEFORE applying the talos change that flips
+      the issuer URL. Then `task wif:publish` to expose the docs publicly,
+      then apply the talos change.
 
       Required vars:
         CLUSTER  — k8s context name (e.g., fairy-k8s01)
-
-      JWKS contents are public keys and safe to commit. Re-run this when
-      the cluster's SA signing key rotates (rare on talos).
     requires:
       vars: [CLUSTER]
     vars:
       CONTEXT: "admin@{{.CLUSTER}}"
+      ISSUER: "{{.OIDC_HOST}}/{{.CLUSTER}}"
+      OUT: "{{.TOFU_DIR}}/jwks/{{.CLUSTER}}"
     cmds:
-      - mkdir -p {{.TOFU_DIR}}
+      - mkdir -p {{.OUT}}/.well-known {{.OUT}}/openid/v1
+      - kubectl --context={{.CONTEXT}} get --raw /openid/v1/jwks | jq -c . > {{.OUT}}/openid/v1/jwks
       - |
-        ISSUER=$(kubectl --context={{.CONTEXT}} get --raw /.well-known/openid-configuration | jq -r .issuer)
-        JWKS=$(kubectl --context={{.CONTEXT}} get --raw /openid/v1/jwks | jq -c .)
-        if [ -z "$ISSUER" ] || [ -z "$JWKS" ]; then
-          echo "Failed to extract OIDC config or JWKS from {{.CLUSTER}}" >&2
-          exit 1
-        fi
+        kubectl --context={{.CONTEXT}} get --raw /.well-known/openid-configuration \
+          | jq --arg iss "{{.ISSUER}}" '.issuer = $iss | .jwks_uri = ($iss + "/openid/v1/jwks")' \
+          > {{.OUT}}/.well-known/openid-configuration
+      - |
         if [ ! -f {{.CLUSTERS_FILE}} ]; then
           echo '{"clusters": {}}' > {{.CLUSTERS_FILE}}
         fi
-        jq --arg name "{{.CLUSTER}}" --arg iss "$ISSUER" --arg jwks "$JWKS" \
+        JWKS=$(cat {{.OUT}}/openid/v1/jwks)
+        jq --arg name "{{.CLUSTER}}" --arg iss "{{.ISSUER}}" --arg jwks "$JWKS" \
           '.clusters[$name] = {issuer_uri: $iss, jwks_json: $jwks}' \
           {{.CLUSTERS_FILE}} > {{.CLUSTERS_FILE}}.tmp
         mv {{.CLUSTERS_FILE}}.tmp {{.CLUSTERS_FILE}}
-      - 'echo "✔ {{.CLUSTER}} OIDC data written. Run: cd tofu && tofu apply"'
+      - 'echo "✔ {{.CLUSTER}}: wrote tofu/jwks/{{.CLUSTER}}/ + tfvars (issuer = {{.ISSUER}})."'
+      - 'echo "  Next: task wif:publish CLUSTER={{.CLUSTER}}"'
+
+  publish:
+    desc: "Upload the cluster's OIDC discovery doc + JWKS to the R2 bucket. Tailscale fetches from these public URLs."
+    summary: |
+      Requires wrangler installed and authenticated (wrangler login).
+
+      Uploads:
+        <bucket>/<cluster>/.well-known/openid-configuration
+        <bucket>/<cluster>/openid/v1/jwks
+    requires:
+      vars: [CLUSTER]
+    vars:
+      OUT: "{{.TOFU_DIR}}/jwks/{{.CLUSTER}}"
+    cmds:
+      - 'wrangler r2 object put {{.R2_BUCKET}}/{{.CLUSTER}}/.well-known/openid-configuration --file={{.OUT}}/.well-known/openid-configuration --content-type=application/json --remote'
+      - 'wrangler r2 object put {{.R2_BUCKET}}/{{.CLUSTER}}/openid/v1/jwks --file={{.OUT}}/openid/v1/jwks --content-type=application/jwk-set+json --remote'
+      - 'echo "✔ Uploaded {{.CLUSTER}} OIDC docs."'
+      - 'echo "  Verify: curl -sf {{.OIDC_HOST}}/{{.CLUSTER}}/.well-known/openid-configuration | jq"'
+
+  verify:
+    desc: "Smoke-test that a cluster's OIDC discovery + JWKS are publicly reachable."
+    requires:
+      vars: [CLUSTER]
+    cmds:
+      - 'curl -sf {{.OIDC_HOST}}/{{.CLUSTER}}/.well-known/openid-configuration | jq'
+      - 'curl -sf {{.OIDC_HOST}}/{{.CLUSTER}}/openid/v1/jwks | jq ".keys | length"'
 
   show:
-    desc: "Show recorded OIDC config for CLUSTER."
+    desc: "Show recorded OIDC config for CLUSTER (from tofu/clusters.auto.tfvars.json)."
     requires:
       vars: [CLUSTER]
     cmds:
