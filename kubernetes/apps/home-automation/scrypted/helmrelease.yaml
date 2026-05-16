@@ -63,14 +63,10 @@ spec:
                 enabled: true
               startup:
                 enabled: true
-            # readOnlyRootFilesystem intentionally omitted — scrypted writes
-            # to /tmp + node_modules during plugin install.
-            securityContext:
-              allowPrivilegeEscalation: false
-              capabilities: { drop: ["ALL"] }
-              runAsNonRoot: true
-              seccompProfile:
-                type: RuntimeDefault
+            # No container-level securityContext: scrypted's s6-overlay
+            # init needs allowPrivilegeEscalation + caps to gain root for
+            # setup (suexec). Tightened only at pod level (runAsNonRoot,
+            # runAsUser: 3000, seccompProfile via defaultPodOptions).
             resources:
               claims:
                 - name: gpu
