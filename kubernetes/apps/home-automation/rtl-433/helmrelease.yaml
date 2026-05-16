@@ -54,12 +54,12 @@ spec:
               requests:
                 cpu: 100m
                 memory: 64Mi
-                squat.ai/dvb-t: "1"
+                devic.es/dvb-t: "1"
               limits:
                 cpu: 500m
                 memory: 512Mi
-                squat.ai/dvb-t: "1"
-    # rtl_433 needs access to the SDR via the squat.ai/dvb-t device
+                devic.es/dvb-t: "1"
+    # rtl_433 needs access to the SDR via the devic.es/dvb-t device
     # plugin — leaving pod-level securityContext unset matches the
     # previous deployment (run as root with default caps). Tighten later
     # once we confirm it works under runAsNonRoot+caps drop.
