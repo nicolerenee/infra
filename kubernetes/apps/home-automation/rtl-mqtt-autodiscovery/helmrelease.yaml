@@ -20,6 +20,10 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths: ["/spec/replicas"]
   values:
     controllers:
       rtl-mqtt-autodiscovery:
@@ -46,6 +50,14 @@ spec:
               limits:
                 cpu: 500m
                 memory: 512Mi
+    # Script does `pip install` and `wget` at startup so it needs to write
+    # to the root filesystem and runs as root by default — skipping
+    # container-level readOnlyRootFilesystem/runAsNonRoot for now.
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
     configMaps:
       scripts:
         enabled: true

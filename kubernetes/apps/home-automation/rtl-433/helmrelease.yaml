@@ -21,6 +21,10 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths: ["/spec/replicas"]
   values:
     controllers:
       ${APP}:
@@ -60,9 +64,14 @@ spec:
                 memory: 512Mi
                 devic.es/dvb-t: "1"
     # rtl_433 needs access to the SDR via the devic.es/dvb-t device
-    # plugin — leaving pod-level securityContext unset matches the
-    # previous deployment (run as root with default caps). Tighten later
-    # once we confirm it works under runAsNonRoot+caps drop.
+    # plugin — leaving runAsUser/caps untouched matches the previous
+    # deployment (run as root with default caps). Tighten later once
+    # we confirm it works under runAsNonRoot+caps drop.
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
     configMaps:
       config:
         enabled: true
