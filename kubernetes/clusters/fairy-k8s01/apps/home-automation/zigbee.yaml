@@ -37,7 +37,8 @@ spec:
           value: "false"
         - op: add
           path: /spec/values/controllers/zigbee/containers/app/env/ZIGBEE2MQTT_CONFIG_SERIAL_PORT
-          value: tcp://zigbee01.fairy.lan:6638
+          # Literal IP — in-pod DNS doesn't resolve the .fairy.lan zone.
+          value: tcp://10.189.10.227:6638
         - op: add
           path: /spec/values/controllers/zigbee/containers/app/env/ZIGBEE2MQTT_CONFIG_SERIAL_ADAPTER
           value: ember

@@ -45,14 +45,8 @@ spec:
               ZIGBEE2MQTT_CONFIG_MQTT_SERVER: mqtt://mosquitto:1883
               ZIGBEE2MQTT_CONFIG_MQTT_VERSION: 5
               ZIGBEE2MQTT_CONFIG_PERMIT_JOIN: "false"
-              # Silicon Labs Ember coordinator over TCP to the zigbee01
-              # serial bridge. Literal IP — in-pod DNS doesn't resolve
-              # the .fairy.lan zone.
-              ZIGBEE2MQTT_CONFIG_SERIAL_ADAPTER: ember
-              ZIGBEE2MQTT_CONFIG_SERIAL_BAUDRATE: "115200"
-              ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED: "false"
-              ZIGBEE2MQTT_CONFIG_SERIAL_PORT: tcp://10.189.10.227:6638
-              ZIGBEE2MQTT_CONFIG_SERIAL_RTSCTS: "false"
+              # Cluster-specific serial adapter/baud/port set via Flux
+              # KS patches (e.g. fairy points at the zigbee01 bridge).
 
             envFrom:
               - secretRef:
