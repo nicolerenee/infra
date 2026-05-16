@@ -38,9 +38,26 @@ jobs:
 
       - run: tofu init -no-color
 
+      # Plan to a binary file so we can pretty-print just the diff
+      # without the "Refreshing state..." spam that leaks resource IDs
+      # into the PR comment / sticky-comment edit history.
       - id: plan
-        run: tofu plan -no-color -lock-timeout=2m
+        run: tofu plan -no-color -lock-timeout=2m -out=tfplan.binary
         continue-on-error: true
+
+      - id: plan-diff
+        if: steps.plan.outcome == 'success'
+        run: |
+          OUTPUT=$(tofu show -no-color tfplan.binary)
+          # Truncate so comment fits under GitHub's 65KB body limit
+          if [ ${#OUTPUT} -gt 60000 ]; then
+            OUTPUT="${OUTPUT:0:60000}"$'\n\n...[truncated; see workflow logs for full plan]'
+          fi
+          {
+            echo "diff<<TOFU_DIFF_EOF"
+            echo "$OUTPUT"
+            echo "TOFU_DIFF_EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Post plan to PR
         if: github.event_name == 'pull_request'
@@ -53,7 +70,7 @@ jobs:
             <details><summary>Click to expand</summary>
 
             ```hcl
-            ${{ steps.plan.outputs.stdout }}
+            ${{ steps.plan-diff.outputs.diff || steps.plan.outputs.stderr }}
             ```
 
             </details>
