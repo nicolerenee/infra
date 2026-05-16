@@ -97,6 +97,12 @@ spec:
         k8s-app: dranet
     spec:
       hostNetwork: true
+      # TEMPORARY: restrict to NVIDIA GPU nodes (DGX) until NRI is enabled
+      # in containerd on the Intel compute nodes. Without NRI the dranet
+      # NRI plugin fails to connect to /var/run/nri/nri.sock and the pod
+      # crashloops.
+      nodeSelector:
+        nvidia.com/gpu.present: "true"
       tolerations:
       - operator: Exists
         effect: NoSchedule

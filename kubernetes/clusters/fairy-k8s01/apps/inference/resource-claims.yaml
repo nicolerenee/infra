@@ -11,7 +11,7 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: nvidia-dra-driver
+    - name: dra-driver-nvidia-gpu
       namespace: gpu-operator
   sourceRef:
     kind: GitRepository
