@@ -46,6 +46,5 @@ spec:
       parentRefs:
         - name: tailnet
           namespace: gateway-system
-          sectionName: https
       hostnames:
         - flux-mcp.${CLUSTER_SUBDOMAIN}.freckle.services

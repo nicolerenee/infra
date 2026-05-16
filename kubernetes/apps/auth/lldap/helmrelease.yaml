@@ -85,7 +85,6 @@ spec:
         parentRefs:
           - name: tailnet
             namespace: gateway-system
-            sectionName: https
         rules:
           - backendRefs:
               - identifier: web

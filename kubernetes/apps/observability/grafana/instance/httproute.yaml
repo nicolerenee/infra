@@ -8,7 +8,6 @@ spec:
   parentRefs:
     - name: tailnet
       namespace: gateway-system
-      sectionName: https
   rules:
     - backendRefs:
         - kind: Service

@@ -85,7 +85,6 @@ spec:
         parentRefs:
           - name: tailnet
             namespace: gateway-system
-            sectionName: https
     persistence:
       config:
         # Pre-existing 50Gi PVC carries the HA config + history database.
