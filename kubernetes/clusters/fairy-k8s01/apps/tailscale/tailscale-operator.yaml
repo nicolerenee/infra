@@ -12,8 +12,6 @@ spec:
   dependsOn:
     - name: generic-device-plugin
       namespace: kube-system
-    - name: onepassword-store
-      namespace: external-secrets
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
@@ -21,9 +19,24 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/networking/tailscale-operator/operator
+  path: ./kubernetes/apps/networking/tailscale-operator/wif-operator
   interval: 30s
   retryInterval: 1m
   timeout: 5m
   prune: true
   wait: true
+  patches:
+    - target:
+        kind: HelmRelease
+        name: tailscale-operator
+      patch: |-
+        - op: replace
+          path: /spec/values/oauth/clientId
+          value: TrLVHSb5X621CNTRL-knZvFm9qBV11CNTRL
+        - op: replace
+          path: /spec/values/oauth/audience
+          value: api.tailscale.com/TrLVHSb5X621CNTRL-knZvFm9qBV11CNTRL
+        - op: replace
+          path: /spec/values/apiServerProxyConfig
+          value:
+            allowImpersonation: "true"

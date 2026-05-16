@@ -1,0 +1,13 @@
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyGroup
+metadata:
+  name: fairy-k8s01-kube-apiserver
+spec:
+  type: kube-apiserver
+  replicas: 2
+  tags:
+    - tag:fairy-k8s01-apiserver
+  kubeAPIServer:
+    mode: auth
+    hostname: fairy-k8s01-apiserver

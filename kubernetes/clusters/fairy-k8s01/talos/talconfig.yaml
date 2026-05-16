@@ -301,6 +301,13 @@ controlPlane:
     # Cluster configuration
     - |-
       cluster:
+        apiServer:
+          extraArgs:
+            # Set the service account token issuer to the publicly-hosted
+            # JWKS URL so external systems (Tailscale, GCP WIF) can
+            # validate cluster-signed tokens. The cluster's API server
+            # isn't internet-reachable; the JWKS lives in GCS instead.
+            service-account-issuer: "https://storage.googleapis.com/freckle-iac-438712-oidc/fairy-k8s01"
         etcd:
           extraArgs:
             listen-metrics-urls: "http://0.0.0.0:2381"

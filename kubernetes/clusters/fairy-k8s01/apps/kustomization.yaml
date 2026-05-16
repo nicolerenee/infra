@@ -18,4 +18,4 @@ resources:
   - ./observability
   - ./rook-ceph
   - ./system-upgrade
-  - ./tailscale
+  # tailscale moved to flux/tailscale.yaml (atlantis-style ns pattern)
