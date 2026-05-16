@@ -6,7 +6,7 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: &app gateway-api-source
-  namespace: flux-system
+  namespace: envoy-gateway-system
 spec:
   commonMetadata:
     labels:
@@ -29,7 +29,7 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: gateway-api-crds
-  namespace: flux-system
+  namespace: envoy-gateway-system
 spec:
   commonMetadata:
     labels:

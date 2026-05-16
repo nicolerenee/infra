@@ -15,7 +15,7 @@ spec:
     - name: external-secrets
       namespace: external-secrets
     - name: gateway-api-crds
-      namespace: flux-system
+      namespace: envoy-gateway-system
     - name: prometheus-operator-crds
       namespace: observability
   targetNamespace: *namespace
