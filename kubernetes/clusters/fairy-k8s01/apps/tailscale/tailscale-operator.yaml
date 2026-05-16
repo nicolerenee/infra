@@ -32,11 +32,70 @@ spec:
       patch: |-
         - op: replace
           path: /spec/values/oauth/clientId
-          value: TrLVHSb5X621CNTRL-knZvFm9qBV11CNTRL
+          value: TrLVHSb5X621CNTRL-kygTXx7P7h11CNTRL
         - op: replace
           path: /spec/values/oauth/audience
-          value: api.tailscale.com/TrLVHSb5X621CNTRL-knZvFm9qBV11CNTRL
+          value: api.tailscale.com/TrLVHSb5X621CNTRL-kygTXx7P7h11CNTRL
         - op: replace
           path: /spec/values/apiServerProxyConfig
           value:
             allowImpersonation: "true"
+        # Add a sidecar that speaks the GitHub Actions OIDC token request
+        # protocol (which tailscale's wif.go natively supports) and
+        # returns Google-issued ID tokens via WIF. The operator container
+        # gets ACTIONS_ID_TOKEN_REQUEST_URL/TOKEN env vars pointing at
+        # localhost, so its wif.go code path hits the sidecar before
+        # falling through to GCE metadata. End result: no stored OAuth
+        # secret, fresh Google-signed JWT minted on every auth.
+        - op: add
+          path: /spec/postRenderers
+          value:
+            - kustomize:
+                patches:
+                  - target:
+                      kind: Deployment
+                      name: operator
+                    patch: |
+                      apiVersion: apps/v1
+                      kind: Deployment
+                      metadata:
+                        name: operator
+                      spec:
+                        template:
+                          spec:
+                            volumes:
+                              - name: wif-token
+                                projected:
+                                  sources:
+                                    - serviceAccountToken:
+                                        audience: //iam.googleapis.com/projects/305363951351/locations/global/workloadIdentityPools/k8s-clusters/providers/fairy-k8s01
+                                        expirationSeconds: 3600
+                                        path: token
+                            containers:
+                              - name: operator
+                                env:
+                                  - name: ACTIONS_ID_TOKEN_REQUEST_URL
+                                    value: "http://127.0.0.1:8081/"
+                                  - name: ACTIONS_ID_TOKEN_REQUEST_TOKEN
+                                    value: "tailscale-broker-loopback-please-rotate"
+                              - name: gcp-id-token-broker
+                                image: ghcr.io/nicolerenee/gcp-id-token-broker:latest
+                                env:
+                                  - name: EXPECTED_BEARER
+                                    value: "tailscale-broker-loopback-please-rotate"
+                                  - name: WIF_AUDIENCE
+                                    value: "//iam.googleapis.com/projects/305363951351/locations/global/workloadIdentityPools/k8s-clusters/providers/fairy-k8s01"
+                                  - name: GSA_EMAIL
+                                    value: "fairy-tailscale-operator@freckle-secrets-db8d4f.iam.gserviceaccount.com"
+                                  - name: SA_TOKEN_PATH
+                                    value: "/var/run/secrets/wif/token"
+                                volumeMounts:
+                                  - name: wif-token
+                                    mountPath: /var/run/secrets/wif
+                                    readOnly: true
+                                resources:
+                                  requests:
+                                    cpu: 10m
+                                    memory: 16Mi
+                                  limits:
+                                    memory: 32Mi

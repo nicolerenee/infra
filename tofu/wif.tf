@@ -7,8 +7,12 @@ resource "google_iam_workload_identity_pool" "clusters" {
   depends_on = [google_project_service.iac_apis]
 }
 
+# One provider per cluster. issuer_uri + jwks_json come from var.clusters
+# (populated by `task wif:bootstrap CLUSTER=<name>`). Inline jwks_json
+# means GCP STS never tries to fetch the cluster's discovery endpoint —
+# the cluster API server can stay fully internal.
 resource "google_iam_workload_identity_pool_provider" "cluster" {
-  for_each = local.clusters
+  for_each = var.clusters
 
   project                            = local.iac_project
   workload_identity_pool_id          = google_iam_workload_identity_pool.clusters.workload_identity_pool_id
@@ -16,7 +20,8 @@ resource "google_iam_workload_identity_pool_provider" "cluster" {
   display_name                       = each.key
 
   oidc {
-    issuer_uri = "https://storage.googleapis.com/${google_storage_bucket.oidc.name}/${each.key}"
+    issuer_uri = each.value.issuer_uri
+    jwks_json  = each.value.jwks_json
   }
 
   attribute_mapping = {

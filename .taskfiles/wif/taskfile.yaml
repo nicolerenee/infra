@@ -3,42 +3,53 @@
 version: "3"
 
 vars:
-  IAC_PROJECT: freckle-iac-438712
-  OIDC_BUCKET: freckle-iac-438712-oidc
+  TOFU_DIR: "{{.ROOT_DIR}}/tofu"
+  CLUSTERS_FILE: "{{.ROOT_DIR}}/tofu/clusters.auto.tfvars.json"
 
 tasks:
   bootstrap:
-    desc: "Upload a cluster's JWKS + OIDC discovery doc to the WIF hosting bucket. Run before adding the cluster to tofu."
+    desc: "Fetch a cluster's OIDC issuer + JWKS and merge into tofu/clusters.auto.tfvars.json."
     summary: |
-      Pulls /openid/v1/jwks and /.well-known/openid-configuration from the
-      named cluster, rewrites the discovery doc's issuer/jwks_uri to point
-      at the GCS-hosted path, then uploads both to the OIDC bucket so the
-      WIF provider's --issuer-uri resolves.
+      Pulls /.well-known/openid-configuration and /openid/v1/jwks from the
+      named cluster's apiserver and writes them into the per-cluster entry
+      in tofu/clusters.auto.tfvars.json. Tofu then registers the WIF
+      provider with inline JWKS — no public bucket or DRS bypass needed.
 
       Required vars:
         CLUSTER  — k8s context name (e.g., fairy-k8s01)
+
+      JWKS contents are public keys and safe to commit. Re-run this when
+      the cluster's SA signing key rotates (rare on talos).
     requires:
       vars: [CLUSTER]
     vars:
       CONTEXT: "admin@{{.CLUSTER}}"
-      ISSUER_URI: "https://storage.googleapis.com/{{.OIDC_BUCKET}}/{{.CLUSTER}}"
-      TMP: "/tmp/wif-{{.CLUSTER}}"
     cmds:
-      - mkdir -p {{.TMP}}
-      - kubectl --context={{.CONTEXT}} get --raw /openid/v1/jwks > {{.TMP}}/jwks.json
+      - mkdir -p {{.TOFU_DIR}}
       - |
-        kubectl --context={{.CONTEXT}} get --raw /.well-known/openid-configuration \
-          | jq '.issuer = "{{.ISSUER_URI}}" | .jwks_uri = "{{.ISSUER_URI}}/openid/v1/jwks"' \
-          > {{.TMP}}/openid-configuration.json
-      - gcloud storage cp {{.TMP}}/jwks.json gs://{{.OIDC_BUCKET}}/{{.CLUSTER}}/openid/v1/jwks
-      - gcloud storage cp {{.TMP}}/openid-configuration.json gs://{{.OIDC_BUCKET}}/{{.CLUSTER}}/.well-known/openid-configuration
-      - rm -rf {{.TMP}}
-      - 'echo "✔ {{.CLUSTER}} JWKS published. Add to tofu/locals.tf clusters{} and run: cd tofu && tofu apply"'
+        ISSUER=$(kubectl --context={{.CONTEXT}} get --raw /.well-known/openid-configuration | jq -r .issuer)
+        JWKS=$(kubectl --context={{.CONTEXT}} get --raw /openid/v1/jwks | jq -c .)
+        if [ -z "$ISSUER" ] || [ -z "$JWKS" ]; then
+          echo "Failed to extract OIDC config or JWKS from {{.CLUSTER}}" >&2
+          exit 1
+        fi
+        if [ ! -f {{.CLUSTERS_FILE}} ]; then
+          echo '{"clusters": {}}' > {{.CLUSTERS_FILE}}
+        fi
+        jq --arg name "{{.CLUSTER}}" --arg iss "$ISSUER" --arg jwks "$JWKS" \
+          '.clusters[$name] = {issuer_uri: $iss, jwks_json: $jwks}' \
+          {{.CLUSTERS_FILE}} > {{.CLUSTERS_FILE}}.tmp
+        mv {{.CLUSTERS_FILE}}.tmp {{.CLUSTERS_FILE}}
+      - 'echo "✔ {{.CLUSTER}} OIDC data written. Run: cd tofu && tofu apply"'
 
-  verify:
-    desc: "Smoke-test that a cluster's OIDC config + JWKS are reachable from the public internet."
+  show:
+    desc: "Show recorded OIDC config for CLUSTER."
     requires:
       vars: [CLUSTER]
     cmds:
-      - 'curl -sf https://storage.googleapis.com/{{.OIDC_BUCKET}}/{{.CLUSTER}}/.well-known/openid-configuration | jq .issuer'
-      - 'curl -sf https://storage.googleapis.com/{{.OIDC_BUCKET}}/{{.CLUSTER}}/openid/v1/jwks | jq ".keys | length"'
+      - jq '.clusters["{{.CLUSTER}}"]' {{.CLUSTERS_FILE}}
+
+  list:
+    desc: "List clusters currently registered for WIF."
+    cmds:
+      - jq -r '.clusters | keys[]' {{.CLUSTERS_FILE}} 2>/dev/null || echo "(none)"
