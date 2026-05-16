@@ -1,0 +1,87 @@
+name: tofu
+
+on:
+  pull_request:
+    paths: ['tofu/**', '.github/workflows/tofu.yaml']
+  push:
+    branches: [main]
+    paths: ['tofu/**', '.github/workflows/tofu.yaml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write       # required for GitHub Actions OIDC token
+  pull-requests: write  # for sticky plan comment
+
+env:
+  WIF_PROVIDER: projects/305363951351/locations/global/workloadIdentityPools/github-actions/providers/github-actions
+  TOFU_RUNNER_SA: tofu-runner@freckle-iac-438712.iam.gserviceaccount.com
+
+jobs:
+  plan:
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tofu
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.TOFU_RUNNER_SA }}
+
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_wrapper: true
+
+      - run: tofu init -no-color
+
+      - id: plan
+        run: tofu plan -no-color -lock-timeout=2m
+        continue-on-error: true
+
+      - name: Post plan to PR
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: tofu-plan
+          message: |
+            ### tofu plan — `${{ steps.plan.outcome }}`
+
+            <details><summary>Click to expand</summary>
+
+            ```hcl
+            ${{ steps.plan.outputs.stdout }}
+            ```
+
+            </details>
+
+            *Pusher: @${{ github.actor }} · Commit: ${{ github.sha }}*
+
+      - name: Fail if plan errored
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+  apply:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tofu
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.TOFU_RUNNER_SA }}
+
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_wrapper: false   # not needed for apply
+
+      - run: tofu init -no-color
+
+      - run: tofu apply -auto-approve -no-color -lock-timeout=2m
