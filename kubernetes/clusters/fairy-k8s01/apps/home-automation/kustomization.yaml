@@ -11,7 +11,7 @@ resources:
   # disabled for now
   # - homeassistant.yaml
   - mosquitto.yaml
-  - rtl-autodiscovery.yaml
+  - rtl-mqtt-autodiscovery.yaml
   - rtl915.yaml
   - scrypted.yaml
   - zigbee.yaml
