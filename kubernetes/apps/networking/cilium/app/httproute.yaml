@@ -6,8 +6,9 @@ spec:
   hostnames:
     - hubble.${CLUSTER_DOMAIN}
   parentRefs:
-    - name: tailscale
-      namespace: gateway
+    - name: tailnet
+      namespace: gateway-system
+      sectionName: https
   rules:
     - backendRefs:
         - kind: Service

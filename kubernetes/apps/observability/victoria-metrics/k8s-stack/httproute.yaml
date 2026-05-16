@@ -7,8 +7,9 @@ spec:
   hostnames:
     - alertmanager.${CLUSTER_DOMAIN}
   parentRefs:
-    - name: tailscale
-      namespace: gateway
+    - name: tailnet
+      namespace: gateway-system
+      sectionName: https
   rules:
     - backendRefs:
         - kind: Service
@@ -23,8 +24,9 @@ spec:
   hostnames:
     - vmalert.${CLUSTER_DOMAIN}
   parentRefs:
-    - name: tailscale
-      namespace: gateway
+    - name: tailnet
+      namespace: gateway-system
+      sectionName: https
   rules:
     - backendRefs:
         - kind: Service
@@ -39,8 +41,9 @@ spec:
   hostnames:
     - victoriametrics.${CLUSTER_DOMAIN}
   parentRefs:
-    - name: tailscale
-      namespace: gateway
+    - name: tailnet
+      namespace: gateway-system
+      sectionName: https
   rules:
     - backendRefs:
         - kind: Service

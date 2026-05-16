@@ -48,8 +48,9 @@ spec:
           path: /
           pathType: PathPrefix
         parentRefs:
-          - name: tailscale
-            namespace: gateway
+          - name: tailnet
+            namespace: gateway-system
+            sectionName: https
     cephClusterSpec:
       cephConfig:
         global:
