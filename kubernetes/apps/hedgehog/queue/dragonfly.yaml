@@ -1,0 +1,34 @@
+---
+# Dragonfly instance used as a job queue (pub/sub + streams/lists for
+# worker dispatch). 3-replica HA: primary handles writes/pubsub, two
+# followers maintain replication. Operator manages failover; Service
+# routes to current primary so workers and publishers always hit it.
+# Persistence is on so a restart doesn't drop queued jobs — RDB
+# snapshot to a Ceph PVC every 15 minutes.
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: hedgehog-queue
+spec:
+  replicas: 3
+  authentication:
+    passwordFromSecret:
+      name: hedgehog-queue-secrets
+      key: password
+  args:
+    - --proactor_threads=2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+  snapshot:
+    cron: "*/15 * * * *"
+    persistentVolumeClaimSpec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 5Gi
+      storageClassName: ceph-block

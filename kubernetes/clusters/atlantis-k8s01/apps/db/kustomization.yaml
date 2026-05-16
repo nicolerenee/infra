@@ -7,5 +7,6 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - ./cloudnative-pg.yaml
+  - ./dragonfly-operator.yaml
   - ./mariadb-operator.yaml
   - ./mariadb-clusters.yaml
