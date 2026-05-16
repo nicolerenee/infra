@@ -1,4 +1,16 @@
 ---
+# DeviceClass for RDMA-capable interfaces exposed by dranet. Filters to
+# devices reported with the rdma attribute true — on the DGX nodes that
+# matches each ConnectX-7 PF. dranet doesn't ship a DeviceClass itself.
+apiVersion: resource.k8s.io/v1
+kind: DeviceClass
+metadata:
+  name: rdma.dra.net
+spec:
+  selectors:
+    - cel:
+        expression: device.driver == "dra.net" && device.attributes["dra.net"].rdma == true
+---
 apiVersion: resource.k8s.io/v1
 kind: ResourceClaimTemplate
 metadata:
@@ -8,8 +20,11 @@ spec:
     devices:
       requests:
         - name: gpu
-          deviceClassName: gpu.nvidia.com
+          exactly:
+            deviceClassName: gpu.nvidia.com
 ---
+# Combined GPU + 2× RDMA NIC claim, used by the multi-node vLLM
+# LeaderWorkerSet for GPUDirect over ConnectX-7.
 apiVersion: resource.k8s.io/v1
 kind: ResourceClaimTemplate
 metadata:
@@ -19,10 +34,9 @@ spec:
     devices:
       requests:
         - name: gpu
-          deviceClassName: gpu.nvidia.com
+          exactly:
+            deviceClassName: gpu.nvidia.com
         - name: rdma
-          deviceClassName: dranet.net
-          selectors:
-            - cel:
-                expression: device.attributes["dra.net"].rdma == true
-          count: 2
+          exactly:
+            deviceClassName: rdma.dra.net
+            count: 2
