@@ -11,6 +11,10 @@ spec:
   driftDetection:
     ignore:
       - paths: [/spec/replicas]
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
   interval: 1h
   values:
     global:
