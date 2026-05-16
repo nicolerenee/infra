@@ -72,11 +72,13 @@ spec:
           mqtt:
             port: *port
     persistence:
-      # Reuse the existing kustomize-managed PVC. Pre-annotated with
-      # kustomize.toolkit.fluxcd.io/prune=disabled so the migration
-      # doesn't drop it.
       data:
-        existingClaim: mosquitto-data
+        enabled: true
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 5Gi
+        storageClass: ceph-block
+        retain: true
         advancedMounts:
           mosquitto:
             app:
