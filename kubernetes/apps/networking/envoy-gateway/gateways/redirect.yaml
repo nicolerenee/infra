@@ -8,8 +8,6 @@ metadata:
     external-dns.alpha.kubernetes.io/controller: none
 spec:
   parentRefs:
-    - name: public
-      sectionName: http
     - name: tailnet
       sectionName: http
     - name: tunnel

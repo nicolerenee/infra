@@ -1,0 +1,23 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+# Atlantis pulls in the shared envoy gateway base plus gw-public — the only
+# cluster with a public-IP gateway. gw-public.yaml is intentionally outside
+# the shared Component so internal-only clusters (fairy) don't ship it.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: gateway-system
+components:
+  - ../../../../../apps/networking/envoy-gateway/gateways
+resources:
+  - ../../../../../apps/networking/envoy-gateway/gateways/gw-public.yaml
+patches:
+  # Add the public:http parent back onto the shared httpsredirect HR.
+  - target:
+      kind: HTTPRoute
+      name: httpsredirect
+    patch: |-
+      - op: add
+        path: /spec/parentRefs/-
+        value:
+          name: public
+          sectionName: http

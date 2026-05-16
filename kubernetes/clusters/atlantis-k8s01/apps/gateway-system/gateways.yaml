@@ -15,7 +15,7 @@ spec:
     - name: envoy-gateway
       namespace: envoy-gateway-system
   targetNamespace: *namespace
-  path: ./kubernetes/apps/networking/envoy-gateway/gateways
+  path: ./kubernetes/clusters/atlantis-k8s01/apps/gateway-system/gateways
   prune: true
   sourceRef:
     kind: GitRepository
