@@ -39,10 +39,6 @@ spec:
                 cp /var/run/password-plain/password.txt /mosquitto/password/password.txt
                 chmod 0600 /mosquitto/password/password.txt
                 mosquitto_passwd -U /mosquitto/password/password.txt
-            env:
-              # mosquitto_passwd uses mkstemp() — default /tmp is RO under
-              # readOnlyRootFilesystem. Point it at the writable emptyDir.
-              TMPDIR: /mosquitto/password
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -134,3 +130,12 @@ spec:
             app:
               - path: /mosquitto/password
                 readOnly: true
+      # mosquitto_passwd hardcodes /tmp/mosquitto-XXXXXX for its tempfile and
+      # ignores TMPDIR, so the init needs a writable /tmp despite
+      # readOnlyRootFilesystem.
+      tmp:
+        type: emptyDir
+        advancedMounts:
+          mosquitto:
+            hash-passwords:
+              - path: /tmp
