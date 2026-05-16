@@ -1,0 +1,30 @@
+---
+# Pre-staged Flux KS for when HA comes back to fairy. NOT yet referenced
+# in the namespace kustomization.yaml — uncomment ./homeassistant.yaml
+# there to activate. Depends on mosquitto for the MQTT integration.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app homeassistant
+  namespace: &namespace home-automation
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: mosquitto
+      namespace: home-automation
+  targetNamespace: *namespace
+  path: ./kubernetes/apps/home-automation/homeassistant
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  interval: 2m
+  retryInterval: 1m
+  timeout: 10m
+  prune: true
+  wait: true
