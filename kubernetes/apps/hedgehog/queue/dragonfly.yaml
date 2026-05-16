@@ -17,6 +17,7 @@ spec:
       key: password
   args:
     - --proactor_threads=2
+    - --default_lua_flags=allow-undeclared-keys
   resources:
     requests:
       cpu: 100m
