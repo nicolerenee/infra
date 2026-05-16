@@ -8,7 +8,7 @@ data "cloudflare_zones" "freckle_systems" {
 # zone on first apply by referencing the data-source-resolved ID.
 resource "cloudflare_zone" "freckle_systems" {
   account = {
-    id = var.cloudflare_account_id
+    id = data.google_secret_manager_secret_version.cloudflare_account_id.secret_data
   }
   name = "freckle.systems"
   type = "full"

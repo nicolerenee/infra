@@ -11,14 +11,14 @@
 # task wif owns the content lifecycle.
 
 resource "cloudflare_r2_bucket" "k8s_oidc" {
-  account_id    = var.cloudflare_account_id
+  account_id    = data.google_secret_manager_secret_version.cloudflare_account_id.secret_data
   name          = "k8s-oidc"
   location      = "ENAM"
   storage_class = "Standard"
 }
 
 resource "cloudflare_r2_custom_domain" "k8s_oidc" {
-  account_id  = var.cloudflare_account_id
+  account_id  = data.google_secret_manager_secret_version.cloudflare_account_id.secret_data
   bucket_name = cloudflare_r2_bucket.k8s_oidc.name
   domain      = "k8s-oidc.freckle.systems"
   zone_id     = cloudflare_zone.freckle_systems.id

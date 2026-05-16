@@ -7,8 +7,17 @@ provider "google" {
 }
 
 provider "cloudflare" {
-  # Reads CLOUDFLARE_API_TOKEN from the environment.
-  # Create a scoped token in the Cloudflare dashboard with permissions:
+  # Token is fetched from Google Secret Manager (secret
+  # `tofu-cloudflare-api-token` in the workload project) so no env var is
+  # required. Bootstrap on first run:
+  #
+  #   gcloud secrets create tofu-cloudflare-api-token \
+  #     --project=<secrets-project> --replication-policy=automatic
+  #   printf '%s' "$YOUR_TOKEN" | gcloud secrets versions add \
+  #     tofu-cloudflare-api-token --project=<secrets-project> --data-file=-
+  #
+  # Token scopes:
   #   Account > Workers R2 Storage:Edit
   #   Zone > DNS:Edit (for freckle.systems)
+  api_token = data.google_secret_manager_secret_version.cloudflare_api_token.secret_data
 }
