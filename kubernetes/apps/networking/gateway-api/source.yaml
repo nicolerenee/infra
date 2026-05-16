@@ -1,0 +1,21 @@
+---
+# Upstream Gateway API CRDs. Mirrors what install-gateway-api-crds.sh does
+# during bootstrap, but ongoing it's Flux-managed so a CRD bundle bump is
+# a single tag bump renovate can drive.
+#
+# renovate: datasource=github-releases depName=kubernetes-sigs/gateway-api
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: gateway-api
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://github.com/kubernetes-sigs/gateway-api.git
+  ref:
+    tag: v1.5.1
+  # Only fetch the standard-channel CRD manifests; avoids cloning the
+  # full ~25 MB repo each interval.
+  ignore: |
+    /*
+    !/config/crd/standard
