@@ -6,6 +6,7 @@ namespace: flux-system
 components:
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./external-secrets.yaml
   - ./flux-instance.yaml
   - ./flux-mcp.yaml
   - ./flux-operator.yaml
