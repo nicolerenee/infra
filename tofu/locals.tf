@@ -16,32 +16,6 @@ locals {
   # cluster's OIDC discovery endpoint — works for fully-internal
   # control plane endpoints.
 
-  # Per-namespace ESO bindings. Each entry creates a GCP SA, binds the
-  # cluster's k8s SA to it via WIF, and grants conditional
-  # secretAccessor scoped by secret name prefix `<cluster>-<namespace>-`.
-  #
-  # gcp_sa_id defaults to `<cluster>-<namespace>` if omitted; override
-  # when adopting an existing SA.
-  namespace_bindings = {
-    "fairy-k8s01/tailscale/external-secrets-tailscale" = {
-      cluster   = "fairy-k8s01"
-      namespace = "tailscale"
-      k8s_sa    = "external-secrets-tailscale"
-      gcp_sa_id = "fairy-tailscale"
-    }
-    # Tailscale operator pod — uses the GHA-protocol sidecar
-    # (gcp-id-token-broker) to mint Google ID tokens for tailscale's
-    # federated identity flow. The operator's k8s SA is the projected
-    # token's subject; tailscale's OIDC trust credential is configured
-    # against fairy-tailscale-operator's unique ID.
-    "fairy-k8s01/tailscale/operator" = {
-      cluster   = "fairy-k8s01"
-      namespace = "tailscale"
-      k8s_sa    = "operator"
-      gcp_sa_id = "fairy-tailscale-operator"
-    }
-  }
-
   # Secrets managed declaratively. Values are pushed via:
   #   task secrets:gen NAME=<name> [LENGTH=48]   — random alphanumeric
   #   task secrets:set NAME=<name>               — read value from stdin
