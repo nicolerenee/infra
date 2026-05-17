@@ -59,35 +59,46 @@ locals {
     }
   }
 
-  # Which (cluster, namespace, GSM secret name) each token maps to. The
-  # GSM secret name encodes the cluster + namespace + consumer; the IAM
-  # binding below uses that prefix to enforce per-cluster isolation.
+  # Which (cluster, namespace, name) each token maps to. The gsm-secret
+  # module composes the secret_id as `<cluster>-<namespace>-<name>` — the
+  # same prefix the eso-namespace IAM grant scopes access to.
   cf_token_consumers = {
     cert_manager_fairy = {
-      cluster    = "fairy-k8s01"
-      namespace  = "cert-manager"
-      gsm_secret = "fairy-k8s01-cert-manager-cloudflare-token"
+      cluster   = "fairy-k8s01"
+      namespace = "cert-manager"
+      name      = "cloudflare-token"
     }
     cert_manager_atlantis = {
-      cluster    = "atlantis-k8s01"
-      namespace  = "cert-manager"
-      gsm_secret = "atlantis-k8s01-cert-manager-cloudflare-token"
+      cluster   = "atlantis-k8s01"
+      namespace = "cert-manager"
+      name      = "cloudflare-token"
     }
     external_dns_fairy_cloudflare = {
-      cluster    = "fairy-k8s01"
-      namespace  = "external-dns"
-      gsm_secret = "fairy-k8s01-external-dns-cloudflare-token"
+      cluster   = "fairy-k8s01"
+      namespace = "external-dns"
+      name      = "cloudflare-token"
     }
     external_dns_fairy_cloudflare_tunnel = {
-      cluster    = "fairy-k8s01"
-      namespace  = "external-dns"
-      gsm_secret = "fairy-k8s01-external-dns-cloudflare-tunnel-token"
+      cluster   = "fairy-k8s01"
+      namespace = "external-dns"
+      name      = "cloudflare-tunnel-token"
     }
     external_dns_atlantis_cloudflare = {
-      cluster    = "atlantis-k8s01"
-      namespace  = "external-dns"
-      gsm_secret = "atlantis-k8s01-external-dns-cloudflare-token"
+      cluster   = "atlantis-k8s01"
+      namespace = "external-dns"
+      name      = "cloudflare-token"
     }
+  }
+
+  # Unique (cluster, namespace) pairs that need an ESO identity. Distinct
+  # because external-dns has two token consumers but only one ns.
+  cf_token_namespaces = {
+    for pair in distinct([
+      for ck, cv in local.cf_token_consumers : {
+        cluster   = cv.cluster
+        namespace = cv.namespace
+      }
+    ]) : "${pair.cluster}-${pair.namespace}" => pair
   }
 }
 
@@ -129,66 +140,46 @@ resource "cloudflare_account_token" "consumer" {
   }
 }
 
-# GSM secret + version for each token. Per-cluster, per-namespace prefix
-# so IAM conditions can scope access tightly.
-resource "google_secret_manager_secret" "cf_token" {
+# Per-token GSM secret + version via the gsm-secret module. Secret_id is
+# composed as `<cluster>-<namespace>-<name>` — matches the namespace
+# prefix the eso-namespace module below grants access to.
+module "cf_token_secret" {
+  source   = "./modules/gsm-secret"
   for_each = local.cf_token_consumers
 
-  secret_id = each.value.gsm_secret
-  project   = local.project_id
-
-  labels = {
-    cluster   = each.value.cluster
-    namespace = each.value.namespace
-    consumer  = replace(each.key, "_", "-")
-  }
-
-  replication {
-    auto {}
+  cluster             = each.value.cluster
+  namespace           = each.value.namespace
+  name                = each.value.name
+  secret_data         = cloudflare_account_token.consumer[each.key].value
+  workload_project_id = local.project_id
+  extra_labels = {
+    consumer = replace(each.key, "_", "-")
   }
 }
 
-resource "google_secret_manager_secret_version" "cf_token" {
-  for_each = local.cf_token_consumers
+# Project-level secretAccessor grant per (cluster, namespace). One IAM
+# binding covers every token in the namespace, since they all share the
+# `<cluster>-<namespace>-` prefix.
+module "cf_token_eso" {
+  source   = "./modules/eso-namespace"
+  for_each = local.cf_token_namespaces
 
-  secret      = google_secret_manager_secret.cf_token[each.key].id
-  secret_data = cloudflare_account_token.consumer[each.key].value
+  cluster                 = each.value.cluster
+  namespace               = each.value.namespace
+  sa_name                 = "external-secrets-${each.value.cluster}"
+  workload_project_id     = local.project_id
+  workload_project_number = data.google_project.this.number
+  iac_project_number      = data.google_project.iac.number
+  wif_pool_id             = google_iam_workload_identity_pool.clusters.workload_identity_pool_id
 }
 
-# IAM bindings. One per (cluster, namespace) pair, with the SA name set
-# to `external-secrets-<cluster-short>` so each cluster gets its own
-# federated principal subject. The condition limits which secrets each
-# principal can read — only the ones starting with the cluster + namespace
-# prefix.
-locals {
-  # Unique (cluster, namespace) pairs we need IAM bindings for. SA name
-  # uses the FULL cluster name (`external-secrets-<cluster>`) so each
-  # cluster's federated principal is distinct — including when multiple
-  # clusters in the same series coexist (e.g., atlantis-k8s01 vs
-  # atlantis-k8s02 during a rolling cluster replacement).
-  # Built via distinct() because multiple token consumers can share the
-  # same (cluster, namespace) — external-dns has cloudflare and
-  # cloudflare-tunnel both in fairy-k8s01/external-dns.
-  cf_token_iam_bindings = {
-    for pair in distinct([
-      for ck, cv in local.cf_token_consumers : {
-        cluster   = cv.cluster
-        namespace = cv.namespace
-      }
-    ]) : "${pair.cluster}-${pair.namespace}" => pair
-  }
-}
-
-resource "google_project_iam_member" "cf_token_eso_accessor" {
-  for_each = local.cf_token_iam_bindings
-
-  project = local.project_id
-  role    = "roles/secretmanager.secretAccessor"
-  member  = "principal://iam.googleapis.com/projects/${data.google_project.iac.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.clusters.workload_identity_pool_id}/subject/system:serviceaccount:${each.value.namespace}:external-secrets-${each.value.cluster}"
-
-  condition {
-    title       = "${each.value.cluster}-${each.value.namespace}-tokens"
-    description = "ESO in ${each.value.cluster}/${each.value.namespace} reads ${each.value.cluster}-${each.value.namespace}-* CF token secrets"
-    expression  = "resource.name.startsWith(\"projects/${data.google_project.this.number}/secrets/${each.value.cluster}-${each.value.namespace}-\")"
-  }
-}
+# Note: no `moved {}` blocks here. The old resources used for_each on
+# the resource itself; the new structure has for_each on the module
+# wrapper with a non-iterated child resource inside. OpenTofu can't
+# auto-map between those two address shapes. Tofu will destroy + create
+# all 14 resources. Safe because:
+#   - CF token values come from `cloudflare_account_token.consumer[].value`
+#     (in state, unchanged), so recreated GSM secrets get the same data
+#   - ESO caches the latest secret value in the k8s Secret; the brief
+#     window during destroy+create is invisible to consumers until the
+#     next refresh, which finds the recreated GSM secret + binding
