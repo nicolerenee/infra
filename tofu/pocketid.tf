@@ -152,8 +152,12 @@ resource "google_project_iam_member" "oidc_eso_accessor" {
   member  = "principal://iam.googleapis.com/projects/${data.google_project.iac.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.clusters.workload_identity_pool_id}/subject/system:serviceaccount:${each.value.namespace}:external-secrets-${each.value.cluster}"
 
   condition {
-    title       = "${each.value.cluster}-${each.value.namespace}-oidc"
-    description = "ESO in ${each.value.cluster}/${each.value.namespace} reads ${each.value.cluster}-${each.value.namespace}-*-oidc secrets"
-    expression  = "resource.name.startsWith(\"projects/${data.google_project.this.number}/secrets/${each.value.cluster}-${each.value.namespace}-\") && resource.name.endsWith(\"-oidc\")"
+    title       = "${each.value.cluster}-${each.value.namespace}-secrets"
+    description = "ESO in ${each.value.cluster}/${each.value.namespace} reads ${each.value.cluster}-${each.value.namespace}-* secrets"
+    # Prefix-only — `endsWith("-oidc")` was tempting but breaks because
+    # secretmanager.versions.access targets a resource name ending in
+    # `/versions/<n>`, not the secret's own suffix. The namespace prefix
+    # is the security boundary (matches the CF-token pattern).
+    expression = "resource.name.startsWith(\"projects/${data.google_project.this.number}/secrets/${each.value.cluster}-${each.value.namespace}-\")"
   }
 }
