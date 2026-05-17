@@ -39,3 +39,5 @@ spec:
             name: media-tls
           - kind: Secret
             name: cluster-svcs-tls
+          - kind: Secret
+            name: cluster-systems-tls
