@@ -51,7 +51,10 @@ spec:
     sources:
       - crd
       - gateway-httproute
-      - gateway-tlsroute
+      # external-dns 0.21 still requests v1alpha2.TLSRoute; the Gateway
+      # API CRDs only serve v1 now, so this source informer never syncs
+      # and crashes the pod. Re-enable when external-dns moves to v1.
+      # - gateway-tlsroute
 
     provider:
       name: cloudflare
