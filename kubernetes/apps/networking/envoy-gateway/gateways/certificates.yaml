@@ -31,3 +31,25 @@ spec:
     - "${MEDIA_DOMAIN}"
     - "*.${MEDIA_DOMAIN}"
     - "*.${CLUSTER_MEDIA_DOMAIN}"
+
+---
+# Per-cluster cert for the freckle.systems apex hostnames we still use:
+#   <cluster>-cf-tun-gw.freckle.systems → Cloudflare tunnel origin SNI
+#   *.<cluster-subdomain>.freckle.systems → in-cluster app hostnames
+#
+# Deliberately NOT a wildcard for the freckle.systems apex — we're
+# moving off of that domain over time and don't want a broad claim.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cluster-systems-tls
+spec:
+  secretName: cluster-systems-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "${CLUSTER_NAME}-cf-tun-gw.freckle.systems"
+  dnsNames:
+    - "${CLUSTER_NAME}-cf-tun-gw.freckle.systems"
+    - "*.${CLUSTER_SUBDOMAIN}.freckle.systems"

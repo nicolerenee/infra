@@ -1,8 +1,15 @@
 ---
+# cloudflared local config. Catch-all routes everything to the envoy
+# tunnel gateway in-cluster; per-hostname routing happens in envoy via
+# HTTPRoute resources.
+#
+# Strict TLS verify on the cloudflared → envoy hop. The envoy tunnel
+# gateway presents cluster-systems-tls (SAN covers
+# ${CLUSTER_NAME}-cf-tun-gw.freckle.systems). Substituted at apply time
+# via Flux postBuild variables.
 ingress:
-  - hostname: ingress.${CLUSTER_DOMAIN}
+  - service: https://tunnel.gateway-system.svc.cluster.local:443
     originRequest:
-      originServerName: ingress.${CLUSTER_DOMAIN}
+      originServerName: ${CLUSTER_NAME}-cf-tun-gw.freckle.systems
       http2Origin: true
-    service: https://envoy-public.gateway-system.svc.cluster.local:443
   - service: http_status:404

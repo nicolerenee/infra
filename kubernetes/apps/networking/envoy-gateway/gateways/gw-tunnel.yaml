@@ -9,7 +9,9 @@ kind: Gateway
 metadata:
   annotations: {}
   labels:
-    gateway.freckle.systems/dns: cloudflare
+    # external-dns-cloudflare-tunnel matches this label to discover
+    # which HTTPRoutes to register DNS records for.
+    gateway.freckle.systems/dns: cloudflare-tunnel
   name: tunnel
 spec:
   gatewayClassName: envoy-clusterip
@@ -35,3 +37,5 @@ spec:
             name: media-tls
           - kind: Secret
             name: cluster-svcs-tls
+          - kind: Secret
+            name: cluster-systems-tls
