@@ -53,7 +53,7 @@ import {
   id       = data.pocketid_group.existing[each.key].id
 }
 
-# Per-cluster OIDC clients. Each cluster's grafana lives at a different
+# Per-cluster OIDC clients. Each cluster's app lives at a different
 # hostname, so they need distinct clients (callback URLs are part of
 # the client config and can't be wildcarded for security).
 #
@@ -66,11 +66,11 @@ import {
 locals {
   oidc_clients = {
     grafana_fairy = {
-      name      = "Grafana - Fairy"
-      cluster   = "fairy-k8s01"
-      namespace = "observability"
-      app       = "grafana"
-      hostname  = "grafana.fairy.freckle.systems"
+      display_name = "Grafana - Fairy"
+      cluster      = "fairy-k8s01"
+      namespace    = "observability"
+      name         = "grafana-oidc" # GSM secret suffix
+      hostname     = "grafana.fairy.freckle.systems"
       allowed_group_keys = [
         "grafana_admins",
         "grafana_users",
@@ -78,12 +78,22 @@ locals {
       ]
     }
   }
+
+  # Unique (cluster, namespace) pairs that need an ESO identity.
+  oidc_namespaces = {
+    for pair in distinct([
+      for ck, cv in local.oidc_clients : {
+        cluster   = cv.cluster
+        namespace = cv.namespace
+      }
+    ]) : "${pair.cluster}-${pair.namespace}" => pair
+  }
 }
 
 resource "pocketid_client" "consumer" {
   for_each = local.oidc_clients
 
-  name = each.value.name
+  name = each.value.display_name
   callback_urls = [
     "https://${each.value.hostname}/login/generic_oauth",
   ]
@@ -96,68 +106,40 @@ resource "pocketid_client" "consumer" {
   ]
 }
 
-# GSM secret per client — JSON blob with client_id + client_secret so
-# ESO `dataFrom.extract` can pull both into a single k8s Secret.
-resource "google_secret_manager_secret" "oidc_client" {
+# GSM secret per client — JSON blob with client-id + client-secret so
+# ESO `dataFrom.extract` lands both as separate k8s Secret keys directly.
+# Naming follows `<cluster>-<namespace>-<name>` so the namespace-prefix
+# IAM grant from `oidc_eso` below covers it.
+module "oidc_client_secret" {
+  source   = "./modules/gsm-secret"
   for_each = local.oidc_clients
 
-  secret_id = "${each.value.cluster}-${each.value.namespace}-${each.value.app}-oidc"
-  project   = local.project_id
-
-  labels = {
-    cluster   = each.value.cluster
-    namespace = each.value.namespace
-    consumer  = each.value.app
-    purpose   = "oidc-client"
-  }
-
-  replication {
-    auto {}
-  }
-}
-
-resource "google_secret_manager_secret_version" "oidc_client" {
-  for_each = local.oidc_clients
-
-  secret = google_secret_manager_secret.oidc_client[each.key].id
-  # Key names match what the consumer's ExternalSecret expects directly
-  # via `dataFrom.extract` (no template remap needed). Grafana CRD's
-  # AUTH_CLIENT_ID / AUTH_CLIENT_SECRET env vars read from these keys.
+  cluster             = each.value.cluster
+  namespace           = each.value.namespace
+  name                = each.value.name
+  workload_project_id = local.project_id
   secret_data = jsonencode({
     "client-id"     = pocketid_client.consumer[each.key].id
     "client-secret" = pocketid_client.consumer[each.key].client_secret
   })
-}
-
-# IAM: each consumer's namespace ESO SA can read its own OIDC secret.
-# Reuses the per-cluster `external-secrets-<cluster>` SA naming from
-# the CF-token migration — same SA serves CF tokens AND OIDC creds in
-# a namespace, just on different GSM secret prefixes.
-locals {
-  oidc_iam_bindings = {
-    for pair in distinct([
-      for ck, cv in local.oidc_clients : {
-        cluster   = cv.cluster
-        namespace = cv.namespace
-      }
-    ]) : "${pair.cluster}-${pair.namespace}" => pair
+  extra_labels = {
+    consumer = replace(each.key, "_", "-")
+    purpose  = "oidc-client"
   }
 }
 
-resource "google_project_iam_member" "oidc_eso_accessor" {
-  for_each = local.oidc_iam_bindings
+# Project-level secretAccessor grant per (cluster, namespace). Same SA
+# convention as CF tokens — `external-secrets-<cluster>` — so a single
+# k8s SA in each namespace handles both CF tokens AND OIDC creds.
+module "oidc_eso" {
+  source   = "./modules/eso-namespace"
+  for_each = local.oidc_namespaces
 
-  project = local.project_id
-  role    = "roles/secretmanager.secretAccessor"
-  member  = "principal://iam.googleapis.com/projects/${data.google_project.iac.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.clusters.workload_identity_pool_id}/subject/system:serviceaccount:${each.value.namespace}:external-secrets-${each.value.cluster}"
-
-  condition {
-    title       = "${each.value.cluster}-${each.value.namespace}-secrets"
-    description = "ESO in ${each.value.cluster}/${each.value.namespace} reads ${each.value.cluster}-${each.value.namespace}-* secrets"
-    # Prefix-only — `endsWith("-oidc")` was tempting but breaks because
-    # secretmanager.versions.access targets a resource name ending in
-    # `/versions/<n>`, not the secret's own suffix. The namespace prefix
-    # is the security boundary (matches the CF-token pattern).
-    expression = "resource.name.startsWith(\"projects/${data.google_project.this.number}/secrets/${each.value.cluster}-${each.value.namespace}-\")"
-  }
+  cluster                 = each.value.cluster
+  namespace               = each.value.namespace
+  sa_name                 = "external-secrets-${each.value.cluster}"
+  workload_project_id     = local.project_id
+  workload_project_number = data.google_project.this.number
+  iac_project_number      = data.google_project.iac.number
+  wif_pool_id             = google_iam_workload_identity_pool.clusters.workload_identity_pool_id
 }
