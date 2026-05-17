@@ -29,7 +29,11 @@ tasks:
     requires:
       vars: [CLUSTER]
     vars:
-      CONTEXT: "admin@{{.CLUSTER}}"
+      # Auto-discover the tailnet kubectl context for this cluster — the
+      # pattern is always `<cluster>-apiserver.<tailnet>.ts.net`. Keeps
+      # the tailnet name out of the repo (it's 1P-stored metadata).
+      CONTEXT:
+        sh: kubectl config get-contexts -o name | grep -E "^{{.CLUSTER}}-apiserver\\..+\\.ts\\.net$" | head -n1
       ISSUER: "{{.OIDC_HOST}}/{{.CLUSTER}}"
       OUT: "{{.TOFU_DIR}}/jwks/{{.CLUSTER}}"
     cmds:
