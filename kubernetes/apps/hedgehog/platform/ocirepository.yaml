@@ -14,7 +14,7 @@ metadata:
   name: hedgehog
 spec:
   interval: 5m
-  url: oci://ghcr.io/nicolerenee/hedgehog-manifests
+  url: oci://ghcr.io/freckleapps/hedgehog-manifests
   ref:
     tag: main-20260517T072807Z-912d54f # {"$imagepolicy": "flux-system:hedgehog:tag"}
   secretRef:

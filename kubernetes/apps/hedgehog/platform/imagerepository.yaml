@@ -7,7 +7,7 @@ kind: ImageRepository
 metadata:
   name: hedgehog
 spec:
-  image: ghcr.io/nicolerenee/hedgehog-manifests
+  image: ghcr.io/freckleapps/hedgehog-manifests
   interval: 5m
   secretRef:
     name: ghcr-login-secret
