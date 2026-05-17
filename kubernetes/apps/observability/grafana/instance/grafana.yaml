@@ -30,6 +30,12 @@ spec:
       root_url: https://grafana.${CLUSTER_DOMAIN}
 
   deployment:
+    metadata:
+      annotations:
+        # Restart grafana when the OIDC client_secret in `grafana-oauth`
+        # rotates (now that the secret is tofu-managed and will rotate
+        # on each pocket-id client recreate, not a one-and-done value).
+        reloader.stakater.com/auto: "true"
     spec:
       template:
         spec:
