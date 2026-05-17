@@ -4,7 +4,10 @@ kind: Cluster
 metadata:
   name: hedgehog-db
 spec:
-  instances: 2
+  # 3-instance HA: tolerates a single instance loss without breaking
+  # writes (minSyncReplicas: 1 needs at least one healthy standby to
+  # ack writes, which a 2-instance cluster can't guarantee).
+  instances: 3
   # CNPG "standard" image — bundles pgvector, PGAudit, Failover Slots, locales, JIT.
   imageName: ghcr.io/cloudnative-pg/postgresql:18.3-standard-trixie@sha256:9f9f53c9e07e5b2924945e6eaeb9168f7e856786d221839866ac85ccd703b3ba
   primaryUpdateStrategy: unsupervised
