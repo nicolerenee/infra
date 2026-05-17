@@ -27,15 +27,15 @@ data "cloudflare_zero_trust_tunnel_cloudflared_token" "fairy" {
   tunnel_id  = cloudflare_zero_trust_tunnel_cloudflared.fairy.id
 }
 
-# Tunnel token in GSM. Name matches the fairy-k8s01-networking- prefix so
-# ESO's networking-namespace federated principal can read it.
+# Tunnel token in GSM. Name matches the fairy-k8s01-cloudflared- prefix
+# so ESO's cloudflared-namespace federated principal can read it.
 resource "google_secret_manager_secret" "fairy_tunnel_token" {
-  secret_id = "fairy-k8s01-networking-cloudflared-tunnel-token"
+  secret_id = "fairy-k8s01-cloudflared-tunnel-token"
   project   = local.project_id
 
   labels = {
     cluster   = "fairy-k8s01"
-    namespace = "networking"
+    namespace = "cloudflared"
   }
 
   replication {
@@ -62,18 +62,18 @@ resource "cloudflare_dns_record" "fairy_cf_tun_gw" {
   ttl     = 1 # 'auto' when proxied
 }
 
-# IAM: ESO in the networking namespace can read fairy-k8s01-networking-*
+# IAM: ESO in the cloudflared namespace can read fairy-k8s01-cloudflared-*
 # secrets. Direct federated-principal binding — no GCP SA in the middle.
 # Cleaner than our other namespace_bindings (which create GCP SAs); we'll
 # refactor those to match this pattern later.
-resource "google_project_iam_member" "fairy_networking_eso_accessor" {
+resource "google_project_iam_member" "fairy_cloudflared_eso_accessor" {
   project = local.project_id
   role    = "roles/secretmanager.secretAccessor"
-  member  = "principal://iam.googleapis.com/projects/${data.google_project.iac.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.clusters.workload_identity_pool_id}/subject/system:serviceaccount:networking:external-secrets-networking"
+  member  = "principal://iam.googleapis.com/projects/${data.google_project.iac.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.clusters.workload_identity_pool_id}/subject/system:serviceaccount:cloudflared:external-secrets-cloudflared"
 
   condition {
-    title       = "fairy-k8s01-networking-ns"
-    description = "ESO in fairy networking namespace can read fairy-k8s01-networking-* secrets"
-    expression  = "resource.name.startsWith(\"projects/${data.google_project.this.number}/secrets/fairy-k8s01-networking-\")"
+    title       = "fairy-k8s01-cloudflared-ns"
+    description = "ESO in fairy cloudflared namespace can read fairy-k8s01-cloudflared-* secrets"
+    expression  = "resource.name.startsWith(\"projects/${data.google_project.this.number}/secrets/fairy-k8s01-cloudflared-\")"
   }
 }
