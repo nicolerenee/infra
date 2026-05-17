@@ -1,0 +1,25 @@
+---
+# Push-trigger for the hedgehog ImageRepository scan. The hedgehog publish
+# workflow POSTs to this Receiver's webhook URL after each image push, which
+# annotates the ImageRepository to force an immediate tag scan instead of
+# waiting for the 5m polling interval. Token-as-HMAC keeps the public funnel
+# URL safe to share.
+#
+# Webhook URL pattern (path is published in `.status.webhookPath`):
+#   https://${CLUSTER_NAME}-flux-webhook/hook/<hash>
+apiVersion: notification.toolkit.fluxcd.io/v1
+kind: Receiver
+metadata:
+  name: hedgehog-image-receiver
+  namespace: hedgehog
+spec:
+  type: generic-hmac
+  events:
+    - "push"
+  secretRef:
+    name: flux-receiver-hedgehog-token
+  resources:
+    - apiVersion: image.toolkit.fluxcd.io/v1
+      kind: ImageRepository
+      name: hedgehog
+      namespace: hedgehog
