@@ -6,6 +6,7 @@ namespace: observability
 components:
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./external-secrets.yaml
   - ./gatus.yaml
   - ./grafana-dashboards.yaml
   - ./grafana-operator.yaml

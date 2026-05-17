@@ -18,5 +18,9 @@ terraform {
       source  = "hashicorp/time"
       version = "~> 0.13"
     }
+    pocketid = {
+      source  = "trozz/pocketid"
+      version = "~> 0.1"
+    }
   }
 }

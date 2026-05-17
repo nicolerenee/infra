@@ -23,3 +23,24 @@ spec:
   interval: 30s
   retryInterval: 1m
   timeout: 5m
+  patches:
+    # Fairy-only: source the grafana OIDC credentials from GSM
+    # (tofu/pocketid.tf provisions the client) instead of the shared
+    # 1P-backed default. Atlantis continues using the manually-managed
+    # client until we explicitly migrate it.
+    - target:
+        kind: ExternalSecret
+        name: grafana-oauth
+      patch: |-
+        - op: replace
+          path: /spec/secretStoreRef
+          value:
+            kind: SecretStore
+            name: gcp-sm
+        - op: remove
+          path: /spec/data
+        - op: add
+          path: /spec/dataFrom
+          value:
+            - extract:
+                key: ${CLUSTER_NAME}-observability-grafana-oidc
