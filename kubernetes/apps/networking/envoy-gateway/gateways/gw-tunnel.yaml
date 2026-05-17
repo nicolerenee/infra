@@ -7,7 +7,13 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  annotations: {}
+  annotations:
+    # external-dns reads this as the CNAME target for every HTTPRoute
+    # attached to this Gateway. Without it, external-dns would publish
+    # the ClusterIPs from .status.addresses, which Cloudflare's edge
+    # can't reach. The cf-tun-gw bootstrap CNAME is owned by tofu and
+    # resolves to the tunnel's UUID at cfargotunnel.com.
+    external-dns.alpha.kubernetes.io/target: ${CLUSTER_NAME}-cf-tun-gw.freckle.systems
   labels:
     # external-dns-cloudflare-tunnel matches this label to discover
     # which HTTPRoutes to register DNS records for.
