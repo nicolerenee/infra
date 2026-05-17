@@ -60,7 +60,7 @@ spec:
       name: cloudflare
     domainFilters:
       - freckle.family
-      - freckle.vision
+      - freckle.services
       - freckle.systems
     env:
       - name: CF_API_TOKEN
