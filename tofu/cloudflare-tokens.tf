@@ -35,58 +35,48 @@ locals {
   # consumer keeps working for 10 more days before tokens actually die.
   cf_token_expires_on = timeadd(time_rotating.cf_token_rotation.rotation_rfc3339, "240h")
 
-  # Per-token zone scopes. Listed by short key into local.cf_zone_ids.
-  cf_token_scopes = {
+  # Per-token config. One entry per Cloudflare API token we mint:
+  #   - where it lands (cluster, namespace, name → GSM secret_id suffix)
+  #   - what it can do (zones, permissions)
+  #
+  # The gsm-secret module composes the secret_id as
+  # `<cluster>-<namespace>-<name>` — same prefix the eso-namespace IAM
+  # grant scopes access to.
+  cf_tokens = {
     cert_manager_fairy = {
+      cluster     = "fairy-k8s01"
+      namespace   = "cert-manager"
+      name        = "cloudflare-token"
       zones       = ["freckle_systems", "freckle_services", "freckle_media"]
       permissions = ["dns_write"]
     }
     cert_manager_atlantis = {
+      cluster     = "atlantis-k8s01"
+      namespace   = "cert-manager"
+      name        = "cloudflare-token"
       zones       = ["freckle_id", "freckle_chat", "freckle_systems", "freckle_services", "freckle_media"]
       permissions = ["dns_write"]
     }
     external_dns_fairy_cloudflare = {
+      cluster     = "fairy-k8s01"
+      namespace   = "external-dns"
+      name        = "cloudflare-token"
       zones       = ["freckle_systems", "freckle_services", "freckle_media"]
       permissions = ["dns_write", "zone_read"]
     }
     external_dns_fairy_cloudflare_tunnel = {
+      cluster     = "fairy-k8s01"
+      namespace   = "external-dns"
+      name        = "cloudflare-tunnel-token"
       zones       = ["freckle_systems", "freckle_services", "freckle_family"]
       permissions = ["dns_write", "zone_read"]
     }
     external_dns_atlantis_cloudflare = {
+      cluster     = "atlantis-k8s01"
+      namespace   = "external-dns"
+      name        = "cloudflare-token"
       zones       = ["freckle_chat", "freckle_family", "freckle_id", "freckle_media", "freckle_services", "freckle_systems"]
       permissions = ["dns_write", "zone_read"]
-    }
-  }
-
-  # Which (cluster, namespace, name) each token maps to. The gsm-secret
-  # module composes the secret_id as `<cluster>-<namespace>-<name>` — the
-  # same prefix the eso-namespace IAM grant scopes access to.
-  cf_token_consumers = {
-    cert_manager_fairy = {
-      cluster   = "fairy-k8s01"
-      namespace = "cert-manager"
-      name      = "cloudflare-token"
-    }
-    cert_manager_atlantis = {
-      cluster   = "atlantis-k8s01"
-      namespace = "cert-manager"
-      name      = "cloudflare-token"
-    }
-    external_dns_fairy_cloudflare = {
-      cluster   = "fairy-k8s01"
-      namespace = "external-dns"
-      name      = "cloudflare-token"
-    }
-    external_dns_fairy_cloudflare_tunnel = {
-      cluster   = "fairy-k8s01"
-      namespace = "external-dns"
-      name      = "cloudflare-tunnel-token"
-    }
-    external_dns_atlantis_cloudflare = {
-      cluster   = "atlantis-k8s01"
-      namespace = "external-dns"
-      name      = "cloudflare-token"
     }
   }
 
@@ -94,7 +84,7 @@ locals {
   # because external-dns has two token consumers but only one ns.
   cf_token_namespaces = {
     for pair in distinct([
-      for ck, cv in local.cf_token_consumers : {
+      for ck, cv in local.cf_tokens : {
         cluster   = cv.cluster
         namespace = cv.namespace
       }
@@ -106,7 +96,7 @@ locals {
 # rotation/management goes through the account's API tokens endpoint —
 # the tofu CF API token authenticates at the account level too.
 resource "cloudflare_account_token" "consumer" {
-  for_each = local.cf_token_scopes
+  for_each = local.cf_tokens
 
   account_id = data.google_secret_manager_secret_version.cloudflare_account_id.secret_data
 
@@ -145,7 +135,7 @@ resource "cloudflare_account_token" "consumer" {
 # prefix the eso-namespace module below grants access to.
 module "cf_token_secret" {
   source   = "./modules/gsm-secret"
-  for_each = local.cf_token_consumers
+  for_each = local.cf_tokens
 
   cluster             = each.value.cluster
   namespace           = each.value.namespace
