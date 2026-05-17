@@ -9,9 +9,6 @@ metadata:
     infra.freckle.systems/post-build-variables: enabled
 spec:
   targetNamespace: *namespace
-  dependsOn:
-    - name: networking-apps   # gcp-sm-networking SecretStore lives in this KS
-      namespace: networking
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
