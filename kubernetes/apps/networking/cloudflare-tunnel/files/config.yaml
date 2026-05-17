@@ -12,4 +12,3 @@ ingress:
     originRequest:
       originServerName: ${CLUSTER_NAME}-cf-tun-gw.freckle.systems
       http2Origin: true
-  - service: http_status:404
