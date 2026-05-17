@@ -35,6 +35,7 @@ resource "cloudflare_dns_record" "cluster_api" {
   content = each.value.ip
   proxied = false # apiserver TLS terminates on the node; never proxy.
   ttl     = 120
+  comment = "Managed by tofu (cluster-endpoints.tf)"
 }
 
 # Adopt the existing fairy-k8s01-api record (manually created before this

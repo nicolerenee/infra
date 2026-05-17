@@ -72,6 +72,7 @@ resource "cloudflare_dns_record" "cf_tun_gw" {
   content = "${cloudflare_zero_trust_tunnel_cloudflared.tunnel[each.key].id}.cfargotunnel.com"
   proxied = true
   ttl     = 1 # 'auto' when proxied
+  comment = "Managed by tofu (cloudflare-tunnel.tf)"
 }
 
 # Project-level secretAccessor grant for the cloudflared ns ESO identity.
