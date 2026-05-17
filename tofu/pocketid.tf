@@ -100,10 +100,13 @@ resource "pocketid_client" "consumer" {
   launch_url   = "https://${each.value.hostname}"
   is_public    = false
   pkce_enabled = true
-  allowed_user_groups = [
+  # sort() because pocket-id's API returns this list sorted
+  # lexicographically — without normalizing our input to match, every
+  # plan shows a phantom reorder that never converges.
+  allowed_user_groups = sort([
     for g in each.value.allowed_group_keys :
     pocketid_group.groups[g].id
-  ]
+  ])
 }
 
 # GSM secret per client — JSON blob with client-id + client-secret so
