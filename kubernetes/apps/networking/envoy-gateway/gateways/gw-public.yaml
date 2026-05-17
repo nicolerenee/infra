@@ -32,6 +32,8 @@ spec:
             name: media-tls
           - kind: Secret
             name: cluster-svcs-tls
+          - kind: Secret
+            name: cluster-systems-tls
 ---
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/gateway.envoyproxy.io/envoypatchpolicy_v1alpha1.json
 apiVersion: gateway.envoyproxy.io/v1alpha1
