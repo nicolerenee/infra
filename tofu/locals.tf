@@ -16,6 +16,23 @@ locals {
   # cluster's OIDC discovery endpoint — works for fully-internal
   # control plane endpoints.
 
+  # Authoritative per-cluster topology. New clusters get added here AND
+  # to var.clusters (via `task wif:bootstrap`); everything else that's
+  # per-cluster (API server DNS, optional CF tunnel) iterates over this.
+  clusters_config = {
+    "fairy-k8s01" = {
+      # Control plane node IPs for the cluster's API-server DNS round-robin.
+      # cn01 only for now — expand to cn01..cn05 for HA later.
+      api_server_ips = ["10.189.3.16"]
+      # Whether this cluster runs a Cloudflare tunnel for public ingress.
+      has_cf_tunnel = true
+    }
+    "atlantis-k8s01" = {
+      api_server_ips = ["172.26.3.5", "172.26.3.6", "172.26.3.7"]
+      has_cf_tunnel  = false
+    }
+  }
+
   # Secrets managed declaratively. Values are pushed via:
   #   task secrets:gen NAME=<name> [LENGTH=48]   — random alphanumeric
   #   task secrets:set NAME=<name>               — read value from stdin

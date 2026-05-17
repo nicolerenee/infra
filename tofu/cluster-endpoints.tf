@@ -11,24 +11,13 @@
 #      — change tofu, don't chase config files across hosts.
 
 locals {
-  # Map of cluster → list of CP node IPs to publish as A records.
-  # Multiple IPs become DNS round-robin (no health checks — apiserver
-  # clients are generally fine with TCP-level retry on stale entries,
-  # and on-LAN latency makes the cost of a bad RR pick negligible).
-  cluster_api_endpoints = {
-    "fairy-k8s01" = {
-      # cn01 only for now — eventually expand to cn01..cn05 for HA.
-      ips = ["10.189.3.16"]
-    }
-    "atlantis-k8s01" = {
-      ips = ["172.26.3.5", "172.26.3.6", "172.26.3.7"]
-    }
-  }
-
-  # Flatten (cluster, ip) pairs so we can use a single for_each.
+  # Flatten (cluster, ip) pairs from clusters_config so we can use a
+  # single for_each on the DNS record resource. Multiple IPs become
+  # DNS round-robin (no health checks — apiserver clients retry at TCP
+  # level, on-LAN latency makes the cost of a bad RR pick negligible).
   cluster_api_endpoint_records = merge([
-    for cluster, ep in local.cluster_api_endpoints : {
-      for ip in ep.ips :
+    for cluster, cfg in local.clusters_config : {
+      for ip in cfg.api_server_ips :
       "${cluster}-${ip}" => {
         cluster = cluster
         ip      = ip
