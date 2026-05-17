@@ -7,3 +7,4 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - ./cloudflare.yaml
+  - ./external-secrets.yaml

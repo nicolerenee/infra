@@ -25,3 +25,17 @@ spec:
     namespace: flux-system
   interval: 30m
   timeout: 5m
+  patches:
+    # atlantis-only zones — matrix lives on freckle.chat and pocket-id
+    # on freckle.id. fairy doesn't have routes on either, so this gets
+    # patched in here instead of inflating the shared baseline.
+    - target:
+        kind: HelmRelease
+        name: external-dns-cloudflare
+      patch: |-
+        - op: add
+          path: /spec/values/domainFilters/-
+          value: freckle.chat
+        - op: add
+          path: /spec/values/domainFilters/-
+          value: freckle.id

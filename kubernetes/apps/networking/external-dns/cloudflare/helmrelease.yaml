@@ -61,13 +61,15 @@ spec:
 
     provider:
       name: cloudflare
+    # Baseline filter — zones every cluster needs DNS for. Atlantis-only
+    # zones (freckle.chat for matrix, freckle.id for auth) get patched
+    # in via the cluster-side Flux KS so fairy doesn't carry an
+    # over-broad filter.
     domainFilters:
-      - freckle.chat
       - freckle.family
       - freckle.media
       - freckle.services
       - freckle.systems
-      - freckle.vision
       - warehouse43.com
     env:
       - name: CF_API_TOKEN

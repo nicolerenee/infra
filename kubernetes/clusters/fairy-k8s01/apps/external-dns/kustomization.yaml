@@ -9,3 +9,4 @@ components:
 resources:
   - ./cloudflare.yaml
   - ./cloudflare-tunnel.yaml
+  - ./external-secrets.yaml
