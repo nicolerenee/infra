@@ -1,7 +1,16 @@
 ---
-# App workloads — sourced from the OCI manifest bundle published by the
-# hedgehog repo. dependsOn ensures the OCIRepository, pull secret, and DB
-# all exist before the kustomize-controller tries to reconcile.
+# App workloads — sourced from the workloads subpath of the OCI manifest
+# bundle published by the hedgehog repo (ObjectBucketClaim + every
+# long-running Deployment + Service + HTTPRoute).
+#
+# `dependsOn: hedgehog-migrate` is the deploy-gate: Flux only reconciles
+# this Kustomization after the sibling `hedgehog-migrate` Kustomization
+# reaches Ready, which only happens once the migrate Job reports
+# `.status.succeeded` >= 1. If the migration fails, workload Deployments
+# stay at their prior reconciliation state — no rolling-update of serve /
+# worker / scheduler / kalshi-stream against an old schema. The other
+# dependsOn entries cover the platform OCIRepository + pull secret and the
+# CNPG database.
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -20,11 +29,13 @@ spec:
       namespace: hedgehog
     - name: hedgehog-db
       namespace: hedgehog
+    - name: hedgehog-migrate
+      namespace: hedgehog
   sourceRef:
     kind: OCIRepository
     name: hedgehog
     namespace: hedgehog
-  path: ./
+  path: ./workloads
   interval: 5m
   retryInterval: 2m
   timeout: 5m

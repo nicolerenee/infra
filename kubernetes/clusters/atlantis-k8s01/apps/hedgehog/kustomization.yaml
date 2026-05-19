@@ -9,4 +9,5 @@ resources:
   - ./platform.yaml
   - ./db.yaml
   - ./queue.yaml
+  - ./migrate.yaml
   - ./hedgehog.yaml

@@ -1,0 +1,50 @@
+---
+# Database migration Kustomization — applies the migrate subpath of the
+# hedgehog OCI manifest bundle (ServiceAccount, both ExternalSecrets, and
+# the hedgehog-migrate Job).
+#
+# This Kustomization is the gate that keeps schema-mismatched rollouts out
+# of production. With `wait: true`, Flux reconciles this Kustomization as
+# Ready only after every applied resource is healthy — and for a Job, that
+# means `.status.succeeded` >= 1 (the migrate Job's `Complete` condition is
+# true). The sibling `hedgehog` Kustomization (workloads) has
+# `dependsOn: hedgehog-migrate`, so workload Deployments do NOT roll forward
+# until the migration succeeds. If the Job fails, Flux holds the workloads
+# Kustomization at its prior reconciliation state — no rolling-update of
+# serve / worker / scheduler / kalshi-stream against an old schema.
+#
+# The ExternalSecrets + ServiceAccount that workload pods reference are
+# owned by this Kustomization. Cross-Kustomization references in K8s are by
+# name+namespace, not by Flux ownership, so workload pods consume them
+# normally.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app hedgehog-migrate
+  namespace: &namespace hedgehog
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  targetNamespace: *namespace
+  dependsOn:
+    - name: hedgehog-platform
+      namespace: hedgehog
+    - name: hedgehog-db
+      namespace: hedgehog
+  sourceRef:
+    kind: OCIRepository
+    name: hedgehog
+    namespace: hedgehog
+  path: ./migrate
+  interval: 5m
+  retryInterval: 2m
+  timeout: 5m
+  prune: true
+  wait: true
+  postBuild:
+    substitute:
+      APP: *app
