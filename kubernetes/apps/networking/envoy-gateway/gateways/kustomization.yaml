@@ -1,8 +1,9 @@
 ---
 # yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
-# Shared base for all clusters. Excludes ./gw-public.yaml — only clusters
-# with an external (public-IP) gateway include that via their cluster-side
-# Flux Kustomization patches.
+# Shared base for all clusters. Includes gw-public.yaml so the CI
+# completeness check stays green; internal-only clusters (fairy) opt out
+# by patching their cluster-side Flux Kustomization to delete the public
+# Gateway resource.
 apiVersion: kustomize.config.k8s.io/v1alpha1
 kind: Component
 resources:
@@ -10,6 +11,7 @@ resources:
   - ./envoy.yaml
   - ./envoy-clusterip.yaml
   - ./envoy-tailscale.yaml
+  - ./gw-public.yaml
   - ./gw-tailnet.yaml
   - ./gw-tunnel.yaml
   - ./redirect.yaml

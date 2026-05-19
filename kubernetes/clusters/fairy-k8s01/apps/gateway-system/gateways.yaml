@@ -26,3 +26,25 @@ spec:
   interval: 1h
   retryInterval: 2m
   timeout: 5m
+  # gw-public is in the shared base so the CI completeness check passes;
+  # fairy is internal-only, so strip the public Gateway plus its companion
+  # EnvoyPatchPolicy out at apply time.
+  patches:
+    - target:
+        kind: Gateway
+        name: public
+      patch: |
+        $patch: delete
+        apiVersion: gateway.networking.k8s.io/v1
+        kind: Gateway
+        metadata:
+          name: public
+    - target:
+        kind: EnvoyPatchPolicy
+        name: public
+      patch: |
+        $patch: delete
+        apiVersion: gateway.envoyproxy.io/v1alpha1
+        kind: EnvoyPatchPolicy
+        metadata:
+          name: public
