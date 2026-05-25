@@ -19,7 +19,7 @@ nodes:
     ipAddress: 10.189.3.16
     controlPlane: true
     installDiskSelector:
-      model: "Samsung SSD 990 PRO*"
+      model: "Samsung SSD 870*"
     nodeLabels:
       networks.freckle.systems/home-lan: present
       topology.freckle.systems/rack: r02
