@@ -50,26 +50,10 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Setup Flux CLI
         uses: fluxcd/flux2/action@54e4ba378e155ada619caafdc599e5c4d759ce5c # v2.8.7
-      # The envoy-gateway-system/gateway-api-crds Kustomization pulls from
-      # upstream kubernetes-sigs/gateway-api via an external GitRepository.
-      # flux-local can't fetch external Git sources on its own, so we clone
-      # the upstream at the pinned tag and pass it via --sources mapping.
-      - name: Extract gateway-api tag
-        id: gateway-api-tag
-        run: |
-          tag=$(yq '.spec.ref.tag' kubernetes/apps/networking/gateway-api/source.yaml)
-          echo "tag=${tag}" >> $GITHUB_OUTPUT
-      - name: Checkout gateway-api at pinned tag
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          repository: kubernetes-sigs/gateway-api
-          ref: ${{ steps.gateway-api-tag.outputs.tag }}
-          path: external-sources/gateway-api
       - uses: allenporter/flux-local/action/test@4d666add25002f550dc0dbe8b2b2f25859169b34 # 8.2.0
         with:
           path: kubernetes/clusters/${{ matrix.cluster }}/flux
           enable-helm: true
-          sources: gateway-api=./external-sources/gateway-api
 
   diff:
     if: ${{ needs.filter.outputs.changed-files != '[]' }}
@@ -95,11 +79,6 @@ jobs:
           ref: "${{ github.event.repository.default_branch }}"
           path: default
 
-      # `build all` doesn't accept --sources (only `test` and `build ks` do),
-      # so for the dyff diff we accept --skip-invalid-kustomization-paths to
-      # silently skip the envoy-gateway-system/gateway-api-crds external KS.
-      # Local-path typo detection is still enforced by the Test job above,
-      # which uses --sources with a real gateway-api clone.
       - name: Generate Manifests for Pull Request Branch
         uses: docker://ghcr.io/allenporter/flux-local:v8.0.0
         with:
@@ -107,7 +86,6 @@ jobs:
             build all
             --enable-helm
             --skip-kinds VMAlert,VMRule
-            --skip-invalid-kustomization-paths
             --output pr.yaml
             /github/workspace/pull/kubernetes/clusters/${{ matrix.cluster }}/flux
 
@@ -118,7 +96,6 @@ jobs:
             build all
             --enable-helm
             --skip-kinds VMAlert,VMRule
-            --skip-invalid-kustomization-paths
             --output main.yaml
             /github/workspace/default/kubernetes/clusters/${{ matrix.cluster }}/flux
 

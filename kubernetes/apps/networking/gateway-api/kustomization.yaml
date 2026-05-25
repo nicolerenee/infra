@@ -1,6 +1,16 @@
 ---
 # yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+# Vendored CRDs. To bump, change TAG in scripts/vendor-gateway-api-crds.sh
+# and re-run (or let Renovate do it automatically on a tag bump).
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ./source.yaml
+  - ./gateway.networking.k8s.io_backendtlspolicies.yaml
+  - ./gateway.networking.k8s.io_gatewayclasses.yaml
+  - ./gateway.networking.k8s.io_gateways.yaml
+  - ./gateway.networking.k8s.io_grpcroutes.yaml
+  - ./gateway.networking.k8s.io_httproutes.yaml
+  - ./gateway.networking.k8s.io_listenersets.yaml
+  - ./gateway.networking.k8s.io_referencegrants.yaml
+  - ./gateway.networking.k8s.io_tlsroutes.yaml
+  - ./gateway.networking.k8s.io_vap_safeupgrades.yaml

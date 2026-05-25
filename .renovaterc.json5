@@ -42,4 +42,18 @@
       'kubernetes/**/flux-system/**',
     ],
   },
+  packageRules: [
+    {
+      // When the kubernetes-sigs/gateway-api tag in
+      // scripts/vendor-gateway-api-crds.sh is bumped, re-run the vendor
+      // script to regenerate the CRD YAML files in the same PR. Requires
+      // RENOVATE_ALLOWED_POST_UPGRADE_COMMANDS to allowlist the script.
+      matchDepNames: ['kubernetes-sigs/gateway-api'],
+      postUpgradeTasks: {
+        commands: ['scripts/vendor-gateway-api-crds.sh'],
+        fileFilters: ['kubernetes/apps/networking/gateway-api/**'],
+        executionMode: 'branch',
+      },
+    },
+  ],
 }

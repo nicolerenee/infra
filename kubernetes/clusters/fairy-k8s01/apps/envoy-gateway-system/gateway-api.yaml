@@ -1,30 +1,10 @@
 ---
-# Step 1: deploy the GitRepository source manifest (so source-controller
-# starts pulling the upstream gateway-api repo).
+# Apply the vendored upstream Gateway API CRDs from this repo. The CRDs are
+# vendored under kubernetes/apps/networking/gateway-api (with provenance
+# headers on each file noting the source tag). prune is off so removing
+# this KS doesn't cascade-delete the CRDs and all the existing Gateway /
+# HTTPRoute / etc. resources with them.
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: &app gateway-api-source
-  namespace: envoy-gateway-system
-spec:
-  commonMetadata:
-    labels:
-      app.kubernetes.io/name: *app
-  path: ./kubernetes/apps/networking/gateway-api
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-    namespace: flux-system
-  interval: 30m
-  retryInterval: 2m
-  timeout: 5m
-  prune: true
-  wait: true
----
-# Step 2: apply the upstream CRD manifests from the gateway-api source.
-# prune is off so removing this KS doesn't cascade-delete the CRDs and
-# all the existing Gateway / HTTPRoute / etc. resources with them.
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -34,12 +14,10 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: gateway-api-crds
-  dependsOn:
-    - name: gateway-api-source
-  path: ./config/crd/standard
+  path: ./kubernetes/apps/networking/gateway-api
   sourceRef:
     kind: GitRepository
-    name: gateway-api
+    name: flux-system
     namespace: flux-system
   interval: 30m
   retryInterval: 2m
