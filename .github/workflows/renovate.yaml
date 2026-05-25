@@ -61,6 +61,14 @@ jobs:
           RENOVATE_INTERNAL_CHECKS_FILTER: strict
           RENOVATE_PLATFORM: github
           RENOVATE_PLATFORM_COMMIT: true
+          # Allowlist (regex, anchored) of commands Renovate's postUpgradeTasks
+          # may run. Used to re-vendor upstream CRDs after a tag bump (see
+          # packageRules in .renovaterc.json5). Use the current env name
+          # (`RENOVATE_ALLOWED_COMMANDS`); the older
+          # `RENOVATE_ALLOWED_POST_UPGRADE_COMMANDS` alias is deprecated.
+          RENOVATE_ALLOWED_COMMANDS: '^scripts/vendor-gateway-api-crds\.sh$'
+          # Expose a GH token to subprocesses (the vendor script uses gh api).
+          GH_TOKEN: "${{ steps.app-token.outputs.token }}"
         with:
           token: "${{ steps.app-token.outputs.token }}"
           renovate-version: "${{ inputs.version || 'latest' }}"

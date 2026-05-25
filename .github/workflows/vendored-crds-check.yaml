@@ -1,0 +1,23 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Vendored CRDs Check
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "kubernetes/apps/networking/gateway-api/**"
+      - "scripts/vendor-gateway-api-crds.sh"
+      - ".github/workflows/vendored-crds-check.yaml"
+
+jobs:
+  gateway-api:
+    name: gateway-api matches pinned tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Verify vendored CRDs match the pinned tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./scripts/vendor-gateway-api-crds.sh --check
