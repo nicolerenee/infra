@@ -5,6 +5,11 @@ metadata:
   name: netdisco
 spec:
   instances: 1
+  # Single-instance cluster — the auto-generated PDB (minAvailable=1) would
+  # block evictions during node drains because there's no replica to fail
+  # over to. Brief downtime on drain is acceptable for netdisco; the pod
+  # gets rescheduled on another node.
+  enablePDB: false
   storage:
     size: 10Gi
     storageClass: ceph-block
