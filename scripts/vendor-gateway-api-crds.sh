@@ -23,10 +23,17 @@ DEST_DIR="$(cd "${SCRIPT_DIR}/../kubernetes/apps/networking/gateway-api" && pwd)
 
 MODE=${1:-vendor}
 
-if [[ "${MODE}" == "--help" || "${MODE}" == "-h" ]]; then
-  sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
-  exit 0
-fi
+case "${MODE}" in
+  vendor|--check) ;;
+  --help|-h)
+    sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+    exit 0
+    ;;
+  *)
+    echo "ERROR: unknown argument '${MODE}'. Use --check, --help, or no args." >&2
+    exit 64
+    ;;
+esac
 
 command -v gh >/dev/null || { echo "ERROR: gh CLI required" >&2; exit 2; }
 
