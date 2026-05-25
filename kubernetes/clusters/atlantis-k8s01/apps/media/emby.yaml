@@ -33,22 +33,21 @@ spec:
       VOLSYNC_CACHE_CAPACITY: 25Gi
       VOLSYNC_SCHEDULE: "58 * * * *"
   patches:
-    # One-off: emby is publicly available at watch.freckle.vision via
-    # the legacy `external` cilium gateway. The freckle.vision cert/
-    # listener hasn't migrated to the envoy public gateway yet, so this
-    # route stays on the old gateway. Drop the patch when freckle.vision
-    # is added to gateway-system/public — emby is being retired anyway.
+    # Public route at emby.freckle.media on the envoy public gateway.
+    # The default `route.ui` stays internal-only on tailnet at
+    # emby.${CLUSTER_SUBDOMAIN}.freckle.media. The shared `media-tls`
+    # cert on gateway-system/public covers *.freckle.media, so no
+    # extra cert/listener config is needed here.
     - target:
         kind: HelmRelease
       patch: |-
         - op: add
           path: /spec/values/route/public
           value:
-            hostnames: ["watch.freckle.vision"]
+            hostnames: ["emby.freckle.media"]
             parentRefs:
-              - name: external
-                namespace: gateway
-                sectionName: frecklevision-https
+              - name: public
+                namespace: gateway-system
             rules:
               - backendRefs:
                   - identifier: app
