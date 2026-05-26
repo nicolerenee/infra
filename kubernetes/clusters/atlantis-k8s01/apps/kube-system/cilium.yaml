@@ -39,8 +39,5 @@ spec:
             bpf:
               datapathMode: netkit
               preallocateMaps: true
-            gatewayAPI:
-              enabled: true
-              enableAlpn: true
             loadBalancer:
               algorithm: maglev
