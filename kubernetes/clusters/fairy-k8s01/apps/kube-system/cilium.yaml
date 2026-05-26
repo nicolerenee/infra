@@ -41,7 +41,4 @@ spec:
                 enabled: true
             loadBalancer:
               algorithm: maglev
-            gatewayAPI:
-              enabled: true
-              enableAlpn: true
             bpfClockProbe: true
