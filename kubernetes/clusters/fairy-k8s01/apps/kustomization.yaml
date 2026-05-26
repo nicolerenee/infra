@@ -10,7 +10,6 @@ resources:
   - ./default
   - ./flux-system
   - ./freckle-id
-  - ./gateway
   - ./golink
   - ./home-automation
   - ./kube-system
