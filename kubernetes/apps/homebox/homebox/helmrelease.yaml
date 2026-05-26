@@ -100,8 +100,8 @@ spec:
         hostnames:
           - "{{ .Release.Name }}.${CLUSTER_DOMAIN}"
         parentRefs:
-          - name: tailscale
-            namespace: gateway
+          - name: tailnet
+            namespace: gateway-system
         rules:
           - backendRefs:
               - name: app
