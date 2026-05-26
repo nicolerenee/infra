@@ -16,7 +16,10 @@
         // version: 1.15.1
         // # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
         // KUBERNETES_VERSION=v1.31.1
-        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( repository=(?<registryUrl>\\S+))?\\n.+(:\\s|=)(&\\S+\\s)?(?<currentValue>\\S+)",
+        // # renovate: datasource=docker depName=ghcr.io/home-operations/qbittorrent
+        // value: 5.1.4@sha256:bb82ad6668f8eda1d0fcce6c1341498bfa879155bb1295cd9d314a2c35c07a01
+        // (currentDigest is optional so plain `value: 5.1.4` still matches.)
+        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( repository=(?<registryUrl>\\S+))?\\n.+(:\\s|=)(&\\S+\\s)?(?<currentValue>[^@\\s]+)(@(?<currentDigest>sha256:\\S+))?",
         // # renovate: datasource=docker depName=ghcr.io/prometheus-operator/prometheus-operator
         // https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.80.0/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml
         "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n.+/(?<currentValue>(v|\\d)[^/]+)",
