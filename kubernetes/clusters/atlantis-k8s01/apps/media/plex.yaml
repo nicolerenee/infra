@@ -32,21 +32,21 @@ spec:
       VOLSYNC_CAPACITY: 100Gi
       VOLSYNC_SCHEDULE: "1 * * * *"
   patches:
-    # One-off: plex is publicly available at plex.freckle.vision via
-    # the legacy `external` cilium gateway. The freckle.vision listener
-    # hasn't migrated to the envoy public gateway yet, so this route
-    # stays on the old gateway. Drop the patch when freckle.vision
-    # joins gateway-system/public.
+    # Public route at plex.freckle.media on the envoy public gateway.
+    # The shared `media-tls` cert on gateway-system/public covers
+    # *.freckle.media so no extra cert/listener config is needed.
+    # The matching ADVERTISE_IP env var (in the helmrelease) also
+    # references plex.freckle.media — bump both together when changing.
     - target:
         kind: HelmRelease
       patch: |-
         - op: add
           path: /spec/values/route/public
           value:
-            hostnames: ["plex.freckle.vision"]
+            hostnames: ["plex.freckle.media"]
             parentRefs:
-              - name: external
-                namespace: gateway
+              - name: public
+                namespace: gateway-system
             rules:
               - backendRefs:
                   - identifier: app
