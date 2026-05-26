@@ -30,6 +30,10 @@ spec:
       APP: *app
       VOLSYNC_UID: "943"
       VOLSYNC_CAPACITY: 100Gi
+      # restic prune needs to repack a meaningful slice of the repo into
+      # the cache — at ~75 GiB of plex metadata the 1 GiB default fills
+      # mid-prune and the backup fails with ENOSPC. 25 GiB gives headroom.
+      VOLSYNC_CACHE_CAPACITY: 25Gi
       VOLSYNC_SCHEDULE: "1 * * * *"
   patches:
     # Public route at plex.freckle.media on the envoy public gateway.
