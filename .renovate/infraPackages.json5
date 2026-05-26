@@ -37,5 +37,20 @@
       additionalBranchPrefix: "fairy-k8s01-",
       commitMessageSuffix: "on fairy-k8s01",
     },
+    {
+      // qbt-ink pins qBittorrent in a per-cluster patch separately from
+      // the shared HelmRelease used by every other qbt instance because
+      // its tracker whitelists specific qBittorrent versions and lags
+      // upstream. Without this rule, a qbittorrent bump would lump the
+      // qbt-ink override into the same PR as the base HR — defeating the
+      // reason it's pinned. The branch prefix + commit suffix keep it on
+      // its own PR so it can be held until the tracker clears the new
+      // version.
+      description: "separate qbt-ink override from base qbittorrent updates",
+      matchFileNames: ["kubernetes/clusters/atlantis-k8s01/apps/media/qbt-ink.yaml"],
+      matchPackageNames: ["ghcr.io/home-operations/qbittorrent"],
+      additionalBranchPrefix: "qbt-ink-",
+      commitMessageSuffix: "for qbt-ink",
+    },
   ],
 }
