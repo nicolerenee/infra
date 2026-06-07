@@ -60,6 +60,67 @@ spec:
     vector:
       enabled: true
       resources: {}
+      # Override the chart default config to also tail kube-apiserver
+      # audit logs from each CP node's hostPath /var/log/audit/. Audit
+      # is enabled via talconfig.yaml at Metadata level.
+      customConfig:
+        api:
+          address: 0.0.0.0:8686
+          enabled: false
+        data_dir: /vector-data-dir
+        sources:
+          internal_metrics:
+            type: internal_metrics
+          k8s:
+            type: kubernetes_logs
+          audit:
+            type: file
+            include:
+              - /var/log/audit/kube-apiserver.log
+            read_from: beginning
+            ignore_older_secs: 86400
+        transforms:
+          parser:
+            type: remap
+            inputs:
+              - k8s
+            source: |
+              .log = parse_json(.message) ?? .message
+              del(.message)
+          audit-parser:
+            type: remap
+            inputs:
+              - audit
+            source: |
+              parsed = parse_json(.message) ?? {}
+              . = merge(., parsed)
+              del(.message)
+              .log_source = "kube-apiserver-audit"
+        sinks:
+          exporter:
+            type: prometheus_exporter
+            inputs:
+              - internal_metrics
+            address: 0.0.0.0:9090
+          vlogs-0:
+            type: elasticsearch
+            inputs:
+              - parser
+              - audit-parser
+            endpoints:
+              - http://victoria-logs-server-0.victoria-logs-server.observability.svc.cluster.local.:9428/insert/elasticsearch
+            api_version: v8
+            compression: gzip
+            mode: bulk
+            healthcheck:
+              enabled: false
+            request:
+              headers:
+                AccountID: "0"
+                ProjectID: "0"
+                VL-Msg-Field: message,msg,_msg,log.msg,log.message,log
+                VL-Stream-Fields: stream,kubernetes.pod_name,kubernetes.container_name,kubernetes.pod_namespace,log_source
+                VL-Time-Field: timestamp
 
     dashboards:
       enabled: true
