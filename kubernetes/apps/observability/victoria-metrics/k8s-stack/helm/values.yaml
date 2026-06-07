@@ -51,6 +51,10 @@ defaultDatasources:
 
 vmagent:
   spec:
+    extraArgs:
+      # Fairy's compute03 kube-apiserver (the etcd leader) returns ~20MB of /metrics,
+      # exceeding the 16MB default. Other apiservers stay under 8MB.
+      promscrape.maxScrapeSize: "32MB"
     resources:
       requests:
         cpu: 100m
