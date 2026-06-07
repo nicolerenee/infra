@@ -186,7 +186,7 @@ kubelet:
         # extensions_talos_dev_* is kept by request — useful for tracking which
         # talos extension version is on each node.
         - action: labeldrop
-          regex: (kubevirt_io_.*|nvidia_com_.*|plan_upgrade_cattle_io_.*|beta_kubernetes_io_.*|intel_feature_node_kubernetes_io_.*|feature_node_kubernetes_io_.*)
+          regex: (.*_node_kubevirt_io_.*|kubevirt_io_.*|nvidia_com_.*|plan_upgrade_cattle_io_.*|beta_kubernetes_io_.*|intel_feature_node_kubernetes_io_.*|feature_node_kubernetes_io_.*)
         - sourceLabels: [__metrics_path__]
           targetLabel: metrics_path
         - targetLabel: job
