@@ -1,0 +1,61 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/source.toolkit.fluxcd.io/ocirepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: mcp-victorialogs
+spec:
+  interval: 30m
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
+  ref:
+    tag: 0.1.0
+  url: oci://ghcr.io/victoriametrics/helm-charts/victoria-logs-mcp
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: mcp-victorialogs
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: mcp-victorialogs
+  driftDetection:
+    mode: enabled
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    fullnameOverride: mcp-victorialogs
+
+    vl:
+      entrypoint: http://victoria-logs-server:9428
+
+    mcp:
+      mode: http
+
+    service:
+      type: ClusterIP
+      port: 8080
+
+    route:
+      enabled: true
+      parentRefs:
+        - name: tailnet
+          namespace: gateway-system
+      hostnames:
+        - mcp-victorialogs.${CLUSTER_DOMAIN}
+
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 256Mi
