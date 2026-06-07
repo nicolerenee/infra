@@ -1,0 +1,16 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/observability.giantswarm.io/silence_v1alpha2.json
+# r02 nodes (cn01 + dgx 01/02/03) are intentionally on jumbo (MTU 9000) while
+# the older compute02/03 nodes are still on 1500. The cluster median MTU
+# alert fires until compute02/03 get upgraded to jumbo.
+apiVersion: observability.giantswarm.io/v1alpha2
+kind: Silence
+metadata:
+  name: r02-jumbo-mtu-during-migration
+spec:
+  matchers:
+    - name: alertname
+      value: CephNodeInconsistentMTU
+    - name: instance
+      isRegex: true
+      value: "10\\.189\\.3\\.(16|2[2-4]):9100"

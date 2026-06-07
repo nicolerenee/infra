@@ -5,4 +5,5 @@ kind: Kustomization
 resources:
   - ./host-storage.yaml
   - ./kubevirt.yaml
+  - ./r02-jumbo-mtu.yaml
   - ./scrypted.yaml
