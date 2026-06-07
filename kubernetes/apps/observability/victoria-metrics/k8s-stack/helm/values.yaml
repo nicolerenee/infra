@@ -180,8 +180,13 @@ kubelet:
       relabelConfigs:
         - action: labelmap
           regex: __meta_kubernetes_node_label_(.+)
+        # Drop high-cardinality node labels copied onto every kubelet/cadvisor
+        # series. Without this, DGX nodes push kubernetes_feature_enabled past
+        # vmsingle's 40-label limit (~56 labels) and the rows get rejected.
+        # extensions_talos_dev_* is kept by request — useful for tracking which
+        # talos extension version is on each node.
         - action: labeldrop
-          regex: (.*_node_kubevirt_io_.*|feature_node_kubernetes_io_.*)
+          regex: (kubevirt_io_.*|nvidia_com_.*|plan_upgrade_cattle_io_.*|beta_kubernetes_io_.*|intel_feature_node_kubernetes_io_.*|feature_node_kubernetes_io_.*)
         - sourceLabels: [__metrics_path__]
           targetLabel: metrics_path
         - targetLabel: job
