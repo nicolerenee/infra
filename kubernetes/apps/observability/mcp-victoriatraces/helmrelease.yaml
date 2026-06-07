@@ -34,17 +34,26 @@ spec:
               MCP_SERVER_MODE: http
               MCP_LISTEN_ADDR: :8081
             probes:
-              liveness: &probe
+              liveness:
                 enabled: true
                 custom: true
                 spec:
                   httpGet:
-                    path: /mcp
+                    path: /health/liveness
                     port: 8081
                   initialDelaySeconds: 5
                   periodSeconds: 30
                   failureThreshold: 3
-              readiness: *probe
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health/readiness
+                    port: 8081
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                  failureThreshold: 3
               startup:
                 enabled: false
             resources:
