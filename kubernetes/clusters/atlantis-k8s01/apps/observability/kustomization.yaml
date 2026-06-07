@@ -15,8 +15,10 @@ resources:
   - ./silence-operator.yaml
   - ./silences.yaml
   - ./victoria-logs.yaml
+  - ./victoria-traces.yaml
   - ./vm-operator-crds.yaml
   - ./vm-secrets.yaml
   - ./vm-k8s-stack.yaml
   - ./mcp-victorialogs.yaml
   - ./mcp-victoriametrics.yaml
+  - ./mcp-victoriatraces.yaml
