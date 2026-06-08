@@ -12,5 +12,5 @@ spec:
     - name: alertname
       value: CephNodeInconsistentMTU
     - name: instance
-      isRegex: true
+      matchType: "=~"
       value: "10\\.189\\.3\\.(16|2[2-4]):9100"
