@@ -1,0 +1,17 @@
+---
+# VictoriaTraces exposes a Jaeger Query API under /select/jaeger. Grafana's
+# built-in Jaeger datasource reads it directly — no plugin needed.
+# Browse traces under Grafana → Explore → "victoriatraces".
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: vt-datasource
+spec:
+  datasource:
+    access: proxy
+    type: jaeger
+    name: victoriatraces
+    url: http://victoria-traces-server:10428/select/jaeger
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
