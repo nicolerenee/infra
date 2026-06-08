@@ -27,9 +27,6 @@ spec:
       memory: 128Mi
     limits:
       memory: 512Mi
-  envFrom:
-    - configMapRef:
-        name: k8s-cluster-info
   env:
     - name: NODE_NAME
       valueFrom:
@@ -80,11 +77,16 @@ spec:
 
       resource:
         attributes:
+          # ${CLUSTER_NAME} is substituted by Flux at apply time (from the
+          # k8s-cluster-info ConfigMap via the KS post-build-variables label).
+          # The OpenTelemetryCollector CRD strips runtime ${env:...} from
+          # typed string fields, so we resolve the value before it hits the
+          # operator.
           - key: cluster.name
-            value: ${env:CLUSTER_NAME}
+            value: ${CLUSTER_NAME}
             action: upsert
           - key: k8s.cluster.name
-            value: ${env:CLUSTER_NAME}
+            value: ${CLUSTER_NAME}
             action: upsert
 
       batch:
