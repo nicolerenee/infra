@@ -22,3 +22,5 @@ resources:
   - ./mcp-victorialogs.yaml
   - ./mcp-victoriametrics.yaml
   - ./mcp-victoriatraces.yaml
+  - ./opentelemetry-operator.yaml
+  - ./opentelemetry-collector.yaml
