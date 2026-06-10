@@ -13,6 +13,7 @@
 #   exporters:
 #     - otlphttp/vtraces -> http://victoria-traces-server:10428/insert/opentelemetry/v1/traces
 #       (swap to a different backend / fan out to multiple here)
+#     - otlphttp/vmetrics -> http://vmsingle-vm:8428/opentelemetry/v1/metrics
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
@@ -108,6 +109,20 @@ spec:
           num_consumers: 4
           queue_size: 1000
 
+      otlphttp/vmetrics:
+        metrics_endpoint: http://vmsingle-vm.observability.svc.cluster.local:8428/opentelemetry/v1/metrics
+        compression: gzip
+        timeout: 10s
+        retry_on_failure:
+          enabled: true
+          initial_interval: 1s
+          max_interval: 30s
+          max_elapsed_time: 300s
+        sending_queue:
+          enabled: true
+          num_consumers: 4
+          queue_size: 1000
+
     service:
       telemetry:
         metrics:
@@ -117,6 +132,10 @@ spec:
           receivers: [otlp]
           processors: [memory_limiter, k8sattributes, resource, batch]
           exporters: [otlphttp/vtraces]
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, k8sattributes, resource, batch]
+          exporters: [otlphttp/vmetrics]
 ---
 # ServiceAccount for the collector (referenced by spec.serviceAccount above).
 # The operator creates one automatically when serviceAccount is unset, but we
