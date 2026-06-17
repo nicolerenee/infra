@@ -1,0 +1,35 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ai-gateway-crds
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: ai-gateway-crds
+  interval: 1h
+  # This chart's whole job is the aigateway.envoyproxy.io CRDs.
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ai-gateway
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: ai-gateway
+  dependsOn:
+    - name: ai-gateway-crds
+  interval: 1h
+  values:
+    # Mirror the Docker Hub images through the same pull-through cache the
+    # envoy-gateway release uses. If the chart doesn't honor this key it's
+    # silently ignored (images then pull from docker.io directly).
+    global:
+      imageRegistry: mirror.gcr.io
