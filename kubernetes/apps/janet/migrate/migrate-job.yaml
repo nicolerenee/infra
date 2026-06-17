@@ -37,7 +37,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: migrate
-          image: ghcr.io/freckleapps/janet-brain:main-20260617T030927Z-4219a25
+          image: ghcr.io/freckleapps/janet-brain:main-20260617T031644Z-91fa286
           args: ["migrate", "up"]
           envFrom:
             # DATABASE_URL (managed janet role on the dedicated cluster).
