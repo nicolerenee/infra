@@ -27,8 +27,34 @@ spec:
       envoyGateway:
         extensionApis:
           enableEnvoyPatchPolicy: true
+          # Required by Envoy AI Gateway: enables the Backend API that
+          # AIServiceBackend resources reference.
+          enableBackend: true
         provider:
           type: Kubernetes
           kubernetes:
             deploy:
               type: GatewayNamespace
+        # Envoy AI Gateway registers as an EG extension server (gRPC on
+        # :1063) so it can fine-tune the xDS that EG generates. Mirrors
+        # manifests/envoy-gateway-values.yaml from ai-gateway v0.7.0.
+        extensionManager:
+          hooks:
+            xdsTranslator:
+              translation:
+                listener:
+                  includeAll: true
+                route:
+                  includeAll: true
+                cluster:
+                  includeAll: true
+                secret:
+                  includeAll: true
+              post:
+                - Translation
+                - Cluster
+                - Route
+          service:
+            fqdn:
+              hostname: ai-gateway-controller.envoy-ai-gateway-system.svc.cluster.local
+              port: 1063
