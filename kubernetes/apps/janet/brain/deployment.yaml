@@ -51,15 +51,15 @@ spec:
             - name: JANET_ALLOW_ANON
               value: "false"
             # Google Workspace MCP (calendar/email) — stateless passthrough in
-            # the janet-mcp namespace.
-            - name: GOOGLE_CLIENT_ID
-              value: "1090148819540-gua14ebn2n7abe5jtmam10s6h1dtfjce.apps.googleusercontent.com"
+            # the janet-mcp namespace. GOOGLE_CLIENT_ID comes from the secret
+            # (kept out of this public repo).
             - name: GOOGLE_REDIRECT_URL
               value: https://janet.fairy.freckle.services/auth/google/callback
             - name: GOOGLE_MCP_URL
               value: http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp
           envFrom:
-            # GOOGLE_CLIENT_SECRET + OIDC_CLIENT_ID (keys = env-var names).
+            # GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET + OIDC_CLIENT_ID
+            # (keys = env-var names).
             - secretRef:
                 name: janet-oauth
           livenessProbe:
