@@ -1,19 +1,22 @@
 # Janet brain (in-cluster web service) — janet namespace on fairy.
 #
 # ESO identity + app config for the brain. The brain is KEYLESS toward
-# Anthropic (the AI gateway injects the key); the real secret here is the
-# Google OAuth client secret. The Google client id and the pocket-id OIDC
-# client id aren't secrets, but they're sourced from GSM too so they stay out
-# of this PUBLIC repo (and the UUID isn't hardcoded in manifests).
+# Anthropic (the AI gateway injects the key). Two separate GSM secrets:
 #
-# Tofu owns the secret EXISTENCE; the value is pushed by hand, never in state.
-# Value is a JSON blob the ExternalSecret injects as env (keys = env names):
-#   printf '{"GOOGLE_CLIENT_ID":"<id>","GOOGLE_CLIENT_SECRET":"<secret>","OIDC_CLIENT_ID":"<id>"}' | \
-#     gcloud secrets versions add fairy-k8s01-janet-oauth \
-#       --project=freckle-secrets-db8d4f --data-file=-
-# OIDC_CLIENT_ID comes from `tofu output janet_oidc_client_id`.
-resource "google_secret_manager_secret" "janet_oauth" {
-  secret_id = "fairy-k8s01-janet-oauth"
+#   fairy-k8s01-janet-google — Google OAuth client id + secret for the
+#     calendar/email vault. Externally issued (Google console), so tofu owns
+#     only the container; the value is pushed by hand, never in state:
+#       printf '{"GOOGLE_CLIENT_ID":"<id>","GOOGLE_CLIENT_SECRET":"<secret>"}' | \
+#         gcloud secrets versions add fairy-k8s01-janet-google \
+#           --project=freckle-secrets-db8d4f --data-file=-
+#
+#   fairy-k8s01-janet-oidc — Janet's pocket-id (Freckle ID) client id. tofu
+#     GENERATES this client (pocketid_client.janet), so it also stores the
+#     value via the gsm-secret module — same as the cloudflare tunnel token.
+#     No manual step. (Client ids aren't secret, but sourcing from GSM keeps
+#     them out of this PUBLIC repo.)
+resource "google_secret_manager_secret" "janet_google" {
+  secret_id = "fairy-k8s01-janet-google"
   project   = local.project_id
 
   labels = {
@@ -27,8 +30,23 @@ resource "google_secret_manager_secret" "janet_oauth" {
   }
 }
 
+# OIDC client id, stored by tofu since tofu mints it. Final secret_id is
+# `fairy-k8s01-janet-oidc`, covered by the janet eso-namespace prefix grant.
+module "janet_oidc" {
+  source = "./modules/gsm-secret"
+
+  cluster             = "fairy-k8s01"
+  namespace           = "janet"
+  name                = "oidc"
+  secret_data         = pocketid_client.janet.id
+  workload_project_id = local.project_id
+  extra_labels = {
+    consumer = "janet-brain"
+  }
+}
+
 # secretAccessor grant for the janet ns ESO identity — covers every secret in
-# `fairy-k8s01-janet-*`.
+# `fairy-k8s01-janet-*` (both of the above).
 module "janet_eso" {
   source = "./modules/eso-namespace"
 

@@ -58,10 +58,12 @@ spec:
             - name: GOOGLE_MCP_URL
               value: http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp
           envFrom:
-            # GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET + OIDC_CLIENT_ID
-            # (keys = env-var names).
+            # GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET (keys = env-var names).
             - secretRef:
-                name: janet-oauth
+                name: janet-google
+            # OIDC_CLIENT_ID.
+            - secretRef:
+                name: janet-oidc
           livenessProbe:
             httpGet:
               path: /healthz
