@@ -20,7 +20,7 @@ terraform {
     }
     pocketid = {
       source  = "trozz/pocketid"
-      version = "~> 0.1"
+      version = "~> 2.0"
     }
   }
 }
