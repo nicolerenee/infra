@@ -8,4 +8,5 @@ components:
 resources:
   - ./external-secrets.yaml
   - ./db.yaml
+  - ./migrate.yaml
   - ./brain.yaml

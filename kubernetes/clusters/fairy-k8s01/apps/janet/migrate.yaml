@@ -3,7 +3,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app janet-brain
+  name: &app janet-migrate
   namespace: &namespace janet
   labels:
     infra.freckle.systems/post-build-variables: enabled
@@ -15,18 +15,16 @@ spec:
   dependsOn:
     - name: external-secrets
       namespace: external-secrets
-    # Wait for migrations to complete — the brain no longer creates its own
-    # schema (goose owns it). janet-migrate itself dependsOn janet-db, so this
-    # transitively waits for the DB too.
-    - name: janet-migrate
+    - name: janet-db
       namespace: janet
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/janet/brain
+  path: ./kubernetes/apps/janet/migrate
   interval: 2m
   retryInterval: 1m
   timeout: 5m
   prune: true
+  # Wait for the Job to complete before dependents (the brain) roll.
   wait: true
