@@ -1,0 +1,20 @@
+---
+# Declarative database owned by the managed `janet` role (owner gets implicit
+# full privileges — no GRANT step). The brain auto-creates its own tables
+# (CREATE TABLE IF NOT EXISTS) on connect, so no migration job is needed.
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: janet
+spec:
+  name: janet
+  owner: janet
+  cluster:
+    name: janet-db
+  ensure: present
+  # CNPG creates extensions as superuser. pgvector now so the planned memory/
+  # embeddings layer doesn't need a later migration; the brain's current schema
+  # uses only core types.
+  extensions:
+    - name: vector
+      ensure: present

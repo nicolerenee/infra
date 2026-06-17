@@ -9,11 +9,16 @@ metadata:
     reloader.stakater.com/auto: "true"
 spec:
   replicas: 1
-  # In-memory store for now (no DATABASE_URL) — sessions + the Google-token
-  # vault reset on restart. Single replica + Recreate until the Postgres store
-  # is wired, so there's one consistent in-memory state.
+  # RollingUpdate so deploys never take the service fully offline. Still a
+  # single replica: conversation history is now in Postgres, but SESSIONS and
+  # the Google-token vault are still in-memory — multiple replicas would
+  # diverge, and they reset on a roll (re-login / reconnect Google). Move those
+  # to Postgres too before scaling out.
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: janet-brain
@@ -32,7 +37,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: janet-brain
-          image: ghcr.io/freckleapps/janet-brain:main-20260617T010306Z-6b1a733
+          image: ghcr.io/freckleapps/janet-brain:main-20260617T021235Z-621636a
           ports:
             - name: http
               containerPort: 8787
@@ -68,6 +73,9 @@ spec:
             # OIDC_CLIENT_ID.
             - secretRef:
                 name: janet-oidc
+            # DATABASE_URL -> dedicated CNPG cluster (pgStore).
+            - secretRef:
+                name: janet-db
           livenessProbe:
             httpGet:
               path: /healthz

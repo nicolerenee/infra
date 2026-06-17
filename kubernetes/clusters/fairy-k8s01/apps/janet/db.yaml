@@ -3,7 +3,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app janet-brain
+  name: &app janet-db
   namespace: &namespace janet
   labels:
     infra.freckle.systems/post-build-variables: enabled
@@ -15,17 +15,15 @@ spec:
   dependsOn:
     - name: external-secrets
       namespace: external-secrets
-    # Wait for the dedicated Postgres cluster to be ready — the brain opens its
-    # pgStore (and runs CREATE TABLE) at startup; no DB means a crash loop.
-    - name: janet-db
-      namespace: janet
+    - name: cloudnative-pg
+      namespace: db
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/janet/brain
+  path: ./kubernetes/apps/janet/db
   interval: 2m
   retryInterval: 1m
-  timeout: 5m
+  timeout: 10m
   prune: true
   wait: true

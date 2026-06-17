@@ -1,0 +1,45 @@
+---
+# Dedicated Postgres for the Janet brain. CNPG "standard" image bundles
+# pgvector (for the planned memory/embeddings layer), PGAudit, locales, JIT.
+# Backups are NOT configured yet — fairy lacks the barman-cloud CNPG plugin
+# hedgehog uses (no objectstores.barmancloud.cnpg.io CRD); add either the
+# plugin or an in-tree barmanObjectStore (ceph-bucket exists) as a follow-up.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: janet-db
+spec:
+  # 2 instances: primary + 1 async standby (failover-capable). Bump to 3 for
+  # quorum/sync HA like hedgehog if this graduates beyond a personal service.
+  instances: 2
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.3-standard-trixie@sha256:9f9f53c9e07e5b2924945e6eaeb9168f7e856786d221839866ac85ccd703b3ba
+  primaryUpdateStrategy: unsupervised
+  primaryUpdateMethod: switchover
+  storage:
+    size: 10Gi
+    storageClass: ceph-block
+  superuserSecret:
+    name: janet-db-secrets
+  enableSuperuserAccess: true
+  postgresql:
+    parameters:
+      max_connections: "100"
+      shared_buffers: 128MB
+  nodeMaintenanceWindow:
+    inProgress: false
+    reusePVC: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+  monitoring:
+    enablePodMonitor: true
+  managed:
+    roles:
+      - name: janet
+        ensure: present
+        login: true
+        passwordSecret:
+          name: janet-app-db-role
