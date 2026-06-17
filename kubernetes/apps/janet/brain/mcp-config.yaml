@@ -1,0 +1,24 @@
+---
+# Config-driven MCP server registry for the brain (JANET_MCP_CONFIG points
+# here). Adding a server is an edit to this ConfigMap — no code change, no
+# image rebuild. Reloader rolls the pod when this changes. Secrets go via
+# {env:VAR} (sourced from a Secret/envFrom), never inline here.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: janet-mcp-config
+data:
+  mcp.json: |
+    {
+      "servers": {
+        "google-workspace": {
+          "url": "http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp",
+          "auth": { "type": "google_user" },
+          "deny": [
+            "send", "draft", "create", "delete", "modify", "manage",
+            "label", "unlabel", "insert", "update", "move", "trash",
+            "remove", "batch_modify", "start_google_auth"
+          ]
+        }
+      }
+    }

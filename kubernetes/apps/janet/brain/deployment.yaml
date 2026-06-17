@@ -37,7 +37,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: janet-brain
-          image: ghcr.io/freckleapps/janet-brain:main-20260617T021235Z-621636a
+          image: ghcr.io/freckleapps/janet-brain:main-20260617T023741Z-bf99ab6
           ports:
             - name: http
               containerPort: 8787
@@ -59,13 +59,13 @@ spec:
               value: https://janet.fairy.freckle.services/auth/callback
             - name: JANET_ALLOW_ANON
               value: "false"
-            # Google Workspace MCP (calendar/email) — stateless passthrough in
-            # the janet-mcp namespace. GOOGLE_CLIENT_ID comes from the secret
-            # (kept out of this public repo).
+            # Google OAuth (calendar/email vault). GOOGLE_CLIENT_ID comes from
+            # the secret (kept out of this public repo).
             - name: GOOGLE_REDIRECT_URL
               value: https://janet.fairy.freckle.services/auth/google/callback
-            - name: GOOGLE_MCP_URL
-              value: http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp
+            # MCP servers are declared in the mounted ConfigMap, not hardcoded.
+            - name: JANET_MCP_CONFIG
+              value: /etc/janet/mcp.json
           envFrom:
             # GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET (keys = env-var names).
             - secretRef:
@@ -106,6 +106,12 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+            - name: mcp-config
+              mountPath: /etc/janet
+              readOnly: true
       volumes:
         - name: tmp
           emptyDir: {}
+        - name: mcp-config
+          configMap:
+            name: janet-mcp-config
