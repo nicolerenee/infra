@@ -9,6 +9,11 @@
 # point at the one Google Workspace MCP server, scoped to a service via `allow`.
 # `allow` is a substring match on the MCP tool name — exact names pin a tier
 # (see taylorwilsdon/google_workspace_mcp core/tool_tiers.yaml).
+#
+# §14.1 approval gate: `approve` is a substring match on the tool name; any
+# matching call (sending mail, creating/deleting events, creating Drive files)
+# pauses for explicit human sign-off in the UI before it runs. Reads are never
+# gated. Loosening/tightening this is a ConfigMap edit — no code change.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -21,6 +26,7 @@ data:
           "url": "http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp",
           "auth": { "type": "google_user", "scopes": ["https://www.googleapis.com/auth/calendar"] },
           "allow": ["list_calendars", "get_events", "manage_event", "query_freebusy"],
+          "approve": ["manage_event"],
           "description": "Google Calendar — list calendars, view events, create/update/delete events, check free/busy.",
           "keywords": ["calendar", "event", "meeting", "schedule", "appointment", "availability", "free time", "busy"]
         },
@@ -28,6 +34,7 @@ data:
           "url": "http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp",
           "auth": { "type": "google_user", "scopes": ["https://www.googleapis.com/auth/gmail.modify", "https://www.googleapis.com/auth/gmail.send"] },
           "deny": ["start_google_auth"],
+          "approve": ["send", "draft", "reply", "forward", "trash", "delete", "modify", "manage", "create", "update", "insert", "import"],
           "description": "Gmail — search/read/send/draft email, threads, labels, filters.",
           "keywords": ["email", "gmail", "mail", "inbox", "message", "draft", "reply", "label"]
         },
@@ -35,6 +42,7 @@ data:
           "url": "http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp",
           "auth": { "type": "google_user", "scopes": ["https://www.googleapis.com/auth/drive"] },
           "allow": ["search_drive_files", "get_drive_file_content", "get_drive_file_download_url", "create_drive_file", "create_drive_folder", "import_to_google", "get_drive_shareable_link"],
+          "approve": ["create", "import"],
           "description": "Google Drive — search/read files, create files & folders, import docs, get shareable links.",
           "keywords": ["drive", "file", "folder", "document"]
         }
