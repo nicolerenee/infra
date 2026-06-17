@@ -146,3 +146,41 @@ module "oidc_eso" {
   iac_project_number      = data.google_project.iac.number
   wif_pool_id             = google_iam_workload_identity_pool.clusters.workload_identity_pool_id
 }
+
+# Janet — Nicole's personal Hermes agent client. Unlike the consumers above,
+# this is a *public* (PKCE) native/desktop app running on the Mac Studio, not a
+# k8s workload: it holds no client secret and needs none of the GSM/ESO
+# secret-delivery wiring. Standalone resources (not the `consumer` for_each) so
+# it can carry its own custom callbacks and skip the k8s-app conventions.
+#
+# Access is gated to the "Janet Users" group (just Nicole). This group is
+# created fresh here — if it already exists in pocket-id (e.g. created in the
+# UI), `apply` will fail with "already exists"; adopt it with an `import` block
+# referencing its ID, mirroring the grafana groups above.
+resource "pocketid_group" "janet_users" {
+  name          = "janet_users"
+  friendly_name = "Janet Users"
+}
+
+resource "pocketid_client" "janet" {
+  name = "Janet"
+  callback_urls = [
+    "https://janet.moose-platy.ts.net/oauth/callback",
+    "janet://oauth-callback",
+    # In-cluster brain web BFF (PKCE) on fairy — janet.fairy.freckle.services.
+    "https://janet.fairy.freckle.services/auth/callback",
+  ]
+  launch_url   = "https://janet.moose-platy.ts.net"
+  is_public    = true
+  pkce_enabled = true
+  # sort() to match pocket-id's lexicographically-sorted API response and
+  # avoid a phantom-reorder diff (see consumer client above).
+  allowed_user_groups = sort([pocketid_group.janet_users.id])
+}
+
+# Public client → the ID is not a secret; surface it as an output so it can be
+# dropped into Janet's client config on the Studio. There is no client secret.
+output "janet_oidc_client_id" {
+  value       = pocketid_client.janet.id
+  description = "Pocket-ID client ID for Janet's client (public/PKCE — no secret)."
+}

@@ -1,0 +1,97 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: janet-brain
+spec:
+  replicas: 1
+  # In-memory store for now (no DATABASE_URL) — sessions + the Google-token
+  # vault reset on restart. Single replica + Recreate until the Postgres store
+  # is wired, so there's one consistent in-memory state.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: janet-brain
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: janet-brain
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: janet-brain
+          image: ghcr.io/freckleapps/janet-brain:main-20260617T010306Z-6b1a733
+          ports:
+            - name: http
+              containerPort: 8787
+          env:
+            - name: PORT
+              value: "8787"
+            - name: JANET_MODEL
+              value: claude-opus-4-8
+            # Keyless: the AI gateway holds the real Anthropic key. The
+            # placeholder only satisfies the SDK's credential precondition;
+            # the gateway overrides whatever the client sends.
+            - name: ANTHROPIC_BASE_URL
+              value: http://ai-gateway.inference.svc.cluster.local/anthropic
+            - name: ANTHROPIC_API_KEY
+              value: placeholder-gateway-injects-real-key
+            - name: OIDC_ISSUER
+              value: https://freckle.id
+            - name: OIDC_REDIRECT_URL
+              value: https://janet.fairy.freckle.services/auth/callback
+            - name: JANET_ALLOW_ANON
+              value: "false"
+            # Google Workspace MCP (calendar/email) — stateless passthrough in
+            # the janet-mcp namespace.
+            - name: GOOGLE_CLIENT_ID
+              value: "1090148819540-gua14ebn2n7abe5jtmam10s6h1dtfjce.apps.googleusercontent.com"
+            - name: GOOGLE_REDIRECT_URL
+              value: https://janet.fairy.freckle.services/auth/google/callback
+            - name: GOOGLE_MCP_URL
+              value: http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp
+          envFrom:
+            # GOOGLE_CLIENT_SECRET + OIDC_CLIENT_ID (keys = env-var names).
+            - secretRef:
+                name: janet-oauth
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
