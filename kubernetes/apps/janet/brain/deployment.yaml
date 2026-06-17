@@ -3,6 +3,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: janet-brain
+  annotations:
+    # Roll the pod when its referenced Secrets change (ExternalSecret refresh
+    # / rotation) — env vars are only read at container start.
+    reloader.stakater.com/auto: "true"
 spec:
   replicas: 1
   # In-memory store for now (no DATABASE_URL) — sessions + the Google-token
