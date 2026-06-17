@@ -48,7 +48,7 @@ spec:
             - name: WORKSPACE_MCP_TOOL_TIER
               value: "complete"
             - name: WORKSPACE_MCP_TOOLS
-              value: "gmail,drive,calendar,docs,sheets,slides,forms,tasks"
+              value: "gmail,calendar,drive"
             - name: WORKSPACE_MCP_BASE_URI
               # OAuth-metadata advertisement only; bearers are injected directly.
               value: "http://google-workspace-mcp.janet-mcp.svc.cluster.local"
