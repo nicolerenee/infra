@@ -1,8 +1,12 @@
 ---
 # Config-driven MCP server registry for the brain (JANET_MCP_CONFIG points
-# here). Adding a server is an edit to this ConfigMap — no code change, no
-# image rebuild. Reloader rolls the pod when this changes. Secrets go via
-# {env:VAR} (sourced from a Secret/envFrom), never inline here.
+# here). Adding/editing a capability is an edit to this ConfigMap — no code
+# change, no image rebuild. Reloader rolls the pod when this changes.
+#
+# Each entry is a lazily-loadable CAPABILITY: the model only sees a load_tools
+# catalog by default; a capability's real tool schemas are injected when its
+# `keywords` match the message (preload) or the model calls load_tools. All
+# point at the one Google Workspace MCP server, scoped to a service via `allow`.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -11,23 +15,61 @@ data:
   mcp.json: |
     {
       "servers": {
-        "google-workspace": {
+        "calendar": {
           "url": "http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp",
-          "auth": {
-            "type": "google_user",
-            "scopes": [
-              "https://www.googleapis.com/auth/gmail.modify",
-              "https://www.googleapis.com/auth/gmail.send",
-              "https://www.googleapis.com/auth/calendar",
-              "https://www.googleapis.com/auth/drive",
-              "https://www.googleapis.com/auth/documents",
-              "https://www.googleapis.com/auth/spreadsheets",
-              "https://www.googleapis.com/auth/presentations",
-              "https://www.googleapis.com/auth/forms.body",
-              "https://www.googleapis.com/auth/tasks"
-            ]
-          },
-          "deny": ["start_google_auth"]
+          "auth": { "type": "google_user", "scopes": ["https://www.googleapis.com/auth/calendar"] },
+          "allow": ["calendar", "event"],
+          "description": "Google Calendar — list/create/update/delete events and check availability.",
+          "keywords": ["calendar", "event", "meeting", "schedule", "appointment", "availability", "free time", "busy"]
+        },
+        "gmail": {
+          "url": "http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp",
+          "auth": { "type": "google_user", "scopes": ["https://www.googleapis.com/auth/gmail.modify", "https://www.googleapis.com/auth/gmail.send"] },
+          "allow": ["gmail"],
+          "description": "Gmail — search/read/send/draft/label email.",
+          "keywords": ["email", "gmail", "mail", "inbox", "message", "draft", "reply"]
+        },
+        "drive": {
+          "url": "http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp",
+          "auth": { "type": "google_user", "scopes": ["https://www.googleapis.com/auth/drive"] },
+          "allow": ["drive"],
+          "description": "Google Drive — search/list/read/create files and folders.",
+          "keywords": ["drive", "file", "folder"]
+        },
+        "docs": {
+          "url": "http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp",
+          "auth": { "type": "google_user", "scopes": ["https://www.googleapis.com/auth/documents"] },
+          "allow": ["doc"],
+          "description": "Google Docs — read/create/edit documents.",
+          "keywords": ["document", "docs", "google doc"]
+        },
+        "sheets": {
+          "url": "http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp",
+          "auth": { "type": "google_user", "scopes": ["https://www.googleapis.com/auth/spreadsheets"] },
+          "allow": ["sheet", "spreadsheet"],
+          "description": "Google Sheets — read/write spreadsheet data.",
+          "keywords": ["sheet", "spreadsheet", "cell"]
+        },
+        "slides": {
+          "url": "http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp",
+          "auth": { "type": "google_user", "scopes": ["https://www.googleapis.com/auth/presentations"] },
+          "allow": ["presentation", "slide"],
+          "description": "Google Slides — read/create/edit presentations.",
+          "keywords": ["slides", "presentation", "deck"]
+        },
+        "forms": {
+          "url": "http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp",
+          "auth": { "type": "google_user", "scopes": ["https://www.googleapis.com/auth/forms.body"] },
+          "allow": ["form"],
+          "description": "Google Forms — create/read forms and responses.",
+          "keywords": ["form", "survey", "questionnaire"]
+        },
+        "tasks": {
+          "url": "http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp",
+          "auth": { "type": "google_user", "scopes": ["https://www.googleapis.com/auth/tasks"] },
+          "allow": ["task"],
+          "description": "Google Tasks — list/create/complete tasks.",
+          "keywords": ["task", "todo", "to-do", "reminder"]
         }
       }
     }
