@@ -45,8 +45,28 @@ module "janet_oidc" {
   }
 }
 
+# AES-256 key for encrypting the Google token vault at rest (§16). tofu mints
+# 32 random bytes (hex) and stores them in GSM — no hand-entry. The brain
+# requires JANET_TOKEN_ENC_KEY whenever DATABASE_URL is set.
+resource "random_bytes" "janet_token_enc" {
+  length = 32
+}
+
+module "janet_token_enc" {
+  source = "./modules/gsm-secret"
+
+  cluster             = "fairy-k8s01"
+  namespace           = "janet"
+  name                = "token-enc"
+  secret_data         = random_bytes.janet_token_enc.hex
+  workload_project_id = local.project_id
+  extra_labels = {
+    consumer = "janet-brain"
+  }
+}
+
 # secretAccessor grant for the janet ns ESO identity — covers every secret in
-# `fairy-k8s01-janet-*` (both of the above).
+# `fairy-k8s01-janet-*`.
 module "janet_eso" {
   source = "./modules/eso-namespace"
 

@@ -9,11 +9,10 @@ metadata:
     reloader.stakater.com/auto: "true"
 spec:
   replicas: 1
-  # RollingUpdate so deploys never take the service fully offline. Still a
-  # single replica: conversation history is now in Postgres, but SESSIONS and
-  # the Google-token vault are still in-memory — multiple replicas would
-  # diverge, and they reset on a roll (re-login / reconnect Google). Move those
-  # to Postgres too before scaling out.
+  # RollingUpdate so deploys never take the service fully offline. History,
+  # sessions, and the Google-token vault are now all in Postgres (survive
+  # restarts). Still a single replica only because the short-lived login/PKCE
+  # STATE maps are still in-memory — persist those before scaling out.
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -37,7 +36,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: janet-brain
-          image: ghcr.io/freckleapps/janet-brain:main-20260617T031644Z-91fa286
+          image: ghcr.io/freckleapps/janet-brain:main-20260617T033046Z-25a3c67
           ports:
             - name: http
               containerPort: 8787
@@ -73,9 +72,12 @@ spec:
             # OIDC_CLIENT_ID.
             - secretRef:
                 name: janet-oidc
-            # DATABASE_URL -> dedicated CNPG cluster (pgStore).
+            # DATABASE_URL -> dedicated CNPG cluster (pgStore + sessions + vault).
             - secretRef:
                 name: janet-db
+            # JANET_TOKEN_ENC_KEY -> encrypts the Google token vault at rest.
+            - secretRef:
+                name: janet-token-enc
           livenessProbe:
             httpGet:
               path: /healthz
