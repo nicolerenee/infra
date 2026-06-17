@@ -1,0 +1,82 @@
+---
+# Google Workspace MCP server (taylorwilsdon/google_workspace_mcp), pinned.
+# OAuth 2.1 external-provider + stateless passthrough: validates the per-user
+# Google bearer the brain presents (against Google userinfo) and stores NO
+# tokens. The brain owns the token vault (§15). Public image — no pull secret.
+# TODO(hardening): egress NetworkPolicy locking this to Google API FQDNs
+# (§12.1); tighten securityContext to runAsNonRoot once the image's user is
+# confirmed.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: google-workspace-mcp
+  annotations:
+    reloader.stakater.com/auto: "true"
+  labels:
+    app: google-workspace-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: google-workspace-mcp
+  template:
+    metadata:
+      labels:
+        app: google-workspace-mcp
+    spec:
+      containers:
+        - name: server
+          image: ghcr.io/taylorwilsdon/google_workspace_mcp:1.21.2
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: WORKSPACE_MCP_TRANSPORT
+              value: "streamable-http"
+            - name: MCP_ENABLE_OAUTH21
+              value: "true"
+            - name: EXTERNAL_OAUTH21_PROVIDER
+              value: "true"
+            - name: WORKSPACE_MCP_STATELESS_MODE
+              value: "true"
+            - name: WORKSPACE_MCP_HOST
+              value: "0.0.0.0"
+            - name: WORKSPACE_MCP_PORT
+              value: "8000"
+            # "complete" tier exposes every tool (incl. writes); the brain's
+            # MCP config decides what's actually offered to the model.
+            - name: WORKSPACE_MCP_TOOL_TIER
+              value: "complete"
+            - name: WORKSPACE_MCP_TOOLS
+              value: "gmail,drive,calendar,docs,sheets,slides,forms,tasks"
+            - name: WORKSPACE_MCP_BASE_URI
+              # OAuth-metadata advertisement only; bearers are injected directly.
+              value: "http://google-workspace-mcp.janet-mcp.svc.cluster.local"
+            - name: GOOGLE_OAUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: google-workspace-mcp
+                  key: GOOGLE_OAUTH_CLIENT_ID
+            # Public-PKCE mode: no client secret here (the brain holds it). The
+            # server signs its own session JWTs with this key.
+            - name: FASTMCP_SERVER_AUTH_GOOGLE_JWT_SIGNING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: google-workspace-mcp
+                  key: FASTMCP_SERVER_AUTH_GOOGLE_JWT_SIGNING_KEY
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
