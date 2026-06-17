@@ -36,7 +36,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: janet-brain
-          image: ghcr.io/freckleapps/janet-brain:main-20260617T033046Z-25a3c67
+          image: ghcr.io/freckleapps/janet-brain:main-20260617T035156Z-4b87551
           ports:
             - name: http
               containerPort: 8787
