@@ -1,0 +1,8 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+# Cluster-scoped resources only — no `namespace:` transformer.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./clustersecretstore.yaml
+  - ./clusterexternalsecret.yaml

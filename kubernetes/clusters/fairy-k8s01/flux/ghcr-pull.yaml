@@ -1,0 +1,29 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+# Cluster-wide GHCR pull credential: a GSM-backed ClusterSecretStore +
+# label-gated ClusterExternalSecret. No targetNamespace — both resources are
+# cluster-scoped.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app ghcr-pull
+  namespace: flux-system
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    # Needs the ESO controller (ClusterExternalSecret/ClusterSecretStore CRDs)
+    # and its WIF wiring up first.
+    - name: external-secrets
+      namespace: external-secrets
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/clusters/fairy-k8s01/apps/ghcr-pull
+  interval: 1h
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true
