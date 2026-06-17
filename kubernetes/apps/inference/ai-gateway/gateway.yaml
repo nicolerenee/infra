@@ -1,0 +1,52 @@
+---
+# Internal AI gateway. ClusterIP-only (envoy-clusterip class) — reached
+# only by in-cluster clients (the janet brain), never exposed publicly.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/gateway.networking.k8s.io/gateway_v1.json
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: ai
+spec:
+  gatewayClassName: envoy-clusterip
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+# Envoy Gateway defaults the client buffer limit to 32kiB, too small for
+# AI request/response bodies. Bump to 50MiB.
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/clienttrafficpolicy_v1alpha1.json
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: ai-buffer-limit
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ai
+  connection:
+    bufferLimit: 50Mi
+---
+# Stable address for in-cluster clients. Envoy Gateway provisions its own
+# data-plane Service with a generated name; this selector Service gives a
+# predictable DNS name (ai-gateway.inference.svc) independent of EG's
+# naming. Selector matches the EG-managed envoy pods for this Gateway;
+# port 80 maps to EG's container port 10080.
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-gateway
+spec:
+  type: ClusterIP
+  selector:
+    gateway.envoyproxy.io/owning-gateway-name: ai
+    gateway.envoyproxy.io/owning-gateway-namespace: inference
+  ports:
+    - name: http
+      port: 80
+      targetPort: 10080
+      protocol: TCP

@@ -1,0 +1,76 @@
+---
+# Native Anthropic path. The brain hits POST /v1/messages with model
+# claude-opus-4-8 / claude-sonnet-4-6; EAG detects the Anthropic inbound
+# schema from the path, extracts the model into x-ai-eg-model, and routes
+# here. Backend schema is Anthropic too → zero translation, so
+# cache_control / thinking blocks pass through untouched.
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: AIGatewayRoute
+metadata:
+  name: anthropic
+spec:
+  parentRefs:
+    - name: ai
+      kind: Gateway
+      group: gateway.networking.k8s.io
+  rules:
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: claude-opus-4-8
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: claude-sonnet-4-6
+      backendRefs:
+        - name: anthropic
+---
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: AIServiceBackend
+metadata:
+  name: anthropic
+spec:
+  schema:
+    name: Anthropic
+  backendRef:
+    name: anthropic
+    kind: Backend
+    group: gateway.envoyproxy.io
+---
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: BackendSecurityPolicy
+metadata:
+  name: anthropic-apikey
+spec:
+  targetRefs:
+    - group: aigateway.envoyproxy.io
+      kind: AIServiceBackend
+      name: anthropic
+  type: AnthropicAPIKey
+  anthropicAPIKey:
+    secretRef:
+      name: anthropic-apikey
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: anthropic
+spec:
+  endpoints:
+    - fqdn:
+        hostname: api.anthropic.com
+        port: 443
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: anthropic-tls
+spec:
+  targetRefs:
+    - group: gateway.envoyproxy.io
+      kind: Backend
+      name: anthropic
+  validation:
+    wellKnownCACertificates: "System"
+    hostname: api.anthropic.com
