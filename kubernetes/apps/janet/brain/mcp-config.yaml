@@ -13,12 +13,21 @@ data:
       "servers": {
         "google-workspace": {
           "url": "http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp",
-          "auth": { "type": "google_user" },
-          "deny": [
-            "send", "draft", "create", "delete", "modify", "manage",
-            "label", "unlabel", "insert", "update", "move", "trash",
-            "remove", "batch_modify", "start_google_auth"
-          ]
+          "auth": {
+            "type": "google_user",
+            "scopes": [
+              "https://www.googleapis.com/auth/gmail.modify",
+              "https://www.googleapis.com/auth/gmail.send",
+              "https://www.googleapis.com/auth/calendar",
+              "https://www.googleapis.com/auth/drive",
+              "https://www.googleapis.com/auth/documents",
+              "https://www.googleapis.com/auth/spreadsheets",
+              "https://www.googleapis.com/auth/presentations",
+              "https://www.googleapis.com/auth/forms.body",
+              "https://www.googleapis.com/auth/tasks"
+            ]
+          },
+          "deny": ["start_google_auth"]
         }
       }
     }
