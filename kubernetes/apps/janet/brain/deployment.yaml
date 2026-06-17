@@ -65,6 +65,11 @@ spec:
             # MCP servers are declared in the mounted ConfigMap, not hardcoded.
             - name: JANET_MCP_CONFIG
               value: /etc/janet/mcp.json
+            # Export traces (OTLP/HTTP) to the cluster collector → VictoriaTraces.
+            # Spans carry IDs/classifications/token-counts only (§16 redaction),
+            # never prompt/response content. The brain appends /v1/traces.
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector-collector.observability.svc.cluster.local:4318
           envFrom:
             # GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET (keys = env-var names).
             - secretRef:
