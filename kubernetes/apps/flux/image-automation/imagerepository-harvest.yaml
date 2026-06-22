@@ -1,0 +1,16 @@
+---
+# Scans the private harvest container image so the ImageUpdateAutomation can
+# track new builds. Colocated with the ImagePolicy + automation in flux-system
+# on atlantis (the only cluster that runs the committer), even though the
+# workload itself runs on fairy — the marker rewrite is a git operation, so the
+# scanner just needs to live wherever the automation reads its ImagePolicies.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/image.toolkit.fluxcd.io/imagerepository_v1.json
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: harvest
+spec:
+  image: ghcr.io/nicolerenee/harvest
+  interval: 5m
+  secretRef:
+    name: harvest-ghcr-login
