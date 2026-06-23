@@ -23,9 +23,12 @@
       },
     },
     {
+      // Cilium is tracked from two datasources: the Flux OCIRepository
+      // (docker, quay.io/cilium/charts/cilium) and the bootstrap helmfile
+      // (helm, cilium/cilium). Match both so the chart + image bump as one PR.
       description: "Cilium Group",
       groupName: "Cilium",
-      matchDatasources: ["docker"],
+      matchDatasources: ["docker", "helm"],
       matchPackageNames: ["/cilium/"],
       group: {
         commitMessageTopic: "{{{groupName}}}",
@@ -75,6 +78,19 @@
       groupName: "Barman Cloud Plugin",
       matchDatasources: ["docker"],
       matchPackageNames: ["/plugin-barman-cloud/"],
+      group: {
+        commitMessageTopic: "{{{groupName}}}",
+      },
+    },
+    {
+      // prometheus-operator-crds is tracked from two datasources: the Flux
+      // OCIRepository (docker, ghcr.io/prometheus-community/charts/...) and the
+      // bootstrap helmfile (helm, prometheus-community/prometheus-operator-crds).
+      // Match both so they bump together in one PR.
+      description: "Prometheus Operator CRDs Group",
+      groupName: "Prometheus Operator CRDs",
+      matchDatasources: ["docker", "helm"],
+      matchPackageNames: ["/prometheus-operator-crds/"],
       group: {
         commitMessageTopic: "{{{groupName}}}",
       },
