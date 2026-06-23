@@ -8,6 +8,7 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - ./rook-ceph.yaml
+  - ./rook-ceph-csi-drivers.yaml
   - ./rook-ceph-cluster.yaml
 patches:
   - target:
