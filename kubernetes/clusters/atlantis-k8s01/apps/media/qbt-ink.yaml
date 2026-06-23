@@ -43,4 +43,4 @@ spec:
         - op: replace
           path: /spec/values/controllers/qbittorrent/containers/app/image/tag
           # renovate: datasource=docker depName=ghcr.io/home-operations/qbittorrent
-          value: 5.2.0@sha256:788796013c3da75f2dba568c5319975a5c41f555586dfd13987be4631181e00e
+          value: 5.2.2@sha256:24f2d793cb7f7a93e755e5d22e533be818e62eadc864f4a82315b901b6ffe807
