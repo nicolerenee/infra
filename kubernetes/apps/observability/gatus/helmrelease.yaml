@@ -28,11 +28,14 @@ spec:
           gatus-sidecar:
             image:
               repository: ghcr.io/home-operations/gatus-sidecar
-              tag: 0.0.18@sha256:3e8ab2f65ac6eba268c963919e34e6f4c4e10439979de3ded71242240621edcd
+              tag: 0.3.5@sha256:aad3780968860cc4c9e8c63ed21595b1c8574a34678a6adfebe8dcb4b36f8dd2
             args:
               - --auto-httproute
               - --enable-httproute
               - --enable-service
+              # 0.2.0 changed the default to path-aware probe URLs; keep the
+              # pre-0.2 bare-hostname behavior to avoid changing what's monitored.
+              - --probe-paths=false
             resources:
               requests:
                 cpu: 10m
