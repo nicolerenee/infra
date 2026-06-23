@@ -155,10 +155,19 @@ jobs:
             missing_in_kustomization=""
             for dir_name in $actual_dirs; do
               if ! echo "$current_resources" | grep -q "^$dir_name$"; then
-                # Skip directories that have been migrated to standalone Flux Kustomizations
-                if [ -f "$dir/$dir_name/.migrated-to-ks" ]; then
-                  echo "  ℹ️  Skipping $dir_name (migrated to standalone Flux Kustomizations)"
-                  continue
+                # Skip directories wired via a standalone Flux Kustomization in the
+                # cluster's flux/ directory (the namespace-pointer pattern). These are
+                # loaded by flux/<name>.yaml, not by apps/kustomization.yaml, so their
+                # absence from apps/kustomization.yaml is expected and correct.
+                flux_dir="$(dirname "$dir")/flux"
+                if [ -d "$flux_dir" ]; then
+                  cluster="$(basename "$(dirname "$dir")")"
+                  expected_path="./kubernetes/clusters/$cluster/apps/$dir_name"
+                  if awk '/^[[:space:]]*path:[[:space:]]+/{ print $2 }' "$flux_dir"/*.yaml 2>/dev/null \
+                       | grep -qFx "$expected_path"; then
+                    echo "  ℹ️  Skipping $dir_name (wired via Flux Kustomization in flux/)"
+                    continue
+                  fi
                 fi
                 # Check if this directory has a kustomization.yaml (should be included)
                 if [ -f "$dir/$dir_name/kustomization.yaml" ]; then
