@@ -104,5 +104,34 @@
         commitMessageTopic: "{{{groupName}}}",
       },
     },
+    {
+      // mariadb-operator and mariadb-operator-crds are separate charts that
+      // must move in lockstep (the operator HelmRelease dependsOn the crds one).
+      // The /mariadb-operator/ regex matches both names.
+      description: "MariaDB Operator Group",
+      groupName: "MariaDB Operator",
+      matchDatasources: ["helm", "docker"],
+      matchPackageNames: ["/mariadb-operator/"],
+      group: {
+        commitMessageTopic: "{{{groupName}}}",
+      },
+    },
+    {
+      // The victoria-metrics k8s-stack bundles the VM operator, whose version
+      // must match victoria-metrics-operator-crds (the stack dependsOn the crds
+      // chart). Group them so they always bump together. victoria-logs-single
+      // and victoria-traces-single are intentionally left out — they're
+      // independent single-binary charts with their own release cadence.
+      description: "VictoriaMetrics Stack Group",
+      groupName: "VictoriaMetrics Stack",
+      matchDatasources: ["docker"],
+      matchPackageNames: [
+        "/victoria-metrics-k8s-stack/",
+        "/victoria-metrics-operator-crds/",
+      ],
+      group: {
+        commitMessageTopic: "{{{groupName}}}",
+      },
+    },
   ],
 }
