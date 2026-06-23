@@ -11,11 +11,6 @@ metadata:
   name: hedgehog-queue
 spec:
   replicas: 3
-  # Pin the Dragonfly version: the operator's default image bumped to v1.39.0,
-  # which fails to load v1.37-written RDB snapshots ("Quicklist integrity check
-  # failed"), crash-looping the primary. Stay on v1.37.0 until a snapshot-safe
-  # upgrade path is validated.
-  image: docker.dragonflydb.io/dragonflydb/dragonfly:v1.37.0
   authentication:
     passwordFromSecret:
       name: hedgehog-queue-secrets
