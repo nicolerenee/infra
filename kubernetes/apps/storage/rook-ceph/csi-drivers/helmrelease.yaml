@@ -41,11 +41,6 @@ spec:
           name: rook-csi-operator-image-set-configmap
         nodePlugin:
           priorityClassName: system-node-critical
-          # CSI node plugins must schedule on GPU-tainted nodes (was csi.pluginTolerations).
-          tolerations:
-            - key: nvidia.com/gpu
-              operator: Exists
-              effect: NoSchedule
         controllerPlugin:
           priorityClassName: system-cluster-critical
           # Preserve old enableCSIHostNetwork=true (chart default flipped to false).
@@ -56,27 +51,24 @@ spec:
         name: rook-ceph.rbd.csi.ceph.com
         # Chart default is "none"; restore snapshotter so volsync RBD snapshots work.
         snapshotPolicy: volumeSnapshot
-      nodePlugin:
-        # Per-driver toleration: the chart renders Driver CRs with an empty
-        # tolerations list which overrides driverSpecDefaults, so the GPU
-        # toleration must be set here too (fairy DGX nodes carry nvidia.com/gpu).
-        tolerations:
-          - key: nvidia.com/gpu
-            operator: Exists
-            effect: NoSchedule
+        nodePlugin:
+          # CSI node plugins must schedule on GPU-tainted nodes (fairy DGX nodes).
+          # Set per-driver: the Driver CR's empty tolerations list overrides
+          # operatorConfig.driverSpecDefaults, so it must be specified here.
+          tolerations:
+            - key: nvidia.com/gpu
+              operator: Exists
+              effect: NoSchedule
       cephfs:
         enabled: true
         name: rook-ceph.cephfs.csi.ceph.com
         # Chart default flipped to "None"; restore prior "File" behavior.
         fsGroupPolicy: File
-      nodePlugin:
-        # Per-driver toleration: the chart renders Driver CRs with an empty
-        # tolerations list which overrides driverSpecDefaults, so the GPU
-        # toleration must be set here too (fairy DGX nodes carry nvidia.com/gpu).
-        tolerations:
-          - key: nvidia.com/gpu
-            operator: Exists
-            effect: NoSchedule
+        nodePlugin:
+          tolerations:
+            - key: nvidia.com/gpu
+              operator: Exists
+              effect: NoSchedule
       nfs:
         enabled: false
         name: rook-ceph.nfs.csi.ceph.com
