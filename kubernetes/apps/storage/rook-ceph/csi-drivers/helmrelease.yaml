@@ -1,0 +1,69 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/source.toolkit.fluxcd.io/helmrepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: ceph-csi-operator
+spec:
+  interval: 24h
+  url: https://ceph.github.io/ceph-csi-operator
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: rook-ceph-csi-drivers
+spec:
+  interval: 30m
+  timeout: 15m
+  chart:
+    spec:
+      chart: ceph-csi-drivers
+      version: 1.0.1
+      sourceRef:
+        kind: HelmRepository
+        name: ceph-csi-operator
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  # Rook v1.20 moved CSI driver management to the ceph-csi-operator. This chart
+  # authors the OperatorConfig/Driver CRs. Values restore the behavior we had
+  # under the rook-ceph operator chart's (now-removed) inline csi.* block.
+  values:
+    operatorConfig:
+      namespace: rook-ceph
+      driverSpecDefaults:
+        imageSet:
+          name: rook-csi-operator-image-set-configmap
+        nodePlugin:
+          priorityClassName: system-node-critical
+          # CSI node plugins must schedule on GPU-tainted nodes (was csi.pluginTolerations).
+          tolerations:
+            - key: nvidia.com/gpu
+              operator: Exists
+              effect: NoSchedule
+        controllerPlugin:
+          priorityClassName: system-cluster-critical
+          # Preserve old enableCSIHostNetwork=true (chart default flipped to false).
+          hostNetwork: true
+    drivers:
+      rbd:
+        enabled: true
+        name: rook-ceph.rbd.csi.ceph.com
+        # Chart default is "none"; restore snapshotter so volsync RBD snapshots work.
+        snapshotPolicy: volumeSnapshot
+      cephfs:
+        enabled: true
+        name: rook-ceph.cephfs.csi.ceph.com
+        # Chart default flipped to "None"; restore prior "File" behavior.
+        fsGroupPolicy: File
+      nfs:
+        enabled: false
+        name: rook-ceph.nfs.csi.ceph.com
+      nvmeof:
+        enabled: false
+        name: rook-ceph.nvmeof.csi.ceph.com
