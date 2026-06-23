@@ -34,7 +34,7 @@ spec:
               # 2026-04-29 community-recommended digest. See
               # https://github.com/seerr-team/seerr/discussions/2721.
               repository: ghcr.io/seerr-team/seerr
-              tag: preview-new-oidc@sha256:e6771f5500bca29dba17b82fd7c5cc39cea650cd5f57b80e557b5ca80c541ee3
+              tag: preview-new-oidc@sha256:6a2a160b878b98d079c8ee6933f58997bb26d68dbcbc789c1a559bc6955db60d
             env:
               TZ: America/Chicago
               LOG_LEVEL: info
