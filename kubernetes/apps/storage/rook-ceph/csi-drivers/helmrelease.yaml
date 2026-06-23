@@ -56,11 +56,27 @@ spec:
         name: rook-ceph.rbd.csi.ceph.com
         # Chart default is "none"; restore snapshotter so volsync RBD snapshots work.
         snapshotPolicy: volumeSnapshot
+      nodePlugin:
+        # Per-driver toleration: the chart renders Driver CRs with an empty
+        # tolerations list which overrides driverSpecDefaults, so the GPU
+        # toleration must be set here too (fairy DGX nodes carry nvidia.com/gpu).
+        tolerations:
+          - key: nvidia.com/gpu
+            operator: Exists
+            effect: NoSchedule
       cephfs:
         enabled: true
         name: rook-ceph.cephfs.csi.ceph.com
         # Chart default flipped to "None"; restore prior "File" behavior.
         fsGroupPolicy: File
+      nodePlugin:
+        # Per-driver toleration: the chart renders Driver CRs with an empty
+        # tolerations list which overrides driverSpecDefaults, so the GPU
+        # toleration must be set here too (fairy DGX nodes carry nvidia.com/gpu).
+        tolerations:
+          - key: nvidia.com/gpu
+            operator: Exists
+            effect: NoSchedule
       nfs:
         enabled: false
         name: rook-ceph.nfs.csi.ceph.com
