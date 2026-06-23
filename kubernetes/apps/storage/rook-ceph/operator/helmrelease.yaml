@@ -10,7 +10,7 @@ spec:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy
   ref:
-    tag: v1.19.6
+    tag: v1.20.1
   url: oci://ghcr.io/rook/rook-ceph
 ---
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
@@ -36,11 +36,10 @@ spec:
     - name: prometheus-operator-crds
       namespace: observability
   values:
+    # v1.20: CSI is managed by the ceph-csi-operator (installed by this chart via
+    # installCsiOperator, default true). Driver config (incl. the nvidia.com/gpu
+    # node-plugin toleration) now lives in the ceph-csi-drivers HelmRelease.
     csi:
-      pluginTolerations:
-        - key: nvidia.com/gpu
-          operator: Exists
-          effect: NoSchedule
       serviceMonitor:
         enabled: true
     monitoring:
