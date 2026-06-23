@@ -3,23 +3,22 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app rook-ceph
+  name: &app rook-ceph-csi-drivers
   namespace: &namespace rook-ceph
 spec:
   targetNamespace: *namespace
   dependsOn:
-    - name: prometheus-operator-crds
-      namespace: observability
+    - name: rook-ceph
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./kubernetes/apps/storage/rook-ceph/operator
+  path: ./kubernetes/apps/storage/rook-ceph/csi-drivers
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
   interval: 2m
   retryInterval: 1m
-  timeout: 30m
-  prune: false
+  timeout: 15m
+  prune: true
   wait: true

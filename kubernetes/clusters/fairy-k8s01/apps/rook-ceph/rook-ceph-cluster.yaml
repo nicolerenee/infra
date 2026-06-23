@@ -8,11 +8,9 @@ metadata:
   labels:
     infra.freckle.systems/post-build-variables: enabled
 spec:
-  # STAGED: hold fairy on rook v1.19.6 until atlantis v1.20 is verified, then unsuspend + wire csi-drivers.
-  suspend: true
   targetNamespace: *namespace
   dependsOn:
-    - name: rook-ceph
+    - name: rook-ceph-csi-drivers
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
