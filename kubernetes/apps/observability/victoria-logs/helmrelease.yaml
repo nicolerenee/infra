@@ -93,7 +93,9 @@ spec:
               - audit
             source: |
               parsed = parse_json(.message) ?? {}
-              . = merge(., parsed)
+              if is_object(parsed) {
+                . = merge(., parsed)
+              }
               del(.message)
               .log_source = "kube-apiserver-audit"
         sinks:
