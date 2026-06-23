@@ -21,7 +21,7 @@ metadata:
 spec:
   mode: daemonset
   serviceAccount: otel-collector
-  image: otel/opentelemetry-collector-contrib:0.114.0
+  image: otel/opentelemetry-collector-contrib:0.154.0
   resources:
     requests:
       cpu: 50m
@@ -126,7 +126,13 @@ spec:
     service:
       telemetry:
         metrics:
-          address: 0.0.0.0:8888
+          # Collector >=0.123 removed `metrics.address`; use the readers form.
+          readers:
+            - pull:
+                exporter:
+                  prometheus:
+                    host: 0.0.0.0
+                    port: 8888
       pipelines:
         traces:
           receivers: [otlp]
