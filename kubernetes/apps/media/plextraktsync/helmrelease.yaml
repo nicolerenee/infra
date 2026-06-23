@@ -43,7 +43,7 @@ spec:
           seed:
             image:
               repository: ghcr.io/taxel/plextraktsync
-              tag: 0.35.5@sha256:de61cbdeeb242ed32efb2e16ed18cec6920098c0dc612e83ac68b93f01294b8a
+              tag: 0.35.8@sha256:c7c1474f2d5a2517cdf0a99c22ca0fba770fd6e98fe0efcd4b01af660828802a
             command: [sh, -c]
             args:
               - |
@@ -72,7 +72,7 @@ spec:
           app:
             image:
               repository: ghcr.io/taxel/plextraktsync
-              tag: 0.35.5@sha256:de61cbdeeb242ed32efb2e16ed18cec6920098c0dc612e83ac68b93f01294b8a
+              tag: 0.35.8@sha256:c7c1474f2d5a2517cdf0a99c22ca0fba770fd6e98fe0efcd4b01af660828802a
             env:
               TZ: America/Chicago
             args: [sync]
