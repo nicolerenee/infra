@@ -33,6 +33,9 @@ spec:
               - --auto-httproute
               - --enable-httproute
               - --enable-service
+              # 0.2.0 changed the default to path-aware probe URLs; keep the
+              # pre-0.2 bare-hostname behavior to avoid changing what's monitored.
+              - --probe-paths=false
             resources:
               requests:
                 cpu: 10m
