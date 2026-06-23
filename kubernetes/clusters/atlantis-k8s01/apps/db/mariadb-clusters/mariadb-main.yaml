@@ -10,6 +10,11 @@ spec:
 
   image: mariadb:12.2.2
 
+  # Required by the mariadb-operator 26.6 upgrade guide: let the operator roll
+  # the data-plane (agent) in lockstep when it upgrades, instead of lagging.
+  updateStrategy:
+    autoUpdateDataPlane: true
+
   port: 3306
 
   storage:
