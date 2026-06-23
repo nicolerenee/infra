@@ -16,6 +16,6 @@ spec:
   interval: 5m
   url: oci://ghcr.io/freckleapps/hedgehog-manifests
   ref:
-    tag: main-20260623T191926Z-f1ed49c # {"$imagepolicy": "flux-system:hedgehog:tag"}
+    tag: main-20260623T200527Z-ffb4c24 # {"$imagepolicy": "flux-system:hedgehog:tag"}
   secretRef:
     name: ghcr-login-secret
