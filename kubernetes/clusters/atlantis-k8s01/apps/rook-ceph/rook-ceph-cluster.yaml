@@ -10,7 +10,7 @@ metadata:
 spec:
   targetNamespace: *namespace
   dependsOn:
-    - name: rook-ceph
+    - name: rook-ceph-csi-drivers
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
