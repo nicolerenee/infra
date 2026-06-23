@@ -39,6 +39,16 @@ spec:
               preallocateMaps: true
               distributedLRU:
                 enabled: true
+              # VLAN 300 (home LAN) is bridged onto br300 via bond0.300
+              # for KubeVirt VMs and macvlan-style pods (scrypted,
+              # esphome). Cilium's TCX program on bond0 drops VLAN-tagged
+              # ingress with "VLAN traffic disallowed by VLAN filter"
+              # unless the VLAN is in this bypass list. Auto-detection
+              # only registers VLAN sub-interfaces that have an IP at
+              # agent startup, which is fragile; explicit bypass is
+              # the durable fix.
+              vlanBypass:
+                - 300
             loadBalancer:
               algorithm: maglev
             bpfClockProbe: true
