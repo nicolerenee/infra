@@ -1,0 +1,11 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./reader-deployment.yaml
+  - ./reader-service.yaml
+  - ./reader-cnp.yaml
+  - ./mcp-configmap.yaml
+  - ./mcp-deployment.yaml
+  - ./mcp-service.yaml

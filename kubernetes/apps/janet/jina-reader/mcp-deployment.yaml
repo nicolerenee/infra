@@ -1,0 +1,99 @@
+---
+# FastMCP shim fronting the Jina Reader. Stock python-slim image; the shim
+# script is mounted from the jina-reader-mcp-src ConfigMap and FastMCP is
+# pip-installed into a writable volume at startup (no custom image to build).
+# Serves Streamable HTTP MCP on :8000/mcp; the brain talks to it unauthenticated
+# over the cluster network. Only ever reaches the in-cluster reader (+ PyPI at
+# boot), so it is not an SSRF surface and is not egress-locked for now.
+#
+# TODO(hardening): once a prebuilt image replaces pip-install-at-start, lock
+# egress to just the jina-reader Service.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jina-reader-mcp
+  annotations:
+    reloader.stakater.com/auto: "true"
+  labels:
+    app: jina-reader-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jina-reader-mcp
+  template:
+    metadata:
+      labels:
+        app: jina-reader-mcp
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: shim
+          image: mirror.gcr.io/library/python:3.14.6@sha256:5c485439db26ba10745100656f6712d662075edb7ec6861dda715bcdfe579b29
+          command: ["sh", "-c"]
+          args:
+            - |
+              pip install --no-cache-dir --target=/deps fastmcp httpx && \
+              exec python /app/server.py
+          env:
+            - name: READER_URL
+              value: "http://jina-reader:8081"
+            - name: HTTP_PORT
+              value: "8000"
+            - name: PYTHONPATH
+              value: "/deps"
+            - name: HOME
+              value: "/tmp"
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
+          ports:
+            - containerPort: 8000
+              name: http
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: "25m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          # pip install runs at boot, so give generous startup grace before
+          # liveness kicks in.
+          startupProbe:
+            tcpSocket:
+              port: 8000
+            periodSeconds: 5
+            failureThreshold: 36
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8000
+            periodSeconds: 30
+          volumeMounts:
+            - name: src
+              mountPath: /app
+            - name: deps
+              mountPath: /deps
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: src
+          configMap:
+            name: jina-reader-mcp-src
+        - name: deps
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}

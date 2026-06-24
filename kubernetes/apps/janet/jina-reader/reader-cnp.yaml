@@ -1,0 +1,43 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+# Egress lockdown for the Jina Reader — the SSRF surface, since it fetches
+# arbitrary URLs the model asks for. Allow the `world` entity (public internet)
+# so it can read external pages, but deny all private/internal space so it can't
+# be steered at on-site LAN, management, storage, or tailnet hosts:
+#   - RFC1918 (10/8, 172.16/12, 192.168/16)
+#   - CGNAT / Tailscale (100.64.0.0/10)
+#   - link-local / cloud-metadata (169.254.0.0/16)
+#   - IPv6 ULA + link-local (fc00::/7, fe80::/10)
+#
+# The 10/8 and fc00::/7 denies would otherwise swallow the cluster's own
+# service/pod CIDRs — and CoreDNS lives in the service CIDR — so those ranges
+# are `except`ed to keep in-cluster DNS working. The except does NOT grant the
+# reader access to cluster pods/services: only `toEntities: world` allows
+# anything, and that never covers cluster entities. Cluster-internal pods/
+# services/nodes are blocked by default-deny egress once any egress rule exists.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: jina-reader-egress
+spec:
+  endpointSelector:
+    matchLabels:
+      app: jina-reader
+  egress:
+    - toEntities:
+        - world
+  egressDeny:
+    - toCIDRSet:
+        - cidr: 10.0.0.0/8
+          except:
+            - 10.229.0.0/16   # cluster service CIDR (CoreDNS)
+            - 10.230.0.0/16   # cluster pod CIDR
+        - cidr: 172.16.0.0/12
+        - cidr: 192.168.0.0/16
+        - cidr: 100.64.0.0/10
+        - cidr: 169.254.0.0/16
+        - cidr: fc00::/7
+          except:
+            - fd2b:ec92:e230:1::/112   # cluster service CIDR (CoreDNS)
+            - fd2b:ec92:e232::/48      # cluster pod CIDR
+        - cidr: fe80::/10

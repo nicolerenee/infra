@@ -1,0 +1,71 @@
+---
+# Self-hosted Jina Reader (ghcr.io/jina-ai/reader:oss) — converts any URL to
+# clean, LLM-friendly Markdown. Bundles headless Chrome, so JavaScript/SPA pages
+# render properly. Stateless mode (no extra config): every request hits the live
+# URL directly, no Jina cloud dependency, no API key.
+#
+# This is the SSRF surface — it fetches arbitrary URLs on the model's behalf — so
+# egress is locked by reader-cnp.yaml to "world minus internal" (can reach the
+# public internet but NOT the den1 management/storage LAN or link-local/metadata).
+# The brain never talks to this directly; it goes through the jina-reader-mcp shim.
+#
+# Pinned by manifest digest — `oss` is a moving tag with no versioned releases.
+# TODO(hardening): set runAsNonRoot once the image's user + Chrome sandbox needs
+# are confirmed.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jina-reader
+  labels:
+    app: jina-reader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jina-reader
+  template:
+    metadata:
+      labels:
+        app: jina-reader
+    spec:
+      containers:
+        - name: reader
+          image: ghcr.io/jina-ai/reader:oss@sha256:8cc9a5cf6dc9c240235fccc0026661de74b6e13c21b36e6a86b3281b9ef10f28
+          ports:
+            - containerPort: 8081
+              name: http
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+          readinessProbe:
+            tcpSocket:
+              port: 8081
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            # Chrome needs more than the default 64Mi /dev/shm or it crashes on
+            # heavy pages.
+            - name: dshm
+              mountPath: /dev/shm
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 512Mi
+        - name: tmp
+          emptyDir: {}

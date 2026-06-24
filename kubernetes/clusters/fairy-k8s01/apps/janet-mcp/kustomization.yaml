@@ -9,3 +9,4 @@ resources:
   - ./external-secrets.yaml
   - ./mcp.yaml
   - ./brave-search.yaml
+  - ./jina-reader.yaml

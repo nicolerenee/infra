@@ -52,6 +52,13 @@ data:
           "description": "Web search for current/real-time info or anything past the training cutoff.",
           "allow": ["web_search", "news_search"],
           "preload": ["web_search"]
+        },
+        "fetch": {
+          "url": "http://jina-reader-mcp.janet-mcp.svc.cluster.local:8000/mcp",
+          "auth": { "type": "none" },
+          "description": "Fetch a web page/URL and return its main content as clean Markdown (JavaScript/SPA pages supported). Use to read a web_search result or any known URL.",
+          "allow": ["read_url"],
+          "preload": ["read_url"]
         }
       }
     }
