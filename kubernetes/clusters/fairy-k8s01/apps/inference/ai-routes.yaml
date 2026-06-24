@@ -13,11 +13,12 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    # Gateway + CRDs from the EAG install; the qwen Service must exist for the
-    # AIServiceBackend's Backend to resolve.
+    # Only the Gateway + EAG CRDs. Deliberately NOT the qwen serving KS: these
+    # routes are pure config and the Backend resolves the qwen Service FQDN at
+    # runtime, so a route change needn't wait minutes for the model to (re)load.
+    # Until qwen is serving, the routes simply return 503 — same as the
+    # model-load window.
     - name: ai-gateway
-      namespace: inference
-    - name: qwen36-35b-a3b
       namespace: inference
   sourceRef:
     kind: GitRepository
