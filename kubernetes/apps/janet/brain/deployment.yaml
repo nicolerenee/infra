@@ -36,7 +36,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: janet-brain
-          image: ghcr.io/freckleapps/janet-brain:main-20260624T163154Z-7d27eb8 # {"$imagepolicy": "flux-system:janet-brain"}
+          image: ghcr.io/freckleapps/janet-brain:main-20260624T163920Z-5dd3f00 # {"$imagepolicy": "flux-system:janet-brain"}
           ports:
             - name: http
               containerPort: 8787
