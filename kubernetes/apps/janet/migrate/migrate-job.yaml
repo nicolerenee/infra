@@ -36,7 +36,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: migrate
-          image: ghcr.io/freckleapps/janet-brain:main-20260624T163920Z-5dd3f00 # {"$imagepolicy": "flux-system:janet-brain"}
+          image: ghcr.io/freckleapps/janet-brain:main-20260624T164847Z-3bb2fb0 # {"$imagepolicy": "flux-system:janet-brain"}
           args: ["migrate", "up"]
           envFrom:
             # DATABASE_URL (managed janet role on the dedicated cluster).
