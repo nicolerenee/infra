@@ -52,7 +52,7 @@ spec:
             # Registers schedule_agentic_task and lets agentic fires run their
             # instruction, gated by the intent judge (JANET_JUDGE_MODEL=fast via
             # the gateway). Judge fails closed — denies all if it can't reach its
-            # model — so the gateway fast route must be healthy (it is).
+            # model — so the gateway fast route must be healthy.
             - name: JANET_AGENTIC_ENABLED
               value: "true"
             # Keyless: the AI gateway holds the real Anthropic key. The
