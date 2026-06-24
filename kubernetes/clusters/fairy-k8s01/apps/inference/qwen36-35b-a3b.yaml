@@ -13,8 +13,9 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: huggingface
-      namespace: inference
+    # No huggingface dep: this serves pre-staged weights with HF_HUB_OFFLINE=1
+    # and never reads the HF secret. Real deps are the DRA claim templates and
+    # the GPU/DRA driver.
     - name: resource-claims
       namespace: inference
     - name: nvidia-gpu-operator
