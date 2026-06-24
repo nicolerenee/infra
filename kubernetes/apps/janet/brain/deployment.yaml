@@ -25,6 +25,7 @@ spec:
       labels:
         app.kubernetes.io/name: janet-brain
     spec:
+      serviceAccountName: janet-brain
       imagePullSecrets:
         - name: ghcr-pull
       securityContext:
@@ -42,25 +43,17 @@ spec:
           env:
             - name: PORT
               value: "8787"
-            # Semantic names — resolved by the AI gateway to a concrete backend
-            # (local qwen today). Brain default + judge lane.
-            - name: JANET_MODEL
-              value: chat
-            - name: JANET_JUDGE_MODEL
-              value: fast
+            # Model registry: endpoint, model roles (default + judge), auth, and
+            # capabilities all live in the mounted models.json now — replaces the
+            # old JANET_MODEL / JANET_JUDGE_MODEL env vars and ANTHROPIC_BASE_URL.
+            - name: JANET_MODELS_CONFIG
+              value: /etc/janet-models/models.json
             # Registers schedule_agentic_task and lets agentic fires run their
-            # instruction, gated by the intent judge (JANET_JUDGE_MODEL=fast via
-            # the gateway). Judge fails closed — denies all if it can't reach its
-            # model — so the gateway fast route must be healthy.
+            # instruction, gated by the intent judge (judge_models in models.json).
+            # Judge fails closed — denies all if it can't reach its model — so the
+            # gateway route for the judge model must be healthy.
             - name: JANET_AGENTIC_ENABLED
               value: "true"
-            # Keyless: the AI gateway holds the real Anthropic key. The
-            # placeholder only satisfies the SDK's credential precondition;
-            # the gateway overrides whatever the client sends.
-            - name: ANTHROPIC_BASE_URL
-              value: http://ai-gateway.inference.svc.cluster.local/anthropic
-            - name: ANTHROPIC_API_KEY
-              value: placeholder-gateway-injects-real-key
             - name: OIDC_ISSUER
               value: https://freckle.id
             - name: OIDC_REDIRECT_URL
@@ -125,9 +118,28 @@ spec:
             - name: mcp-config
               mountPath: /etc/janet
               readOnly: true
+            - name: models-config
+              mountPath: /etc/janet-models
+              readOnly: true
+            - name: gateway-token
+              mountPath: /var/run/secrets/tokens
+              readOnly: true
       volumes:
         - name: tmp
           emptyDir: {}
         - name: mcp-config
           configMap:
             name: janet-mcp-config
+        - name: models-config
+          configMap:
+            name: janet-models-config
+        # Rotating projected SA token the brain attaches per request (k8s_sa auth
+        # in models.json). Audience must match the future gateway JWT policy; until
+        # that lands the token is sent and ignored. File: /var/run/secrets/tokens/gateway-token.
+        - name: gateway-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  audience: ai-gateway.inference
+                  expirationSeconds: 3600
+                  path: gateway-token
