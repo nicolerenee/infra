@@ -24,6 +24,27 @@ resource "google_secret_manager_secret" "janet_mcp_auth" {
   }
 }
 
+# Brave Search MCP server (janet-mcp namespace) — web search capability for the
+# brain. Holds only the Brave Search API key; the brain never sees it. tofu owns
+# the container; push the value once (key from search.brave.com/app/keys):
+#   printf '{"BRAVE_API_KEY":"<api-key>"}' | \
+#     gcloud secrets versions add fairy-k8s01-janet-mcp-brave \
+#       --project=freckle-secrets-db8d4f --data-file=-
+resource "google_secret_manager_secret" "janet_mcp_brave" {
+  secret_id = "fairy-k8s01-janet-mcp-brave"
+  project   = local.project_id
+
+  labels = {
+    cluster   = "fairy-k8s01"
+    namespace = "janet-mcp"
+    consumer  = "brave-search-mcp"
+  }
+
+  replication {
+    auto {}
+  }
+}
+
 # secretAccessor grant for the janet-mcp ns ESO identity — covers
 # fairy-k8s01-janet-mcp-*.
 module "janet_mcp_eso" {

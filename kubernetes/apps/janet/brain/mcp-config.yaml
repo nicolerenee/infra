@@ -45,6 +45,11 @@ data:
           "approve": ["create", "import"],
           "description": "Google Drive — search/read files, create files & folders, import docs, get shareable links.",
           "keywords": ["drive", "file", "folder", "document"]
+        },
+        "web_search": {
+          "url": "http://brave-search-mcp.janet-mcp.svc.cluster.local:8000/mcp",
+          "description": "Brave Search — web, news, image, video, and local search; summarizer for current events and facts beyond the model's knowledge.",
+          "keywords": ["search", "web", "google", "look up", "news", "latest", "current", "today", "weather", "who is", "what is", "find online"]
         }
       }
     }
