@@ -8,6 +8,14 @@ metadata:
   name: ai
 spec:
   gatewayClassName: envoy-clusterip
+  # Per-gateway EnvoyProxy (overrides the class-level envoy-clusterip for this
+  # Gateway only) so resolved-backend access logging is scoped to the AI gateway
+  # and never touches the shared tunnel gateway.
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: ai-envoy
   listeners:
     - name: http
       protocol: HTTP
@@ -50,3 +58,63 @@ spec:
       port: 80
       targetPort: 10080
       protocol: TCP
+---
+# Dedicated data plane for the AI gateway. Mirrors the class-level
+# envoy-clusterip settings (ClusterIP, 2 replicas, prometheus metrics) and adds
+# a JSON access log with the resolved backend + x-ai-eg-model per request —
+# the secure-tier audit trail ("where did this sensitive request run"). Logs
+# metadata only (ids, model/backend, status, latency, byte counts) — never
+# prompt/response content.
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.envoyproxy.io/envoyproxy_v1alpha1.json
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: ai-envoy
+spec:
+  ipFamily: DualStack
+  logging:
+    level:
+      default: info
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        replicas: 2
+        container:
+          imageRepository: mirror.gcr.io/envoyproxy/envoy
+          resources:
+            requests:
+              cpu: 100m
+            limits:
+              memory: 1Gi
+      envoyService:
+        type: ClusterIP
+  shutdown:
+    drainTimeout: 180s
+  telemetry:
+    metrics:
+      prometheus:
+        compression:
+          type: Zstd
+    accessLog:
+      settings:
+        - format:
+            type: JSON
+            json:
+              start_time: "%START_TIME%"
+              method: "%REQ(:METHOD)%"
+              path: "%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%"
+              model: "%REQ(x-ai-eg-model)%"
+              backend: "%UPSTREAM_CLUSTER%"
+              upstream_host: "%UPSTREAM_HOST%"
+              response_code: "%RESPONSE_CODE%"
+              response_flags: "%RESPONSE_FLAGS%"
+              duration_ms: "%DURATION%"
+              request_id: "%REQ(X-REQUEST-ID)%"
+              bytes_sent: "%BYTES_SENT%"
+              bytes_received: "%BYTES_RECEIVED%"
+          sinks:
+            - type: File
+              file:
+                path: /dev/stdout
+

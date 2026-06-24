@@ -1,0 +1,19 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: qwen36-35b-a3b
+spec:
+  endpoints:
+    - interval: 30s
+      port: http
+      path: /metrics
+      relabelConfigs:
+        - targetLabel: vllm_deployment
+          replacement: qwen36-35b-a3b
+  namespaceSelector:
+    matchNames:
+      - inference
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: qwen36-35b-a3b

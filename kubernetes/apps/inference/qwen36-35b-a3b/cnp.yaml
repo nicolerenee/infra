@@ -1,0 +1,49 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+# Egress lockdown is what makes the secure tiers (secure-local/secure-ephemeral)
+# honest: the model can't phone home. Ingress only from the AI gateway and the
+# metrics scraper. Weights are pre-staged on CephFS (storage path is not pod
+# egress), so DNS is the only outbound the pod gets.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: qwen36-35b-a3b
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: qwen36-35b-a3b
+  ingress:
+    # The in-cluster AI gateway (envoy-clusterip "ai" Gateway) — the only client.
+    - fromEndpoints:
+        - matchLabels:
+            gateway.envoyproxy.io/owning-gateway-name: ai
+            gateway.envoyproxy.io/owning-gateway-namespace: inference
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+    # vmagent scraping /metrics.
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/name: vmagent
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+  egress:
+    # DNS only. Declaring any egress rule flips Cilium to default-deny egress
+    # for these pods — no world, no on-site networks, no HF.
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: TCP
+            - port: "53"
+              protocol: UDP
+          rules:
+            dns:
+              - matchPattern: "*"

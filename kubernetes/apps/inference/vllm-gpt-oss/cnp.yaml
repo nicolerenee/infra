@@ -8,9 +8,12 @@ spec:
     matchLabels:
       app.kubernetes.io/name: vllm-gpt-oss
   ingress:
+    # Reachable only by the in-cluster AI gateway (envoy-clusterip "ai"
+    # Gateway) that fronts the inference backends.
     - fromEndpoints:
         - matchLabels:
-            app.kubernetes.io/name: litellm
+            gateway.envoyproxy.io/owning-gateway-name: ai
+            gateway.envoyproxy.io/owning-gateway-namespace: inference
       toPorts:
         - ports:
             - port: "8000"

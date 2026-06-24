@@ -43,8 +43,12 @@ spec:
           env:
             - name: PORT
               value: "8787"
+            # Semantic names — resolved by the AI gateway to a concrete backend
+            # (local qwen today). Brain default + judge lane.
             - name: JANET_MODEL
-              value: claude-opus-4-8
+              value: chat
+            - name: JANET_JUDGE_MODEL
+              value: fast
             # Keyless: the AI gateway holds the real Anthropic key. The
             # placeholder only satisfies the SDK's credential precondition;
             # the gateway overrides whatever the client sends.

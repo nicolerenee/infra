@@ -7,10 +7,13 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - ./ai-gateway.yaml
+  - ./ai-routes.yaml
   - ./external-secrets.yaml
   - ./huggingface.yaml
   - ./leader-worker-set.yaml
-  - ./litellm.yaml
   - ./models-pvc.yaml
+  - ./qwen36-35b-a3b.yaml
   - ./resource-claims.yaml
-  - ./vllm-gpt-oss-2node.yaml
+  # vllm-gpt-oss-2node disabled — torn down to free DGX GPUs for the Qwen
+  # HA pair. Files kept under kubernetes/apps/inference/vllm-gpt-oss-2node*;
+  # re-add ./vllm-gpt-oss-2node.yaml here to redeploy.

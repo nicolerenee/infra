@@ -1,0 +1,15 @@
+---
+# Single ClusterIP fronting both replicas. The AI gateway's BackendTrafficPolicy
+# does per-endpoint active health-checking + outlier ejection over these pods,
+# so this Service is just stable EDS — not the LB/health boundary itself.
+apiVersion: v1
+kind: Service
+metadata:
+  name: qwen36-35b-a3b
+spec:
+  selector:
+    app.kubernetes.io/name: qwen36-35b-a3b
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
