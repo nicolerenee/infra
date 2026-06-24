@@ -1,0 +1,16 @@
+---
+# Single ClusterIP fronting both replicas. kube-proxy load-balances across the
+# pods and drops any pod that fails its /health readiness probe, so losing one
+# instance keeps requests flowing. (No BackendTrafficPolicy — see route.yaml for
+# why active health-check / least-request / outlier-eject isn't applied.)
+apiVersion: v1
+kind: Service
+metadata:
+  name: qwen36-35b-a3b
+spec:
+  selector:
+    app.kubernetes.io/name: qwen36-35b-a3b
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http

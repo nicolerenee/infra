@@ -1,0 +1,102 @@
+---
+# Fairy-only local-model routing for the in-cluster AI gateway. Lives in the
+# cluster tree (not shared apps/) on purpose: it points at fairy-only DGX vLLM,
+# and atlantis also runs the EAG controller — cluster-tree placement guarantees
+# these routes can never follow a shared app onto atlantis.
+#
+# Janet sends Anthropic Messages with model = a semantic name; the "ai" Gateway
+# extracts it into x-ai-eg-model and routes here. Backend schema is OpenAI, so
+# EAG translates Anthropic→OpenAI for vLLM. The concrete model id stays
+# gateway-only — each rule rewrites the semantic name to qwen3.6-35b-a3b via
+# modelNameOverride.
+#
+# HA: the Backend resolves to the qwen Service ClusterIP; kube-proxy load-balances
+# across the two pods and drops any pod that fails its /health readiness probe, so
+# losing one instance keeps requests flowing. (Active health-check / least-request
+# / outlier-eject tuning isn't applied: EAG requires AIServiceBackend→Backend, and
+# BackendTrafficPolicy can only target a Gateway/Route — a Gateway-scoped policy
+# would also hit the shared Anthropic backend. Revisit if backend-scoped traffic
+# policy lands.)
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: qwen36-35b-a3b
+spec:
+  endpoints:
+    - fqdn:
+        hostname: qwen36-35b-a3b.inference.svc.cluster.local
+        port: 8000
+---
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: AIServiceBackend
+metadata:
+  name: local-qwen36-35b-a3b
+spec:
+  schema:
+    name: OpenAI
+  backendRef:
+    group: gateway.envoyproxy.io
+    kind: Backend
+    name: qwen36-35b-a3b
+---
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: AIGatewayRoute
+metadata:
+  name: local-models
+spec:
+  parentRefs:
+    - name: ai
+      kind: Gateway
+      group: gateway.networking.k8s.io
+  # One rule per semantic name. All six resolve to the same backend today; when a
+  # dedicated coder/27B backend lands, only that rule's backendRef re-points —
+  # callers never change.
+  rules:
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: chat
+      backendRefs:
+        - name: local-qwen36-35b-a3b
+          modelNameOverride: qwen3.6-35b-a3b
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: fast
+      backendRefs:
+        - name: local-qwen36-35b-a3b
+          modelNameOverride: qwen3.6-35b-a3b
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: planning
+      backendRefs:
+        - name: local-qwen36-35b-a3b
+          modelNameOverride: qwen3.6-35b-a3b
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: code
+      backendRefs:
+        - name: local-qwen36-35b-a3b
+          modelNameOverride: qwen3.6-35b-a3b
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: secure-local
+      backendRefs:
+        - name: local-qwen36-35b-a3b
+          modelNameOverride: qwen3.6-35b-a3b
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: secure-ephemeral
+      backendRefs:
+        - name: local-qwen36-35b-a3b
+          modelNameOverride: qwen3.6-35b-a3b

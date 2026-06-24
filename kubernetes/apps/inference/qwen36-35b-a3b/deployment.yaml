@@ -1,0 +1,142 @@
+---
+# Qwen3.6-35B-A3B-FP8 served by vLLM, single-node (tp=1) per GB10. Two replicas
+# spread one-per-DGX-node (podAntiAffinity) form the HA pair; the in-cluster AI
+# gateway load-balances + health-checks across them. RollingUpdate keeps ≥1 pod
+# serving during deploys (needs a spare DGX GPU for the surge — true while a 3rd
+# local model isn't occupying dgx03).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qwen36-35b-a3b
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: qwen36-35b-a3b
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: qwen36-35b-a3b
+    spec:
+      runtimeClassName: nvidia
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+      affinity:
+        podAntiAffinity:
+          # One pod per node — keeps the HA pair (and the rolling-surge pod)
+          # on distinct DGX nodes so a node loss never takes both down.
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: qwen36-35b-a3b
+              topologyKey: kubernetes.io/hostname
+      resourceClaims:
+        - name: gpu
+          resourceClaimTemplateName: gpu
+      containers:
+        - name: vllm
+          image: vllm/vllm-openai:v0.20.0-aarch64-cu130-ubuntu2404
+          command:
+            - vllm
+            - serve
+            - Qwen/Qwen3.6-35B-A3B-FP8
+            # Canonical ids only. The semantic names (chat/fast/…) live in the
+            # AI gateway, which rewrites to qwen3.6-35b-a3b on egress.
+            - --served-model-name
+            - Qwen/Qwen3.6-35B-A3B-FP8
+            - qwen3.6-35b-a3b
+            - --tensor-parallel-size
+            - "1"
+            - --host
+            - 0.0.0.0
+            - --port
+            - "8000"
+            - --max-model-len
+            - "262144"
+            - --max-num-seqs
+            - "20"
+            - --max-num-batched-tokens
+            - "32768"
+            - --gpu-memory-utilization
+            - "0.7069"
+            - --attention-backend
+            - flashinfer
+            - --enable-prefix-caching
+            - --reasoning-parser
+            - qwen3
+            - --enable-auto-tool-choice
+            - --tool-call-parser
+            - qwen3_coder
+            # MTP speculative decoding is built into this checkpoint (no draft model).
+            - --speculative-config
+            - '{"method":"mtp","num_speculative_tokens":1}'
+            # Qwen recommends preserving thinking across turns for agentic loops.
+            - --default-chat-template-kwargs
+            - '{"preserve_thinking": true}'
+            - --trust-remote-code
+          env:
+            - name: HF_HOME
+              value: /models
+            # Weights are pre-staged on CephFS; never reach HF at serve time
+            # (egress is locked — see cnp.yaml). Offline + no telemetry.
+            - name: HF_HUB_OFFLINE
+              value: "1"
+            - name: DO_NOT_TRACK
+              value: "1"
+            - name: PYTORCH_CUDA_ALLOC_CONF
+              value: expandable_segments:True
+            - name: CUDA_MANAGED_FORCE_DEVICE_ALLOC
+              value: "1"
+            - name: OMP_NUM_THREADS
+              value: "4"
+            - name: VLLM_MARLIN_USE_ATOMIC_ADD
+              value: "1"
+          ports:
+            - containerPort: 8000
+              name: http
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            # ~30 min — first load is weights from CephFS + MTP + flashinfer init.
+            failureThreshold: 180
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            claims:
+              - name: gpu
+          volumeMounts:
+            - name: models
+              mountPath: /models
+            - name: shm
+              mountPath: /dev/shm
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: models
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Gi
