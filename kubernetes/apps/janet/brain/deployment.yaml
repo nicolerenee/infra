@@ -1,4 +1,3 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -36,7 +35,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: janet-brain
-          image: ghcr.io/freckleapps/janet-brain:main-20260624T030935Z-40db8a3 # {"$imagepolicy": "flux-system:janet-brain"}
+          image: ghcr.io/freckleapps/janet-brain:main-20260624T034016Z-204ef99 # {"$imagepolicy": "flux-system:janet-brain"}
           ports:
             - name: http
               containerPort: 8787
