@@ -5,6 +5,8 @@ kind: Kustomization
 resources:
   - ./ghcr-login.externalsecret.yaml
   - ./imagerepository-harvest.yaml
+  - ./imagerepository-janet-brain.yaml
   - ./imagepolicy-hedgehog.yaml
   - ./imagepolicy-harvest.yaml
+  - ./imagepolicy-janet-brain.yaml
   - ./imageupdateautomation.yaml
