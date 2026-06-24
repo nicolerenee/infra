@@ -15,7 +15,7 @@
 # credential, never a stale key.
 #
 # properties.secure must stay honest with what the endpoint enforces: the qwen
-# backend is egress-locked on-prem DGX (see apps/inference/qwen36-35b-a3b/cnp.yaml),
+# backend is egress-locked on-prem DGX (see kubernetes/apps/inference/qwen36-35b-a3b/cnp.yaml),
 # so secure+local are true.
 apiVersion: v1
 kind: ConfigMap
