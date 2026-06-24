@@ -51,7 +51,21 @@ spec:
   # One rule per semantic name. All six resolve to the same backend today; when a
   # dedicated coder/27B backend lands, only that rule's backendRef re-points —
   # callers never change.
+  #
+  # The leading rule exposes the model by its real served name. The brain's
+  # models.json registry sends model=Qwen3.6-35B-A3B-FP8 directly (no tier
+  # indirection), so this is the rule Janet actually hits today; it also makes the
+  # name appear in the gateway's GET /v1/models. The tier rules below stay until
+  # nothing references them, then get removed.
   rules:
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: Qwen3.6-35B-A3B-FP8
+      backendRefs:
+        - name: local-qwen36-35b-a3b
+          modelNameOverride: qwen3.6-35b-a3b
     - matches:
         - headers:
             - type: Exact
