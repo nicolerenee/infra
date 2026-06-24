@@ -1,7 +1,8 @@
 ---
-# Single ClusterIP fronting both replicas. The AI gateway's BackendTrafficPolicy
-# does per-endpoint active health-checking + outlier ejection over these pods,
-# so this Service is just stable EDS — not the LB/health boundary itself.
+# Single ClusterIP fronting both replicas. kube-proxy load-balances across the
+# pods and drops any pod that fails its /health readiness probe, so losing one
+# instance keeps requests flowing. (No BackendTrafficPolicy — see route.yaml for
+# why active health-check / least-request / outlier-eject isn't applied.)
 apiVersion: v1
 kind: Service
 metadata:

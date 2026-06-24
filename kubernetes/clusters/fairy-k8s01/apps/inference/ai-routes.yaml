@@ -14,7 +14,7 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     # Gateway + CRDs from the EAG install; the qwen Service must exist for the
-    # AIServiceBackend/BackendTrafficPolicy to bind.
+    # AIServiceBackend's Backend to resolve.
     - name: ai-gateway
       namespace: inference
     - name: qwen36-35b-a3b
