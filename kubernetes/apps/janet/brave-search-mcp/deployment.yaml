@@ -6,9 +6,10 @@
 # this server unauthenticated over the cluster network and never holds the key.
 #
 # Image pulled via mirror.gcr.io (Docker Hub mirror) to dodge docker.io rate
-# limits, pinned by manifest-list digest (multi-arch amd64+arm64).
-# TODO(hardening): egress NetworkPolicy locking this to api.search.brave.com;
-# tighten securityContext to runAsNonRoot once the image's user is confirmed.
+# limits, pinned by manifest-list digest (multi-arch amd64+arm64). Egress is
+# locked to api.search.brave.com by cnp.yaml.
+# TODO(hardening): tighten securityContext to runAsNonRoot once the image's
+# user is confirmed.
 apiVersion: apps/v1
 kind: Deployment
 metadata:

@@ -1,0 +1,23 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+# Egress lockdown for the Brave Search MCP server. The server only ever talks to
+# api.search.brave.com (web/image/video/news/local/summarizer are all paths
+# under that one host), so pin egress to it on 443. Adding any egress rule flips
+# Cilium to default-deny egress for these pods — no other outbound is possible.
+# DNS resolution (and the DNS-proxy visibility toFQDNs needs) is provided by the
+# cluster-wide intercept-all-dns CCNP, so no explicit DNS rule is required here.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: brave-search-mcp-egress
+spec:
+  endpointSelector:
+    matchLabels:
+      app: brave-search-mcp
+  egress:
+    - toFQDNs:
+        - matchName: "api.search.brave.com"
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
