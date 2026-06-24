@@ -1,0 +1,71 @@
+---
+# Brave Search MCP server (brave/brave-search-mcp-server) — web search as an
+# HTTP MCP capability for the brain ("everything is MCP"). Streamable-HTTP
+# transport on :8000, MCP endpoint at /mcp, health at /ping. The Brave API key
+# is server-side (BRAVE_API_KEY env from the ExternalSecret); the brain talks to
+# this server unauthenticated over the cluster network and never holds the key.
+#
+# Image pulled via mirror.gcr.io (Docker Hub mirror) to dodge docker.io rate
+# limits, pinned by manifest-list digest (multi-arch amd64+arm64).
+# TODO(hardening): egress NetworkPolicy locking this to api.search.brave.com;
+# tighten securityContext to runAsNonRoot once the image's user is confirmed.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: brave-search-mcp
+  annotations:
+    reloader.stakater.com/auto: "true"
+  labels:
+    app: brave-search-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: brave-search-mcp
+  template:
+    metadata:
+      labels:
+        app: brave-search-mcp
+    spec:
+      containers:
+        - name: server
+          image: mirror.gcr.io/mcp/brave-search@sha256:b8938122495f7857c4cb81b77662f4737367665350700856d61724ce61109fac
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            # Override the v2.x stdio default — serve Streamable HTTP on /mcp.
+            - name: BRAVE_MCP_TRANSPORT
+              value: "http"
+            - name: BRAVE_MCP_HOST
+              value: "0.0.0.0"
+            - name: BRAVE_MCP_PORT
+              value: "8000"
+            - name: BRAVE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: brave-search-mcp
+                  key: BRAVE_API_KEY
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: "25m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 30
