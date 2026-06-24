@@ -6,3 +6,4 @@ resources:
   - ./externalsecret.yaml
   - ./deployment.yaml
   - ./service.yaml
+  - ./cnp.yaml
