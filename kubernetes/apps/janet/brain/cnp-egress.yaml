@@ -55,11 +55,15 @@ spec:
         - ports:
             - port: "5432"
               protocol: TCP
-    # OTLP/HTTP traces to the cluster collector.
+    # OTLP/HTTP traces to the cluster collector. Match the OTel-Operator-managed
+    # collector pods by the same labels its Service selects on — the pod's
+    # app.kubernetes.io/name is "opentelemetry-collector", and the instance label
+    # pins this specific collector.
     - toEndpoints:
         - matchLabels:
             io.kubernetes.pod.namespace: observability
-            app.kubernetes.io/name: otel-collector
+            app.kubernetes.io/component: opentelemetry-collector
+            app.kubernetes.io/instance: observability.otel-collector
       toPorts:
         - ports:
             - port: "4318"
