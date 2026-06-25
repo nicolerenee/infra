@@ -1,0 +1,71 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+# Egress lockdown for the janet-brain. The brain holds the Google token vault +
+# DB creds, so it's a high-value pod — restrict it to exactly the destinations it
+# needs. Declaring any egress rule flips Cilium to default-deny egress, so every
+# legitimate destination must be listed here or it breaks. DNS is provided by the
+# cluster-wide intercept-all-dns CCNP (additive), so no explicit DNS rule needed.
+#
+# Ingress is intentionally left default-allow (the envoy gateways reach the brain
+# via its HTTPRoute, and vmagent scrapes it) — this policy is egress-only.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: janet-brain-egress
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: janet-brain
+  egress:
+    # AI gateway — all LLM/judge calls (default endpoint ai-gateway.inference).
+    # Match the EG-managed envoy data-plane pods for the "ai" Gateway by their
+    # owning-gateway labels (same labels the qwen backend's ingress trusts).
+    # No toPorts: the ClusterIP Service port 80 maps to envoy container port
+    # 10080, and policy is enforced on the translated backend port — scoping to
+    # these specific pods is the real restriction.
+    - toEndpoints:
+        - matchLabels:
+            gateway.envoyproxy.io/owning-gateway-name: ai
+            gateway.envoyproxy.io/owning-gateway-namespace: inference
+    # MCP servers (Google Workspace, Brave Search, Jina Reader) — everything in
+    # the janet-mcp namespace, on their HTTP ports.
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: janet-mcp
+      toPorts:
+        - ports:
+            - port: "8000"   # google-workspace-mcp, brave-search-mcp
+              protocol: TCP
+            - port: "8081"   # jina-reader
+              protocol: TCP
+    # Dedicated Postgres (pgStore + sessions + Google token vault). DATABASE_URL
+    # points at janet-db-rw; match the CNPG cluster pods directly.
+    - toEndpoints:
+        - matchLabels:
+            cnpg.io/cluster: janet-db
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP
+    # OTLP/HTTP traces to the cluster collector.
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/name: otel-collector
+      toPorts:
+        - ports:
+            - port: "4318"
+              protocol: TCP
+    # External OIDC + Google OAuth (server-side), per the brain's own audit of
+    # what it dials. The brain does NOT call the Google content APIs directly
+    # (those go via the MCP server) and does NOT do OIDC discovery against Google:
+    #   - freckle.id          : login IdP (Freckle ID / pocket-id, OIDC_ISSUER) —
+    #                           OIDC discovery, JWKS fetch + refresh, token, UserInfo
+    #   - oauth2.googleapis.com: Google OAuth token exchange + refresh only
+    - toFQDNs:
+        - matchName: "freckle.id"
+        - matchName: "oauth2.googleapis.com"
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
