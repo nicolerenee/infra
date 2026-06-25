@@ -23,6 +23,7 @@ data:
     {
       "servers": {
         "calendar": {
+          "type": "mcp",
           "url": "http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp",
           "auth": { "type": "google_user", "scopes": ["https://www.googleapis.com/auth/calendar"] },
           "allow": ["list_calendars", "get_events", "manage_event", "query_freebusy"],
@@ -31,6 +32,7 @@ data:
           "keywords": ["calendar", "event", "meeting", "schedule", "appointment", "availability", "free time", "busy"]
         },
         "gmail": {
+          "type": "mcp",
           "url": "http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp",
           "auth": { "type": "google_user", "scopes": ["https://www.googleapis.com/auth/gmail.modify", "https://www.googleapis.com/auth/gmail.send"] },
           "deny": ["start_google_auth"],
@@ -39,6 +41,7 @@ data:
           "keywords": ["email", "gmail", "mail", "inbox", "message", "draft", "reply", "label"]
         },
         "drive": {
+          "type": "mcp",
           "url": "http://google-workspace-mcp.janet-mcp.svc.cluster.local:8000/mcp",
           "auth": { "type": "google_user", "scopes": ["https://www.googleapis.com/auth/drive"] },
           "allow": ["search_drive_files", "get_drive_file_content", "get_drive_file_download_url", "create_drive_file", "create_drive_folder", "import_to_google", "get_drive_shareable_link"],
@@ -47,6 +50,7 @@ data:
           "keywords": ["drive", "file", "folder", "document"]
         },
         "web": {
+          "type": "mcp",
           "url": "http://brave-search-mcp.janet-mcp.svc.cluster.local:8000/mcp",
           "auth": { "type": "none" },
           "description": "Web search for current/real-time info or anything past the training cutoff.",
@@ -54,11 +58,27 @@ data:
           "preload": ["web_search"]
         },
         "fetch": {
-          "url": "http://jina-reader-mcp.janet-mcp.svc.cluster.local:8000/mcp",
-          "auth": { "type": "none" },
+          "type": "http",
           "description": "Fetch a web page/URL and return its main content as clean Markdown (JavaScript/SPA pages supported). Use to read a web_search result or any known URL.",
-          "allow": ["read_url"],
-          "preload": ["read_url"]
+          "preload": ["read_url"],
+          "tools": [
+            {
+              "name": "read_url",
+              "description": "Fetch a web page and return its main content as clean Markdown. Renders JavaScript/SPA pages. Pass a single http(s) URL (e.g. a web_search result). Returns Markdown, truncated if very long.",
+              "parameters": {
+                "type": "object",
+                "properties": { "url": { "type": "string", "description": "The http(s) URL to fetch." } },
+                "required": ["url"]
+              },
+              "request": {
+                "method": "GET",
+                "url": "http://jina-reader.janet-mcp.svc.cluster.local:8081/{url}",
+                "headers": { "Accept": "text/plain, text/markdown" },
+                "timeoutSeconds": 90
+              },
+              "response": { "maxChars": 60000 }
+            }
+          ]
         }
       }
     }

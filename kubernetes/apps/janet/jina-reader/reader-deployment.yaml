@@ -6,8 +6,9 @@
 #
 # This is the SSRF surface — it fetches arbitrary URLs on the model's behalf — so
 # egress is locked by reader-cnp.yaml to "world minus internal" (can reach the
-# public internet but NOT the den1 management/storage LAN or link-local/metadata).
-# The brain never talks to this directly; it goes through the jina-reader-mcp shim.
+# public internet but NOT private/RFC1918 LAN, management, storage, or tailnet).
+# The brain calls this Service directly via a native HTTP tool (the `fetch`
+# capability in brain/mcp-config.yaml) — GET :8081/<url> returns Markdown.
 #
 # Pinned by manifest digest — `oss` is a moving tag with no versioned releases.
 # TODO(hardening): set runAsNonRoot once the image's user + Chrome sandbox needs
