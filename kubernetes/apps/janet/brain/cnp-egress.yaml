@@ -20,11 +20,16 @@ spec:
     # AI gateway — all LLM/judge calls (default endpoint ai-gateway.inference).
     # Match the EG-managed envoy data-plane pods for the "ai" Gateway by their
     # owning-gateway labels (same labels the qwen backend's ingress trusts).
+    # io.kubernetes.pod.namespace is REQUIRED here: Cilium implicitly scopes a
+    # toEndpoints selector to the policy's own namespace (janet) unless the pod
+    # namespace is named — and the envoy pods live in inference, so without it
+    # this rule matches nothing and the gateway is silently dropped.
     # No toPorts: the ClusterIP Service port 80 maps to envoy container port
     # 10080, and policy is enforced on the translated backend port — scoping to
     # these specific pods is the real restriction.
     - toEndpoints:
         - matchLabels:
+            io.kubernetes.pod.namespace: inference
             gateway.envoyproxy.io/owning-gateway-name: ai
             gateway.envoyproxy.io/owning-gateway-namespace: inference
     # MCP servers (Google Workspace, Brave Search, Jina Reader) — everything in
@@ -39,9 +44,12 @@ spec:
             - port: "8081"   # jina-reader
               protocol: TCP
     # Dedicated Postgres (pgStore + sessions + Google token vault). DATABASE_URL
-    # points at janet-db-rw; match the CNPG cluster pods directly.
+    # points at janet-db-rw; match the CNPG cluster pods directly. Same namespace
+    # as this policy, but name it explicitly for clarity (see the gateway note on
+    # Cilium's implicit same-namespace scoping).
     - toEndpoints:
         - matchLabels:
+            io.kubernetes.pod.namespace: janet
             cnpg.io/cluster: janet-db
       toPorts:
         - ports:
