@@ -24,8 +24,22 @@ spec:
     matchLabels:
       app: jina-reader
   egress:
+    # Web fetching only ever needs HTTP/HTTPS outbound. Scoping to 80/443 also
+    # blocks the bundled headless Chrome's background "phone home" — Chromium
+    # dials Google's GCM/FCM push server on TCP 5228 (observed: 142.250.x:5228),
+    # which a fetcher never needs. UDP 443 permits HTTP/3 (QUIC); Chrome falls
+    # back to TCP if it's absent, so this is belt-and-suspenders. DNS (53) is
+    # allowed separately by the cluster-wide intercept-all-dns CCNP.
     - toEntities:
         - world
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+            - port: "443"
+              protocol: TCP
+            - port: "443"
+              protocol: UDP
   egressDeny:
     - toCIDRSet:
         - cidr: 10.0.0.0/8
