@@ -20,7 +20,7 @@ metadata:
   labels:
     app: jina-reader
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: jina-reader
@@ -42,10 +42,13 @@ spec:
           resources:
             requests:
               cpu: "100m"
-              memory: "256Mi"
+              # Steady-state working set floors around 400-700Mi (Chrome + baseline).
+              memory: "512Mi"
             limits:
               cpu: "2"
-              memory: "2Gi"
+              # Heavy/JS-rendered pages spike Chrome to ~2Gi; 2Gi ceiling was
+              # OOMKilling on those. 4Gi gives generous headroom above peaks.
+              memory: "4Gi"
           readinessProbe:
             tcpSocket:
               port: 8081
