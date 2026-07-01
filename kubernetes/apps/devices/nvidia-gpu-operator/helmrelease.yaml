@@ -17,7 +17,7 @@ spec:
   chart:
     spec:
       chart: gpu-operator
-      version: v26.3.2
+      version: v26.3.3
       sourceRef:
         kind: HelmRepository
         name: nvidia
@@ -32,13 +32,6 @@ spec:
     remediation:
       retries: 3
   values:
-    # Use patched GPU operator image until v26.4.0+ is released
-    # https://github.com/NVIDIA/gpu-operator/issues/2239
-    operator:
-      repository: ghcr.io/nvidia
-      image: gpu-operator
-      version: 670be908
-
     # Talos provides NVIDIA drivers via system extensions
     driver:
       enabled: false
