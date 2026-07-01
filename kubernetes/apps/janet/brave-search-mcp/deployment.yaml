@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
         - name: server
-          image: mirror.gcr.io/mcp/brave-search@sha256:b8938122495f7857c4cb81b77662f4737367665350700856d61724ce61109fac
+          image: mirror.gcr.io/mcp/brave-search@sha256:f58a5c22c1196ec7bd1ca586ce216f2334fc298550ddcf652c0e8adb6d256d78
           ports:
             - containerPort: 8000
               name: http
