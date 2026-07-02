@@ -63,7 +63,7 @@ data:
           "auth": { "type": "none" },
           "allow": ["get_stock_info", "get_yahoo_finance_news"],
           "description": "Yahoo Finance — real-time-ish stock quote (price, previous close, change, % change) and recent news for a ticker symbol. This is the DEFAULT for stock prices/quotes — use it instead of web search for any price/quote ask; web search stays for narrative/analysis context only.",
-          "keywords": ["stock", "stonks", "ticker", "share price", "shares", "quote", "$", "NVDA", "SCHB", "VTI", "SCHF", "market cap", "portfolio"]
+          "keywords": ["stock", "stonks", "ticker", "share price", "shares", "quote", "$", "market cap", "portfolio"]
         },
         "stocks_advanced": {
           "type": "mcp",
