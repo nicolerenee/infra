@@ -57,6 +57,21 @@ data:
           "allow": ["web_search", "news_search"],
           "preload": ["web_search"]
         },
+        "stocks": {
+          "type": "mcp",
+          "url": "http://yahoo-finance-mcp.janet-mcp.svc.cluster.local:8000/mcp",
+          "auth": { "type": "none" },
+          "allow": ["get_stock_info", "get_yahoo_finance_news"],
+          "description": "Yahoo Finance — real-time-ish stock quote (price, previous close, change, % change) and recent news for a ticker symbol. This is the DEFAULT for stock prices/quotes — use it instead of web search for any price/quote ask; web search stays for narrative/analysis context only.",
+          "keywords": ["stock", "stonks", "ticker", "share price", "shares", "quote", "$", "NVDA", "SCHB", "VTI", "SCHF", "market cap", "portfolio"]
+        },
+        "stocks_advanced": {
+          "type": "mcp",
+          "url": "http://yahoo-finance-mcp.janet-mcp.svc.cluster.local:8000/mcp",
+          "auth": { "type": "none" },
+          "allow": ["get_historical_stock_prices", "get_stock_actions", "get_financial_statement", "get_holder_info", "get_option_expiration_dates", "get_option_chain", "get_recommendations"],
+          "description": "Yahoo Finance (advanced) — historical price series, dividends/splits, financial statements (income/balance sheet/cashflow), holder/ownership info, options chains, and analyst recommendations for a ticker symbol. Rarer asks — not keyword-preloaded, call load_tools to bring these in."
+        },
         "fetch": {
           "type": "http",
           "description": "Fetch a web page/URL and return its main content as clean Markdown (JavaScript/SPA pages supported). Use to read a web_search result or any known URL.",

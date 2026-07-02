@@ -1,0 +1,67 @@
+---
+# Yahoo Finance MCP server — vendored Alex2Yang97/yahoo-finance-mcp
+# (yfinance-backed), served over streamable-HTTP by http_entrypoint.py (see
+# ./src/). Public data, no auth, no secrets — mirrors google-workspace-mcp's
+# Deployment shape (../mcp/deployment.yaml) minus the OAuth env/secret wiring.
+#
+# Image is NOT built/pushed by this PR — Nicole builds+pushes
+# ghcr.io/nicolerenee/yahoo-finance-mcp manually from ./src (see Dockerfile
+# header) and bumps the tag below. No Flux Image Update Automation: neither
+# sibling MCP server in this namespace uses IUA either (both track
+# upstream-published images, not something this repo's CI builds), and there
+# is no CI here building this image on every commit — bump the tag by hand
+# (or wire up a proper build workflow + ImageRepository/ImagePolicy later if
+# rebuilds become frequent enough to want automation).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yahoo-finance-mcp
+  labels:
+    app: yahoo-finance-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yahoo-finance-mcp
+  template:
+    metadata:
+      labels:
+        app: yahoo-finance-mcp
+    spec:
+      containers:
+        - name: server
+          image: ghcr.io/nicolerenee/yahoo-finance-mcp:0.1.0
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: YFINANCE_MCP_HOST
+              value: "0.0.0.0"
+            - name: YFINANCE_MCP_PORT
+              value: "8000"
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 65532
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: "100m"
+              # yfinance parses full JSON responses through pandas per
+              # request; heavier baseline than the Go/JS siblings but not in
+              # jina-reader's headless-Chrome league.
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 30

@@ -10,3 +10,4 @@ resources:
   - ./mcp.yaml
   - ./brave-search.yaml
   - ./jina-reader.yaml
+  - ./yahoo-finance-mcp.yaml

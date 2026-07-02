@@ -1,0 +1,22 @@
+[project]
+name = "yahoo-finance-mcp-http"
+version = "0.1.0"
+description = "Yahoo Finance MCP server (vendored Alex2Yang97/yahoo-finance-mcp) served over streamable-HTTP for janet-mcp"
+requires-python = ">=3.11"
+dependencies = [
+    # >=1.6.0 is upstream's floor; bumped to >=1.9.0 here because
+    # streamable-HTTP support (mcp.server.fastmcp.FastMCP.run(transport=
+    # "streamable-http")) needs a build past that. No upper bound: mcp is
+    # still pre-2.0 as of this writing (latest stable 1.28.x; 2.0 only exists
+    # as alpha/beta prereleases, which pip/uv won't select by default), so an
+    # open floor tracks the latest 1.x. Re-pin with an upper bound if/when
+    # mcp 2.0 stabilizes and the fastmcp streamable-http API changes.
+    "mcp[cli]>=1.9.0",
+    "yfinance>=0.2.62",
+]
+
+[tool.uv]
+# No local package to build (server.py/http_entrypoint.py are run directly,
+# not installed as a module) — skip the project-install step, just resolve
+# and install the dependencies above.
+package = false
