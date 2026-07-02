@@ -1,0 +1,66 @@
+---
+# Yahoo Finance MCP server — vendored Alex2Yang97/yahoo-finance-mcp
+# (yfinance-backed), served over streamable-HTTP. Public data, no auth, no
+# secrets — mirrors google-workspace-mcp's Deployment shape
+# (../mcp/deployment.yaml) minus the OAuth env/secret wiring.
+#
+# Image is built and released by nicolerenee/containers
+# (apps/yahoo-finance-mcp/, tag <app_version>-<image_revision>, cosign-signed
+# + SLSA-attested). Pin by tag AND digest per that repo's scheme — the digest
+# is in the `yahoo-finance-mcp-<version>` release notes. To roll a new build,
+# bump the version in the containers repo, then update the ref below. No Flux
+# Image Update Automation (the sibling MCP servers don't use it either); the
+# tag is bumped by hand.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yahoo-finance-mcp
+  labels:
+    app: yahoo-finance-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yahoo-finance-mcp
+  template:
+    metadata:
+      labels:
+        app: yahoo-finance-mcp
+    spec:
+      containers:
+        - name: server
+          image: ghcr.io/nicolerenee/yahoo-finance-mcp:0.1.0-1@sha256:35dfe4da0420b361aaaaf94f2cd17f74e7ad650401c12ade6f1c39a9e1e57097
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: YFINANCE_MCP_HOST
+              value: "0.0.0.0"
+            - name: YFINANCE_MCP_PORT
+              value: "8000"
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 65532
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: "100m"
+              # yfinance parses full JSON responses through pandas per
+              # request; heavier baseline than the Go/JS siblings but not in
+              # jina-reader's headless-Chrome league.
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 30

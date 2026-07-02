@@ -1,0 +1,39 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+# Egress lockdown for the Yahoo Finance MCP server. yfinance talks to a fixed,
+# small set of Yahoo hosts on 443 (confirmed against yfinance's own source —
+# yfinance/const.py + yfinance/data.py in ranaroussi/yfinance, the library
+# this MCP server is built on):
+#   - query1.finance.yahoo.com / query2.finance.yahoo.com — the quote/chart/
+#     fundamentals/news JSON APIs every tool in this server calls.
+#   - finance.yahoo.com / fc.yahoo.com — yfinance's cookie+crumb bootstrap
+#     (its anti-bot workaround: it visits these to mint a session cookie and
+#     CSRF "crumb" before the query1/query2 calls will succeed).
+#   - consent.yahoo.com / guce.yahoo.com — Yahoo's cookie-consent redirect
+#     (GUCE), which the bootstrap step above can be redirected through
+#     depending on Yahoo's geolocation/consent heuristics for the egress IP.
+# No SSRF surface here (unlike jina-reader) — this server never fetches a
+# caller-supplied URL, only fixed Yahoo API endpoints, so an exact-host
+# allowlist (like brave-search-mcp's) is the right shape, not "world minus
+# internal". DNS (53) is allowed separately by the cluster-wide
+# intercept-all-dns CCNP.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: yahoo-finance-mcp-egress
+spec:
+  endpointSelector:
+    matchLabels:
+      app: yahoo-finance-mcp
+  egress:
+    - toFQDNs:
+        - matchName: "query1.finance.yahoo.com"
+        - matchName: "query2.finance.yahoo.com"
+        - matchName: "finance.yahoo.com"
+        - matchName: "fc.yahoo.com"
+        - matchName: "consent.yahoo.com"
+        - matchName: "guce.yahoo.com"
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
