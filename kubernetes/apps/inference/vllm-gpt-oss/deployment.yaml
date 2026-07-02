@@ -25,7 +25,7 @@ spec:
           resourceClaimTemplateName: gpu
       containers:
         - name: vllm
-          image: nvcr.io/nvidia/vllm:26.04-py3
+          image: nvcr.io/nvidia/vllm:26.06-py3
           command:
             - vllm
             - serve
