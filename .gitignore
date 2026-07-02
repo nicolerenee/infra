@@ -1,7 +1,5 @@
 .DS_Store
 .task
-__pycache__/
-*.pyc
 
 /**/talos/clusterconfig/
 kubeconfig*

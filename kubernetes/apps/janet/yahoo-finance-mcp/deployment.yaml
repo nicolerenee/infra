@@ -1,17 +1,19 @@
 ---
 # Yahoo Finance MCP server — vendored Alex2Yang97/yahoo-finance-mcp
-# (yfinance-backed), served over streamable-HTTP by http_entrypoint.py (see
-# ./src/). Public data, no auth, no secrets — mirrors google-workspace-mcp's
-# Deployment shape (../mcp/deployment.yaml) minus the OAuth env/secret wiring.
+# (yfinance-backed), served over streamable-HTTP. Public data, no auth, no
+# secrets — mirrors google-workspace-mcp's Deployment shape
+# (../mcp/deployment.yaml) minus the OAuth env/secret wiring.
 #
-# Image is NOT built/pushed by this PR — Nicole builds+pushes
-# ghcr.io/nicolerenee/yahoo-finance-mcp manually from ./src (see Dockerfile
-# header) and bumps the tag below. No Flux Image Update Automation: neither
-# sibling MCP server in this namespace uses IUA either (both track
-# upstream-published images, not something this repo's CI builds), and there
-# is no CI here building this image on every commit — bump the tag by hand
-# (or wire up a proper build workflow + ImageRepository/ImagePolicy later if
-# rebuilds become frequent enough to want automation).
+# Image is built and released by nicolerenee/containers
+# (apps/yahoo-finance-mcp/, tag <app_version>-<image_revision>, cosign-signed
+# + SLSA-attested). Pin by tag AND digest per that repo's scheme — the digest
+# is in the `yahoo-finance-mcp-<version>` release notes. To roll a new build,
+# bump the version in the containers repo, then update the ref below. No Flux
+# Image Update Automation (the sibling MCP servers don't use it either); the
+# tag is bumped by hand.
+#
+# TODO(pin-digest): after the containers Release publishes
+# yahoo-finance-mcp-0.1.0-1, append @sha256:<digest> to the image ref below.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,7 +32,7 @@ spec:
     spec:
       containers:
         - name: server
-          image: ghcr.io/nicolerenee/yahoo-finance-mcp:0.1.0
+          image: ghcr.io/nicolerenee/yahoo-finance-mcp:0.1.0-1
           ports:
             - containerPort: 8000
               name: http
