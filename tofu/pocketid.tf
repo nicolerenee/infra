@@ -165,12 +165,11 @@ resource "pocketid_group" "janet_users" {
 resource "pocketid_client" "janet" {
   name = "Janet"
   callback_urls = [
-    "https://janet.moose-platy.ts.net/oauth/callback",
     "janet://oauth-callback",
     # In-cluster brain web BFF (PKCE) on fairy — janet.fairy.freckle.services.
     "https://janet.fairy.freckle.services/auth/callback",
   ]
-  launch_url   = "https://janet.moose-platy.ts.net"
+  launch_url   = "https://janet.fairy.freckle.services"
   is_public    = true
   pkce_enabled = true
   # sort() to match pocket-id's lexicographically-sorted API response and
