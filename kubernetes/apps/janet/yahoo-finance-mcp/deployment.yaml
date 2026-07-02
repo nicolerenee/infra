@@ -38,6 +38,13 @@ spec:
               value: "0.0.0.0"
             - name: YFINANCE_MCP_PORT
               value: "8000"
+            # yfinance writes a cookie + timezone cache to $HOME/.cache. The
+            # container runs as uid 65532 with --no-create-home, so $HOME
+            # (/home/mcp) doesn't exist -> "Permission denied" and it refetches
+            # the cookie/crumb every call. Point HOME at /tmp (exists, writable
+            # by any uid) so the cache works.
+            - name: HOME
+              value: "/tmp"
           securityContext:
             allowPrivilegeEscalation: false
             runAsNonRoot: true
