@@ -9,12 +9,18 @@
 #   - link-local / cloud-metadata (169.254.0.0/16)
 #   - IPv6 ULA + link-local (fc00::/7, fe80::/10)
 #
-# The 10/8 and fc00::/7 denies would otherwise swallow the cluster's own
-# service/pod CIDRs — and CoreDNS lives in the service CIDR — so those ranges
-# are `except`ed to keep in-cluster DNS working. The except does NOT grant the
-# reader access to cluster pods/services: only `toEntities: world` allows
-# anything, and that never covers cluster entities. Cluster-internal pods/
-# services/nodes are blocked by default-deny egress once any egress rule exists.
+# No `except` for the cluster's own service/pod CIDRs is needed even though they
+# sit inside 10/8 and fc00::/7: Cilium CIDR rules (allow AND deny) never govern
+# traffic where both ends are Cilium-managed — in-cluster peers are matched by
+# their pod identity, not by IP. So this deny simply doesn't apply to
+# reader→CoreDNS (both Cilium-managed); DNS keeps working (and is separately
+# allowed by the cluster-wide intercept-all-dns CCNP). Because there are no
+# hardcoded cluster CIDRs, this policy is cluster-agnostic and shared verbatim by
+# every jina-reader Flux Kustomization (janet-mcp on fairy, hedgehog on atlantis).
+# The reader still cannot reach other in-cluster pods/services: nothing here
+# allows the `cluster` entity, so default-deny egress blocks them. Node/host IPs
+# in RFC1918 ARE covered by the deny (node networking isn't Cilium-managed) —
+# which is intended: the reader must not reach mgmt/node addresses.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -43,15 +49,9 @@ spec:
   egressDeny:
     - toCIDRSet:
         - cidr: 10.0.0.0/8
-          except:
-            - 10.229.0.0/16   # cluster service CIDR (CoreDNS)
-            - 10.230.0.0/16   # cluster pod CIDR
         - cidr: 172.16.0.0/12
         - cidr: 192.168.0.0/16
         - cidr: 100.64.0.0/10
         - cidr: 169.254.0.0/16
         - cidr: fc00::/7
-          except:
-            - fd2b:ec92:e230:1::/112   # cluster service CIDR (CoreDNS)
-            - fd2b:ec92:e232::/48      # cluster pod CIDR
         - cidr: fe80::/10
