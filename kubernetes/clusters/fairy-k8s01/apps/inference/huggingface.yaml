@@ -16,7 +16,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/inference/huggingface
+  path: ./kubernetes/apps/inference/platform/huggingface
   interval: 1h
   retryInterval: 2m
   timeout: 5m

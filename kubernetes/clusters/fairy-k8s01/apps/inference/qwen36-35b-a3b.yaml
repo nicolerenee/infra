@@ -24,7 +24,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/inference/qwen36-35b-a3b
+  path: ./kubernetes/apps/inference/models/qwen36-35b-a3b
   interval: 2m
   retryInterval: 1m
   timeout: 30m

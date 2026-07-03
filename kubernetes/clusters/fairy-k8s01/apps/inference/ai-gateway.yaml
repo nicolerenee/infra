@@ -23,7 +23,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/inference/ai-gateway
+  path: ./kubernetes/apps/inference/platform/ai-gateway
   interval: 2m
   retryInterval: 1m
   timeout: 5m

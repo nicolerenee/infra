@@ -14,7 +14,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/inference/leader-worker-set
+  path: ./kubernetes/apps/inference/platform/leader-worker-set
   interval: 2m
   retryInterval: 1m
   timeout: 5m

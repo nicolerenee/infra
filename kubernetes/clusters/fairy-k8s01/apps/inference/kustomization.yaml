@@ -15,5 +15,5 @@ resources:
   - ./qwen36-35b-a3b.yaml
   - ./resource-claims.yaml
   # vllm-gpt-oss-2node disabled — torn down to free DGX GPUs for the Qwen
-  # HA pair. Files kept under kubernetes/apps/inference/vllm-gpt-oss-2node*;
+  # HA pair. Files kept under kubernetes/apps/inference/models/vllm-gpt-oss-2node*;
   # re-add ./vllm-gpt-oss-2node.yaml here to redeploy.
