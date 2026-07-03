@@ -3,15 +3,17 @@
 # Egress lockdown for the Yahoo Finance MCP server. yfinance talks to a fixed
 # set of hosts on 443 (confirmed against yfinance's own source — const.py +
 # data.py in ranaroussi/yfinance, the library this MCP server is built on):
-#   - *.yahoo.com — every API/auth/consent host yfinance uses is a Yahoo
+#   - **.yahoo.com — every API/auth/consent host yfinance uses is a Yahoo
 #     subdomain: query1/query2.finance.yahoo.com (the quote/chart/fundamentals/
 #     news JSON APIs), finance.yahoo.com + fc.yahoo.com (cookie+crumb
 #     bootstrap — its anti-bot workaround: mint a session cookie and CSRF
 #     "crumb" before query1/query2 will answer), and consent.yahoo.com /
 #     guce.yahoo.com (Yahoo's GUCE cookie-consent redirect the bootstrap can
-#     be routed through). Collapsed to a wildcard rather than six exact names:
-#     Yahoo shuffles these subdomains, and a wildcard survives that without a
-#     confusing curl(28) timeout in the tools.
+#     be routed through). NOTE the DOUBLE asterisk: Cilium's single-`*`
+#     matchPattern matches within ONE DNS label only (it does not cross dots),
+#     so `*.yahoo.com` silently drops the two-label query1/query2.finance.
+#     yahoo.com API hosts as world-ipv4 → curl(28). `**.` (Cilium ≥1.19,
+#     PR #43420) matches subdomains at any depth, covering both.
 #   - markets.businessinsider.com — the ONE non-Yahoo host. yfinance's
 #     Ticker.isin scrapes Business Insider's ISIN search-suggest endpoint, and
 #     this server's get_stock_info calls .isin as a validity guard before
@@ -32,7 +34,7 @@ spec:
       app: yahoo-finance-mcp
   egress:
     - toFQDNs:
-        - matchPattern: "*.yahoo.com"
+        - matchPattern: "**.yahoo.com"
         - matchName: "markets.businessinsider.com"
       toPorts:
         - ports:
