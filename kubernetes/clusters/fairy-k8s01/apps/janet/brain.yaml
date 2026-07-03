@@ -24,7 +24,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/janet/brain
+  path: ./kubernetes/apps/inference/janet/brain
   interval: 2m
   retryInterval: 1m
   timeout: 5m
