@@ -34,6 +34,7 @@ data:
           "model": "Qwen3.6-35B-A3B-FP8",
           "auth": { "type": "k8s_sa", "audience": "ai-gateway.inference" },
           "capabilities": ["thinking"],
+          "reasoning": { "control": "toggle", "levels": ["off", "on"], "default": "off", "mechanism": "qwen_enable_thinking" },
           "properties": { "secure": true, "local": true }
         }
       ]
