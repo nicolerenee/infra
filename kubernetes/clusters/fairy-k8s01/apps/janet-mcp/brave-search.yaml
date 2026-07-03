@@ -19,7 +19,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/janet/brave-search-mcp
+  path: ./kubernetes/apps/inference/mcp/brave-search-mcp
   interval: 2m
   retryInterval: 1m
   timeout: 5m
