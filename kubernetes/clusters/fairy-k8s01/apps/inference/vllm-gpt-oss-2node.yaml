@@ -25,7 +25,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/inference/vllm-gpt-oss-2node
+  path: ./kubernetes/apps/inference/models/vllm-gpt-oss-2node
   interval: 2m
   retryInterval: 1m
   timeout: 30m
