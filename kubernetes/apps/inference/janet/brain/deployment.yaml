@@ -67,6 +67,15 @@ spec:
             # must match the App's callback exactly.
             - name: GITHUB_REDIRECT_URL
               value: https://janet.fairy.freckle.services/auth/github/callback
+            # Background coding runs. JANET_CODING_ENABLED gates the coding chat
+            # tools + /coding-runs API. Inert until the M2 image ships (the flag
+            # is unread by the current binary); once live, runs just park in
+            # `queued` until the janet-controller exists (§2). Placed ahead of
+            # time so the feature surfaces the moment M2's image auto-deploys.
+            - name: JANET_CODING_ENABLED
+              value: "true"
+            - name: JANET_CODING_MAX_ACTIVE_PER_USER
+              value: "10"
             # MCP servers are declared in the mounted ConfigMap, not hardcoded.
             - name: JANET_MCP_CONFIG
               value: /etc/janet/mcp.json
