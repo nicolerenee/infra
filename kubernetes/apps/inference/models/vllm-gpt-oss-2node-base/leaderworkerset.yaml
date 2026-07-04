@@ -24,7 +24,7 @@ spec:
             resourceClaimTemplateName: gpu-rdma
         containers:
           - name: vllm
-            image: nvcr.io/nvidia/vllm:26.04-py3
+            image: nvcr.io/nvidia/vllm:26.06-py3
             command:
               - bash
               - -c
@@ -121,7 +121,7 @@ spec:
             resourceClaimTemplateName: gpu-rdma
         containers:
           - name: vllm
-            image: nvcr.io/nvidia/vllm:26.04-py3
+            image: nvcr.io/nvidia/vllm:26.06-py3
             command:
               - bash
               - -c
