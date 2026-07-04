@@ -41,6 +41,19 @@ spec:
               - name: http
                 containerPort: &port 6767
             probes:
+              # Startup probe gates liveness/readiness so a slow first boot
+              # (1.6.0's schema init) isn't SIGTERM'd at 30s. Allows ~5 min.
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: *port
+                  initialDelaySeconds: 5
+                  periodSeconds: 5
+                  timeoutSeconds: 2
+                  failureThreshold: 60
               liveness: &probes
                 enabled: true
                 custom: true
