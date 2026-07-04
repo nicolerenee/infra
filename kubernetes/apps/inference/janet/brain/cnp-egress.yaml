@@ -81,3 +81,19 @@ spec:
         - ports:
             - port: "443"
               protocol: TCP
+    # GitHub App OAuth for background coding runs (per-user token vault). Both
+    # entries are required and non-overlapping:
+    #   - matchName github.com : the OAuth token exchange/refresh endpoint
+    #     (github.com/login/oauth/access_token) is on the BARE apex. A wildcard
+    #     pattern never matches the apex, so it must be listed explicitly.
+    #   - matchPattern **.github.com : api.github.com (App/user API). `**` (not a
+    #     single `*`) so it holds if GitHub ever serves a multi-label host.
+    # Cilium v1.19 supports `**`. Coding runs' own git clone/push (codeload.,
+    # ghcr.io, registries) run in the janet-coding sandbox ns, not here.
+    - toFQDNs:
+        - matchName: "github.com"
+        - matchPattern: "**.github.com"
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
