@@ -1,0 +1,29 @@
+---
+# Element Web runtime config. Served from the web root at freckle.chat; the
+# homeserver API lives on matrix.freckle.chat (see default_server_config).
+# disable_custom_urls locks the client to our homeserver.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: element-config
+data:
+  config.json: |
+    {
+      "default_server_config": {
+        "m.homeserver": {
+          "base_url": "https://matrix.freckle.chat",
+          "server_name": "freckle.chat"
+        }
+      },
+      "brand": "Freckle Chat",
+      "disable_custom_urls": true,
+      "disable_guests": true,
+      "default_country_code": "US",
+      "show_labs_settings": true,
+      "room_directory": {
+        "servers": ["freckle.chat"]
+      },
+      "setting_defaults": {
+        "UIFeature.registration": false
+      }
+    }
