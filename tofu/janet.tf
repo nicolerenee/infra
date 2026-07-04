@@ -30,6 +30,31 @@ resource "google_secret_manager_secret" "janet_google" {
   }
 }
 
+#   fairy-k8s01-janet-github — the "janet" GitHub App's OAuth client id +
+#     secret, for the per-user token vault behind background coding runs.
+#     Externally issued (GitHub App registration), so tofu owns only the
+#     container; the value is pushed by hand, never in state — same as
+#     janet-google:
+#       printf '{"GITHUB_CLIENT_ID":"<id>","GITHUB_CLIENT_SECRET":"<secret>"}' | \
+#         gcloud secrets versions add fairy-k8s01-janet-github \
+#           --project=freckle-secrets-db8d4f --data-file=-
+#     The vault is encrypted with the existing JANET_TOKEN_ENC_KEY (reused, not
+#     a new key). Covered by the janet eso-namespace prefix grant.
+resource "google_secret_manager_secret" "janet_github" {
+  secret_id = "fairy-k8s01-janet-github"
+  project   = local.project_id
+
+  labels = {
+    cluster   = "fairy-k8s01"
+    namespace = "janet"
+    consumer  = "janet-brain"
+  }
+
+  replication {
+    auto {}
+  }
+}
+
 # OIDC client id, stored by tofu since tofu mints it. Final secret_id is
 # `fairy-k8s01-janet-oidc`, covered by the janet eso-namespace prefix grant.
 module "janet_oidc" {
