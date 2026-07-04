@@ -183,3 +183,78 @@ output "janet_oidc_client_id" {
   value       = pocketid_client.janet.id
   description = "Pocket-ID client ID for Janet's client (public/PKCE — no secret)."
 }
+
+# Matrix (tuwunel homeserver) — OIDC relying-party client. tuwunel delegates
+# login to pocket-id: users authenticate at freckle.id and tuwunel maps them to
+# Matrix accounts. Standalone (not the grafana `consumer` for_each) because its
+# callback URL is Matrix-shaped, not `/login/generic_oauth`.
+#
+# The callback URL embeds the OAuth client_id itself
+# (`.../login/sso/callback/<client_id>`), which would create a read-after-create
+# circular dependency if the ID were server-generated. We break the cycle by
+# generating the id ourselves as a random UUID: its value is known before the
+# client is created, so client_id, the callback URL, and the GSM copy all
+# reference the same uuid and resolve in a single apply. random_uuid is stable
+# in state, so the id never churns on later applies. The trozz/pocketid provider
+# accepts a settable client_id (2–128 chars). Confidential client (PKCE); the id
+# + secret reach the matrix namespace via GSM + ESO like the consumers.
+resource "random_uuid" "matrix_oidc_client_id" {}
+
+locals {
+  matrix_oidc_callback_url = "https://matrix.freckle.chat/_matrix/client/unstable/login/sso/callback/${random_uuid.matrix_oidc_client_id.result}"
+}
+
+resource "pocketid_client" "matrix" {
+  name      = "Matrix (Tuwunel)"
+  client_id = random_uuid.matrix_oidc_client_id.result
+  callback_urls = [
+    local.matrix_oidc_callback_url,
+  ]
+  launch_url   = "https://matrix.freckle.chat"
+  is_public    = false
+  pkce_enabled = true
+}
+
+# Informational — the generated client id. tuwunel reads it from GSM, not here.
+output "matrix_oidc_client_id" {
+  value       = random_uuid.matrix_oidc_client_id.result
+  description = "Generated Pocket-ID client ID for tuwunel."
+}
+
+# GSM secret per the `<cluster>-<namespace>-<name>` convention so the ns-prefix
+# IAM grant below covers it. tuwunel only consumes client-secret (client_id is a
+# fixed env), but we store both for symmetry with the consumer clients.
+module "matrix_oidc_secret" {
+  source = "./modules/gsm-secret"
+
+  cluster             = "atlantis-k8s01"
+  namespace           = "matrix"
+  name                = "tuwunel-oidc"
+  workload_project_id = local.project_id
+  # client-id and callback-url are not secret, but carrying them in the same
+  # blob keeps the generated uuid entirely out of git — tuwunel's HelmRelease
+  # sources all three id-dependent values from here via ESO.
+  secret_data = jsonencode({
+    "client-id"     = random_uuid.matrix_oidc_client_id.result
+    "client-secret" = pocketid_client.matrix.client_secret
+    "callback-url"  = local.matrix_oidc_callback_url
+  })
+  extra_labels = {
+    consumer = "tuwunel"
+    purpose  = "oidc-client"
+  }
+}
+
+# Project-level secretAccessor grant for the matrix namespace's ESO identity.
+# Same `external-secrets-<cluster>` SA convention as the CF tokens / grafana.
+module "matrix_oidc_eso" {
+  source = "./modules/eso-namespace"
+
+  cluster                 = "atlantis-k8s01"
+  namespace               = "matrix"
+  sa_name                 = "external-secrets-atlantis-k8s01"
+  workload_project_id     = local.project_id
+  workload_project_number = data.google_project.this.number
+  iac_project_number      = data.google_project.iac.number
+  wif_pool_id             = google_iam_workload_identity_pool.clusters.workload_identity_pool_id
+}

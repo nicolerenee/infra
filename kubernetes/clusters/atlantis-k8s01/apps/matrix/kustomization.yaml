@@ -6,6 +6,7 @@ namespace: matrix
 components:
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./external-secrets.yaml
   - ./heisenbridge.yaml
   - ./hookshot.yaml
   - ./tuwunel.yaml

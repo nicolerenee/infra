@@ -52,9 +52,38 @@ spec:
                 value: "104857600"
               - name: TUWUNEL_IP_LOOKUP_STRATEGY
                 value: "5"
+              # SSO / next-gen OIDC auth via pocket-id (freckle.id). tuwunel is
+              # the OIDC relying party: it redirects login to freckle.id and maps
+              # the returned identity to a Matrix account. Setting well_known.client
+              # (above) plus this provider also activates tuwunel's built-in
+              # next-gen OIDC Authorization Server (MSC3861) for Element X et al.
+              # brand = provider type (drives built-in icons/defaults for known
+              # brands; PocketID is unknown so it's just an internal label — we
+              # supply issuer_url below). name = the label shown on the login page.
+              # CLIENT_ID, CLIENT_SECRET and CALLBACK_URL all embed the generated
+              # client uuid, so they arrive via the tuwunel-oidc envFrom secret
+              # rather than being named here (the uuid stays out of git).
+              - name: TUWUNEL_IDENTITY_PROVIDER__0__BRAND
+                value: PocketID
+              - name: TUWUNEL_IDENTITY_PROVIDER__0__NAME
+                value: Freckle ID
+              - name: TUWUNEL_IDENTITY_PROVIDER__0__ISSUER_URL
+                value: https://freckle.id
+              # freckle.id is self-hosted and fully controlled, so trusted mode is
+              # safe: an SSO login whose preferred_username matches an existing
+              # Matrix localpart is granted that account instead of creating a new
+              # one (links pre-existing accounts). Never enable for public IdPs.
+              - name: TUWUNEL_IDENTITY_PROVIDER__0__TRUSTED
+                value: "true"
+              # Advertise OIDC as the preferred login method (MSC3824) so next-gen
+              # clients drive the new flow.
+              - name: TUWUNEL_OIDC_AWARE_PREFERRED
+                value: "true"
             envFrom:
               - secretRef:
                   name: tuwunel-secret
+              - secretRef:
+                  name: tuwunel-oidc
             resources:
               requests:
                 memory: 512Mi
@@ -95,6 +124,16 @@ spec:
               - path:
                   type: PathPrefix
                   value: /_matrix
+              # Next-gen OIDC Authorization Server endpoints (authorize, token,
+              # jwks, userinfo, registration, device, account) live under
+              # /_tuwunel, and the OAuth issuer discovery doc sits at the issuer
+              # origin (matrix.${CHAT_DOMAIN}) — neither is under /_matrix.
+              - path:
+                  type: PathPrefix
+                  value: /_tuwunel
+              - path:
+                  type: PathPrefix
+                  value: /.well-known/openid-configuration
             backendRefs:
               - identifier: main
                 port: *port
