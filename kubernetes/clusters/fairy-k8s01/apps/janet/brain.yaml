@@ -28,5 +28,7 @@ spec:
   interval: 2m
   retryInterval: 1m
   timeout: 5m
-  prune: true
+  # prune deliberately disabled ahead of the OCI-artifact cutover so deleting
+  # this KS (PR 2) adopts the existing resources instead of garbage-collecting them.
+  prune: false
   wait: true

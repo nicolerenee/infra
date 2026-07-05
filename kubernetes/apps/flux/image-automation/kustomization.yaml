@@ -6,7 +6,9 @@ resources:
   - ./ghcr-login.externalsecret.yaml
   - ./imagerepository-harvest.yaml
   - ./imagerepository-janet-brain.yaml
+  - ./imagerepository-janet-manifests.yaml
   - ./imagepolicy-hedgehog.yaml
   - ./imagepolicy-harvest.yaml
   - ./imagepolicy-janet-brain.yaml
+  - ./imagepolicy-janet-manifests.yaml
   - ./imageupdateautomation.yaml

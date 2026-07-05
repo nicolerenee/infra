@@ -1,0 +1,29 @@
+---
+# Selects the latest janet-brain manifests tag matching `main-<ISO8601-compact-UTC>-<sha>`.
+# Extracts the timestamp and picks numerically highest (= most recent build).
+# Marker: # {"$imagepolicy": "flux-system:janet-manifests:tag"}
+# (set on kubernetes/apps/inference/janet/platform/ocirepository.yaml).
+#
+# When the janet-brain repo cuts semver releases (v0.x.y), add a second
+# policy beside this one with `policy.semver` and decide which channel the
+# OCIRepository tracks (main builds vs releases).
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: janet-manifests
+spec:
+  imageRepositoryRef:
+    name: janet-manifests
+    # Same namespace (flux-system) as this policy + the automation — no
+    # cross-namespace accessFrom needed. See imagerepository-janet-manifests.yaml
+    # for why this scanner lives here rather than beside the OCIRepository on
+    # fairy (accessFrom ACLs don't span clusters).
+    namespace: flux-system
+  filterTags:
+    pattern: '^main-(?P<ts>[0-9]{8}T[0-9]{6}Z)-[a-f0-9]+$'
+    extract: '$ts'
+  policy:
+    # Fixed-width ISO 8601 compact UTC (YYYYMMDDTHHMMSSZ) is lex-sortable —
+    # alphabetical ascending = chronological. Latest = highest.
+    alphabetical:
+      order: asc

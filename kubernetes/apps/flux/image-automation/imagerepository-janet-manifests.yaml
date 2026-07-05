@@ -1,0 +1,25 @@
+---
+# Scans the janet-brain manifests OCI registry so the ImageUpdateAutomation
+# can track new builds. Lives in flux-system on atlantis (the only cluster
+# running the committer), even though the OCIRepository that actually pulls
+# these manifests runs on fairy (see
+# kubernetes/apps/inference/janet/platform/ocirepository.yaml) — the marker
+# rewrite is a git operation, so the scanner just needs to live wherever the
+# automation reads its ImagePolicies. Same placement rationale as this
+# directory's existing imagerepository-janet-brain.yaml (the container image
+# scanner for the same app).
+#
+# Reuses harvest-ghcr-login: the same shared GHCR read PAT (1Password
+# hedgehog-ghcr) reads both freckleapps org packages and the personal
+# nicolerenee packages, so one docker-config secret covers all flux-system
+# scanners.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/image.toolkit.fluxcd.io/imagerepository_v1.json
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: janet-manifests
+spec:
+  image: ghcr.io/freckleapps/janet-manifests
+  interval: 5m
+  secretRef:
+    name: harvest-ghcr-login
