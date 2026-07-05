@@ -1,4 +1,12 @@
 ---
+# PR 2 (OCI-artifact cutover): adopts the objects the old git-sourced
+# `janet-brain` Kustomization of the same name applied — same
+# name/namespace/commonMetadata labels, so this is an SSA owner-label
+# rewrite, not a fresh create. prune was pre-disabled in PR 1 specifically so
+# this file-swap does not GC anything; it's re-enabled here since the new
+# owner (this OCIRepository-sourced KS) should garbage-collect its own
+# moves/renames going forward.
+#
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -15,20 +23,21 @@ spec:
   dependsOn:
     - name: external-secrets
       namespace: external-secrets
+    # The OCIRepository this KS sources from is created by janet-platform.
+    - name: janet-platform
+      namespace: janet
     # Wait for migrations to complete — the brain no longer creates its own
     # schema (goose owns it). janet-migrate itself dependsOn janet-db, so this
     # transitively waits for the DB too.
     - name: janet-migrate
       namespace: janet
   sourceRef:
-    kind: GitRepository
-    name: flux-system
-    namespace: flux-system
-  path: ./kubernetes/apps/inference/janet/brain
+    kind: OCIRepository
+    name: janet
+    namespace: janet
+  path: ./workloads
   interval: 2m
   retryInterval: 1m
   timeout: 5m
-  # prune deliberately disabled ahead of the OCI-artifact cutover so deleting
-  # this KS (PR 2) adopts the existing resources instead of garbage-collecting them.
-  prune: false
+  prune: true
   wait: true
