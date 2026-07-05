@@ -1,4 +1,3 @@
----
 # Source for janet-brain's kustomize manifests. The app repo publishes an OCI
 # artifact at build time alongside the container image; both share the same
 # tag so a build advances them atomically (see hedgehog's identical pattern
@@ -20,7 +19,7 @@ spec:
   interval: 5m
   url: oci://ghcr.io/freckleapps/janet-manifests
   ref:
-    tag: main-20260705T072702Z-d135b74 # {"$imagepolicy": "flux-system:janet-manifests:tag"}
+    tag: main-20260705T080044Z-d3c9bcb # {"$imagepolicy": "flux-system:janet-manifests:tag"}
   secretRef:
     # Reuses the cluster-wide `ghcr-pull` dockerconfigjson secret already
     # materialized in this namespace (ClusterExternalSecret gated on the
