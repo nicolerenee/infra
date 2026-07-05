@@ -1,0 +1,35 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./ocirepository.yaml
+# Deliberately NOT mirroring hedgehog's platform dir 1:1:
+#
+# - No imagerepository.yaml here. Hedgehog is single-cluster (atlantis), so
+#   its ImageRepository can live beside its OCIRepository and still use
+#   `accessFrom` for the flux-system ImagePolicy on the *same* cluster.
+#   janet-brain spans two clusters — workloads on fairy, but
+#   ImageUpdateAutomation (the git-committing automation) only runs on
+#   atlantis to avoid two committers racing (see
+#   kubernetes/clusters/atlantis-k8s01/flux/image-automation.yaml). A
+#   cross-namespace `accessFrom` ACL only works within one cluster's API
+#   server, so an ImageRepository created here (fairy) could never be
+#   referenced by an ImagePolicy on atlantis. Instead, the scanner lives
+#   directly in flux-system on atlantis, matching the *existing* precedent
+#   for janet-brain's own container image
+#   (kubernetes/apps/flux/image-automation/imagerepository-janet-brain.yaml):
+#   see imagerepository-janet-manifests.yaml + imagepolicy-janet-manifests.yaml
+#   in that same directory. Both reuse the `harvest-ghcr-login` secret
+#   that's already there — no new secret needed.
+#
+# - No Receiver / image-receiver ExternalSecret here either. fairy-k8s01
+#   does run the shared Flux notification-controller webhook (Tailscale
+#   funnel Ingress from kubernetes/apps/flux/instance/webhook/, same as
+#   atlantis), but a per-app push-trigger Receiver would need to live
+#   alongside the ImageRepository it annotates — which, per the point
+#   above, is on atlantis, not here. janet-brain's own container-image
+#   scanner has never had a push Receiver either (poll-only, same as
+#   this one will be). Adding a webhook push-trigger is a reasonable
+#   future optimization but isn't required for correctness: the
+#   ImageRepository's 5m poll interval is the delivery path for now.

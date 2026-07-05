@@ -1,0 +1,33 @@
+---
+# Source for janet-brain's kustomize manifests. The app repo publishes an OCI
+# artifact at build time alongside the container image; both share the same
+# tag so a build advances them atomically (see hedgehog's identical pattern
+# at kubernetes/apps/hedgehog/platform/ocirepository.yaml).
+#
+# PR 1 (this file): stand up the source only. Nothing consumes it yet — the
+# janet-brain/janet-migrate Kustomizations still source from GitRepository.
+# PR 2 swaps their sourceRef to this OCIRepository.
+#
+# Tag strategy: immutable `main-<ISO8601-compact-UTC>-<short-sha>` tags, same scheme as
+# the janet-brain image tags. The marker comment below lets
+# image-automation-controller rewrite `ref.tag` automatically — see
+# kubernetes/apps/flux/image-automation/imagepolicy-janet-manifests.yaml.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: janet
+spec:
+  interval: 5m
+  url: oci://ghcr.io/freckleapps/janet-manifests
+  ref:
+    tag: main-20260705T072702Z-d135b74 # {"$imagepolicy": "flux-system:janet-manifests:tag"}
+  secretRef:
+    # Reuses the cluster-wide `ghcr-pull` dockerconfigjson secret already
+    # materialized in this namespace (ClusterExternalSecret gated on the
+    # `freckle.systems/ghcr-pull: "true"` namespace label — see
+    # kubernetes/clusters/fairy-k8s01/flux/janet.yaml and
+    # kubernetes/clusters/fairy-k8s01/apps/ghcr-pull/clusterexternalsecret.yaml).
+    # It's the same kubernetes.io/dockerconfigjson shape as hedgehog's
+    # self-owned `ghcr-login-secret`, so there's no need to stand up a
+    # second GHCR ExternalSecret in this namespace just for manifest pulls.
+    name: ghcr-pull

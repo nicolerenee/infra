@@ -1,0 +1,38 @@
+---
+# Platform-side scaffolding: OCIRepository pointing at the manifest bundle
+# published by the janet-brain app repo. Mirrors hedgehog's platform.yaml
+# (kubernetes/clusters/atlantis-k8s01/apps/hedgehog/platform.yaml) — see
+# kubernetes/apps/inference/janet/platform/kustomization.yaml for where this
+# one deliberately diverges (no ImageRepository/Receiver in this dir).
+#
+# PR 1 (this file): stands up the source only, unconsumed. PR 2 points
+# janet-brain/janet-migrate's sourceRef at this OCIRepository.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app janet-platform
+  namespace: &namespace janet
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  targetNamespace: *namespace
+  # external-secrets: not because this dir creates an ExternalSecret (it
+  # doesn't — the OCIRepository reuses the pre-existing `ghcr-pull` secret),
+  # but for consistency with the other janet-namespace KSs (db/migrate/brain
+  # all dependsOn external-secrets) and because the ghcr-pull Secret itself
+  # is materialized by the ESO ClusterExternalSecret machinery.
+  dependsOn:
+    - name: external-secrets
+      namespace: external-secrets
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/inference/janet/platform
+  interval: 1h
+  retryInterval: 2m
+  timeout: 5m
+  prune: true
+  wait: true
