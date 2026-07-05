@@ -16,12 +16,13 @@ resources:
 #   cross-namespace `accessFrom` ACL only works within one cluster's API
 #   server, so an ImageRepository created here (fairy) could never be
 #   referenced by an ImagePolicy on atlantis. Instead, the scanner lives
-#   directly in flux-system on atlantis, matching the *existing* precedent
-#   for janet-brain's own container image
-#   (kubernetes/apps/flux/image-automation/imagerepository-janet-brain.yaml):
-#   see imagerepository-janet-manifests.yaml + imagepolicy-janet-manifests.yaml
-#   in that same directory. Both reuse the `harvest-ghcr-login` secret
-#   that's already there — no new secret needed.
+#   directly in flux-system on atlantis: see
+#   imagerepository-janet-manifests.yaml + imagepolicy-janet-manifests.yaml
+#   in kubernetes/apps/flux/image-automation/ (the same placement rationale
+#   janet-brain's own container-image scanner used to follow, before that
+#   scanner + its git-sourced manifest dirs were retired by the OCI-artifact
+#   cutover). Reuses the `harvest-ghcr-login` secret that's already there —
+#   no new secret needed.
 #
 # - No Receiver / image-receiver ExternalSecret here either. fairy-k8s01
 #   does run the shared Flux notification-controller webhook (Tailscale

@@ -5,9 +5,9 @@
 # these manifests runs on fairy (see
 # kubernetes/apps/inference/janet/platform/ocirepository.yaml) — the marker
 # rewrite is a git operation, so the scanner just needs to live wherever the
-# automation reads its ImagePolicies. Same placement rationale as this
-# directory's existing imagerepository-janet-brain.yaml (the container image
-# scanner for the same app).
+# automation reads its ImagePolicies. Same placement rationale janet-brain's
+# own container-image scanner used to follow, before that scanner + its
+# git-sourced manifest dirs were retired by the OCI-artifact cutover.
 #
 # Reuses harvest-ghcr-login: the same shared GHCR read PAT (1Password
 # hedgehog-ghcr) reads both freckleapps org packages and the personal
