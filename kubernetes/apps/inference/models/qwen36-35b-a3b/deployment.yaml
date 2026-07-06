@@ -1,9 +1,12 @@
 ---
 # Qwen3.6-35B-A3B-FP8 served by vLLM, single-node (tp=1) per GB10. Two replicas
 # spread one-per-DGX-node (podAntiAffinity) form the HA pair; the in-cluster AI
-# gateway load-balances + health-checks across them. RollingUpdate keeps ≥1 pod
-# serving during deploys (needs a spare DGX GPU for the surge — true while a 3rd
-# local model isn't occupying dgx03).
+# gateway load-balances + health-checks across them. RollingUpdate surges a
+# replacement pod when a DGX node is free, but falls back to taking one
+# replica down first (briefly serving from just the other) when all DGX
+# nodes are occupied (e.g. a 3rd local model on dgx03) — the strict
+# one-pod-per-node podAntiAffinity means a surge pod can't schedule without
+# a free node, so this keeps the rollout from ever getting stuck.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,7 +16,7 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 0
+      maxUnavailable: 1
       maxSurge: 1
   selector:
     matchLabels:
@@ -89,9 +92,12 @@ spec:
             # froggeric honors this kwarg (defaults true anyway).
             - --default-chat-template-kwargs
             - '{"preserve_thinking": true}'
-            # NOTE: MTP speculative decoding (--speculative-config method=mtp) was
-            # dropped in the v0.24 consolidation — the move was validated without it;
-            # re-add + perf-test on v0.24 as a fast follow-up.
+            # MTP speculative decoding: the method is built into this checkpoint
+            # (no separate draft model needed). Worked fine on the prior v0.20
+            # image; re-enabled on v0.24 after the consolidation validated
+            # without it.
+            - --speculative-config
+            - '{"method":"mtp","num_speculative_tokens":1}'
             - --trust-remote-code
           env:
             - name: HF_HOME
