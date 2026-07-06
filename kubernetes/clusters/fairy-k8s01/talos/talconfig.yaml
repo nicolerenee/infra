@@ -66,15 +66,42 @@ nodes:
           - vlanId: 300
             mtu: 1500
             dhcp: false
-            # Kernel requires an IPv4 address on the VLAN subinterface for
-            # macvlan child TX to work. Using TEST-NET-3 (RFC 5737) as a
-            # dummy address that will never be routed.
-            addresses:
-              - 203.0.113.1/32
+            # No address: bond0.300 is purely a bridge port for br300.
+            # (The earlier dummy 203.0.113.1/32 placeholder existed to
+            # nudge Cilium's auto-detect into adding VLAN 300 to its
+            # bpf VLAN allow-list. That's now done explicitly via
+            # `bpf.vlanBypass: [300]` in the Cilium Helm values, so the
+            # placeholder is no longer needed.)
+      - &cn01-br300
+        # L2 bridge over VLAN 300 (home LAN). Used as the parent for
+        # KubeVirt VM bridge-CNI attachments and macvlan pod attachments
+        # (multus-trusted, multus-vm-trusted). The bridge holds no IP —
+        # it's purely an L2 fanout. STP disabled (single port = no loops).
+        #
+        # The MAC is pinned per node via an inline patch on each cn
+        # node's `patches:` list (talhelper doesn't pass `hardwareAddr`
+        # through to BridgeConfig). Scheme: 02:1f:80:03:00:NN —
+        # locally-administered (02), random vendor-like prefix (1f:80),
+        # VLAN ID 300 as 03:00, NN = cn-node number. Without pinning
+        # the kernel synthesizes a random MAC each boot (observed
+        # 16:f4:… → 0e:da:… across a single reboot).
+        interface: br300
+        dhcp: false
+        mtu: 1500
+        bridge:
+          stp:
+            enabled: false
+          interfaces:
+            - bond0.300
     patches:
       - ./patches/bridge-sysctls.yaml
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
+      - |-
+        apiVersion: v1alpha1
+        kind: BridgeConfig
+        name: br300
+        hardwareAddr: "02:1f:80:03:00:01"
 
   - hostname: fairy-r02-cn02
     ipAddress: 10.189.3.17
@@ -92,10 +119,16 @@ nodes:
       - <<: *cn01-10g-1
         addresses:
           - 10.189.3.17/24
+      - <<: *cn01-br300
     patches:
       - ./patches/bridge-sysctls.yaml
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
+      - |-
+        apiVersion: v1alpha1
+        kind: BridgeConfig
+        name: br300
+        hardwareAddr: "02:1f:80:03:00:02"
 
   - hostname: fairy-r02-cn03
     ipAddress: 10.189.3.18
@@ -113,10 +146,16 @@ nodes:
       - <<: *cn01-10g-1
         addresses:
           - 10.189.3.18/24
+      - <<: *cn01-br300
     patches:
       - ./patches/bridge-sysctls.yaml
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
+      - |-
+        apiVersion: v1alpha1
+        kind: BridgeConfig
+        name: br300
+        hardwareAddr: "02:1f:80:03:00:03"
 
   - hostname: fairy-r02-cn04
     ipAddress: 10.189.3.19
@@ -134,10 +173,16 @@ nodes:
       - <<: *cn01-10g-1
         addresses:
           - 10.189.3.19/24
+      - <<: *cn01-br300
     patches:
       - ./patches/bridge-sysctls.yaml
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
+      - |-
+        apiVersion: v1alpha1
+        kind: BridgeConfig
+        name: br300
+        hardwareAddr: "02:1f:80:03:00:04"
 
   - hostname: fairy-r02-cn05
     ipAddress: 10.189.3.20
@@ -155,10 +200,16 @@ nodes:
       - <<: *cn01-10g-1
         addresses:
           - 10.189.3.20/24
+      - <<: *cn01-br300
     patches:
       - ./patches/bridge-sysctls.yaml
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
+      - |-
+        apiVersion: v1alpha1
+        kind: BridgeConfig
+        name: br300
+        hardwareAddr: "02:1f:80:03:00:05"
 
   - hostname: fairy-r02-cn06
     ipAddress: 10.189.3.21
@@ -176,10 +227,16 @@ nodes:
       - <<: *cn01-10g-1
         addresses:
           - 10.189.3.21/24
+      - <<: *cn01-br300
     patches:
       - ./patches/bridge-sysctls.yaml
       - ./patches/tpm-encryption.yaml
       - ./patches/watchdog.yaml
+      - |-
+        apiVersion: v1alpha1
+        kind: BridgeConfig
+        name: br300
+        hardwareAddr: "02:1f:80:03:00:06"
 
   - hostname: fairy-r02-dgx01
     ipAddress: 10.189.3.22
@@ -431,6 +488,28 @@ controlPlane:
         time:
           servers:
           - time.cloudflare.com # leave it as cloudflare but the router will hijack this and respond
+        # Node-local seccomp profile for the janet-coding namespace's sandbox pods:
+        # denies the cross-process memory-read syscalls (ptrace, process_vm_readv/
+        # writev, process_madvise, kcmp). Talos writes it to
+        # /var/lib/kubelet/seccomp/profiles/janet-no-ptrace.json; pods select it via
+        # localhostProfile: profiles/janet-no-ptrace.json.
+        seccompProfiles:
+          - name: janet-no-ptrace.json
+            value:
+              defaultAction: SCMP_ACT_ALLOW
+              architectures:
+                - SCMP_ARCH_X86_64
+                - SCMP_ARCH_X86
+                - SCMP_ARCH_X32
+              syscalls:
+                - names:
+                    - ptrace
+                    - process_vm_readv
+                    - process_vm_writev
+                    - process_madvise
+                    - kcmp
+                  action: SCMP_ACT_ERRNO
+                  errnoRet: 1
 worker:
   patches:
     - *disableSearchDomainPatch
