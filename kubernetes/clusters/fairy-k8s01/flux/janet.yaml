@@ -10,6 +10,25 @@ metadata:
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  # The sandbox namespace: janet-controller creates one short-lived Job per
+  # background coding run here (nothing long-running lives in it). Isolated from
+  # `janet` for a hard k8s boundary around code the runner executes.
+  name: janet-coding
+  labels:
+    # The runner image is private — fan the `ghcr-pull` secret in here too.
+    freckle.systems/ghcr-pull: "true"
+    # Enforce the restricted Pod Security Standard: the runner Jobs run untrusted
+    # harness code, so admission must reject anything not nonroot / no-privesc /
+    # caps-dropped (the controller's BuildJob already emits a compliant pod).
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+---
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization

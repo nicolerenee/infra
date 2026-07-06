@@ -11,3 +11,4 @@ resources:
   - ./db.yaml
   - ./migrate.yaml
   - ./brain.yaml
+  - ./controller.yaml
