@@ -20,9 +20,11 @@ metadata:
   labels:
     # The runner image is private — fan the `ghcr-pull` secret in here too.
     freckle.systems/ghcr-pull: "true"
-    # Enforce the restricted Pod Security Standard: the runner Jobs run untrusted
-    # harness code, so admission must reject anything not nonroot / no-privesc /
-    # caps-dropped (the controller's BuildJob already emits a compliant pod).
+    # Enforce the restricted Pod Security Standard (the strictest tier): the runner
+    # Jobs run untrusted harness code, so admission rejects any pod that isn't fully
+    # hardened per that profile — nonroot, no privilege escalation, capabilities
+    # dropped, a seccomp profile, no host namespaces/paths, and more (non-exhaustive;
+    # see the PSS spec). The controller's BuildJob already emits a compliant pod.
     pod-security.kubernetes.io/enforce: restricted
     pod-security.kubernetes.io/audit: restricted
     pod-security.kubernetes.io/warn: restricted
