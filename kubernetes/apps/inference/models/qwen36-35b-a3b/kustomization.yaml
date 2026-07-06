@@ -7,3 +7,8 @@ resources:
   - ./deployment.yaml
   - ./service.yaml
   - ./vmservicescrape.yaml
+# Vendored froggeric chat template, content-hashed so edits roll the Deployment.
+configMapGenerator:
+  - name: qwen36-chat-template
+    files:
+      - chat_template.jinja

@@ -42,7 +42,11 @@ spec:
           resourceClaimTemplateName: gpu
       containers:
         - name: vllm
-          image: vllm/vllm-openai:v0.20.0-aarch64-cu130-ubuntu2404
+          # v0.24.0 (CUDA-13 default, Ubuntu 24.04) via the GCR pull-through mirror
+          # (avoids Docker Hub rate limits). v0.24's Responses-API parser handles
+          # codex's multi-turn tool loop, so this one deploy serves brain chat AND
+          # coding. NOT the older v0.20 (its /responses couldn't parse tool results).
+          image: mirror.gcr.io/vllm/vllm-openai:v0.24.0-aarch64-ubuntu2404
           command:
             - vllm
             - serve
@@ -73,13 +77,21 @@ spec:
             - qwen3
             - --enable-auto-tool-choice
             - --tool-call-parser
-            - qwen3_coder
-            # MTP speculative decoding is built into this checkpoint (no draft model).
-            - --speculative-config
-            - '{"method":"mtp","num_speculative_tokens":1}'
-            # Qwen recommends preserving thinking across turns for agentic loops.
+            # qwen3_xml matches the native XML tool format the froggeric template
+            # emits (the default template + qwen3_coder can't parse codex's calls).
+            - qwen3_xml
+            # Vendored froggeric fixed template (see chat_template.jinja): tolerates
+            # the developer/tool roles + arbitrary system placement that the OpenAI
+            # Responses API (codex) sends, while staying correct for brain chat.
+            - --chat-template
+            - /config/chat_template.jinja
+            # Qwen recommends preserving thinking across turns for agentic loops;
+            # froggeric honors this kwarg (defaults true anyway).
             - --default-chat-template-kwargs
             - '{"preserve_thinking": true}'
+            # NOTE: MTP speculative decoding (--speculative-config method=mtp) was
+            # dropped in the v0.24 consolidation — the move was validated without it;
+            # re-add + perf-test on v0.24 as a fast follow-up.
             - --trust-remote-code
           env:
             - name: HF_HOME
@@ -98,6 +110,11 @@ spec:
               value: "4"
             - name: VLLM_MARLIN_USE_ATOMIC_ADD
               value: "1"
+            # v0.24 defaults to DeepGEMM for FP8 MoE and asserts "Unknown SF
+            # transformation" on this checkpoint's scale-factor layout; force the
+            # Marlin/Triton path (VLLM_MARLIN_USE_ATOMIC_ADD above) instead.
+            - name: VLLM_USE_DEEP_GEMM
+              value: "0"
           ports:
             - containerPort: 8000
               name: http
@@ -108,7 +125,7 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
-            # ~30 min — first load is weights from CephFS + MTP + flashinfer init.
+            # Long — first load is weights from CephFS + torch.compile + cudagraph capture.
             failureThreshold: 180
           livenessProbe:
             httpGet:
@@ -132,6 +149,9 @@ spec:
               mountPath: /models
             - name: shm
               mountPath: /dev/shm
+            - name: chat-template
+              mountPath: /config
+              readOnly: true
       volumes:
         - name: models
           persistentVolumeClaim:
@@ -140,3 +160,8 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 16Gi
+        # Content-hashed by kustomize's configMapGenerator, so editing the template
+        # rolls the Deployment automatically.
+        - name: chat-template
+          configMap:
+            name: qwen36-chat-template
