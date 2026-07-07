@@ -9,4 +9,6 @@ resources:
   - ./imagepolicy-hedgehog.yaml
   - ./imagepolicy-harvest.yaml
   - ./imagepolicy-janet-manifests.yaml
+  - ./receiver-janet-manifests.externalsecret.yaml
+  - ./receiver-janet-manifests.yaml
   - ./imageupdateautomation.yaml

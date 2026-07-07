@@ -1,0 +1,25 @@
+---
+# Push-trigger for the janet-manifests ImageRepository scan. The janet-brain
+# publish workflow POSTs to this Receiver's webhook URL after each OCI-artifact
+# push, which annotates the ImageRepository to force an immediate tag scan
+# instead of waiting for the 5m polling interval. Token-as-HMAC keeps the
+# public funnel URL safe to share. (Mirrors the hedgehog image-receiver.)
+#
+# Webhook URL pattern (path is published in `.status.webhookPath`):
+#   https://${CLUSTER_NAME}-flux-webhook/hook/<hash>
+apiVersion: notification.toolkit.fluxcd.io/v1
+kind: Receiver
+metadata:
+  name: janet-manifests-image-receiver
+  namespace: flux-system
+spec:
+  type: generic-hmac
+  events:
+    - "push"
+  secretRef:
+    name: flux-receiver-janet-token
+  resources:
+    - apiVersion: image.toolkit.fluxcd.io/v1
+      kind: ImageRepository
+      name: janet-manifests
+      namespace: flux-system
