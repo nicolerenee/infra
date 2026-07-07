@@ -5,10 +5,11 @@ kind: Kustomization
 namespace: janet
 components:
   - ../../../../components/flux-post-build-variables
+# Floor (infra-owned) + the single bootstrap KS that points at the app-owned
+# topology (deploy/flux/). The per-component child KSs (migrate/brain/
+# controller) moved into the app bundle — see janet-bootstrap.yaml.
 resources:
   - ./external-secrets.yaml
   - ./platform.yaml
   - ./db.yaml
-  - ./migrate.yaml
-  - ./brain.yaml
-  - ./controller.yaml
+  - ./janet-bootstrap.yaml
