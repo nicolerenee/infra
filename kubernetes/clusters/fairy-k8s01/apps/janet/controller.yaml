@@ -38,5 +38,9 @@ spec:
   interval: 2m
   retryInterval: 1m
   timeout: 5m
-  prune: true
+  # prune DISABLED ahead of the GitOps topology cutover — the app repo now owns
+  # the Kustomization topology (deploy/flux/). When the swap PR removes this KS
+  # file, the parent prunes THIS Kustomization object; with prune:false its
+  # workloads are orphaned (not GC'd) so the bundle-defined child KS adopts them.
+  prune: false
   wait: true
