@@ -87,6 +87,11 @@ spec:
             source: |
               .log = parse_json(.message) ?? .message
               del(.message)
+              # KubeVirt stamps hundreds of node labels (cpu-feature/cpu-model/
+              # machine-type/hyperv.node.kubevirt.io/...) on every node, so each log
+              # line hauls the full set — the bulk of every line's bytes, and never
+              # useful for a log query (node identity is kept in pod_node_name).
+              del(.kubernetes.node_labels)
           audit-parser:
             type: remap
             inputs:
