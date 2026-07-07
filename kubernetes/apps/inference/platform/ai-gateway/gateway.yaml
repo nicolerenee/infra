@@ -36,6 +36,13 @@ spec:
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: ai
+  # Reap a stream that goes 5 minutes with no upstream/downstream activity (a
+  # wedged backend or hung generation). Resets on every byte, so a healthy
+  # long-running LLM stream never trips it — this is the real safety net that
+  # lets the per-route request timeout be a loose 30m runaway backstop.
+  timeout:
+    http:
+      streamIdleTimeout: 300s
   connection:
     bufferLimit: 50Mi
 ---

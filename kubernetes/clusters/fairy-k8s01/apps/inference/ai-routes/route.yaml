@@ -63,3 +63,10 @@ spec:
       backendRefs:
         - name: local-qwen36-35b-a3b
           modelNameOverride: qwen3.6-35b-a3b
+      # Streaming LLM responses legitimately run several minutes; Envoy AI
+      # Gateway's implicit 60s request-timeout default truncated long single
+      # generations mid-stream. 30m is a runaway backstop a real turn never
+      # reaches — a genuinely stalled stream is reaped far sooner by the
+      # gateway-wide streamIdleTimeout (see ai-buffer-limit ClientTrafficPolicy).
+      timeouts:
+        request: 1800s
