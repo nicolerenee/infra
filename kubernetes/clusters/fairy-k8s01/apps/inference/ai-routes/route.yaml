@@ -10,10 +10,15 @@
 # gateway-only — each rule rewrites the semantic name to qwen3.6-35b-a3b via
 # modelNameOverride.
 #
-# HA: the Backend resolves to the qwen Service ClusterIP; kube-proxy load-balances
-# across the two pods and drops any pod that fails its /health readiness probe, so
-# losing one instance keeps requests flowing. (Active health-check / least-request
-# / outlier-eject tuning isn't applied: EAG requires AIServiceBackend→Backend, and
+# HA: the qwen Service is HEADLESS, so this FQDN resolves to one A record per
+# ready pod and Envoy's STRICT_DNS cluster load-balances per REQUEST (round-robin)
+# across the pods, dropping any that fail /health. This replaced a ClusterIP,
+# which gave Envoy a single VIP endpoint and let kube-proxy pin ~99% of traffic
+# to one pod (per-connection L4 LB + few long-lived upstream connections). Real
+# per-request LB needs Envoy to see the pod endpoints — EDS via a direct Service
+# backendRef isn't supported until EAG implements envoyproxy/ai-gateway#902, so
+# headless DNS is the mechanism until then. (least-request / active-health /
+# outlier-eject still unavailable: EAG requires AIServiceBackend→Backend, and
 # BackendTrafficPolicy can only target a Gateway/Route — a Gateway-scoped policy
 # would also hit the shared Anthropic backend. Revisit if backend-scoped traffic
 # policy lands.)

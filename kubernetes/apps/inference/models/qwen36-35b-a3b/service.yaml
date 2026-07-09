@@ -1,13 +1,20 @@
 ---
-# Single ClusterIP fronting both replicas. kube-proxy load-balances across the
-# pods and drops any pod that fails its /health readiness probe, so losing one
-# instance keeps requests flowing. (No BackendTrafficPolicy — see route.yaml for
-# why active health-check / least-request / outlier-eject isn't applied.)
+# Headless (clusterIP: None) so the AI gateway load-balances per REQUEST across
+# both replicas. A ClusterIP resolves to a single VIP, so Envoy's Backend saw
+# ONE endpoint and kube-proxy picked the pod per TCP connection — and because
+# Envoy holds only a handful of long-lived upstream connections for low-
+# concurrency LLM traffic, kube-proxy pinned ~99% of requests onto one pod while
+# the other GPU sat idle (measured over hours via vllm:generation_tokens_total).
+# Headless returns one A record per READY pod, so Envoy's STRICT_DNS cluster
+# creates an endpoint per pod and round-robins across them; the /health readiness
+# probe still drops a sick pod out of DNS. Nothing consumes the VIP (only the EAG
+# Backend FQDN and the pod-level vmservicescrape reference this Service).
 apiVersion: v1
 kind: Service
 metadata:
   name: qwen36-35b-a3b
 spec:
+  clusterIP: None
   selector:
     app.kubernetes.io/name: qwen36-35b-a3b
   ports:
