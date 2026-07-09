@@ -30,3 +30,8 @@ spec:
   timeout: 30m
   prune: true
   wait: true
+  # spec.clusterIP is immutable, so converting the Service from ClusterIP to
+  # headless can't be done by a patch — force lets Flux delete+recreate it. Safe
+  # to leave on: it only recreates a resource when an in-place apply hits an
+  # immutable-field conflict (rare), and it self-heals such drift going forward.
+  force: true
