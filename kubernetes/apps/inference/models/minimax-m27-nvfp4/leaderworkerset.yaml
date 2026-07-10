@@ -51,7 +51,7 @@ spec:
           # already holds the data (avoids a 2x copy). hostPath persists across
           # RecreateGroupOnPodRestart, so restarts re-sync incrementally (fast).
           - name: cache-models
-            image: mirror.gcr.io/rclone/rclone:1.73.4
+            image: mirror.gcr.io/rclone/rclone:1.73.4@sha256:654f6517c7aaec7e377690b2caf7c272dbe5f3b8200afbc14a00df6b4a9aa6ef
             command:
               - rclone
               - sync
@@ -164,6 +164,7 @@ spec:
           - name: ceph-models
             persistentVolumeClaim:
               claimName: models
+              readOnly: true
           # Dest: node-local NVMe cache. hostPath persists across pod restarts so
           # the CephFS sync is a one-time-per-node cost; vLLM reads weights here.
           - name: local-models
@@ -196,7 +197,7 @@ spec:
           # already holds the data (avoids a 2x copy). hostPath persists across
           # RecreateGroupOnPodRestart, so restarts re-sync incrementally (fast).
           - name: cache-models
-            image: mirror.gcr.io/rclone/rclone:1.73.4
+            image: mirror.gcr.io/rclone/rclone:1.73.4@sha256:654f6517c7aaec7e377690b2caf7c272dbe5f3b8200afbc14a00df6b4a9aa6ef
             command:
               - rclone
               - sync
@@ -276,6 +277,7 @@ spec:
           - name: ceph-models
             persistentVolumeClaim:
               claimName: models
+              readOnly: true
           # Dest: node-local NVMe cache. hostPath persists across pod restarts so
           # the CephFS sync is a one-time-per-node cost; vLLM reads weights here.
           - name: local-models
