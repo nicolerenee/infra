@@ -11,12 +11,15 @@
 #      LeaderWorkerSet (--nnodes/--node-rank/--master-addr), not the recipe's
 #      Ray backend — this matches the proven gpt-oss 2-node pattern here and
 #      avoids standing up a separate Ray cluster.
-# --load-format instanttensor is what keeps the two ranks in sync during the
-# weight load: the stock upstream vLLM image lacks the InstantTensor library, so
-# it fell back to fastsafetensors, whose bursty prefetch let the ranks drift on
-# our slow CephFS path until NCCL's 600s collective watchdog killed the group.
-# Weights are pre-staged on CephFS (see the download job), so it serves fully
-# offline (HF_HUB_OFFLINE=1) with no HF secret — egress is locked in cnp.yaml.
+# --load-format instanttensor keeps the two ranks in sync during the weight load
+# (the stock upstream vLLM image lacks the InstantTensor library and fell back to
+# fastsafetensors, whose bursty prefetch let the ranks drift on our slow CephFS
+# path until NCCL's 600s collective watchdog killed the group). The rclone init
+# container below is the stronger mitigation: it caches the checkpoint to
+# node-local NVMe first, so vLLM loads from fast local disk and the slow CephFS
+# read happens once per node in a plain copy — not on every load, and not coupled
+# to any NCCL collective. Weights are pre-staged on CephFS by the download job;
+# served fully offline (HF_HUB_OFFLINE=1), no HF secret — egress locked in cnp.yaml.
 apiVersion: leaderworkerset.x-k8s.io/v1
 kind: LeaderWorkerSet
 metadata:
@@ -40,6 +43,34 @@ spec:
         resourceClaims:
           - name: gpu-rdma
             resourceClaimTemplateName: gpu-rdma
+        initContainers:
+          # Cache the checkpoint from CephFS to node-local NVMe before vLLM starts.
+          # -L dereferences the HF-cache symlinks so the local copy is
+          # self-contained; scoped to the minimax dir (the `models` PVC is shared
+          # with qwen + gpt-oss) and excludes blobs/ since the deref'd snapshot
+          # already holds the data (avoids a 2x copy). hostPath persists across
+          # RecreateGroupOnPodRestart, so restarts re-sync incrementally (fast).
+          - name: cache-models
+            image: mirror.gcr.io/rclone/rclone:1.73.4@sha256:654f6517c7aaec7e377690b2caf7c272dbe5f3b8200afbc14a00df6b4a9aa6ef
+            command:
+              - rclone
+              - sync
+              - /ceph-models/hub/models--nvidia--MiniMax-M2.7-NVFP4/
+              - /models/hub/models--nvidia--MiniMax-M2.7-NVFP4/
+              - --copy-links
+              - --exclude
+              - blobs/**
+              - --transfers
+              - "8"
+              - --checkers
+              - "16"
+              - --progress
+            volumeMounts:
+              - name: ceph-models
+                mountPath: /ceph-models
+                readOnly: true
+              - name: local-models
+                mountPath: /models
         containers:
           - name: vllm
             # eugr spark-vllm (arm64, built for GB10 DGX Spark). Ships
@@ -58,7 +89,7 @@ spec:
                   --load-format instanttensor \
                   --enable-auto-tool-choice \
                   --tool-call-parser minimax_m2 \
-                  --reasoning-parser minimax_m2_append_think \
+                  --reasoning-parser minimax_m2 \
                   --nnodes 2 \
                   --node-rank 0 \
                   --master-addr $${LWS_LEADER_ADDRESS} \
@@ -98,8 +129,9 @@ spec:
               initialDelaySeconds: 60
               periodSeconds: 10
               timeoutSeconds: 5
-              # Long — first load is a 116GB NVFP4 checkpoint from CephFS across
-              # 2 nodes + torch.compile + cudagraph capture.
+              # Long — covers the vLLM load from node-local NVMe (the CephFS→local
+              # rclone sync runs first as an initContainer) + torch.compile +
+              # cudagraph capture. The startup-probe clock starts after init.
               failureThreshold: 360
             livenessProbe:
               httpGet:
@@ -123,14 +155,22 @@ spec:
               claims:
                 - name: gpu-rdma
             volumeMounts:
-              - name: models
+              - name: local-models
                 mountPath: /models
               - name: shm
                 mountPath: /dev/shm
         volumes:
-          - name: models
+          # Source: shared models PVC on CephFS (read-only; init copies out of it).
+          - name: ceph-models
             persistentVolumeClaim:
               claimName: models
+              readOnly: true
+          # Dest: node-local NVMe cache. hostPath persists across pod restarts so
+          # the CephFS sync is a one-time-per-node cost; vLLM reads weights here.
+          - name: local-models
+            hostPath:
+              path: /var/local/inference-models
+              type: DirectoryOrCreate
           - name: shm
             emptyDir:
               medium: Memory
@@ -149,6 +189,34 @@ spec:
         resourceClaims:
           - name: gpu-rdma
             resourceClaimTemplateName: gpu-rdma
+        initContainers:
+          # Cache the checkpoint from CephFS to node-local NVMe before vLLM starts.
+          # -L dereferences the HF-cache symlinks so the local copy is
+          # self-contained; scoped to the minimax dir (the `models` PVC is shared
+          # with qwen + gpt-oss) and excludes blobs/ since the deref'd snapshot
+          # already holds the data (avoids a 2x copy). hostPath persists across
+          # RecreateGroupOnPodRestart, so restarts re-sync incrementally (fast).
+          - name: cache-models
+            image: mirror.gcr.io/rclone/rclone:1.73.4@sha256:654f6517c7aaec7e377690b2caf7c272dbe5f3b8200afbc14a00df6b4a9aa6ef
+            command:
+              - rclone
+              - sync
+              - /ceph-models/hub/models--nvidia--MiniMax-M2.7-NVFP4/
+              - /models/hub/models--nvidia--MiniMax-M2.7-NVFP4/
+              - --copy-links
+              - --exclude
+              - blobs/**
+              - --transfers
+              - "8"
+              - --checkers
+              - "16"
+              - --progress
+            volumeMounts:
+              - name: ceph-models
+                mountPath: /ceph-models
+                readOnly: true
+              - name: local-models
+                mountPath: /models
         containers:
           - name: vllm
             # eugr spark-vllm (arm64) — same image as the leader. Digest-pinned.
@@ -166,7 +234,7 @@ spec:
                   --load-format instanttensor \
                   --enable-auto-tool-choice \
                   --tool-call-parser minimax_m2 \
-                  --reasoning-parser minimax_m2_append_think \
+                  --reasoning-parser minimax_m2 \
                   --nnodes 2 \
                   --node-rank 1 \
                   --master-addr $${LWS_LEADER_ADDRESS} \
@@ -200,14 +268,22 @@ spec:
               claims:
                 - name: gpu-rdma
             volumeMounts:
-              - name: models
+              - name: local-models
                 mountPath: /models
               - name: shm
                 mountPath: /dev/shm
         volumes:
-          - name: models
+          # Source: shared models PVC on CephFS (read-only; init copies out of it).
+          - name: ceph-models
             persistentVolumeClaim:
               claimName: models
+              readOnly: true
+          # Dest: node-local NVMe cache. hostPath persists across pod restarts so
+          # the CephFS sync is a one-time-per-node cost; vLLM reads weights here.
+          - name: local-models
+            hostPath:
+              path: /var/local/inference-models
+              type: DirectoryOrCreate
           - name: shm
             emptyDir:
               medium: Memory
