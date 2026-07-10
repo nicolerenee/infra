@@ -102,6 +102,7 @@ spec:
                   --enable-auto-tool-choice \
                   --tool-call-parser minimax_m2 \
                   --reasoning-parser minimax_m2 \
+                  --enable-prompt-tokens-details \
                   --nnodes 2 \
                   --node-rank 0 \
                   --master-addr $${LWS_LEADER_ADDRESS} \
@@ -251,6 +252,7 @@ spec:
                   --enable-auto-tool-choice \
                   --tool-call-parser minimax_m2 \
                   --reasoning-parser minimax_m2 \
+                  --enable-prompt-tokens-details \
                   --nnodes 2 \
                   --node-rank 1 \
                   --master-addr $${LWS_LEADER_ADDRESS} \

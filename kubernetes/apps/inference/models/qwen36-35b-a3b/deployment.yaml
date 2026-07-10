@@ -76,6 +76,9 @@ spec:
             - --attention-backend
             - flashinfer
             - --enable-prefix-caching
+            # Surface per-request prefix-cache hits in usage.prompt_tokens_details
+            # (cached_tokens); off by default. Serving-layer only, no perf impact.
+            - --enable-prompt-tokens-details
             - --reasoning-parser
             - qwen3
             - --enable-auto-tool-choice
