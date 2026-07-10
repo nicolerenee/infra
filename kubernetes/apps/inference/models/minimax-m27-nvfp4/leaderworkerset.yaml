@@ -1,25 +1,26 @@
 ---
 # MiniMax-M2.7 (NVFP4) served by vLLM across 2 DGX nodes as a single
 # tensor-parallel replica (tp=2, one GB10 per rank). Adapted from the
-# spark-arena/eugr NVFP4 recipe (github.com/eugr/spark-vllm-docker), running on
-# eugr's own spark-vllm container — the recipe's actual runtime image, which is
-# arm64 (built for the GB10 DGX Spark) and ships the InstantTensor loader plus
-# the minimax_m2 parsers and NVFP4 kernels. Two deliberate deviations:
+# spark-arena/eugr NVFP4 recipe (github.com/eugr/spark-vllm-docker). Two
+# deliberate deviations:
 #   1. Model is nvidia/MiniMax-M2.7-NVFP4 (230B MoE, 10B active, NVFP4) — vLLM
 #      auto-detects the modelopt/NVFP4 quantization, so no explicit --quantization.
 #   2. Multi-node launch uses vLLM's NATIVE distributed backend over a
 #      LeaderWorkerSet (--nnodes/--node-rank/--master-addr), not the recipe's
 #      Ray backend — this matches the proven gpt-oss 2-node pattern here and
 #      avoids standing up a separate Ray cluster.
-# --load-format instanttensor keeps the two ranks in sync during the weight load
-# (the stock upstream vLLM image lacks the InstantTensor library and fell back to
-# fastsafetensors, whose bursty prefetch let the ranks drift on our slow CephFS
-# path until NCCL's 600s collective watchdog killed the group). The rclone init
-# container below is the stronger mitigation: it caches the checkpoint to
-# node-local NVMe first, so vLLM loads from fast local disk and the slow CephFS
-# read happens once per node in a plain copy — not on every load, and not coupled
-# to any NCCL collective. Weights are pre-staged on CephFS by the download job;
-# served fully offline (HF_HUB_OFFLINE=1), no HF secret — egress locked in cnp.yaml.
+# Runs on the official upstream vLLM release (the same image qwen uses). The
+# rclone init container below caches the checkpoint to node-local NVMe before
+# vLLM starts, so the slow (Firewalla-routed) CephFS read happens once per node
+# in a plain copy and vLLM loads from fast local disk. Fast, even local reads
+# keep the two TP ranks in sync during load with no risk of the slow-CephFS
+# desync that once tripped NCCL's 600s collective watchdog — which is why we no
+# longer need the eugr image's InstantTensor loader. --load-format fastsafetensors
+# is pinned explicitly (its bursty prefetch is harmless off fast local disk):
+# once the 10G storage network lands we can likely drop this cache + init
+# container and load fastsafetensors straight off CephFS. Weights are pre-staged
+# on CephFS by the download job; served fully offline (HF_HUB_OFFLINE=1), no HF
+# secret — egress locked in cnp.yaml.
 apiVersion: leaderworkerset.x-k8s.io/v1
 kind: LeaderWorkerSet
 metadata:
@@ -64,7 +65,11 @@ spec:
               - "8"
               - --checkers
               - "16"
-              - --progress
+              # One-line stats each minute instead of --progress (which floods
+              # non-TTY pod logs with continuous progress redraws).
+              - --stats
+              - 1m
+              - --stats-one-line
             volumeMounts:
               - name: ceph-models
                 mountPath: /ceph-models
@@ -73,9 +78,10 @@ spec:
                 mountPath: /models
         containers:
           - name: vllm
-            # eugr spark-vllm (arm64, built for GB10 DGX Spark). Ships
-            # InstantTensor + minimax_m2 parsers + NVFP4. Digest-pinned.
-            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:91a7d1ed3f6c32d456558b825e9f19dde91b84412f827d885c5b7f755feeeb6d
+            # Official upstream vLLM release (aarch64), same image qwen runs;
+            # has the minimax_m2 parsers + NVFP4. Loads from the local NVMe
+            # cache (see the init container). Digest-pinned.
+            image: mirror.gcr.io/vllm/vllm-openai:v0.24.0-aarch64-ubuntu2404@sha256:e5759bdea866ac65633f3d1dd9a1850de1e5ff3865f5c659a600173d8cf2f59c
             command:
               - bash
               - -c
@@ -86,7 +92,7 @@ spec:
                   --tensor-parallel-size 2 \
                   --gpu-memory-utilization 0.85 \
                   --max-model-len 196608 \
-                  --load-format instanttensor \
+                  --load-format fastsafetensors \
                   --enable-auto-tool-choice \
                   --tool-call-parser minimax_m2 \
                   --reasoning-parser minimax_m2 \
@@ -210,7 +216,11 @@ spec:
               - "8"
               - --checkers
               - "16"
-              - --progress
+              # One-line stats each minute instead of --progress (which floods
+              # non-TTY pod logs with continuous progress redraws).
+              - --stats
+              - 1m
+              - --stats-one-line
             volumeMounts:
               - name: ceph-models
                 mountPath: /ceph-models
@@ -219,8 +229,8 @@ spec:
                 mountPath: /models
         containers:
           - name: vllm
-            # eugr spark-vllm (arm64) — same image as the leader. Digest-pinned.
-            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:91a7d1ed3f6c32d456558b825e9f19dde91b84412f827d885c5b7f755feeeb6d
+            # Official upstream vLLM release (aarch64) — same image as the leader. Digest-pinned.
+            image: mirror.gcr.io/vllm/vllm-openai:v0.24.0-aarch64-ubuntu2404@sha256:e5759bdea866ac65633f3d1dd9a1850de1e5ff3865f5c659a600173d8cf2f59c
             command:
               - bash
               - -c
@@ -231,7 +241,7 @@ spec:
                   --tensor-parallel-size 2 \
                   --gpu-memory-utilization 0.85 \
                   --max-model-len 196608 \
-                  --load-format instanttensor \
+                  --load-format fastsafetensors \
                   --enable-auto-tool-choice \
                   --tool-call-parser minimax_m2 \
                   --reasoning-parser minimax_m2 \
