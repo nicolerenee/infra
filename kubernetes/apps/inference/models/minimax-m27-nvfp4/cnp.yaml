@@ -1,0 +1,63 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+# Egress lockdown is what makes the secure tiers honest: the model can't phone
+# home. Weights are pre-staged on CephFS (storage path is not pod egress), so
+# DNS is the only outbound the pod gets — plus intra-group traffic so the
+# leader/worker ranks can bootstrap torch.distributed (NCCL's collective itself
+# rides the ConnectX-7 RDMA fabric, which is a separate interface Cilium does
+# not police; only the master :29500 rendezvous crosses the pod network).
+# Ingress only from the AI gateway and the metrics scraper — plus the sibling
+# rank on the pod network.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: minimax-m27-nvfp4
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: minimax-m27-nvfp4
+  ingress:
+    # Sibling rank (leader<->worker) — distributed bootstrap on the pod network.
+    # All ports: torch/NCCL negotiate side-channel ports dynamically.
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: minimax-m27-nvfp4
+    # The in-cluster AI gateway (envoy-clusterip "ai" Gateway) — the API client
+    # once routes are wired.
+    - fromEndpoints:
+        - matchLabels:
+            gateway.envoyproxy.io/owning-gateway-name: ai
+            gateway.envoyproxy.io/owning-gateway-namespace: inference
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+    # vmagent scraping /metrics.
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/name: vmagent
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+  egress:
+    # Sibling rank (leader<->worker) — distributed bootstrap on the pod network.
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: minimax-m27-nvfp4
+    # DNS only. Declaring any egress rule flips Cilium to default-deny egress
+    # for these pods — no world, no on-site networks, no HF.
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: TCP
+            - port: "53"
+              protocol: UDP
+          rules:
+            dns:
+              - matchPattern: "*"

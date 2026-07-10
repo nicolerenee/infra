@@ -44,6 +44,33 @@ spec:
     kind: Backend
     name: qwen36-35b-a3b
 ---
+# MiniMax-M2.7 (NVFP4), served by the 2-node vLLM LeaderWorkerSet. Only the
+# leader exposes the OpenAI API, so the minimax-m27-nvfp4 Service selects the
+# leader pod only — this Backend resolves that single ready A record (no
+# per-request LB to do; it's one serving replica across two tensor-parallel
+# ranks, unlike qwen's headless multi-replica pool).
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: minimax-m27-nvfp4
+spec:
+  endpoints:
+    - fqdn:
+        hostname: minimax-m27-nvfp4.inference.svc.cluster.local
+        port: 8000
+---
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: AIServiceBackend
+metadata:
+  name: local-minimax-m27-nvfp4
+spec:
+  schema:
+    name: OpenAI
+  backendRef:
+    group: gateway.envoyproxy.io
+    kind: Backend
+    name: minimax-m27-nvfp4
+---
 apiVersion: aigateway.envoyproxy.io/v1beta1
 kind: AIGatewayRoute
 metadata:
@@ -73,5 +100,18 @@ spec:
       # generations mid-stream. 30m is a runaway backstop a real turn never
       # reaches — a genuinely stalled stream is reaped far sooner by the
       # gateway-wide streamIdleTimeout (see ai-buffer-limit ClientTrafficPolicy).
+      timeouts:
+        request: 1800s
+    # MiniMax-M2.7 (NVFP4). Clients send model=nvidia/MiniMax-M2.7-NVFP4 (the
+    # canonical served name, also what surfaces in GET /v1/models); the override
+    # sends the shorter semantic id, also in the deploy's --served-model-name.
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: nvidia/MiniMax-M2.7-NVFP4
+      backendRefs:
+        - name: local-minimax-m27-nvfp4
+          modelNameOverride: minimax-m2.7
       timeouts:
         request: 1800s

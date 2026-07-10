@@ -1,18 +1,18 @@
 ---
-# Qwen3.6-35B-A3B-FP8 served by vLLM, single-node (tp=1) per GB10. Two replicas
-# spread one-per-DGX-node (podAntiAffinity) form the HA pair; the in-cluster AI
-# gateway load-balances + health-checks across them. RollingUpdate surges a
-# replacement pod when a DGX node is free, but falls back to taking one
-# replica down first (briefly serving from just the other) when all DGX
-# nodes are occupied (e.g. a 3rd local model on dgx03) — the strict
-# one-pod-per-node podAntiAffinity means a surge pod can't schedule without
-# a free node, so this keeps the rollout from ever getting stuck.
+# Qwen3.6-35B-A3B-FP8 served by vLLM, single-node (tp=1) per GB10. Scaled to a
+# single replica: two of the three DGX nodes are now claimed by the 2-node
+# minimax-m27-nvfp4 LeaderWorkerSet, leaving exactly one node for Qwen. No
+# longer an HA pair — a node loss takes Qwen down until it reschedules. The
+# one-pod-per-node podAntiAffinity is retained so that if this is scaled back
+# up (once GPUs free), replicas still spread across distinct DGX nodes.
+# RollingUpdate keeps maxSurge/maxUnavailable so a scale-up rollout never wedges
+# when all DGX nodes are occupied.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: qwen36-35b-a3b
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
