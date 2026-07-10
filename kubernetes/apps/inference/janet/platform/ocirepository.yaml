@@ -19,7 +19,7 @@ spec:
   interval: 5m
   url: oci://ghcr.io/freckleapps/janet-manifests
   ref:
-    tag: main-20260710T224309Z-f5db3fc # {"$imagepolicy": "flux-system:janet-manifests:tag"}
+    tag: main-20260710T225711Z-7a94675 # {"$imagepolicy": "flux-system:janet-manifests:tag"}
   secretRef:
     # Reuses the cluster-wide `ghcr-pull` dockerconfigjson secret already
     # materialized in this namespace (ClusterExternalSecret gated on the
