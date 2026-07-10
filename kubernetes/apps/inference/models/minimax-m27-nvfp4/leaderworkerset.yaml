@@ -1,19 +1,22 @@
 ---
 # MiniMax-M2.7 (NVFP4) served by vLLM across 2 DGX nodes as a single
 # tensor-parallel replica (tp=2, one GB10 per rank). Adapted from the
-# vLLM recipe at github.com/eugr/spark-vllm-docker (recipes/minimax-m2.7-awq),
-# with three deliberate deviations from that recipe:
-#   1. Model swapped to nvidia/MiniMax-M2.7-NVFP4 (230B MoE, 10B active, NVFP4)
-#      — vLLM auto-detects the modelopt/NVFP4 quantization from the checkpoint,
-#      so no explicit --quantization is needed.
+# spark-arena/eugr NVFP4 recipe (github.com/eugr/spark-vllm-docker), running on
+# eugr's own spark-vllm container — the recipe's actual runtime image, which is
+# arm64 (built for the GB10 DGX Spark) and ships the InstantTensor loader plus
+# the minimax_m2 parsers and NVFP4 kernels. Two deliberate deviations:
+#   1. Model is nvidia/MiniMax-M2.7-NVFP4 (230B MoE, 10B active, NVFP4) — vLLM
+#      auto-detects the modelopt/NVFP4 quantization, so no explicit --quantization.
 #   2. Multi-node launch uses vLLM's NATIVE distributed backend over a
 #      LeaderWorkerSet (--nnodes/--node-rank/--master-addr), not the recipe's
 #      Ray backend — this matches the proven gpt-oss 2-node pattern here and
 #      avoids standing up a separate Ray cluster.
-#   3. Runs on the official aarch64 vLLM image (the recipe's eugr/spark-vllm is
-#      x86-64 only and won't run on the GB10 arm64 nodes). Weights are
-#      pre-staged on CephFS (see the download job), so it serves fully offline
-#      (HF_HUB_OFFLINE=1) with no HF secret — egress is locked in cnp.yaml.
+# --load-format instanttensor is what keeps the two ranks in sync during the
+# weight load: the stock upstream vLLM image lacks the InstantTensor library, so
+# it fell back to fastsafetensors, whose bursty prefetch let the ranks drift on
+# our slow CephFS path until NCCL's 600s collective watchdog killed the group.
+# Weights are pre-staged on CephFS (see the download job), so it serves fully
+# offline (HF_HUB_OFFLINE=1) with no HF secret — egress is locked in cnp.yaml.
 apiVersion: leaderworkerset.x-k8s.io/v1
 kind: LeaderWorkerSet
 metadata:
@@ -39,9 +42,9 @@ spec:
             resourceClaimTemplateName: gpu-rdma
         containers:
           - name: vllm
-            # Official aarch64 vLLM (same image the Qwen deploy runs on these
-            # GB10 nodes). CUDA-13 / Ubuntu 24.04.
-            image: mirror.gcr.io/vllm/vllm-openai:v0.24.0-aarch64-ubuntu2404
+            # eugr spark-vllm (arm64, built for GB10 DGX Spark). Ships
+            # InstantTensor + minimax_m2 parsers + NVFP4. Digest-pinned.
+            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:91a7d1ed3f6c32d456558b825e9f19dde91b84412f827d885c5b7f755feeeb6d
             command:
               - bash
               - -c
@@ -50,9 +53,9 @@ spec:
                   --served-model-name nvidia/MiniMax-M2.7-NVFP4 minimax-m2.7 \
                   --trust-remote-code \
                   --tensor-parallel-size 2 \
-                  --gpu-memory-utilization 0.8 \
+                  --gpu-memory-utilization 0.85 \
                   --max-model-len 196608 \
-                  --load-format fastsafetensors \
+                  --load-format instanttensor \
                   --enable-auto-tool-choice \
                   --tool-call-parser minimax_m2 \
                   --reasoning-parser minimax_m2_append_think \
@@ -78,6 +81,11 @@ spec:
                 value: mlx5
               - name: NCCL_NET_GDR_LEVEL
                 value: "2"
+              # Force the Marlin/Triton path for the NVFP4 MoE kernels (matches
+              # the spark-arena NVFP4 recipe + the qwen deploy). Without it, v0.24
+              # can pick a DeepGEMM path that asserts on some FP8/FP4 checkpoints.
+              - name: VLLM_MARLIN_USE_ATOMIC_ADD
+                value: "1"
             ports:
               - containerPort: 8000
                 name: http
@@ -143,7 +151,8 @@ spec:
             resourceClaimTemplateName: gpu-rdma
         containers:
           - name: vllm
-            image: mirror.gcr.io/vllm/vllm-openai:v0.24.0-aarch64-ubuntu2404
+            # eugr spark-vllm (arm64) — same image as the leader. Digest-pinned.
+            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:91a7d1ed3f6c32d456558b825e9f19dde91b84412f827d885c5b7f755feeeb6d
             command:
               - bash
               - -c
@@ -152,9 +161,9 @@ spec:
                   --served-model-name nvidia/MiniMax-M2.7-NVFP4 minimax-m2.7 \
                   --trust-remote-code \
                   --tensor-parallel-size 2 \
-                  --gpu-memory-utilization 0.8 \
+                  --gpu-memory-utilization 0.85 \
                   --max-model-len 196608 \
-                  --load-format fastsafetensors \
+                  --load-format instanttensor \
                   --enable-auto-tool-choice \
                   --tool-call-parser minimax_m2 \
                   --reasoning-parser minimax_m2_append_think \
@@ -178,6 +187,11 @@ spec:
                 value: mlx5
               - name: NCCL_NET_GDR_LEVEL
                 value: "2"
+              # Force the Marlin/Triton path for the NVFP4 MoE kernels (matches
+              # the spark-arena NVFP4 recipe + the qwen deploy). Without it, v0.24
+              # can pick a DeepGEMM path that asserts on some FP8/FP4 checkpoints.
+              - name: VLLM_MARLIN_USE_ATOMIC_ADD
+                value: "1"
             securityContext:
               capabilities:
                 add:
