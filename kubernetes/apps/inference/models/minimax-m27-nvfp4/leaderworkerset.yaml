@@ -15,12 +15,13 @@
 # in a plain copy and vLLM loads from fast local disk. Fast, even local reads
 # keep the two TP ranks in sync during load with no risk of the slow-CephFS
 # desync that once tripped NCCL's 600s collective watchdog — which is why we no
-# longer need the eugr image's InstantTensor loader. --load-format fastsafetensors
-# is pinned explicitly (its bursty prefetch is harmless off fast local disk):
-# once the 10G storage network lands we can likely drop this cache + init
-# container and load fastsafetensors straight off CephFS. Weights are pre-staged
-# on CephFS by the download job; served fully offline (HF_HUB_OFFLINE=1), no HF
-# secret — egress locked in cnp.yaml.
+# longer need the eugr image's InstantTensor loader. We use the DEFAULT loader
+# (auto/mmap), NOT --load-format fastsafetensors: from fast local NVMe,
+# fastsafetensors' aggressive prefetch outruns GPU consumption and balloons host
+# memory, which OOMs on the 128GB *unified* GB10 memory (gpu-mem-util already
+# reserves ~85% for the GPU). mmap keeps a low, bounded footprint. Weights are
+# pre-staged on CephFS by the download job; served fully offline
+# (HF_HUB_OFFLINE=1), no HF secret — egress locked in cnp.yaml.
 apiVersion: leaderworkerset.x-k8s.io/v1
 kind: LeaderWorkerSet
 metadata:
@@ -92,7 +93,6 @@ spec:
                   --tensor-parallel-size 2 \
                   --gpu-memory-utilization 0.85 \
                   --max-model-len 196608 \
-                  --load-format fastsafetensors \
                   --enable-auto-tool-choice \
                   --tool-call-parser minimax_m2 \
                   --reasoning-parser minimax_m2 \
@@ -241,7 +241,6 @@ spec:
                   --tensor-parallel-size 2 \
                   --gpu-memory-utilization 0.85 \
                   --max-model-len 196608 \
-                  --load-format fastsafetensors \
                   --enable-auto-tool-choice \
                   --tool-call-parser minimax_m2 \
                   --reasoning-parser minimax_m2 \
