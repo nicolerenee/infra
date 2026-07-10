@@ -9,19 +9,21 @@
 #      LeaderWorkerSet (--nnodes/--node-rank/--master-addr), not the recipe's
 #      Ray backend — this matches the proven gpt-oss 2-node pattern here and
 #      avoids standing up a separate Ray cluster.
-# Runs on the official upstream vLLM release (the same image qwen uses). The
-# rclone init container below caches the checkpoint to node-local NVMe before
-# vLLM starts, so the slow (Firewalla-routed) CephFS read happens once per node
-# in a plain copy and vLLM loads from fast local disk. Fast, even local reads
-# keep the two TP ranks in sync during load with no risk of the slow-CephFS
-# desync that once tripped NCCL's 600s collective watchdog — which is why we no
-# longer need the eugr image's InstantTensor loader. We use the DEFAULT loader
-# (auto/mmap), NOT --load-format fastsafetensors: from fast local NVMe,
-# fastsafetensors' aggressive prefetch outruns GPU consumption and balloons host
-# memory, which OOMs on the 128GB *unified* GB10 memory (gpu-mem-util already
-# reserves ~85% for the GPU). mmap keeps a low, bounded footprint. Weights are
-# pre-staged on CephFS by the download job; served fully offline
-# (HF_HUB_OFFLINE=1), no HF secret — egress locked in cnp.yaml.
+# Runs on eugr's spark-vllm image (arm64, GB10-built). We tried the official
+# upstream vllm/vllm-openai:v0.24.0 release: it LOADS this model fine but HANGS
+# during multi-node generation — the sample_tokens RPC to the TP worker times
+# out (shm_broadcast 60s) → EngineDeadError → 500s. eugr's build runs the
+# distributed NVFP4 MoE inference path correctly where v0.24.0 does not, so the
+# image stays — NOT for InstantTensor (the cache handles loading now), but for
+# serving. The rclone init container below caches the checkpoint to node-local
+# NVMe before vLLM starts, so the slow (Firewalla-routed) CephFS read happens
+# once per node in a plain copy and vLLM loads from fast local disk. We use the
+# DEFAULT loader (auto/mmap), NOT --load-format fastsafetensors: from fast local
+# NVMe fastsafetensors' aggressive prefetch balloons host memory and OOMs on the
+# 128GB *unified* GB10 memory (gpu-mem-util already reserves ~85% for the GPU);
+# mmap keeps a low, bounded footprint. Weights are pre-staged on CephFS by the
+# download job; served fully offline (HF_HUB_OFFLINE=1), no HF secret — egress
+# locked in cnp.yaml.
 apiVersion: leaderworkerset.x-k8s.io/v1
 kind: LeaderWorkerSet
 metadata:
@@ -79,10 +81,10 @@ spec:
                 mountPath: /models
         containers:
           - name: vllm
-            # Official upstream vLLM release (aarch64), same image qwen runs;
-            # has the minimax_m2 parsers + NVFP4. Loads from the local NVMe
-            # cache (see the init container). Digest-pinned.
-            image: mirror.gcr.io/vllm/vllm-openai:v0.24.0-aarch64-ubuntu2404@sha256:e5759bdea866ac65633f3d1dd9a1850de1e5ff3865f5c659a600173d8cf2f59c
+            # eugr spark-vllm (arm64, GB10-built): serves the distributed NVFP4
+            # MoE path correctly (official v0.24.0 hangs on generation — see
+            # header). Loads from the local NVMe cache. Digest-pinned.
+            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:91a7d1ed3f6c32d456558b825e9f19dde91b84412f827d885c5b7f755feeeb6d
             command:
               - bash
               - -c
@@ -229,8 +231,8 @@ spec:
                 mountPath: /models
         containers:
           - name: vllm
-            # Official upstream vLLM release (aarch64) — same image as the leader. Digest-pinned.
-            image: mirror.gcr.io/vllm/vllm-openai:v0.24.0-aarch64-ubuntu2404@sha256:e5759bdea866ac65633f3d1dd9a1850de1e5ff3865f5c659a600173d8cf2f59c
+            # eugr spark-vllm (arm64) — same image as the leader. Digest-pinned.
+            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:91a7d1ed3f6c32d456558b825e9f19dde91b84412f827d885c5b7f755feeeb6d
             command:
               - bash
               - -c
