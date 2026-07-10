@@ -1,0 +1,21 @@
+---
+# Headless (clusterIP: None) so a per-request load-balancer (the AI gateway,
+# once wired) sees an endpoint per READY pod rather than a single VIP. Only the
+# leader serves the OpenAI API — the worker is headless (--headless) and never
+# becomes Ready on :8000 — so in practice this returns the leader's address.
+# publishNotReadyAddresses keeps the leader discoverable during the long model
+# load so clients/scrapers can attach before it flips Ready.
+apiVersion: v1
+kind: Service
+metadata:
+  name: minimax-m27-nvfp4
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/name: minimax-m27-nvfp4
+    app.kubernetes.io/component: leader
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http

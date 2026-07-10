@@ -11,6 +11,7 @@ resources:
   - ./external-secrets.yaml
   - ./huggingface.yaml
   - ./leader-worker-set.yaml
+  - ./minimax-m27-nvfp4.yaml
   - ./models-pvc.yaml
   - ./qwen36-35b-a3b.yaml
   - ./resource-claims.yaml

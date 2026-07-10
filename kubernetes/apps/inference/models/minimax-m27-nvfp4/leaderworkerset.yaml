@@ -1,0 +1,200 @@
+---
+# MiniMax-M2.7 (NVFP4) served by vLLM across 2 DGX nodes as a single
+# tensor-parallel replica (tp=2, one GB10 per rank). Adapted from the
+# vLLM recipe at github.com/eugr/spark-vllm-docker (recipes/minimax-m2.7-awq),
+# with three deliberate deviations from that recipe:
+#   1. Model swapped to nvidia/MiniMax-M2.7-NVFP4 (230B MoE, 10B active, NVFP4)
+#      — vLLM auto-detects the modelopt/NVFP4 quantization from the checkpoint,
+#      so no explicit --quantization is needed.
+#   2. Multi-node launch uses vLLM's NATIVE distributed backend over a
+#      LeaderWorkerSet (--nnodes/--node-rank/--master-addr), not the recipe's
+#      Ray backend — this matches the proven gpt-oss 2-node pattern here and
+#      avoids standing up a separate Ray cluster.
+#   3. Runs on the official aarch64 vLLM image (the recipe's eugr/spark-vllm is
+#      x86-64 only and won't run on the GB10 arm64 nodes). Weights are
+#      pre-staged on CephFS (see the download job), so it serves fully offline
+#      (HF_HUB_OFFLINE=1) with no HF secret — egress is locked in cnp.yaml.
+apiVersion: leaderworkerset.x-k8s.io/v1
+kind: LeaderWorkerSet
+metadata:
+  name: minimax-m27-nvfp4
+spec:
+  replicas: 1
+  leaderWorkerTemplate:
+    size: 2
+    restartPolicy: RecreateGroupOnPodRestart
+    leaderTemplate:
+      metadata:
+        labels:
+          app.kubernetes.io/name: minimax-m27-nvfp4
+          app.kubernetes.io/component: leader
+      spec:
+        runtimeClassName: nvidia
+        tolerations:
+          - key: nvidia.com/gpu
+            operator: Exists
+            effect: NoSchedule
+        resourceClaims:
+          - name: gpu-rdma
+            resourceClaimTemplateName: gpu-rdma
+        containers:
+          - name: vllm
+            # Official aarch64 vLLM (same image the Qwen deploy runs on these
+            # GB10 nodes). CUDA-13 / Ubuntu 24.04.
+            image: mirror.gcr.io/vllm/vllm-openai:v0.24.0-aarch64-ubuntu2404
+            command:
+              - bash
+              - -c
+              - |
+                vllm serve nvidia/MiniMax-M2.7-NVFP4 \
+                  --served-model-name nvidia/MiniMax-M2.7-NVFP4 minimax-m2.7 \
+                  --trust-remote-code \
+                  --tensor-parallel-size 2 \
+                  --gpu-memory-utilization 0.8 \
+                  --max-model-len 196608 \
+                  --load-format fastsafetensors \
+                  --enable-auto-tool-choice \
+                  --tool-call-parser minimax_m2 \
+                  --reasoning-parser minimax_m2_append_think \
+                  --nnodes 2 \
+                  --node-rank 0 \
+                  --master-addr $${LWS_LEADER_ADDRESS} \
+                  --master-port 29500 \
+                  --host 0.0.0.0 \
+                  --port 8000
+            env:
+              - name: HF_HOME
+                value: /models
+              # Weights pre-staged on CephFS (/models/hub); never reach HF at
+              # serve time (egress is locked — see cnp.yaml).
+              - name: HF_HUB_OFFLINE
+                value: "1"
+              - name: DO_NOT_TRACK
+                value: "1"
+              - name: PYTORCH_CUDA_ALLOC_CONF
+                value: expandable_segments:True
+              # NCCL: use RDMA over the ConnectX-7 fabric (dranet gpu-rdma claim).
+              - name: NCCL_IB_HCA
+                value: mlx5
+              - name: NCCL_NET_GDR_LEVEL
+                value: "2"
+            ports:
+              - containerPort: 8000
+                name: http
+              - containerPort: 29500
+                name: dist-coord
+            startupProbe:
+              httpGet:
+                path: /health
+                port: http
+              initialDelaySeconds: 60
+              periodSeconds: 10
+              timeoutSeconds: 5
+              # Long — first load is a 116GB NVFP4 checkpoint from CephFS across
+              # 2 nodes + torch.compile + cudagraph capture.
+              failureThreshold: 360
+            livenessProbe:
+              httpGet:
+                path: /health
+                port: http
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 3
+            readinessProbe:
+              httpGet:
+                path: /health
+                port: http
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 3
+            securityContext:
+              capabilities:
+                add:
+                  - IPC_LOCK
+            resources:
+              claims:
+                - name: gpu-rdma
+            volumeMounts:
+              - name: models
+                mountPath: /models
+              - name: shm
+                mountPath: /dev/shm
+        volumes:
+          - name: models
+            persistentVolumeClaim:
+              claimName: models
+          - name: shm
+            emptyDir:
+              medium: Memory
+              sizeLimit: 16Gi
+    workerTemplate:
+      metadata:
+        labels:
+          app.kubernetes.io/name: minimax-m27-nvfp4
+          app.kubernetes.io/component: worker
+      spec:
+        runtimeClassName: nvidia
+        tolerations:
+          - key: nvidia.com/gpu
+            operator: Exists
+            effect: NoSchedule
+        resourceClaims:
+          - name: gpu-rdma
+            resourceClaimTemplateName: gpu-rdma
+        containers:
+          - name: vllm
+            image: mirror.gcr.io/vllm/vllm-openai:v0.24.0-aarch64-ubuntu2404
+            command:
+              - bash
+              - -c
+              - |
+                vllm serve nvidia/MiniMax-M2.7-NVFP4 \
+                  --served-model-name nvidia/MiniMax-M2.7-NVFP4 minimax-m2.7 \
+                  --trust-remote-code \
+                  --tensor-parallel-size 2 \
+                  --gpu-memory-utilization 0.8 \
+                  --max-model-len 196608 \
+                  --load-format fastsafetensors \
+                  --enable-auto-tool-choice \
+                  --tool-call-parser minimax_m2 \
+                  --reasoning-parser minimax_m2_append_think \
+                  --nnodes 2 \
+                  --node-rank 1 \
+                  --master-addr $${LWS_LEADER_ADDRESS} \
+                  --master-port 29500 \
+                  --headless \
+                  --host 0.0.0.0 \
+                  --port 8000
+            env:
+              - name: HF_HOME
+                value: /models
+              - name: HF_HUB_OFFLINE
+                value: "1"
+              - name: DO_NOT_TRACK
+                value: "1"
+              - name: PYTORCH_CUDA_ALLOC_CONF
+                value: expandable_segments:True
+              - name: NCCL_IB_HCA
+                value: mlx5
+              - name: NCCL_NET_GDR_LEVEL
+                value: "2"
+            securityContext:
+              capabilities:
+                add:
+                  - IPC_LOCK
+            resources:
+              claims:
+                - name: gpu-rdma
+            volumeMounts:
+              - name: models
+                mountPath: /models
+              - name: shm
+                mountPath: /dev/shm
+        volumes:
+          - name: models
+            persistentVolumeClaim:
+              claimName: models
+          - name: shm
+            emptyDir:
+              medium: Memory
+              sizeLimit: 16Gi
