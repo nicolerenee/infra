@@ -17,13 +17,16 @@
 # image stays — NOT for InstantTensor (the cache handles loading now), but for
 # serving. The rclone init container below caches the checkpoint to node-local
 # NVMe before vLLM starts, so the slow (Firewalla-routed) CephFS read happens
-# once per node in a plain copy and vLLM loads from fast local disk. We use the
-# DEFAULT loader (auto/mmap), NOT --load-format fastsafetensors: from fast local
-# NVMe fastsafetensors' aggressive prefetch balloons host memory and OOMs on the
-# 128GB *unified* GB10 memory (gpu-mem-util already reserves ~85% for the GPU);
-# mmap keeps a low, bounded footprint. Weights are pre-staged on CephFS by the
-# download job; served fully offline (HF_HUB_OFFLINE=1), no HF secret — egress
-# locked in cnp.yaml.
+# once per node in a plain copy and vLLM loads from fast local disk.
+# --load-format instanttensor is REQUIRED on these 128GB *unified*-memory GB10
+# nodes (host + GPU share one pool): it streams weights straight to the GPU with
+# ~no host-side residual, so the MoE kernel autotuner + KV reservation
+# (gpu-mem-util 0.85) still fit. The alternatives OOM — fastsafetensors buffers
+# the full model in host RAM during load (exit 137 at load), and the default
+# mmap loader leaves weight pages in host page cache that collide with the GPU
+# autotuner workspace (exit 137 during flashinfer trtllm::fused_moe tuning).
+# Weights are pre-staged on CephFS by the download job; served fully offline
+# (HF_HUB_OFFLINE=1), no HF secret — egress locked in cnp.yaml.
 apiVersion: leaderworkerset.x-k8s.io/v1
 kind: LeaderWorkerSet
 metadata:
@@ -95,6 +98,7 @@ spec:
                   --tensor-parallel-size 2 \
                   --gpu-memory-utilization 0.85 \
                   --max-model-len 196608 \
+                  --load-format instanttensor \
                   --enable-auto-tool-choice \
                   --tool-call-parser minimax_m2 \
                   --reasoning-parser minimax_m2 \
@@ -243,6 +247,7 @@ spec:
                   --tensor-parallel-size 2 \
                   --gpu-memory-utilization 0.85 \
                   --max-model-len 196608 \
+                  --load-format instanttensor \
                   --enable-auto-tool-choice \
                   --tool-call-parser minimax_m2 \
                   --reasoning-parser minimax_m2 \
