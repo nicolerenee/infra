@@ -8,4 +8,4 @@
 # separate experimental TLSRoute apply has been removed.
 
 # renovate: datasource=github-releases depName=kubernetes-sigs/gateway-api
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.0/standard-install.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml
