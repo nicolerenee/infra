@@ -30,7 +30,7 @@ spec:
           app:
             image:
               repository: ghcr.io/home-operations/radarr
-              tag: 6.2.1.10461@sha256:a566e7d364b96ce8ffb1b582266e656c69f3a12dec289d72bb0daa647ed4725e
+              tag: 6.4.0.10523@sha256:846f8574f2745d9f713981dd6dea3041cab27110b5517f30b533252283d6d25d
             env:
               RADARR__APP__INSTANCENAME: Radarr
               RADARR__AUTH__METHOD: External
