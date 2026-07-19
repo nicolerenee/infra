@@ -20,7 +20,10 @@ metadata:
   name: rook-ceph-cluster
 spec:
   interval: 30m
-  timeout: 15m
+  # A Ceph point-release rolls every daemon (mons -> mgr -> each OSD) one at a
+  # time, which takes well over the old 15m — the Helm --wait on CephCluster
+  # readiness then timed out mid-upgrade and triggered a rollback.
+  timeout: 1h
   chartRef:
     kind: OCIRepository
     name: rook-ceph-cluster
@@ -30,8 +33,11 @@ spec:
   upgrade:
     cleanupOnFail: true
     remediation:
-      strategy: rollback
-      retries: 3
+      # Never auto-rollback a CephCluster: Ceph cannot downgrade, so rolling
+      # back to the prior chart's older Ceph image can never converge — it just
+      # thrashes the mons and wedges reconciliation. Hold Failed for a human to
+      # fix forward instead.
+      retries: 0
   dependsOn:
     - name: rook-ceph-operator
       namespace: rook-ceph
