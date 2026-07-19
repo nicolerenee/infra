@@ -22,4 +22,4 @@ spec:
       maxParallel: 8
     data:
       compression: bzip2
-  retentionPolicy: "30d"
+  retentionPolicy: "14d"

@@ -68,7 +68,11 @@ kind: ScheduledBackup
 metadata:
   name: hedgehog-db-backup
 spec:
-  schedule: "0 0 * * *"
+  # CNPG schedule is a 6-field cron, SECONDS-FIRST (sec min hour dom mon dow).
+  # A 5-field "0 0 * * *" is read as every-hour and silently produces 24x the
+  # base backups. This is every 6h (00/06/12/18:00); PITR granularity comes from
+  # WAL archiving, so base-backup cadence only trades restore speed vs. storage.
+  schedule: "0 0 */6 * * *"
   backupOwnerReference: self
   cluster:
     name: hedgehog-db
