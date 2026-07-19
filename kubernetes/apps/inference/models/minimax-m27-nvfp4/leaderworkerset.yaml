@@ -58,7 +58,7 @@ spec:
           # already holds the data (avoids a 2x copy). hostPath persists across
           # RecreateGroupOnPodRestart, so restarts re-sync incrementally (fast).
           - name: cache-models
-            image: mirror.gcr.io/rclone/rclone:1.73.4@sha256:654f6517c7aaec7e377690b2caf7c272dbe5f3b8200afbc14a00df6b4a9aa6ef
+            image: mirror.gcr.io/rclone/rclone:1.74.4@sha256:c61954aaa32328a5486715dd063a81c7879f5195ad3505cd362deddd509dc4a1
             command:
               - rclone
               - sync
@@ -210,7 +210,7 @@ spec:
           # already holds the data (avoids a 2x copy). hostPath persists across
           # RecreateGroupOnPodRestart, so restarts re-sync incrementally (fast).
           - name: cache-models
-            image: mirror.gcr.io/rclone/rclone:1.73.4@sha256:654f6517c7aaec7e377690b2caf7c272dbe5f3b8200afbc14a00df6b4a9aa6ef
+            image: mirror.gcr.io/rclone/rclone:1.74.4@sha256:c61954aaa32328a5486715dd063a81c7879f5195ad3505cd362deddd509dc4a1
             command:
               - rclone
               - sync
