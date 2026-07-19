@@ -96,7 +96,7 @@ spec:
                   --served-model-name nvidia/MiniMax-M2.7-NVFP4 minimax-m2.7 \
                   --trust-remote-code \
                   --tensor-parallel-size 2 \
-                  --gpu-memory-utilization 0.85 \
+                  --gpu-memory-utilization 0.80 \
                   --max-model-len 196608 \
                   --load-format instanttensor \
                   --enable-auto-tool-choice \
@@ -246,7 +246,7 @@ spec:
                   --served-model-name nvidia/MiniMax-M2.7-NVFP4 minimax-m2.7 \
                   --trust-remote-code \
                   --tensor-parallel-size 2 \
-                  --gpu-memory-utilization 0.85 \
+                  --gpu-memory-utilization 0.80 \
                   --max-model-len 196608 \
                   --load-format instanttensor \
                   --enable-auto-tool-choice \
