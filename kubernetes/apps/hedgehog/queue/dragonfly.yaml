@@ -18,6 +18,12 @@ spec:
   args:
     - --proactor_threads=2
     - --default_lua_flags=allow-undeclared-keys
+    # Static snapshot filename (no {timestamp} macro) so each cron snapshot
+    # OVERWRITES the previous one. The dbfilename default is `dump-{timestamp}`,
+    # which writes a new timestamped file every run and never prunes — that
+    # accumulated 6400+ files and filled the 20Gi PVC, wedging snapshots
+    # (No space left) and crash-looping replicas. Overwrite keeps exactly one.
+    - --dbfilename=dump
   resources:
     requests:
       cpu: 100m
