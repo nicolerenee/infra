@@ -19,7 +19,7 @@ spec:
         intel.feature.node.kubernetes.io/gpu: "true"
       containers:
         - name: intel-gpu-exporter
-          image: ghcr.io/clambin/intel-gpu-exporter:0.7.0
+          image: ghcr.io/clambin/intel-gpu-exporter:0.7.1
           args:
             - --interval=5s
           ports:
