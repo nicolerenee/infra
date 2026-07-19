@@ -40,7 +40,13 @@ spec:
     # installCsiOperator, default true). Driver config (incl. the nvidia.com/gpu
     # node-plugin toleration) now lives in the ceph-csi-drivers HelmRelease.
     csi:
+      # Orphaned since the 1.20 CSI migration: this operator-chart ServiceMonitor
+      # (selector app=csi-metrics) scrapes the CSI *liveness* sidecar, which the
+      # ceph-csi-drivers chart leaves disabled by default — so it has 0 targets
+      # and trips ScrapePoolHasNoTargets. We don't collect CSI liveness metrics,
+      # so drop the ServiceMonitor. (To re-enable, turn this on AND set
+      # driverSpecDefaults.liveness.enabled in the ceph-csi-drivers HR.)
       serviceMonitor:
-        enabled: true
+        enabled: false
     monitoring:
       enabled: true
