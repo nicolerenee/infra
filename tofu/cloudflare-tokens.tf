@@ -78,6 +78,13 @@ locals {
       zones       = ["freckle_chat", "freckle_family", "freckle_id", "freckle_media", "freckle_services", "freckle_systems"]
       permissions = ["dns_write", "zone_read"]
     }
+    external_dns_atlantis_cloudflare_tunnel = {
+      cluster     = "atlantis-k8s01"
+      namespace   = "external-dns"
+      name        = "cloudflare-tunnel-token"
+      zones       = ["freckle_systems", "freckle_services", "freckle_family"]
+      permissions = ["dns_write", "zone_read"]
+    }
   }
 
   # Unique (cluster, namespace) pairs that need an ESO identity. Distinct
