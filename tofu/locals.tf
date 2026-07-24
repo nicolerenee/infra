@@ -29,7 +29,7 @@ locals {
     }
     "atlantis-k8s01" = {
       api_server_ips = ["172.26.3.5", "172.26.3.6", "172.26.3.7"]
-      has_cf_tunnel  = false
+      has_cf_tunnel  = true
     }
   }
 
