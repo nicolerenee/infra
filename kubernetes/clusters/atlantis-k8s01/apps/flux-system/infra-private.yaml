@@ -1,0 +1,44 @@
+---
+# Second Flux source for atlantis-k8s01: the PRIVATE freckleapps/infra repo.
+# Business-sensitive workloads (WHMCS, etc.) that must not be publicly visible
+# live there instead of in this public repo. See that repo's CLAUDE.md.
+#
+# SSH (not the flux-system GitHub App) so the credential is a scoped, read-only
+# deploy key on that one repo — the App's blast radius is the whole org.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/source.toolkit.fluxcd.io/gitrepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: infra-private
+  namespace: flux-system
+spec:
+  interval: 5m
+  url: ssh://git@github.com/freckleapps/infra.git
+  ref:
+    branch: main
+  secretRef:
+    name: infra-private-deploy-key
+---
+# Root Kustomization for the private source — the analogue of the FluxInstance's
+# spec.sync for flux-system, but as a plain Kustomization since the operator
+# manages only the primary source. Points at the private repo's atlantis flux
+# dir, which fans out to its own namespace + app Kustomizations (all of which
+# must carry sourceRef: infra-private — CI in that repo enforces it).
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infra-private
+  namespace: flux-system
+spec:
+  targetNamespace: flux-system
+  sourceRef:
+    kind: GitRepository
+    name: infra-private
+    namespace: flux-system
+  path: ./kubernetes/clusters/atlantis-k8s01/flux
+  interval: 10m
+  retryInterval: 2m
+  timeout: 5m
+  prune: true
+  wait: false

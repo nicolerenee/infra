@@ -10,3 +10,5 @@ resources:
   - ./flux-instance.yaml
   - ./flux-mcp.yaml
   - ./flux-operator.yaml
+  - ./infra-private-externalsecret.yaml
+  - ./infra-private.yaml
