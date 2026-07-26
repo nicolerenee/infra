@@ -12,9 +12,15 @@ spec:
     namespace: nautobot
   maxHistory: 2
   install:
+    # 10m (up from Helm's 5m default) so the migration hook Job has time to
+    # run all database migrations on a fresh install.
+    timeout: 10m
     remediation:
       retries: 3
   upgrade:
+    # Same headroom — the release already exists, so the fix rolls as an
+    # upgrade and migrations run in the upgrade hook.
+    timeout: 10m
     cleanupOnFail: true
     remediation:
       retries: 3
@@ -103,26 +109,39 @@ spec:
               name: nautobot-secrets
               key: client-secret
 
-      # Supplemental nautobot_config.py appended on top of Nautobot core
-      # settings (which already build DATABASES/CACHES/etc. from the NAUTOBOT_*
-      # env vars the chart injects from the values above). Wires SSO to Freckle
-      # ID (pocket-id) using the generic OIDC backend (backend name "oidc" ->
-      # SOCIAL_AUTH_OIDC_* settings). New OIDC users are auto-created and land
-      # in the "sso" group; grant permissions to that group in Nautobot.
+      # Full nautobot_config.py — setting this REPLACES the image's default
+      # config file entirely (the chart mounts it over /opt/nautobot/
+      # nautobot_config.py), so it must reproduce the image default's active
+      # lines first. The critical one is `from nautobot.core.settings import *`,
+      # which builds GIT_ROOT/DATABASES/CACHES/etc. from the NAUTOBOT_* env vars
+      # the chart injects. We then append the Freckle ID (pocket-id) SSO wiring:
+      # python-social-auth generic OIDC backend (name "oidc" -> SOCIAL_AUTH_OIDC_*).
+      # New OIDC users are auto-created into the "sso" group; grant that group
+      # object permissions in Nautobot.
       config: |
         import os
+        import sys
 
+        from nautobot.core.settings import *  # noqa: F401,F403
+        from nautobot.core.settings_funcs import is_truthy, parse_redis_connection
+
+        if DATABASES["default"]["ENGINE"].endswith("mysql"):
+            DATABASES["default"]["OPTIONS"] = {"charset": "utf8mb4"}
+
+        SECRET_KEY = os.getenv("NAUTOBOT_SECRET_KEY", "")
+
+        INSTALLATION_METRICS_ENABLED = is_truthy(os.getenv("NAUTOBOT_INSTALLATION_METRICS_ENABLED", "True"))
+
+        # --- Freckle ID (pocket-id) SSO ---
         AUTHENTICATION_BACKENDS = [
             "social_core.backends.open_id_connect.OpenIdConnectAuth",
             "nautobot.core.authentication.ObjectPermissionBackend",
         ]
-
         SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = "https://freckle.id"
         SOCIAL_AUTH_OIDC_KEY = os.environ.get("NAUTOBOT_OIDC_CLIENT_ID", "")
         SOCIAL_AUTH_OIDC_SECRET = os.environ.get("NAUTOBOT_OIDC_CLIENT_SECRET", "")
         # Store social-auth extra_data as a real JSONField (Postgres).
         SOCIAL_AUTH_JSONFIELD_ENABLED = True
-
         # Auto-provision SSO users into a default group so they can log in
         # before an admin assigns object permissions.
         EXTERNAL_AUTH_DEFAULT_GROUPS = ["sso"]
