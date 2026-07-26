@@ -58,6 +58,25 @@ spec:
         storageClassName: ceph-filesystem
         accessMode: ReadWriteMany
         size: 5Gi
+
+      # The web pod's liveness probe runs `nautobot-server health_check`, which
+      # cold-boots all of Nautobot each time (~1 core for ~10s). At the chart's
+      # 1-core limit + 15s period that pegged the pod near a full core at idle
+      # and left no headroom, so any extra CPU pressure timed the probe out and
+      # crash-looped it. Give it 2 cores and halve the probe cadence (detection
+      # still ~90s at failureThreshold 3). Merges over the chart's probe (keeps
+      # enabled + exec command).
+      resources:
+        requests:
+          cpu: "500m"
+          memory: "1280M"
+        limits:
+          cpu: "2"
+          memory: "8704M"
+      livenessProbe:
+        periodSeconds: 30
+        timeoutSeconds: 20
+
       # Space-separated string (NAUTOBOT_ALLOWED_HOSTS). Left as "*" — the only
       # ingress path is the private tailnet gateway, and scoping it risks
       # rejecting the chart's in-pod health probes.
@@ -84,13 +103,15 @@ spec:
         existingSecret: nautobot-secrets
         existingSecretSecretKeyKey: secret-key
 
+      # Superuser bootstrap OFF — access is SSO-only now. Leaving this enabled
+      # would re-create/reset the local `admin` account on every upgrade,
+      # undoing the manual deactivation. Admin rights come from the
+      # nautobot_super_admins group via SSO group_sync. Deactivate (don't
+      # delete) the existing `admin` user in the UI to kill local login; it
+      # stays reactivatable as break-glass. The superuser GSM secrets remain
+      # but are now unused.
       superUser:
-        enabled: true
-        username: admin
-        email: nicole@freckle.family
-        existingSecret: nautobot-secrets
-        existingSecretPasswordKey: superuser-password
-        existingSecretApiTokenKey: superuser-apitoken
+        enabled: false
 
       # nautobot.metrics (NAUTOBOT_METRICS_ENABLED) defaults to true — the
       # Prometheus endpoint is already exposed; no override needed.
