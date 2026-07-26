@@ -176,10 +176,15 @@ spec:
         SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
         SESSION_COOKIE_SECURE = True
         CSRF_COOKIE_SECURE = True
-        SECURE_SSL_REDIRECT = True
-        # Exempt the health endpoint so the in-cluster readiness probe (plain
-        # HTTP, no X-Forwarded-Proto) still executes the checks instead of a 301.
-        SECURE_REDIRECT_EXEMPT = [r"^health"]
+        # App-level HTTP->HTTPS redirect stays OFF: the tailnet gateway is the
+        # only ingress and serves HTTPS exclusively, so external requests always
+        # arrive with X-Forwarded-Proto=https and would never be redirected
+        # anyway. The redirect only ever fired for header-less *in-cluster*
+        # clients (readiness probe, service-to-service API callers like dcim-ui),
+        # 301-ing them to an HTTPS URL whose cert doesn't cover the internal
+        # service name — friction with no security benefit. TLS enforcement lives
+        # at the gateway; secure cookies + HSTS below still apply.
+        SECURE_SSL_REDIRECT = False
         SECURE_HSTS_SECONDS = 31536000  # 1 year
         SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
