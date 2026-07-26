@@ -1,0 +1,15 @@
+---
+# Declarative database. CNPG ensures the DB exists and is owned by the
+# `nautobot` role (created by `managed.roles` on the Cluster). Owner gets
+# implicit full privileges — no GRANT step needed. Nautobot runs its own
+# migrations on start and needs no preinstalled extensions.
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: nautobot
+spec:
+  name: nautobot
+  owner: nautobot
+  cluster:
+    name: nautobot-db
+  ensure: present

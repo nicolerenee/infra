@@ -1,0 +1,128 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: nautobot
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: nautobot
+    namespace: nautobot
+  maxHistory: 2
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
+  values:
+    # Fixed resource names so the HTTPRoute backend and in-cluster DNS are
+    # predictable (web Service becomes `nautobot-default`).
+    fullnameOverride: nautobot
+
+    # Bundled datastores off — we bring our own CNPG Postgres and Dragonfly.
+    postgresql:
+      enabled: false
+    redis:
+      enabled: false
+
+    nautobot:
+      # Chart 3.1.2's appVersion pins the image to 3.0 — override to the latest
+      # Nautobot 3.1.8, pulled from GHCR and pinned by digest.
+      image:
+        registry: ghcr.io
+        repository: nautobot/nautobot
+        tag: "3.1.8@sha256:a8f89c28c6d4585c294d690e3bf4c4e2543d47cf81fd07bf02b2f4e73e959d95"
+
+      # Single web replica for a homelab DCIM; Celery worker + beat run as
+      # their own deployments (chart defaults). Uploaded media (device-type
+      # images, attachments) lives on a shared ceph-filesystem RWX PVC so it
+      # survives restarts and stays consistent if the web tier scales out.
+      # Static files are collected at container start (ephemeral); Git
+      # datasource repos use the chart's default emptyDir and re-sync from
+      # remote. Everything else is in Postgres.
+      replicaCount: 1
+      persistenceMediaFiles:
+        enabled: true
+        storageClassName: ceph-filesystem
+        accessMode: ReadWriteMany
+        size: 5Gi
+      # Space-separated string (NAUTOBOT_ALLOWED_HOSTS). Left as "*" — the only
+      # ingress path is the private tailnet gateway, and scoping it risks
+      # rejecting the chart's in-pod health probes.
+      allowedHosts: "*"
+
+      db:
+        engine: django.db.backends.postgresql
+        # CNPG's read-write Service for the primary.
+        host: nautobot-db-rw.nautobot.svc
+        port: 5432
+        name: nautobot
+        existingSecret: nautobot-db-app-role
+        existingSecretUsernameKey: username
+        existingSecretPasswordKey: password
+
+      redis:
+        host: nautobot-queue.nautobot.svc
+        port: 6379
+        ssl: false
+        existingSecret: nautobot-queue-secrets
+        existingSecretPasswordKey: password
+
+      django:
+        existingSecret: nautobot-secrets
+        existingSecretSecretKeyKey: secret-key
+
+      superUser:
+        enabled: true
+        username: admin
+        email: nicole@freckle.family
+        existingSecret: nautobot-secrets
+        existingSecretPasswordKey: superuser-password
+        existingSecretApiTokenKey: superuser-apitoken
+
+      # nautobot.metrics (NAUTOBOT_METRICS_ENABLED) defaults to true — the
+      # Prometheus endpoint is already exposed; no override needed.
+
+      # OIDC client credentials for the generic python-social-auth backend.
+      # Read by the supplemental config below via os.environ.
+      extraEnvVars:
+        - name: NAUTOBOT_OIDC_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: nautobot-secrets
+              key: client-id
+        - name: NAUTOBOT_OIDC_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: nautobot-secrets
+              key: client-secret
+
+      # Supplemental nautobot_config.py appended on top of Nautobot core
+      # settings (which already build DATABASES/CACHES/etc. from the NAUTOBOT_*
+      # env vars the chart injects from the values above). Wires SSO to Freckle
+      # ID (pocket-id) using the generic OIDC backend (backend name "oidc" ->
+      # SOCIAL_AUTH_OIDC_* settings). New OIDC users are auto-created and land
+      # in the "sso" group; grant permissions to that group in Nautobot.
+      config: |
+        import os
+
+        AUTHENTICATION_BACKENDS = [
+            "social_core.backends.open_id_connect.OpenIdConnectAuth",
+            "nautobot.core.authentication.ObjectPermissionBackend",
+        ]
+
+        SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = "https://freckle.id"
+        SOCIAL_AUTH_OIDC_KEY = os.environ.get("NAUTOBOT_OIDC_CLIENT_ID", "")
+        SOCIAL_AUTH_OIDC_SECRET = os.environ.get("NAUTOBOT_OIDC_CLIENT_SECRET", "")
+        # Store social-auth extra_data as a real JSONField (Postgres).
+        SOCIAL_AUTH_JSONFIELD_ENABLED = True
+
+        # Auto-provision SSO users into a default group so they can log in
+        # before an admin assigns object permissions.
+        EXTERNAL_AUTH_DEFAULT_GROUPS = ["sso"]
