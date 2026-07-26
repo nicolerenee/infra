@@ -168,6 +168,21 @@ spec:
         # Install/usage reporting off (image default is on).
         INSTALLATION_METRICS_ENABLED = False
 
+        # --- HTTPS hardening (clears Django deploy warnings W004/W008/W012/W016) ---
+        # Nautobot runs behind the TLS-terminating tailnet gateway; Envoy sets
+        # X-Forwarded-Proto, so trust it to tell Django the request is secure —
+        # required for the secure-cookie / redirect / HSTS logic below to work
+        # (and to avoid a redirect loop with SECURE_SSL_REDIRECT).
+        SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+        SESSION_COOKIE_SECURE = True
+        CSRF_COOKIE_SECURE = True
+        SECURE_SSL_REDIRECT = True
+        # Exempt the health endpoint so the in-cluster readiness probe (plain
+        # HTTP, no X-Forwarded-Proto) still executes the checks instead of a 301.
+        SECURE_REDIRECT_EXEMPT = [r"^health"]
+        SECURE_HSTS_SECONDS = 31536000  # 1 year
+        SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
         # --- Freckle ID (pocket-id) SSO ---
         AUTHENTICATION_BACKENDS = [
             "social_core.backends.open_id_connect.OpenIdConnectAuth",
