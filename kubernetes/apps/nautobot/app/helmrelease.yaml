@@ -109,15 +109,29 @@ spec:
               name: nautobot-secrets
               key: client-secret
 
+      # SSO group sync. Nautobot core reads these NAUTOBOT_SSO_* env vars at
+      # settings-import time: it appends group_sync to SOCIAL_AUTH_PIPELINE,
+      # which reads the `groups` claim, auto-creates the matching Nautobot
+      # groups, and sets is_staff/is_superuser from the lists below. Non-secret,
+      # so plain extraVars (applied to all pods for consistent settings).
+      extraVars:
+        - name: NAUTOBOT_SSO_ENABLE_GROUP_SYNC
+          value: "true"
+        - name: NAUTOBOT_SSO_CLAIMS_GROUP
+          value: "groups"
+        - name: NAUTOBOT_SSO_STAFF_GROUPS
+          value: "nautobot_admins,nautobot_super_admins"
+        - name: NAUTOBOT_SSO_SUPERUSER_GROUPS
+          value: "nautobot_super_admins"
+
       # Full nautobot_config.py — setting this REPLACES the image's default
       # config file entirely (the chart mounts it over /opt/nautobot/
       # nautobot_config.py), so it must reproduce the image default's active
       # lines first. The critical one is `from nautobot.core.settings import *`,
       # which builds GIT_ROOT/DATABASES/CACHES/etc. from the NAUTOBOT_* env vars
       # the chart injects. We then append the Freckle ID (pocket-id) SSO wiring:
-      # python-social-auth generic OIDC backend (name "oidc" -> SOCIAL_AUTH_OIDC_*).
-      # New OIDC users are auto-created into the "sso" group; grant that group
-      # object permissions in Nautobot.
+      # python-social-auth generic OIDC backend (name "oidc" -> SOCIAL_AUTH_OIDC_*),
+      # with group sync driven by the NAUTOBOT_SSO_* extraVars above.
       config: |
         import os
         import sys
@@ -130,7 +144,8 @@ spec:
 
         SECRET_KEY = os.getenv("NAUTOBOT_SECRET_KEY", "")
 
-        INSTALLATION_METRICS_ENABLED = is_truthy(os.getenv("NAUTOBOT_INSTALLATION_METRICS_ENABLED", "True"))
+        # Install/usage reporting off (image default is on).
+        INSTALLATION_METRICS_ENABLED = False
 
         # --- Freckle ID (pocket-id) SSO ---
         AUTHENTICATION_BACKENDS = [
@@ -145,6 +160,9 @@ spec:
         SOCIAL_AUTH_OIDC_USE_PKCE = True
         # Store social-auth extra_data as a real JSONField (Postgres).
         SOCIAL_AUTH_JSONFIELD_ENABLED = True
-        # Auto-provision SSO users into a default group so they can log in
-        # before an admin assigns object permissions.
-        EXTERNAL_AUTH_DEFAULT_GROUPS = ["sso"]
+        # Request the `groups` scope so pocket-id includes the user's group
+        # memberships in the token; group sync (NAUTOBOT_SSO_* extraVars) maps
+        # them to Nautobot groups + staff/superuser. Deliberately no
+        # EXTERNAL_AUTH_DEFAULT_GROUPS — it required a pre-existing group and
+        # logged "Group not found"; membership now comes from the claim.
+        SOCIAL_AUTH_OIDC_SCOPE = ["groups"]
