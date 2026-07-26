@@ -1,0 +1,17 @@
+---
+# Nautobot Helm chart from GHCR (OCI). Tag is `v`-prefixed; digest pins it
+# immutably. Bump both together on chart upgrades.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/source.toolkit.fluxcd.io/ocirepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: nautobot
+spec:
+  interval: 1h
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
+  ref:
+    tag: v3.1.2
+    digest: sha256:53e2ad93c89a25ae49dc6bc982b9790a016aab8c504114f694f0e36c001e3142
+  url: oci://ghcr.io/nautobot/helm-charts/nautobot

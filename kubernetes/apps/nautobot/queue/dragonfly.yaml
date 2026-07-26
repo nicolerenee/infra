@@ -1,0 +1,38 @@
+---
+# Dragonfly stands in for Redis — Nautobot uses it as both the Celery
+# broker/result backend and the Django cache. 3-replica HA: operator manages
+# failover and the Service routes to the current primary, so the web pods and
+# Celery workers/beat always reach a writable endpoint. Persistence is on so a
+# restart doesn't drop in-flight Celery tasks — RDB snapshot to a Ceph PVC
+# every 15 minutes.
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: nautobot-queue
+spec:
+  replicas: 3
+  authentication:
+    passwordFromSecret:
+      name: nautobot-queue-secrets
+      key: password
+  args:
+    - --proactor_threads=2
+    # Static snapshot filename (no {timestamp} macro) so each cron snapshot
+    # OVERWRITES the previous one, keeping exactly one file. The default
+    # `dump-{timestamp}` never prunes and eventually fills the PVC.
+    - --dbfilename=dump
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+  snapshot:
+    cron: "*/15 * * * *"
+    persistentVolumeClaimSpec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
+      storageClassName: ceph-block
