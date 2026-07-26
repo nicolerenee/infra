@@ -140,6 +140,9 @@ spec:
         SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = "https://freckle.id"
         SOCIAL_AUTH_OIDC_KEY = os.environ.get("NAUTOBOT_OIDC_CLIENT_ID", "")
         SOCIAL_AUTH_OIDC_SECRET = os.environ.get("NAUTOBOT_OIDC_CLIENT_SECRET", "")
+        # The pocket-id client requires PKCE. The generic OIDC backend supports
+        # it (BaseOAuth2PKCE) but defaults off, so enable it (S256 by default).
+        SOCIAL_AUTH_OIDC_USE_PKCE = True
         # Store social-auth extra_data as a real JSONField (Postgres).
         SOCIAL_AUTH_JSONFIELD_ENABLED = True
         # Auto-provision SSO users into a default group so they can log in
