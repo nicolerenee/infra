@@ -166,3 +166,28 @@ spec:
         # EXTERNAL_AUTH_DEFAULT_GROUPS — it required a pre-existing group and
         # logged "Group not found"; membership now comes from the claim.
         SOCIAL_AUTH_OIDC_SCOPE = ["groups"]
+
+        # pocket-id returns ALL of a user's groups in the `groups` claim, and the
+        # stock nautobot.extras.group_sync.group_sync creates every one of them —
+        # cluttering Nautobot with unrelated groups (jellyfin_users, sysadmins,
+        # ...). Replace that pipeline step with a prefix-filtered version so only
+        # nautobot_* groups sync and drive is_staff/is_superuser. (This module,
+        # nautobot_config, is importable by dotted path — /opt/nautobot is on
+        # sys.path — so the pipeline can reference the function below.)
+        def nautobot_group_sync(uid, user=None, response=None, *args, **kwargs):
+            from django.contrib.auth.models import Group
+
+            if not (user and response):
+                return
+            groups = [g for g in (response.get(SSO_CLAIMS_GROUP) or []) if g.startswith("nautobot_")]
+            user.groups.set([Group.objects.get_or_create(name=g)[0].id for g in groups])
+            user.is_superuser = any(g in SSO_SUPERUSER_GROUPS for g in groups)
+            user.is_staff = any(g in SSO_STAFF_GROUPS for g in groups)
+            user.save()
+
+        SOCIAL_AUTH_PIPELINE = tuple(
+            "nautobot_config.nautobot_group_sync"
+            if step == "nautobot.extras.group_sync.group_sync"
+            else step
+            for step in SOCIAL_AUTH_PIPELINE
+        )
