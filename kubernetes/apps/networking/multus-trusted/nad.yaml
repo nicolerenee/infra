@@ -1,4 +1,13 @@
 ---
+# Pod L2 attachment to the home LAN (VLAN 300).
+#
+# Uses the bridge CNI plugin on br300 (a host Linux bridge whose only
+# port is bond0.300; see fairy-k8s01/talos/talconfig.yaml). Previously
+# used macvlan directly on bond0.300, but KubeVirt VMs can't share the
+# macvlan-on-VLAN path (kernel MAC filter conflicts with KubeVirt's
+# bridge binding), so the underlying L2 fanout was moved to a Linux
+# bridge. Pods get unique MACs and static IPs via the same per-pod
+# annotation as before — only the CNI plugin underneath changed.
 apiVersion: k8s.cni.cncf.io/v1
 kind: NetworkAttachmentDefinition
 metadata:
@@ -10,9 +19,10 @@ spec:
       "name": "multus-trusted",
       "plugins": [
         {
-          "type": "macvlan",
-          "master": "bond0.300",
-          "mode": "bridge",
+          "type": "bridge",
+          "bridge": "br300",
+          "macspoofchk": false,
+          "capabilities": { "mac": true, "ips": true },
           "ipam": {
             "type": "static"
           }

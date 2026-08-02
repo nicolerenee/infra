@@ -1,7 +1,22 @@
 ---
-# Suppress IPv6 on bond0.300 (home VLAN) — L2 only, no host addressing
+# Suppress IPv6 on the home-LAN path — L2-only, no host addressing.
+#
+# Applied to:
+#  - bond0.300 (the VLAN sub-interface; bridge port of br300)
+#  - br300 (the host bridge that fans VLAN 300 out to pods + KubeVirt VMs)
+#
+# Without these, br300 picks up an IPv6 SLAAC address from the LAN router
+# RAs on every boot (verified after 2026-05-26 reboot); we don't want the
+# bridge to be an L3 endpoint on the home LAN, only an L2 fanout.
+#
+# accept_ra=0      → ignore router advertisements
+# autoconf=0       → don't auto-configure an IPv6 address from RAs
+# addr_gen_mode=3  → "never generate any address" (incl. link-local)
 machine:
   sysctls:
     net.ipv6.conf.bond0/300.accept_ra: "0"
     net.ipv6.conf.bond0/300.autoconf: "0"
     net.ipv6.conf.bond0/300.addr_gen_mode: "3"
+    net.ipv6.conf.br300.accept_ra: "0"
+    net.ipv6.conf.br300.autoconf: "0"
+    net.ipv6.conf.br300.addr_gen_mode: "3"
