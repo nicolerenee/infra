@@ -6,10 +6,11 @@ tasks:
   download-model:
     desc: Download a HuggingFace model to the inference models volume
     vars:
+      KCTX: '{{if .CONTEXT}}--context={{.CONTEXT}}{{end}}'
       JOB_NAME: "download-{{.MODEL | replace \"/\" \"-\" | lower}}"
     cmds:
       - |
-        cat <<EOF | kubectl apply -f -
+        cat <<EOF | kubectl {{.KCTX}} apply -f -
         apiVersion: batch/v1
         kind: Job
         metadata:
@@ -49,3 +50,107 @@ tasks:
       - echo "  kubectl logs -n inference -f job/{{.JOB_NAME}}"
     requires:
       vars: ["MODEL"]
+
+  benchmark:
+    desc: Run a llama-benchy sweep against a served model and stream the markdown results
+    summary: |
+      Spins up an ephemeral pod in the inference namespace that runs llama-benchy
+      (via `uvx`) against an in-cluster vLLM OpenAI endpoint, then streams the
+      markdown results table to your terminal.
+
+      Required vars:
+        SVC     Service name of the served model (e.g. minimax-m27-nvfp4, qwen36-35b-a3b)
+        MODEL   Served model id as vLLM reports it at /v1/models
+                (e.g. openai/gpt-oss-120b). Find it with:
+                  kubectl -n inference run -q --rm -it curl --image=curlimages/curl --restart=Never -- \
+                    -s http://{SVC}.inference:8000/v1/models
+
+      Optional vars (defaults reproduce the standard spark sweep):
+        NS           Namespace                (default: inference)
+        DEPTH        Context depths           (default: "0 4096 8192 16384 32768 65535 100000")
+        PP           Prompt-processing tokens (default: "2048")
+        TG           Token-generation tokens  (default: "128")
+        CONCURRENCY  Concurrent requests      (default: "1 2 5 10")
+        BENCHY       llama-benchy version     (default: latest on PyPI; e.g. BENCHY=0.4.0)
+
+      Example:
+        task inference:benchmark SVC=minimax-m27-nvfp4 MODEL=MiniMaxAI/MiniMax-M2.7
+    vars:
+      NS: '{{.NS | default "inference"}}'
+      KCTX: '{{if .CONTEXT}}--context={{.CONTEXT}}{{end}}'
+      DEPTH: '{{.DEPTH | default "0 4096 8192 16384 32768 65535 100000"}}'
+      PP: '{{.PP | default "2048"}}'
+      TG: '{{.TG | default "128"}}'
+      CONCURRENCY: '{{.CONCURRENCY | default "1 2 5 10"}}'
+      BENCHY_SPEC: '{{if .BENCHY}}llama-benchy@{{.BENCHY}}{{else}}llama-benchy{{end}}'
+      JOB_NAME: "bench-{{.SVC}}"
+      BASE_URL: "http://{{.SVC}}.{{.NS}}.svc.cluster.local:8000/v1"
+    cmds:
+      # Replace any prior run so the job name stays stable and re-runnable.
+      - kubectl {{.KCTX}} -n {{.NS}} delete job {{.JOB_NAME}} --ignore-not-found
+      - |
+        cat <<EOF | kubectl {{.KCTX}} apply -f -
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: {{.JOB_NAME}}
+          namespace: {{.NS}}
+        spec:
+          backoffLimit: 0
+          ttlSecondsAfterFinished: 86400
+          template:
+            metadata:
+              labels:
+                # Source label the model ingress CNP allows through to :8000.
+                inference.freckle.systems/role: benchmark
+            spec:
+              restartPolicy: Never
+              containers:
+                - name: benchy
+                  image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+                  command:
+                    - uvx
+                    - {{.BENCHY_SPEC}}
+                    - --base-url
+                    - {{.BASE_URL}}
+                    - --model
+                    - {{.MODEL}}
+                    - --depth
+                    {{- range (splitList " " .DEPTH)}}
+                    - "{{.}}"
+                    {{- end}}
+                    - --pp
+                    {{- range (splitList " " .PP)}}
+                    - "{{.}}"
+                    {{- end}}
+                    - --tg
+                    {{- range (splitList " " .TG)}}
+                    - "{{.}}"
+                    {{- end}}
+                    - --enable-prefix-caching
+                    - --concurrency
+                    {{- range (splitList " " .CONCURRENCY)}}
+                    - "{{.}}"
+                    {{- end}}
+                  env:
+                    - name: UV_CACHE_DIR
+                      value: /tmp/uv-cache
+                    # Stream progress/results live instead of block-buffering
+                    # stdout until the process exits (the pod has no TTY).
+                    - name: PYTHONUNBUFFERED
+                      value: "1"
+                    # llama-benchy pulls the model tokenizer from the HF Hub to
+                    # build exact-depth prompts; the token lifts anonymous rate
+                    # limits. Optional so the task still runs without the secret.
+                    - name: HF_TOKEN
+                      valueFrom:
+                        secretKeyRef:
+                          name: huggingface
+                          key: HF_TOKEN
+                          optional: true
+        EOF
+      # Wait for the pod to start, then stream logs (the markdown table) to the terminal.
+      - kubectl {{.KCTX}} -n {{.NS}} wait --for=condition=Ready pod -l job-name={{.JOB_NAME}} --timeout=180s || true
+      - kubectl {{.KCTX}} -n {{.NS}} logs -f job/{{.JOB_NAME}}
+    requires:
+      vars: ["SVC", "MODEL"]
