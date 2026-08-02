@@ -61,6 +61,7 @@ nav = [
   ]},
   { "Storage" = [
     { "Storage" = "storage/index.md" },
+    { "Ceph Benchmarking" = "storage/ceph-benchmarking.md" },
     { "TrueNAS Mini-R" = "storage/truenas-mini-r.md" },
   ]},
   { "Runbooks" = [
