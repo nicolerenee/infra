@@ -1,0 +1,85 @@
+---
+# OIDC client credentials for the Akvorado console. 1Password item `akvorado`
+# must have oidc_client_id and oidc_client_secret fields. Register the client
+# in pocket-id with redirect URI
+# https://akvorado.atlantis.freckle.services/oauth2/callback before deploying.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/external-secrets.io/externalsecret_v1.json
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: akvorado-oidc
+spec:
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: op-cluster-vault
+  target:
+    template:
+      data:
+        client-id: "{{ .oidc_client_id }}"
+        client-secret: "{{ .oidc_client_secret }}"
+  dataFrom:
+    - extract:
+        key: akvorado
+---
+# The console has no authentication of its own — it trusts a Remote-User
+# header and assumes something in front established the identity. That makes
+# this policy load-bearing, not defence in depth.
+#
+# Two filters cooperate. Envoy Gateway orders oauth2 (8) before jwt_authn (9),
+# so:
+#   1. `oidc` challenges the browser against pocket-id and, once authenticated,
+#      injects the ID token as `Authorization: Bearer ...`.
+#   2. `jwt` validates that token against pocket-id's JWKS and copies claims
+#      into the headers the console reads.
+#
+# The targetRef is the bare `akvorado` HTTPRoute: app-template drops the key
+# suffix when a release declares a single route. If that ever becomes
+# `akvorado-console`, this policy silently stops applying and the console is
+# exposed — check `kubectl get securitypolicy` status after chart upgrades.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: akvorado-oidc
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: akvorado
+  oidc:
+    provider:
+      issuer: https://freckle.id
+    clientIDRef:
+      group: ""
+      kind: Secret
+      name: akvorado-oidc
+    clientSecret:
+      group: ""
+      kind: Secret
+      name: akvorado-oidc
+    redirectURL: https://akvorado.${CLUSTER_SVCS_DOMAIN}/oauth2/callback
+    logoutPath: /logout
+    scopes:
+      - openid
+      - email
+      - profile
+    # Hands the ID token to the JWT filter below. Without this the claims
+    # never reach the console and every session would be anonymous.
+    forwardIDToken:
+      header: Authorization
+  jwt:
+    providers:
+      - name: pocket-id
+        issuer: https://freckle.id
+        remoteJWKS:
+          uri: https://freckle.id/.well-known/jwks.json
+        # No `audiences`: the audience of an ID token is the client ID, which
+        # lives in a secret and cannot be templated in here. Issuer and
+        # signature validation against pocket-id's JWKS is the real check, and
+        # the token only ever arrives from the oidc filter above.
+        claimToHeaders:
+          - claim: preferred_username
+            header: Remote-User
+          - claim: name
+            header: Remote-Name
+          - claim: email
+            header: Remote-Email

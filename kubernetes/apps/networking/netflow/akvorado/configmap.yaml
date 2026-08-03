@@ -1,0 +1,159 @@
+---
+# Single Akvorado configuration file. Only the orchestrator mounts it — it
+# serves the resolved config to the inlet, outlet and console over HTTP, which
+# is why those three take the orchestrator URL as their only argument.
+#
+# Derived from upstream's config/akvorado.yaml + config/{inlet,outlet,console}.yaml.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: akvorado-config
+data:
+  akvorado.yaml: |
+    kafka:
+      topic: flows
+      brokers:
+        - kafka:9092
+      topic-configuration:
+        # Kafka is only a buffer in front of ClickHouse, so one day of
+        # retention on a single unreplicated broker is deliberate.
+        num-partitions: 4
+        replication-factor: 1
+        config-entries:
+          segment.bytes: 1073741824
+          retention.ms: 86400000
+          cleanup.policy: delete
+          compression.type: producer
+
+    geoip:
+      # Loaded by the orchestrator, which pushes the data into ClickHouse as
+      # dictionaries; the outlet never reads these files. Optional so a failed
+      # database download degrades enrichment instead of blocking startup.
+      optional: true
+      asn-database:
+        - /usr/share/GeoIP/asn.mmdb
+      geo-database:
+        - /usr/share/GeoIP/country.mmdb
+
+    clickhousedb:
+      servers:
+        - clickhouse:9000
+
+    clickhouse:
+      orchestrator-url: http://akvorado-orchestrator:8080
+      prometheus-endpoint: /metrics
+      # Names our own prefixes so flows involving them are labelled rather
+      # than lumped in with the internet. Roles are a first pass and cheap to
+      # refine once we see how the console groups things.
+      networks:
+        10.140.0.0/16:
+          name: den1-lan
+          role: internal
+          site: den1
+          tenant: freckle
+        172.20.0.0/20:
+          name: den1-mgmt
+          role: management
+          site: den1
+          tenant: freckle
+        172.25.0.0/20:
+          name: den1-infra
+          role: infrastructure
+          site: den1
+          tenant: freckle
+        172.26.0.0/20:
+          name: den1-infra
+          role: infrastructure
+          site: den1
+          tenant: freckle
+        # Public blocks come from the site-public-ips secret via postBuild so
+        # they stay out of this public repo, same as the cilium CIDR groups.
+        ${SITE_ATLANTIS_PUBLIC_V4_BLOCK}:
+          name: den1-public
+          role: dmz
+          site: den1
+          tenant: freckle
+        ${SITE_ATLANTIS_PUBLIC_V6_BLOCK}:
+          name: den1-public
+          role: dmz
+          site: den1
+          tenant: freckle
+
+    inlet:
+      flow:
+        inputs:
+          - type: udp
+            decoder: netflow
+            listen: :2055
+            workers: 2
+            receive-buffer: 212992
+          # border1.den1 exports IPFIX here.
+          - type: udp
+            decoder: netflow
+            listen: :4739
+            workers: 2
+            receive-buffer: 212992
+          - type: udp
+            decoder: sflow
+            listen: :6343
+            workers: 2
+            receive-buffer: 212992
+
+    outlet:
+      # No `routing` block, but note that does NOT mean routing is off: the
+      # provider defaults to bmp and there is no "none" option, so the outlet
+      # listens on :10179 for a BMP session that will never arrive. Nothing
+      # exposes that port, so it idles harmlessly.
+      #
+      # We deliberately don't peer it. border1.den1 reaches the internet over
+      # a static default route, not BGP, so it holds no DFZ table and BMP
+      # would contribute nothing to AS attribution. That comes from the IPinfo
+      # ASN database instead — the resolved `core.asn-providers` chain is
+      # [flow, routing, geo-ip], and ipt_NETFLOW populates no AS fields, so
+      # geo-ip is what actually answers.
+      metadata:
+        providers:
+          # Interface names/descriptions/speeds are polled over SNMPv2 from
+          # the exporter. border1.den1 already serves this community read-only.
+          - type: snmp
+            credentials:
+              ::/0:
+                communities:
+                  - freckle-public
+      core:
+        exporter-classifiers:
+          # SNMP sysName is "border1.den1", so the trailing label is the site.
+          - ClassifySiteRegex(Exporter.Name, "\\.([^.]+)$", "$1")
+          - ClassifyRole("edge")
+          - ClassifyTenant("freckle")
+        interface-classifiers:
+          # Upstream's default rule, which already fits our descriptions:
+          # eth0 is "Transit: Summit Hosting" -> connectivity=transit,
+          # provider=Summit, boundary=external. The spine links ("spine1.den1",
+          # "spine2.den1") fall through to internal.
+          - |
+            ClassifyConnectivityRegex(Interface.Description, "^(?i)(transit|pni|ppni|ix):? ", "$1") &&
+            ClassifyProviderRegex(Interface.Description, "^\\S+?\\s(\\S+)", "$1") &&
+            ClassifyExternal()
+          - ClassifyInternal()
+
+    console:
+      auth:
+        headers:
+          login: Remote-User
+          name: Remote-Name
+          email: Remote-Email
+        # No `default-user` here. Upstream documents setting its `login` to
+        # an empty string to refuse unauthenticated requests, and the console
+        # middleware does implement exactly that — but the field carries a
+        # `required` validation tag, so the orchestrator rejects the whole
+        # config at startup before the console ever sees it (verified against
+        # 2.4.1 with `orchestrator --check`). Omitting the block leaves the
+        # built-in `__default` identity in place for requests arriving without
+        # headers.
+        #
+        # Access control therefore rests entirely on the SecurityPolicy in
+        # oidc.yaml. Traffic that reaches the console Service directly from
+        # inside the cluster bypasses it — the same posture as every other
+        # OIDC-gated UI here (bazarr, radarr, ...), which are likewise
+        # protected at the gateway only.
