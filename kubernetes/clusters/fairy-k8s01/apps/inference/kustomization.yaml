@@ -6,6 +6,7 @@ namespace: inference
 components:
   - ../../../../components/flux-post-build-variables
 resources:
+  - ../_shared/cluster-info
   - ./ai-gateway.yaml
   - ./ai-routes.yaml
   - ./external-secrets.yaml

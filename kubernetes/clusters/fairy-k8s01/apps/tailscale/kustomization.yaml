@@ -6,6 +6,7 @@ namespace: tailscale
 components:
   - ../../../../components/flux-post-build-variables
 resources:
+  - ../_shared/cluster-info
   - ./tailscale-api-server-proxy.yaml
   - ./tailscale-operator.yaml
   - ./tailscale-proxyclass.yaml

@@ -7,5 +7,6 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
+  - ../_shared/cluster-info
   - ./minecraft-base.yaml
   - ./minecraft-servers.yaml

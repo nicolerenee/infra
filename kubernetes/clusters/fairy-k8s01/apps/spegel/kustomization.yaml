@@ -6,4 +6,5 @@ namespace: spegel
 components:
   - ../../../../components/flux-post-build-variables
 resources:
+  - ../_shared/cluster-info
   - ./spegel.yaml

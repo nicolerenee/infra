@@ -6,6 +6,7 @@ namespace: janet-mcp
 components:
   - ../../../../components/flux-post-build-variables
 resources:
+  - ../_shared/cluster-info
   - ./external-secrets.yaml
   - ./mcp.yaml
   - ./brave-search.yaml

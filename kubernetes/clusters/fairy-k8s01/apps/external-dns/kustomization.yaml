@@ -7,6 +7,7 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
+  - ../_shared/cluster-info
   - ./cloudflare.yaml
   - ./cloudflare-tunnel.yaml
   - ./external-secrets.yaml

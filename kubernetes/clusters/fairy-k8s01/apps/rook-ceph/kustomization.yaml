@@ -7,6 +7,7 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
+  - ../_shared/cluster-info
   - ./rook-ceph.yaml
   - ./rook-ceph-csi-drivers.yaml
   - ./rook-ceph-cluster.yaml

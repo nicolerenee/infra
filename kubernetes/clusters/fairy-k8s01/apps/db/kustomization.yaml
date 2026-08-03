@@ -7,17 +7,6 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
-  # Declares this namespace's copy of k8s-cluster-info rather than relying on
-  # Reflector to create it at runtime. Flux resolves postBuild.substituteFrom
-  # only in the Kustomization's own namespace, so every namespace needs a copy;
-  # Reflector's is invisible to anything that renders the repo statically, which
-  # is why konflate/flate could not render anything in here.
-  #
-  # Same file the `default` copy uses, so the values cannot drift. Reflector
-  # still writes its own copy alongside for now — the two coexist because they
-  # claim disjoint fields (Flux owns `data`, Reflector owns its annotations),
-  # verified on the konflate namespace. The Reflector source annotations come
-  # off once every namespace declares its own copy.
   - ../_shared/cluster-info
   - ./cloudnative-pg.yaml
   - ./dragonfly-operator.yaml

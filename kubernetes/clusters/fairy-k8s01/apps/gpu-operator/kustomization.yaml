@@ -6,5 +6,6 @@ namespace: gpu-operator
 components:
   - ../../../../components/flux-post-build-variables
 resources:
+  - ../_shared/cluster-info
   - ./nvidia-gpu-operator.yaml
   - ./dra-driver-nvidia-gpu.yaml

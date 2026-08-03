@@ -6,6 +6,7 @@ namespace: envoy-gateway-system
 components:
   - ../../../../components/flux-post-build-variables
 resources:
+  - ../_shared/cluster-info
   - ./envoy-gateway.yaml
   - ./envoy-gateway-crds.yaml
   - ./gateway-api.yaml

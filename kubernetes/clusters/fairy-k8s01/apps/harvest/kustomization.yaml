@@ -6,4 +6,5 @@ namespace: harvest
 components:
   - ../../../../components/flux-post-build-variables
 resources:
+  - ../_shared/cluster-info
   - ./harvest.yaml

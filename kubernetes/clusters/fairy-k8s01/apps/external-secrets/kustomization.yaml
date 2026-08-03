@@ -7,5 +7,6 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
+  - ../_shared/cluster-info
   - ./external-secrets.yaml
   - ./onepassword-connect.yaml

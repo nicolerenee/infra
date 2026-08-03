@@ -9,6 +9,7 @@ components:
 # topology (deploy/flux/). The per-component child KSs (migrate/brain/
 # controller) moved into the app bundle — see janet-bootstrap.yaml.
 resources:
+  - ../_shared/cluster-info
   - ./external-secrets.yaml
   - ./platform.yaml
   - ./db.yaml
