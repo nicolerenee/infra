@@ -53,27 +53,37 @@ data:
       # Names our own prefixes so flows involving them are labelled rather
       # than lumped in with the internet. Roles are a first pass and cheap to
       # refine once we see how the console groups things.
+      #
+      # The RFC1918 ranges carry an `asn` too. They have no real ASN — nothing
+      # would ever populate one — so without it every internal source lands in
+      # the AS breakdown as "0: ???", including the largest talkers. Tagging
+      # them with the site's private ASN makes that view usable for internal
+      # traffic instead of just for the public blocks.
       networks:
         10.140.0.0/16:
           name: den1-lan
           role: internal
           site: den1
           tenant: freckle
+          asn: 64610
         172.20.0.0/20:
           name: den1-mgmt
           role: management
           site: den1
           tenant: freckle
+          asn: 64610
         172.25.0.0/20:
           name: den1-infra
           role: infrastructure
           site: den1
           tenant: freckle
+          asn: 64610
         172.26.0.0/20:
           name: den1-infra
           role: infrastructure
           site: den1
           tenant: freckle
+          asn: 64610
         # Public blocks come from the site-public-ips secret via postBuild so
         # they stay out of this public repo, same as the cilium CIDR groups.
         #
