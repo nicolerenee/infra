@@ -154,6 +154,11 @@ jobs:
             # Check for missing directory resources
             missing_in_kustomization=""
             for dir_name in $actual_dirs; do
+              # Underscore-prefixed directories are shared fragments pulled in by
+              # sibling kustomizations (e.g. apps/_shared/cluster-info), not
+              # namespaces. Nothing points a Flux Kustomization at them and they
+              # are deliberately absent from apps/kustomization.yaml.
+              case "$dir_name" in _*) continue ;; esac
               if ! echo "$current_resources" | grep -q "^$dir_name$"; then
                 # Skip directories wired via a standalone Flux Kustomization in the
                 # cluster's flux/ directory (the namespace-pointer pattern). These are
@@ -333,6 +338,10 @@ jobs:
             for ns_dir in "$apps_dir"/*/; do
               [ ! -d "$ns_dir" ] && continue
               ns=$(basename "$ns_dir")
+              # Underscore-prefixed directories are shared fragments pulled in by
+              # sibling namespace kustomizations (e.g. apps/_shared/cluster-info),
+              # not namespaces — they intentionally have no Flux pointer.
+              case "$ns" in _*) continue ;; esac
               expected_path="./kubernetes/clusters/$cluster/apps/$ns"
 
               if echo "$referenced_paths" | grep -qFx "$expected_path"; then

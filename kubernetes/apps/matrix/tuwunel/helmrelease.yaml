@@ -23,7 +23,7 @@ spec:
               tag: v1.8.2@sha256:6f950bb139411a7964781e986321e395e045e4a6a52240a4dda9d23d04075f78
             env:
               - name: TUWUNEL_SERVER_NAME
-                value: ${CHAT_DOMAIN}
+                value: freckle.chat
               - name: TOKIO_WORKER_THREADS
                 value: "5"
               - name: TUWUNEL_ROCKSDB_PARALLELISM_THREADS
@@ -45,9 +45,9 @@ spec:
               - name: TUWUNEL_TRUSTED_SERVERS
                 value: '["matrix.org"]'
               - name: TUWUNEL_WELL_KNOWN__CLIENT
-                value: https://matrix.${CHAT_DOMAIN}
+                value: https://matrix.freckle.chat
               - name: TUWUNEL_WELL_KNOWN__SERVER
-                value: "matrix.${CHAT_DOMAIN}:443"
+                value: "matrix.freckle.chat:443"
               - name: TUWUNEL_MAX_REQUEST_SIZE
                 value: "104857600"
               - name: TUWUNEL_IP_LOOKUP_STRATEGY
@@ -115,7 +115,7 @@ spec:
         annotations: {}
         labels: {}
         hostnames:
-          - "matrix.${CHAT_DOMAIN}"
+          - "matrix.freckle.chat"
         parentRefs:
           - name: public
             namespace: gateway-system
@@ -127,7 +127,7 @@ spec:
               # Next-gen OIDC Authorization Server endpoints (authorize, token,
               # jwks, userinfo, registration, device, account) live under
               # /_tuwunel, and the OAuth issuer discovery doc sits at the issuer
-              # origin (matrix.${CHAT_DOMAIN}) — neither is under /_matrix.
+              # origin (matrix.freckle.chat) — neither is under /_matrix.
               - path:
                   type: PathPrefix
                   value: /_tuwunel
@@ -141,7 +141,7 @@ spec:
         annotations: {}
         labels: {}
         hostnames:
-          - "${CHAT_DOMAIN}"
+          - "freckle.chat"
         parentRefs:
           - name: public
             namespace: gateway-system

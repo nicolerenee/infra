@@ -1,0 +1,21 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: konflate
+components:
+  - ../../../../components/common
+  - ../../../../components/flux-post-build-variables
+resources:
+  # Laid down here rather than relied on from Reflector. The child Kustomization
+  # below resolves `substituteFrom` in its *own* namespace (Flux has no
+  # cross-namespace option), so every namespace needs its own copy. Reflector
+  # makes those copies at runtime, which works but is invisible to anything
+  # that renders the repo statically — `flate`/konflate see the ConfigMap only
+  # in `default` and refuse to render every Kustomization that substitutes from
+  # it. Declaring it here makes the copy a fact of the repo instead.
+  #
+  # Same file as the `default` copy, so the values cannot drift; the namespace
+  # comes from the `namespace:` transformer above.
+  - ../_shared/cluster-info
+  - ./konflate.yaml
