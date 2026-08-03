@@ -13,6 +13,13 @@ metadata:
   name: qwen36-35b-a3b
 spec:
   replicas: 1
+  # Default is 600s, which the first rollout on a node would blow through: the
+  # init container has to pull ~35Gi off CephFS before vLLM even starts, and the
+  # startupProbe then allows another 30m. Flux health-checks this Deployment
+  # (wait: true) and kstatus treats ProgressDeadlineExceeded as failed, so the
+  # default would fail the Kustomization on a cold node while the sync was still
+  # legitimately running. Aligned with the pointer KS's own 30m timeout.
+  progressDeadlineSeconds: 1800
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -43,12 +50,52 @@ spec:
       resourceClaims:
         - name: gpu
           resourceClaimTemplateName: gpu
+      initContainers:
+        # Cache the checkpoint from CephFS to node-local NVMe before vLLM starts,
+        # same pattern as the minimax LeaderWorkerSet. --copy-links dereferences
+        # the HF-cache symlinks so the local copy is self-contained; scoped to the
+        # Qwen dir (the `models` PVC is shared with minimax + gpt-oss) and excludes
+        # blobs/ because the deref'd snapshot already carries that data — without
+        # the exclude this would land ~70Gi instead of ~35Gi. hostPath persists
+        # across pod restarts, so only the first pod on a node pays the full sync
+        # and later ones re-sync incrementally.
+        #
+        # This also removes the reason vLLM logged "Auto-prefetch is disabled
+        # because the filesystem (CEPH) is not a recognized network FS": weights
+        # are read from local NVMe now, so the prefetch heuristic is moot. Forcing
+        # --safetensors-load-strategy=prefetch instead would have been the wrong
+        # fix on GB10, where page cache and "GPU" memory are the same pool.
+        - name: cache-models
+          image: mirror.gcr.io/rclone/rclone:1.75.0@sha256:b06aed988cf5967de7c25be5925240983981c757f4ed1ac9d2fa659d51d60548
+          command:
+            - rclone
+            - sync
+            - /ceph-models/hub/models--Qwen--Qwen3.6-35B-A3B-FP8/
+            - /models/hub/models--Qwen--Qwen3.6-35B-A3B-FP8/
+            - --copy-links
+            - --exclude
+            - blobs/**
+            - --transfers
+            - "8"
+            - --checkers
+            - "16"
+            # One-line stats each minute instead of --progress (which floods
+            # non-TTY pod logs with continuous progress redraws).
+            - --stats
+            - 1m
+            - --stats-one-line
+          volumeMounts:
+            - name: ceph-models
+              mountPath: /ceph-models
+              readOnly: true
+            - name: local-models
+              mountPath: /models
       containers:
         - name: vllm
-          # v0.24.0 (CUDA-13 default, Ubuntu 24.04) via the GCR pull-through mirror
-          # (avoids Docker Hub rate limits). v0.24's Responses-API parser handles
-          # codex's multi-turn tool loop, so this one deploy serves brain chat AND
-          # coding. NOT the older v0.20 (its /responses couldn't parse tool results).
+          # CUDA-13 default, Ubuntu 24.04, via the GCR pull-through mirror (avoids
+          # Docker Hub rate limits). The Responses-API parser handles codex's
+          # multi-turn tool loop, so this one deploy serves brain chat AND coding.
+          # NOT the older v0.20 (its /responses couldn't parse tool results).
           image: mirror.gcr.io/vllm/vllm-openai:v0.26.0-aarch64-ubuntu2404
           command:
             - vllm
@@ -105,7 +152,8 @@ spec:
           env:
             - name: HF_HOME
               value: /models
-            # Weights are pre-staged on CephFS; never reach HF at serve time
+            # Weights are pre-staged on CephFS and cached to node-local NVMe by
+            # the init container; never reach HF at serve time
             # (egress is locked — see cnp.yaml). Offline + no telemetry.
             - name: HF_HUB_OFFLINE
               value: "1"
@@ -134,7 +182,9 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
-            # Long — first load is weights from CephFS + torch.compile + cudagraph capture.
+            # Long — covers vLLM's load from node-local NVMe (the CephFS->local
+            # sync happens in the init container, before this probe starts) plus
+            # torch.compile and cudagraph capture.
             failureThreshold: 180
           livenessProbe:
             httpGet:
@@ -154,7 +204,9 @@ spec:
             claims:
               - name: gpu
           volumeMounts:
-            - name: models
+            # HF_HOME points here; this is the node-local NVMe cache the init
+            # container populated, not the CephFS PVC.
+            - name: local-models
               mountPath: /models
             - name: shm
               mountPath: /dev/shm
@@ -162,9 +214,17 @@ spec:
               mountPath: /config
               readOnly: true
       volumes:
-        - name: models
+        # Source: shared models PVC on CephFS (read-only; the init copies out of it).
+        - name: ceph-models
           persistentVolumeClaim:
             claimName: models
+            readOnly: true
+        # Dest: node-local NVMe cache. hostPath persists across pod restarts so the
+        # CephFS sync is a one-time-per-node cost; vLLM reads weights from here.
+        - name: local-models
+          hostPath:
+            path: /var/local/inference-models
+            type: DirectoryOrCreate
         - name: shm
           emptyDir:
             medium: Memory
