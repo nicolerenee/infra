@@ -48,7 +48,6 @@ spec:
               ZIGBEE2MQTT_CONFIG_MQTT_REJECT_UNAUTHORIZED: "true"
               ZIGBEE2MQTT_CONFIG_MQTT_SERVER: mqtt://mosquitto:1883
               ZIGBEE2MQTT_CONFIG_MQTT_VERSION: 5
-              ZIGBEE2MQTT_CONFIG_PERMIT_JOIN: "false"
               # Cluster-specific serial adapter/baud/port set via Flux
               # KS patches (e.g. fairy points at the zigbee01 bridge).
 
