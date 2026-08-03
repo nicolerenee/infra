@@ -28,14 +28,25 @@ spec:
 ---
 # The console has no authentication of its own — it trusts a Remote-User
 # header and assumes something in front established the identity. That makes
-# this policy load-bearing, not defence in depth.
+# this policy load-bearing, not defence in depth: getting past pocket-id is
+# the whole of the access control.
 #
-# Two filters cooperate. Envoy Gateway orders oauth2 (8) before jwt_authn (9),
-# so:
-#   1. `oidc` challenges the browser against pocket-id and, once authenticated,
-#      injects the ID token as `Authorization: Bearer ...`.
-#   2. `jwt` validates that token against pocket-id's JWKS and copies claims
-#      into the headers the console reads.
+# Gate only, no identity. This originally also carried a `jwt` provider with
+# claimToHeaders, so the console would see real usernames — Envoy Gateway
+# orders oauth2 (8) before jwt_authn (9), so the ID token forwarded by
+# `oidc.forwardIDToken` would have been available to it.
+#
+# That does not work on any released Envoy Gateway. `ForwardIDToken` exists in
+# the v1.8.2 API types and passes CRD validation, but nothing under internal/
+# reads it — the field is declared and never implemented, so the policy reports
+# Accepted=True and silently forwards nothing. jwt_authn then rejects every
+# request with "Jwt is missing". Still unimplemented in v1.8.3; the wiring
+# exists only on EG main (internal/gatewayapi/securitypolicy.go).
+#
+# So every authenticated user shares akvorado's built-in `__default` identity
+# and saved filters are shared. Revisit when EG ships ForwardIDToken; the
+# alternative today is an oauth2-proxy extAuth backend, which is what upstream
+# akvorado documents.
 #
 # The targetRef is the bare `akvorado` HTTPRoute: app-template drops the key
 # suffix when a release declares a single route. If that ever becomes
@@ -67,24 +78,3 @@ spec:
       - openid
       - email
       - profile
-    # Hands the ID token to the JWT filter below. Without this the claims
-    # never reach the console and every session would be anonymous.
-    forwardIDToken:
-      header: Authorization
-  jwt:
-    providers:
-      - name: pocket-id
-        issuer: https://freckle.id
-        remoteJWKS:
-          uri: https://freckle.id/.well-known/jwks.json
-        # No `audiences`: the audience of an ID token is the client ID, which
-        # lives in a secret and cannot be templated in here. Issuer and
-        # signature validation against pocket-id's JWKS is the real check, and
-        # the token only ever arrives from the oidc filter above.
-        claimToHeaders:
-          - claim: preferred_username
-            header: Remote-User
-          - claim: name
-            header: Remote-Name
-          - claim: email
-            header: Remote-Email

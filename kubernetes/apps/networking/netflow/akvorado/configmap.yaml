@@ -139,6 +139,10 @@ data:
 
     console:
       auth:
+        # These are akvorado's defaults, restated for clarity. Nothing sets
+        # them today: the gateway authenticates but cannot pass identity
+        # through on any released Envoy Gateway (see oidc.yaml), so every
+        # session falls back to the built-in `__default` user.
         headers:
           login: Remote-User
           name: Remote-Name
