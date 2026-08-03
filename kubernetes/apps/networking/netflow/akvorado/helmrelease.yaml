@@ -63,9 +63,14 @@ spec:
             resources:
               requests:
                 cpu: 50m
-                memory: 128Mi
+                memory: 256Mi
+              # The orchestrator is the memory-hungry one despite doing the
+              # least at steady state: it loads the GeoIP databases and the
+              # networks dictionary and pushes them into ClickHouse. 512Mi
+              # got it OOMKilled during that load, which then crash-looped
+              # every other service, since they all fetch config from it.
               limits:
-                memory: 512Mi
+                memory: 2Gi
           # Keeps the IPinfo country/ASN databases fresh in a volume shared
           # with the orchestrator. The token below is the public one upstream
           # ships in docker-compose-ipinfo.yml for the free databases — it is
