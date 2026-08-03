@@ -21,7 +21,7 @@ metadata:
 spec:
   mode: daemonset
   serviceAccount: otel-collector
-  image: otel/opentelemetry-collector-contrib:0.156.0
+  image: otel/opentelemetry-collector-contrib:0.157.0
   resources:
     requests:
       cpu: 50m
