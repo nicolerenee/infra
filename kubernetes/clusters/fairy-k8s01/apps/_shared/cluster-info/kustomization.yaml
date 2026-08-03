@@ -1,15 +1,19 @@
 ---
 # yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
 #
-# Not a namespace directory and not pointed at by any Flux Kustomization. It
-# exists so that a namespace's kustomization.yaml can pull k8s-cluster-info into
-# its own namespace with `- ../_shared/cluster-info`, which kustomize permits
-# only for directories — a bare `../default/k8s-cluster-info.yaml` is rejected
-# as a load-restrictor violation, and Flux gives us no way to relax that.
+# A kustomize Component, not a namespace: it is listed under `components:` by
+# every namespace on this cluster, alongside flux-post-build-variables, and no
+# Flux Kustomization points at it directly.
+#
+# It exists because Flux resolves postBuild.substituteFrom only in the
+# Kustomization's own namespace, so each namespace needs its own copy of
+# k8s-cluster-info. Sharing one file keeps the values from drifting.
 #
 # Deliberately carries no `namespace:` — the including kustomization's own
-# namespace transformer places it.
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
+# namespace transformer places the ConfigMap. A kustomization with no such
+# transformer (cluster-scoped dirs like ghcr-pull) must NOT include this, or the
+# ConfigMap lands in `default` and collides with the copy declared there.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
 resources:
   - ./k8s-cluster-info.yaml

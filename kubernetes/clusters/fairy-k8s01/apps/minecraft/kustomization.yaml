@@ -4,9 +4,9 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: minecraft
 components:
+  - ../_shared/cluster-info
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
-  - ../_shared/cluster-info
   - ./minecraft-base.yaml
   - ./minecraft-servers.yaml

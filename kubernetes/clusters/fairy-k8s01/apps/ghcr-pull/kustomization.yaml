@@ -1,9 +1,11 @@
 ---
 # yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
-# Cluster-scoped resources only — no `namespace:` transformer.
+# Cluster-scoped resources only — no `namespace:` transformer, which is why
+# this one does NOT take the _shared/cluster-info component every other
+# directory here does. With no transformer the ConfigMap would render without a
+# namespace, land in `default`, and collide with the copy declared there.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ../_shared/cluster-info
   - ./clustersecretstore.yaml
   - ./clusterexternalsecret.yaml
