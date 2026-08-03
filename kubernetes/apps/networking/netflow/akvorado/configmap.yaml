@@ -29,11 +29,26 @@ data:
       # Loaded by the orchestrator, which pushes the data into ClickHouse as
       # dictionaries; the outlet never reads these files. Optional so a failed
       # database download degrades enrichment instead of blocking startup.
-      optional: true
+      # Deliberately NOT optional. With `optional: true` a missing database is
+      # silently skipped (geoip/iter.go) and the component just runs without
+      # it — which is how we spent a stretch with every external address
+      # resolving to AS 0 while every health signal stayed green.
+      #
+      # false makes it a hard failure: the orchestrator refuses to start if a
+      # database is missing (geoip/root.go). The cost is a cold-start
+      # dependency — on an empty volume it crash-loops until the updater
+      # sidecar finishes its first download — but it self-heals, and a loud
+      # failure beats silently serving flows with no enrichment.
+      #
+      # Files appearing later are picked up automatically once running: the
+      # component watches the directory with fsnotify.
+      optional: false
       asn-database:
-        - /usr/share/GeoIP/asn.mmdb
+        - /usr/share/GeoIP/GeoLite2-ASN.mmdb
+      # City rather than Country: it carries country + subdivision + city, so
+      # SrcGeoCity/SrcGeoState get populated instead of sitting empty.
       geo-database:
-        - /usr/share/GeoIP/country.mmdb
+        - /usr/share/GeoIP/GeoLite2-City.mmdb
 
     clickhousedb:
       servers:

@@ -71,18 +71,37 @@ spec:
               # every other service, since they all fetch config from it.
               limits:
                 memory: 2Gi
-          # Keeps the IPinfo country/ASN databases fresh in a volume shared
-          # with the orchestrator. The token below is the public one upstream
-          # ships in docker-compose-ipinfo.yml for the free databases — it is
-          # not a credential of ours.
+          # Keeps the GeoLite2 databases fresh in a volume shared with the
+          # orchestrator.
+          #
+          # MaxMind rather than the IPinfo free tier, for two reasons. Ours is
+          # a real licensed account, so we get our own quota — the IPinfo path
+          # used a token upstream ships publicly in docker-compose-ipinfo.yml,
+          # and enough restarts in one day earned an HTTP 429 that silently
+          # zeroed AS enrichment. And GeoLite2-City carries city + subdivision,
+          # where IPinfo's free tier is country-only: SrcGeoCity/SrcGeoState
+          # exist in the schema and were entirely empty.
+          #
+          # ASN accuracy was not the reason — GeoLite2-ASN and IPinfo's ASN
+          # data are both fine for this.
           geoip:
             image:
-              repository: quay.io/akvorado/ipinfo-geoipupdate
-              tag: latest@sha256:8e0c29dd857afc62969bbefefd768809780829767446c5ddac7f25b88957d476
+              repository: ghcr.io/maxmind/geoipupdate
+              tag: v7@sha256:45e15eb310528fd308c5c0abee9a8e6d580f1e2b1251e960dec2863dc7f0102f
             env:
-              IPINFO_TOKEN: a2632ea59736c7
-              IPINFO_DATABASES: country asn
-              UPDATE_FREQUENCY: 48h
+              GEOIPUPDATE_EDITION_IDS: GeoLite2-ASN GeoLite2-City
+              # Hours, not a duration string like the IPinfo updater took.
+              GEOIPUPDATE_FREQUENCY: "48"
+              GEOIPUPDATE_ACCOUNT_ID:
+                valueFrom:
+                  secretKeyRef:
+                    name: akvorado-maxmind
+                    key: account-id
+              GEOIPUPDATE_LICENSE_KEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: akvorado-maxmind
+                    key: license-key
             securityContext: *containerSecurity
             resources:
               requests:
@@ -261,8 +280,10 @@ spec:
             app:
               - path: /usr/share/GeoIP
                 readOnly: true
+            # Same path for the updater — geoipupdate's default DB dir, and
+            # what the orchestrator reads. The IPinfo updater used /data.
             geoip:
-              - path: /data
+              - path: /usr/share/GeoIP
       # Every container has a read-only root filesystem, so anything that
       # writes needs an explicit volume.
       outlet-state:
