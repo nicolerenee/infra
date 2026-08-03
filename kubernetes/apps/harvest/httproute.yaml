@@ -1,7 +1,7 @@
 ---
 # Internal (tailnet) ingress for the harvest dashboard. The tailnet Gateway in
 # gateway-system terminates TLS — harvest.freckle.services is covered by the
-# cluster-svcs-tls cert's `*.${SVCS_DOMAIN}` (= *.freckle.services) SAN, and
+# cluster-svcs-tls cert's `*.freckle.services` SAN, and
 # external-dns (cloudflare) publishes the record because that gateway carries
 # the `gateway.freckle.systems/dns: cloudflare` label.
 #

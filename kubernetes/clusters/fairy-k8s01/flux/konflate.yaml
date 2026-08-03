@@ -6,35 +6,32 @@ metadata:
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
 ---
-# Points straight at the shared app dir rather than a per-cluster apps/ tree:
-# konflate is a single app whose only per-cluster difference is substituted
-# values, so there is nothing for a cluster-specific overlay to hold.
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app konflate
+  name: &app konflate-apps
   namespace: &namespace konflate
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
 spec:
   targetNamespace: *namespace
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  # konflate has no ExternalSecret of its own, but it substitutes
+  # CLUSTER_SVCS_DOMAIN out of `k8s-cluster-secrets`, which is one. Without
+  # this the hostname substitutes empty on a cold bootstrap.
+  dependsOn:
+    - name: external-secrets
+      namespace: external-secrets
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/flux/konflate
-  interval: 30m
-  retryInterval: 2m
-  timeout: 10m
+  path: ./kubernetes/clusters/fairy-k8s01/apps/konflate
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
   prune: true
   wait: false
-  postBuild:
-    substituteFrom:
-      # CLUSTER_NAME scopes the render to this cluster's Flux entry point;
-      # CLUSTER_SVCS_DOMAIN gives it its own hostname.
-      - kind: ConfigMap
-        name: k8s-cluster-info
-      - kind: Secret
-        name: k8s-cluster-secrets

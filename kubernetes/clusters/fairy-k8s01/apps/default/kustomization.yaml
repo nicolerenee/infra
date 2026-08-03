@@ -5,6 +5,23 @@ kind: Kustomization
 namespace: default
 resources:
   - ./app-template.yaml
-  - ./k8s-cluster-info.yaml
+  - ../_shared/cluster-info
   - ./k8s-cluster-secrets.yaml
   - ./namespace.yaml
+patches:
+  # Only the `default` copy is a Reflector source. Namespaces that declare
+  # k8s-cluster-info themselves pull in the same shared directory without these
+  # annotations, so they get a plain ConfigMap rather than a competing
+  # auto-reflect source. Delete this patch once every namespace declares its
+  # own copy and Reflector is out of the loop entirely.
+  - target:
+      kind: ConfigMap
+      name: k8s-cluster-info
+    patch: |
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: k8s-cluster-info
+        annotations:
+          reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+          reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"

@@ -43,7 +43,7 @@ spec:
 
     route:
       app:
-        hostnames: ["matrix.${CHAT_DOMAIN}"]
+        hostnames: ["matrix.freckle.chat"]
         parentRefs:
           - name: public
             namespace: gateway-system

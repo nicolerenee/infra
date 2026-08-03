@@ -10,7 +10,6 @@ resources:
   - ./autobrr.yaml
   - ./bazarr.yaml
   - ./cross-seed.yaml
-  - ./domains-externalsecrets.yaml
   - ./emby.yaml
   - ./flaresolverr.yaml
   - ./homepage.yaml
