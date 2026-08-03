@@ -1,19 +1,37 @@
 ---
+# web and backend in ONE pod, deliberately.
+#
+# They were two Deployments, but both mount the same `netdisco-data` PVC, which
+# is RWO on ceph-block. That only worked for as long as both happened to land on
+# the same node. After the Talos v1.13.7 rolling reboots they scattered — web to
+# fairy-compute03, backend to fairy-r02-cn01 — and the volume can only attach to
+# one node, so backend sat in ContainerCreating for hours with two live
+# VolumeAttachments fighting over it. Nothing was "stuck" in a way that would
+# self-heal; it would have recurred after every node reboot.
+#
+# Co-locating them in a single pod makes the shared RWO volume structurally
+# correct rather than coincidentally correct. The two containers already had
+# byte-identical env, volumeMounts and securityContext — the only differences
+# were the image tag and the web port — so nothing is lost by merging.
+#
+# strategy: Recreate is load-bearing. With the default RollingUpdate, an update
+# would start the replacement pod (possibly on another node) while the old pod
+# still holds the RWO volume, reproducing the exact deadlock this commit fixes.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: netdisco-web
+  name: netdisco
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app.kubernetes.io/name: netdisco
-      app.kubernetes.io/component: web
   template:
     metadata:
       labels:
         app.kubernetes.io/name: netdisco
-        app.kubernetes.io/component: web
     spec:
       containers:
         - name: web
@@ -21,7 +39,7 @@ spec:
           envFrom:
             - secretRef:
                 name: netdisco
-          env:
+          env: &dbEnv
             - name: NETDISCO_DB_HOST
               value: netdisco-rw
             - name: NETDISCO_DB_NAME
@@ -39,7 +57,7 @@ spec:
           ports:
             - containerPort: 5000
               name: http
-          volumeMounts:
+          volumeMounts: &dataMounts
             - name: data
               mountPath: /home/netdisco/nd-site-local
               subPath: nd-site-local
@@ -49,62 +67,13 @@ spec:
             - name: data
               mountPath: /home/netdisco/logs
               subPath: logs
-      securityContext:
-        runAsUser: 901
-        runAsGroup: 901
-        fsGroup: 901
-      volumes:
-        - name: data
-          persistentVolumeClaim:
-            claimName: netdisco-data
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: netdisco-backend
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: netdisco
-      app.kubernetes.io/component: backend
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: netdisco
-        app.kubernetes.io/component: backend
-    spec:
-      containers:
         - name: backend
           image: mirror.gcr.io/netdisco/netdisco:2.098002-backend
           envFrom:
             - secretRef:
                 name: netdisco
-          env:
-            - name: NETDISCO_DB_HOST
-              value: netdisco-rw
-            - name: NETDISCO_DB_NAME
-              value: app
-            - name: NETDISCO_DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: netdisco-db-secret
-                  key: username
-            - name: NETDISCO_DB_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: netdisco-db-secret
-                  key: password
-          volumeMounts:
-            - name: data
-              mountPath: /home/netdisco/nd-site-local
-              subPath: nd-site-local
-            - name: data
-              mountPath: /home/netdisco/environments
-              subPath: environments
-            - name: data
-              mountPath: /home/netdisco/logs
-              subPath: logs
+          env: *dbEnv
+          volumeMounts: *dataMounts
       securityContext:
         runAsUser: 901
         runAsGroup: 901

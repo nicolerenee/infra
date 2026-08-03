@@ -4,9 +4,10 @@ kind: Service
 metadata:
   name: netdisco
 spec:
+  # No component selector: web and backend are one pod now, so name alone is
+  # unambiguous. The port still resolves to the web container's `http` port.
   selector:
     app.kubernetes.io/name: netdisco
-    app.kubernetes.io/component: web
   ports:
     - name: http
       port: 5000
