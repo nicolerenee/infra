@@ -226,10 +226,36 @@ spec:
               - path: /etc/akvorado/akvorado.yaml
                 subPath: akvorado.yaml
                 readOnly: true
-      # Shared between the updater and the orchestrator. Not persisted: the
-      # databases are re-downloaded on start and are not our data.
+      # Shared between the updater and the orchestrator. Persisted, despite
+      # being re-downloadable third-party data: on an emptyDir every restart
+      # discarded the databases and forced a fresh download, and the token
+      # above is upstream's *shared public* one. Six config changes in a day
+      # was enough to earn an HTTP 429, after which the updater sleeps for
+      # UPDATE_FREQUENCY (48h) before retrying — leaving every external IP
+      # resolving to AS 0 in the meantime.
+      #
+      # With a volume the updater finds the files on start, compares checksums
+      # and skips the download entirely, so restarts stop costing a fetch.
+      #
+      # RWX on ceph-filesystem rather than RWO on ceph-block, so the volume is
+      # never the thing that constrains the deployment. app-template defaults
+      # Deployments to Recreate, so RWO would work today — but it would quietly
+      # block both switching to RollingUpdate and running a second
+      # orchestrator, which upstream supports via `clickhouse.skip-migrations`
+      # ("the schema is managed by another orchestrator"). The dataset is ~50MB
+      # and read-mostly, so RWX costs nothing here.
+      #
+      # Scaling out would need the updater moved out of this pod first: each
+      # replica runs its own sidecar, so N replicas means N writers racing on
+      # the same files and N downloads against a shared, rate-limited token.
       geoip:
-        type: emptyDir
+        enabled: true
+        type: persistentVolumeClaim
+        storageClass: ceph-filesystem
+        accessMode: ReadWriteMany
+        size: 1Gi
+        retain: true
+        suffix: geoip
         advancedMounts:
           orchestrator:
             app:
