@@ -18,4 +18,10 @@ data:
   CLUSTER_NAME: "atlantis-k8s01"
   CLUSTER_SUBDOMAIN: "atlantis"
   CLUSTER_DOMAIN: "atlantis.freckle.systems"
+  # Restored after #2233 dropped it: consumers still reference
+  # ${CLUSTER_SVCS_DOMAIN} and Flux post-build substitution is strict, so a
+  # missing key fails the whole Kustomization rather than degrading. Retire
+  # this once every consumer inlines the real domain (hedgehog's bundle is
+  # the last one on atlantis; technitium references it on fairy).
+  CLUSTER_SVCS_DOMAIN: "atlantis.freckle.services"
   GARAGE_S3_REGION: "us-den1"
