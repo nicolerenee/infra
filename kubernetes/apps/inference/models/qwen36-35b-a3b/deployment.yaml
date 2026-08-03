@@ -49,7 +49,7 @@ spec:
           # (avoids Docker Hub rate limits). v0.24's Responses-API parser handles
           # codex's multi-turn tool loop, so this one deploy serves brain chat AND
           # coding. NOT the older v0.20 (its /responses couldn't parse tool results).
-          image: mirror.gcr.io/vllm/vllm-openai:v0.24.0-aarch64-ubuntu2404
+          image: mirror.gcr.io/vllm/vllm-openai:v0.26.0-aarch64-ubuntu2404
           command:
             - vllm
             - serve
