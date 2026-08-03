@@ -28,13 +28,23 @@ spec:
   chartRef:
     kind: OCIRepository
     name: cilium
+  # 20m, because the default is 5m and that is not enough. A chart change rolls
+  # the cilium DaemonSet (maxUnavailable 2, so 3 batches here) AND the
+  # cilium-envoy DaemonSet, then waits on the operator, hubble-relay and
+  # hubble-ui — often pulling new images for all of them.
+  timeout: 20m
   install:
     remediation:
       retries: -1
   upgrade:
     cleanupOnFail: true
     remediation:
-      retries: 3
+      # retries: 0 is load-bearing. Flux's default remediation is `rollback`,
+      # so a roll that overran the timeout used to trigger a helm rollback onto
+      # a HALF-ROLLED CNI DaemonSet — nodes split across two Cilium versions
+      # with no one watching — and then do it twice more. A slow roll must fail
+      # loudly as a stuck HelmRelease instead. Same trap as the rook-ceph HR.
+      retries: 0
   valuesFrom:
     - kind: ConfigMap
       name: cilium-values
