@@ -1,5 +1,5 @@
 ---
-# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/core/service_v1.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.26.1-standalone-strict/service-v1.json
 #
 # Flow ingest endpoint. Hand-written rather than rendered by app-template
 # because that chart has no way to set externalTrafficPolicy, and we need it:
