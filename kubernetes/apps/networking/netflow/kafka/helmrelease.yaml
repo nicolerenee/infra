@@ -33,7 +33,7 @@ spec:
           app:
             image:
               repository: apache/kafka
-              tag: 4.2.0@sha256:b5556544da1dccd04f03690107a233c37dbfd01d66e28ffdfc4fafba9b6e5039
+              tag: 4.3.1@sha256:ccd1314e47ec76909e01f86308b4dcf2064f19f7c89759234322314b0e319e26
             env:
               # KRaft: this single node is both controller and broker.
               KAFKA_NODE_ID: "1"

@@ -72,7 +72,7 @@ spec:
       group: ""
       kind: Secret
       name: akvorado-oidc
-    redirectURL: https://akvorado.${CLUSTER_SVCS_DOMAIN}/oauth2/callback
+    redirectURL: https://akvorado.${CLUSTER_SUBDOMAIN}.freckle.services/oauth2/callback
     logoutPath: /logout
     scopes:
       - openid
