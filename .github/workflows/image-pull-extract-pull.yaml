@@ -43,7 +43,7 @@ jobs:
       # Output is the same flat JSON array of image refs, so the diff below is
       # unchanged.
       - name: Setup flate
-        uses: home-operations/flate/action@main
+        uses: home-operations/flate/action@82df120c60e502d9d20c1952024c95e6e5a2b566 # main
         with:
           version: "0.4.12"
 
