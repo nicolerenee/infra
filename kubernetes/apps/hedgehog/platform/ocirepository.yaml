@@ -12,6 +12,17 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
   name: hedgehog
+  # Explicit namespace, deviating from the usual "no namespace: under
+  # kubernetes/apps/" rule, because offline renderers resolve a Kustomization's
+  # sourceRef during a STATIC discovery pass that runs before this platform
+  # KS's targetNamespace is applied. Without it the hedgehog/hedgehog sourceRef
+  # matches nothing and gets aliased to the infra checkout root, so `path: ./`
+  # is resolved against this repo and the renderer tries to parse every
+  # top-level file (.markdownlint.yaml et al) as a Kubernetes resource. Live
+  # Flux is unaffected: the platform KS already pins targetNamespace to this
+  # same namespace. Same fix as
+  # kubernetes/apps/inference/janet/platform/ocirepository.yaml.
+  namespace: hedgehog
 spec:
   interval: 5m
   url: oci://ghcr.io/freckleapps/hedgehog-manifests
