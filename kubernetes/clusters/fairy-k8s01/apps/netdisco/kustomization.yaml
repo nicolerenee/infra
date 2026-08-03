@@ -5,4 +5,8 @@ namespace: netdisco
 components:
   - ../../../../components/flux-post-build-variables
 resources:
+  # See the note in ../db/kustomization.yaml — same reasoning. netdisco alone is
+  # not enough: netdisco-apps dependsOn db/cloudnative-pg, so it stayed blocked
+  # transitively until `db` declared its copy too.
+  - ../_shared/cluster-info
   - ./netdisco.yaml
