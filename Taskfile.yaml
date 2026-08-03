@@ -11,7 +11,6 @@ includes:
   k8s: .taskfiles/k8s/taskfile.yaml
   secrets: .taskfiles/secrets/taskfile.yaml
   talos: .taskfiles/talos/taskfile.yaml
-  wif: .taskfiles/wif/taskfile.yaml
 
 tasks:
   default:
