@@ -1,0 +1,81 @@
+---
+# ClickHouse server overrides for the Akvorado flow store. Both files are
+# dropped into config.d/ where ClickHouse merges them over its shipped
+# defaults. Content follows upstream Akvorado's docker/clickhouse/*.xml.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clickhouse-config
+data:
+  # ClickHouse's own system logs are unbounded by default and will happily
+  # eat the data volume alongside the flow tables. Cap every one of them at
+  # 30 days.
+  akvorado.xml: |
+    <clickhouse>
+     <asynchronous_metric_log>
+      <ttl>event_date + INTERVAL 30 DAY DELETE</ttl>
+     </asynchronous_metric_log>
+     <metric_log>
+      <ttl>event_date + INTERVAL 30 DAY DELETE</ttl>
+     </metric_log>
+     <part_log>
+      <ttl>event_date + INTERVAL 30 DAY DELETE</ttl>
+     </part_log>
+     <text_log>
+      <ttl>event_date + INTERVAL 30 DAY DELETE</ttl>
+     </text_log>
+     <query_log>
+      <ttl>event_date + INTERVAL 30 DAY DELETE</ttl>
+     </query_log>
+     <query_thread_log>
+      <ttl>event_date + INTERVAL 30 DAY DELETE</ttl>
+     </query_thread_log>
+     <query_metric_log>
+      <ttl>event_date + INTERVAL 30 DAY DELETE</ttl>
+     </query_metric_log>
+     <query_views_log>
+      <ttl>event_date + INTERVAL 30 DAY DELETE</ttl>
+     </query_views_log>
+     <trace_log>
+      <ttl>event_date + INTERVAL 30 DAY DELETE</ttl>
+     </trace_log>
+     <error_log>
+      <ttl>event_date + INTERVAL 30 DAY DELETE</ttl>
+     </error_log>
+     <latency_log>
+      <ttl>event_date + INTERVAL 30 DAY DELETE</ttl>
+     </latency_log>
+    </clickhouse>
+  # Prometheus scrape endpoint on the HTTP port, and JSON logs to stdout so
+  # they land in victoria-logs like every other workload rather than in a
+  # file inside the container.
+  observability.xml: |
+    <clickhouse>
+     <prometheus>
+      <endpoint>/metrics</endpoint>
+      <metrics>true</metrics>
+      <events>true</events>
+      <asynchronous_metrics>true</asynchronous_metrics>
+     </prometheus>
+     <logger>
+       <level>fatal</level>
+       <errorlog remove="1"></errorlog>
+       <console>1</console>
+       <console_log_level>information</console_log_level>
+       <formatting>
+         <type>json</type>
+         <names>
+           <date_time>date_time</date_time>
+           <date_time_utc>date_time_utc</date_time_utc>
+           <thread_name>thread_name</thread_name>
+           <thread_id>thread_id</thread_id>
+           <level>level</level>
+           <query_id>query_id</query_id>
+           <logger_name>logger_name</logger_name>
+           <message>message</message>
+           <source_file>source_file</source_file>
+           <source_line>source_line</source_line>
+         </names>
+       </formatting>
+     </logger>
+    </clickhouse>

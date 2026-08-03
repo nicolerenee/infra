@@ -1,0 +1,50 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/core/service_v1.json
+#
+# Flow ingest endpoint. Hand-written rather than rendered by app-template
+# because that chart has no way to set externalTrafficPolicy, and we need it:
+# Akvorado identifies an exporter by the source IP of its flow packets, then
+# polls that address over SNMP for interface names. Under the default
+# `Cluster` policy the source is SNAT'd to a node IP, which would both
+# mis-identify the exporter and send SNMP at the wrong host.
+#
+# Selector labels are app-template's controller scheme, verified against the
+# rendered chart output.
+apiVersion: v1
+kind: Service
+metadata:
+  name: akvorado-inlet-flows
+  labels:
+    ipam.freckle.systems/lb-pool: internal
+  annotations:
+    # Pinned, not IPAM's choice: border1.den1 hardcodes this address as its
+    # IPFIX collector, and that config lives in a different repo. If the
+    # Service were recreated and picked up a new IP, flow export would stop
+    # silently — the router would keep sending into a black hole.
+    lbipam.cilium.io/ips: 10.140.250.10
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  # IPv4 only: the exporter sends from 10.140.0.68 over v4. Add v6 here and
+  # a matching `server` block on the router if we ever export over v6.
+  ipFamilyPolicy: SingleStack
+  ipFamilies:
+    - IPv4
+  selector:
+    app.kubernetes.io/controller: inlet
+    app.kubernetes.io/instance: akvorado
+    app.kubernetes.io/name: akvorado
+  ports:
+    - name: netflow
+      port: 2055
+      targetPort: 2055
+      protocol: UDP
+    # border1.den1 exports IPFIX here.
+    - name: ipfix
+      port: 4739
+      targetPort: 4739
+      protocol: UDP
+    - name: sflow
+      port: 6343
+      targetPort: 6343
+      protocol: UDP

@@ -1,0 +1,124 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+#
+# Single-node Kafka in KRaft mode, dedicated to the Akvorado flow pipeline.
+# It is a buffer between the inlet and the outlet, not a general-purpose bus:
+# retention is one day and every replication factor is 1, so losing it costs
+# at most a day of not-yet-ingested flows. Environment is transcribed from
+# upstream Akvorado's docker/docker-compose.yml.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kafka
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: default
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  driftDetection:
+    mode: enabled
+  values:
+    controllers:
+      kafka:
+        type: statefulset
+        containers:
+          app:
+            image:
+              repository: apache/kafka
+              tag: 4.2.0@sha256:b5556544da1dccd04f03690107a233c37dbfd01d66e28ffdfc4fafba9b6e5039
+            env:
+              # KRaft: this single node is both controller and broker.
+              KAFKA_NODE_ID: "1"
+              KAFKA_PROCESS_ROLES: controller,broker
+              KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+              # Listeners. CLIENT is advertised as the Service name, which is
+              # how the akvorado inlet and outlet reach it.
+              KAFKA_LISTENERS: CLIENT://:9092,CONTROLLER://:9093
+              KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CLIENT:PLAINTEXT,CONTROLLER:PLAINTEXT
+              KAFKA_ADVERTISED_LISTENERS: CLIENT://kafka:9092
+              KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+              KAFKA_INTER_BROKER_LISTENER_NAME: CLIENT
+              # Single node: nothing to replicate onto.
+              KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+              KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+              KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+              KAFKA_SHARE_COORDINATOR_STATE_TOPIC_REPLICATION_FACTOR: "1"
+              KAFKA_SHARE_COORDINATOR_STATE_TOPIC_MIN_ISR: "1"
+              KAFKA_DELETE_TOPIC_ENABLE: "true"
+              KAFKA_LOG_DIRS: /var/lib/kafka/data
+              # Pinned below the container memory limit so the JVM can't be
+              # OOM-killed by growing its heap into the cgroup ceiling.
+              KAFKA_HEAP_OPTS: -Xmx1536m -Xms1536m
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: &clientPort 9092
+                  initialDelaySeconds: 15
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *probes
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: *clientPort
+                  periodSeconds: 10
+                  failureThreshold: 30
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities: { drop: ["ALL"] }
+              # The image's entrypoint generates server.properties under
+              # /opt/kafka/config at startup, so the root filesystem must be
+              # writable.
+              readOnlyRootFilesystem: false
+            resources:
+              requests:
+                cpu: 200m
+                memory: 1Gi
+              limits:
+                memory: 3Gi
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        # uid/gid 1000 is the `appuser` account in the apache/kafka image.
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+    service:
+      app:
+        controller: kafka
+        ports:
+          client:
+            port: *clientPort
+          controller:
+            port: 9093
+    persistence:
+      data:
+        enabled: true
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 20Gi
+        retain: true
+        suffix: data
+        advancedMounts:
+          kafka:
+            app:
+              - path: /var/lib/kafka/data

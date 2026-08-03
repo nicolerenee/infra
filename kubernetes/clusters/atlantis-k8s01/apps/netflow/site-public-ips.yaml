@@ -1,0 +1,24 @@
+---
+# Site public IP blocks, needed here so the akvorado Kustomization can
+# substitute them into its network naming without those prefixes appearing in
+# this public repo. Same 1Password item the kube-system copy uses; the two are
+# independent projections of one source, not a shared secret.
+#
+# Applied by the parent netflow-apps Kustomization rather than by the akvorado
+# one that consumes it — a Kustomization cannot create the Secret its own
+# postBuild substitution depends on.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/external-secrets.io/externalsecret_v1.json
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: site-public-ips
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: op-shared-vault
+  target:
+    name: site-public-ips
+  dataFrom:
+    - extract:
+        key: site-public-ips

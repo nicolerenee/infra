@@ -1,0 +1,281 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+#
+# Akvorado's four services in one release. They share a single config file
+# (mounted only on the orchestrator, which serves it to the others over HTTP),
+# so they are one application even though they scale and fail independently.
+#
+#   inlet  -> kafka -> outlet -> clickhouse <- console
+#                                    ^
+#                              orchestrator (schema + geoip dictionaries)
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: akvorado
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: default
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  driftDetection:
+    mode: enabled
+  values:
+    controllers:
+      # Owns the ClickHouse schema and serves configuration to the rest.
+      # Upgrade order per upstream: orchestrator first, then inlet/outlet,
+      # then console — Flux rolls them together, which is fine for a
+      # single-instance deployment.
+      orchestrator:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image: &image
+              repository: quay.io/akvorado/akvorado
+              tag: 2.4.1@sha256:8acf8b7312ee3331bf4d348678949d4dcb134b533a1c882beb830b6d7d8a8428
+            args:
+              - orchestrator
+              - /etc/akvorado/akvorado.yaml
+            probes: &probes
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: ["/usr/local/bin/akvorado", "healthcheck"]
+                  initialDelaySeconds: 15
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *probe
+            securityContext: &containerSecurity
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                memory: 512Mi
+          # Keeps the IPinfo country/ASN databases fresh in a volume shared
+          # with the orchestrator. The token below is the public one upstream
+          # ships in docker-compose-ipinfo.yml for the free databases — it is
+          # not a credential of ours.
+          geoip:
+            image:
+              repository: quay.io/akvorado/ipinfo-geoipupdate
+              tag: latest@sha256:8e0c29dd857afc62969bbefefd768809780829767446c5ddac7f25b88957d476
+            env:
+              IPINFO_TOKEN: a2632ea59736c7
+              IPINFO_DATABASES: country asn
+              UPDATE_FREQUENCY: 48h
+            securityContext: *containerSecurity
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32Mi
+              limits:
+                memory: 128Mi
+
+      # Receives flow packets and hands them to Kafka unparsed.
+      inlet:
+        containers:
+          app:
+            image: *image
+            args:
+              - inlet
+              - http://akvorado-orchestrator:8080
+            probes: *probes
+            securityContext: *containerSecurity
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                memory: 512Mi
+
+      # Parses flows, enriches via SNMP, writes to ClickHouse. The heaviest
+      # of the four.
+      outlet:
+        containers:
+          app:
+            image: *image
+            args:
+              - outlet
+              - http://akvorado-orchestrator:8080
+            env:
+              # Surviving a restart avoids re-polling SNMP for every exporter
+              # and re-learning IPFIX templates before flows can be decoded.
+              AKVORADO_CFG_OUTLET_METADATA_CACHEPERSISTFILE: /run/akvorado/metadata.cache
+              AKVORADO_CFG_OUTLET_FLOW_STATEPERSISTFILE: /run/akvorado/flow.state
+            probes: *probes
+            securityContext: *containerSecurity
+            resources:
+              requests:
+                cpu: 200m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+
+      # Web UI. Authentication is handled entirely by the gateway.
+      console:
+        containers:
+          app:
+            image: *image
+            args:
+              - console
+              - http://akvorado-orchestrator:8080
+            env:
+              AKVORADO_CFG_CONSOLE_DATABASE_DSN: /run/akvorado/console.sqlite
+            probes: *probes
+            securityContext: *containerSecurity
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                memory: 512Mi
+
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+    service:
+      orchestrator:
+        controller: orchestrator
+        ports:
+          http:
+            port: &port 8080
+      # The inlet's flow-receiving ports are a separate hand-written
+      # LoadBalancer (see service-inlet.yaml) because app-template cannot set
+      # externalTrafficPolicy, which we need to preserve the exporter's
+      # source IP. This one is just the HTTP API/metrics.
+      inlet:
+        controller: inlet
+        ports:
+          http:
+            port: *port
+      outlet:
+        controller: outlet
+        ports:
+          http:
+            port: *port
+      console:
+        controller: console
+        ports:
+          http:
+            port: *port
+
+    serviceMonitor:
+      orchestrator: &metrics
+        serviceName: akvorado-orchestrator
+        endpoints:
+          - port: http
+            path: /api/v0/metrics
+      inlet:
+        <<: *metrics
+        serviceName: akvorado-inlet
+      outlet:
+        <<: *metrics
+        serviceName: akvorado-outlet
+      console:
+        <<: *metrics
+        serviceName: akvorado-console
+
+    route:
+      console:
+        hostnames:
+          - "akvorado.${CLUSTER_SVCS_DOMAIN}"
+        parentRefs:
+          - name: tailnet
+            namespace: gateway-system
+        rules:
+          - backendRefs:
+              - identifier: console
+                port: *port
+
+    persistence:
+      config:
+        type: configMap
+        name: akvorado-config
+        advancedMounts:
+          orchestrator:
+            app:
+              - path: /etc/akvorado/akvorado.yaml
+                subPath: akvorado.yaml
+                readOnly: true
+      # Shared between the updater and the orchestrator. Not persisted: the
+      # databases are re-downloaded on start and are not our data.
+      geoip:
+        type: emptyDir
+        advancedMounts:
+          orchestrator:
+            app:
+              - path: /usr/share/GeoIP
+                readOnly: true
+            geoip:
+              - path: /data
+      # Every container has a read-only root filesystem, so anything that
+      # writes needs an explicit volume.
+      outlet-state:
+        enabled: true
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 1Gi
+        retain: true
+        suffix: outlet-state
+        advancedMounts:
+          outlet:
+            app:
+              - path: /run/akvorado
+      console-db:
+        enabled: true
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 1Gi
+        retain: true
+        suffix: console-db
+        advancedMounts:
+          console:
+            app:
+              - path: /run/akvorado
+      # Upstream's compose gives the inlet a /run/akvorado too. Nothing in our
+      # config points at a file there, but the root filesystem is read-only so
+      # provide it rather than risk a write failing at runtime. Not persisted:
+      # unlike the outlet, the inlet keeps no state worth surviving a restart.
+      inlet-run:
+        type: emptyDir
+        advancedMounts:
+          inlet:
+            app:
+              - path: /run/akvorado
+      tmp:
+        type: emptyDir
+        advancedMounts:
+          orchestrator:
+            app: &tmpMount
+              - path: /tmp
+            geoip: *tmpMount
+          inlet:
+            app: *tmpMount
+          outlet:
+            app: *tmpMount
+          console:
+            app: *tmpMount
