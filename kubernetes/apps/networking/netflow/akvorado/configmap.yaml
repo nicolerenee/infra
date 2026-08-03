@@ -42,12 +42,14 @@ data:
     clickhouse:
       orchestrator-url: http://akvorado-orchestrator:8080
       prometheus-endpoint: /metrics
-      # Names for AS numbers, overriding the built-in list. 64610 is
-      # border1-den1's system-as; we reuse it below as "our" AS across both
-      # sites so all Freckle-owned public space aggregates under one entry,
-      # with the `site` attribute distinguishing den1 from btx1.
+      # Names for AS numbers, overriding the built-in list. A private ASN per
+      # site, not one shared "Freckle" AS: the Src/Dst AS breakdown is the view
+      # that actually gets used, so the sites need to be distinguishable there.
+      # SrcNetSite carries the same information but only after drilling in.
+      # 64610 matches border1-den1's system-as.
       asns:
-        64610: Freckle
+        64600: Freckle - btx1
+        64610: Freckle - den1
       # Names our own prefixes so flows involving them are labelled rather
       # than lumped in with the internet. Roles are a first pass and cheap to
       # refine once we see how the console groups things.
@@ -76,12 +78,12 @@ data:
         # they stay out of this public repo, same as the cilium CIDR groups.
         #
         # `asn` overrides what GeoIP reports. Our public space is announced by
-        # the upstreams that assigned it, so IPinfo attributes it to them —
-        # den1's block resolved to AS30475 (the provider), which buried our own
-        # DMZ egress in with third-party traffic in every top-AS view. Pinning
-        # it to 64610 attributes it to us instead. This makes the console
-        # disagree with real BGP data on purpose; cross-check against a looking
-        # glass, not against this.
+        # the upstreams that assigned it, so IPinfo attributes it to them and
+        # our own DMZ egress gets buried in with third-party traffic in every
+        # top-AS view. Pinning each block to its site's private ASN attributes
+        # it to us instead. This makes the console disagree with real BGP data
+        # on purpose; cross-check attribution against a looking glass, not
+        # against this.
         ${SITE_ATLANTIS_PUBLIC_V4_GW}/32:
           name: den1-public
           role: dmz
@@ -108,19 +110,19 @@ data:
           role: dmz
           site: btx1
           tenant: freckle
-          asn: 64610
+          asn: 64600
         ${SITE_FAIRY_PUBLIC_V4_BLOCK}:
           name: btx1-public
           role: dmz
           site: btx1
           tenant: freckle
-          asn: 64610
+          asn: 64600
         ${SITE_FAIRY_PUBLIC_V6_BLOCK}:
           name: btx1-public
           role: dmz
           site: btx1
           tenant: freckle
-          asn: 64610
+          asn: 64600
 
     inlet:
       flow:
@@ -178,10 +180,13 @@ data:
           - ClassifyRole("edge")
           - ClassifyTenant("freckle")
         interface-classifiers:
-          # Upstream's default rule, which already fits our descriptions:
-          # eth0 is "Transit: Summit Hosting" -> connectivity=transit,
-          # provider=Summit, boundary=external. The spine links ("spine1.den1",
-          # "spine2.den1") fall through to internal.
+          # Upstream's default rule, unmodified — it already fits how our
+          # interface descriptions are written. A description of the form
+          # "<Type>: <Provider> ..." yields connectivity=<type>,
+          # provider=<first word after the colon>, boundary=external. Anything
+          # not matching that shape (the spine links) falls through to
+          # internal. Renaming an interface description on the router will
+          # silently reclassify its traffic.
           - |
             ClassifyConnectivityRegex(Interface.Description, "^(?i)(transit|pni|ppni|ix):? ", "$1") &&
             ClassifyProviderRegex(Interface.Description, "^\\S+?\\s(\\S+)", "$1") &&
