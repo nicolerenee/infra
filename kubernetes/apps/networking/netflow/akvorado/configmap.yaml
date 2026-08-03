@@ -147,10 +147,11 @@ data:
 
     console:
       auth:
-        # These are akvorado's defaults, restated for clarity. Nothing sets
-        # them today: the gateway authenticates but cannot pass identity
-        # through on any released Envoy Gateway (see oidc.yaml), so every
-        # session falls back to the built-in `__default` user.
+        # These are akvorado's defaults, restated because they are load-bearing:
+        # the gateway's jwt provider maps ID token claims into exactly these
+        # header names (see oidc.yaml), which is how the console learns who you
+        # are. Renaming one here without renaming the matching claimToHeaders
+        # entry silently drops that field back to the default identity.
         headers:
           login: Remote-User
           name: Remote-Name
