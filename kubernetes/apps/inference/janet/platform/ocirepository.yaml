@@ -15,6 +15,18 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
   name: janet
+  # Explicit namespace, deviating from the usual "no namespace: under
+  # kubernetes/apps/" rule, because offline renderers resolve a Kustomization's
+  # sourceRef during a STATIC discovery pass that runs before janet-platform's
+  # targetNamespace is applied. Without it the janet/janet sourceRef matches
+  # nothing, gets aliased to the infra checkout root, and `path: ./flux` is
+  # resolved against this repo (which has no top-level flux/ dir), failing the
+  # bootstrap KS and everything downstream of it. Live Flux is unaffected:
+  # janet-platform already pins targetNamespace to this same namespace. Safe
+  # because this dir is referenced by exactly one pointer
+  # (clusters/fairy-k8s01/apps/janet/platform.yaml) and is janet-specific by
+  # construction — see the kustomization.yaml notes on why it can't be shared.
+  namespace: janet
 spec:
   interval: 5m
   url: oci://ghcr.io/freckleapps/janet-manifests

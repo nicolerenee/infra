@@ -38,21 +38,81 @@ jobs:
       # flate, not flux-local: the latter is deprecated and sunsetted, and it
       # broke here anyway — it followed the infra-private GitRepository it
       # cannot fetch, resolved that Kustomization's path against THIS checkout,
-      # and collapsed every Namespace onto flux-system. flate auto-skips a
-      # source whose auth Secret is declared by an in-repo ExternalSecret.
+      # and collapsed every Namespace onto flux-system.
       # Output is the same flat JSON array of image refs, so the diff below is
       # unchanged.
+      #
+      # base: "" is load-bearing. The action defaults base to the repo's
+      # default branch, which puts flate in changed-only mode — wrong twice
+      # over here. This job wants the FULL image list from each side so the
+      # diff job below can compute `pull - default`, and on the `pull` leg
+      # actions/checkout lands a shallow detached PR ref where neither `main`
+      # nor `origin/main` exists, so flate hard-errors resolving the base.
+      # Empty base restores `get`'s default full-tree behavior.
       - name: Setup flate
-        uses: home-operations/flate/action@main
+        uses: home-operations/flate/action@82df120c60e502d9d20c1952024c95e6e5a2b566 # main
         with:
+          base: ""
           version: "0.4.12"
 
+      # --allow-missing-secrets: the janet/hedgehog OCIRepositories authenticate
+      # with the `ghcr-pull` dockerconfigjson, materialized by a
+      # ClusterExternalSecret (namespace-label gated) rather than an in-repo
+      # ExternalSecret. flate's producer-aware auto-skip only recognizes
+      # ExternalSecret/SealedSecret with a static target name, so without this
+      # it fails loud on `secret janet/ghcr-pull not found`. Trade-off: the flag
+      # is blanket, so a genuinely mistyped source secretRef is skipped rather
+      # than caught here; cert and proxy secretRefs still fail loud. Images
+      # inside those private bundles are consequently not pre-pulled — they are
+      # owned by the app repos, not this one.
+      #
+      # The exit-code handling below is deliberate. flate exits non-zero both
+      # for genuine render failures AND when Kustomizations are merely "blocked
+      # by failed/missing dependencies". Nearly every KS here substitutes from
+      # the `k8s-cluster-info` ConfigMap, which exists in-repo only in
+      # `default` — Reflector replicates it to every namespace at runtime.
+      # flate models a non-optional substituteFrom ConfigMap as a hard
+      # dependency and has no Reflector awareness, so those KSs always block
+      # offline. Making them `optional: true` would silence this, but it would
+      # also downgrade a live-cluster guard: a genuinely absent ConfigMap would
+      # then render with unsubstituted vars instead of failing loudly. We keep
+      # the production semantics and instead gate on the failure count only.
+      #
+      # Consequence, stated plainly: images reachable only through a blocked
+      # Kustomization are NOT enumerated, so they are not pre-pulled. The
+      # render gate keeps its full value; the pre-pull is best-effort. The
+      # summary below reports the shortfall rather than hiding it.
       - name: Gather Images
         run: |
+          rc=0
           flate get images \
             --path kubernetes/clusters/${{ inputs.cluster }}/flux \
+            --allow-missing-secrets \
             --output json \
-            --no-progress > images.json
+            --no-progress > images.json 2> flate.err || rc=$?
+
+          cat flate.err
+
+          if [ "${rc}" -ne 0 ]; then
+            # Fail closed: an empty capture means flate died for some reason
+            # other than a reconcile summary (bad flag, download failure, ...).
+            failures=$(grep -oE 'reconcile completed with [0-9]+ failure' flate.err \
+              | grep -oE '[0-9]+' | head -1)
+            if [ -z "${failures}" ] || [ "${failures}" -ne 0 ]; then
+              echo "::error::flate reported render failures for ${{ inputs.cluster }}"
+              exit 1
+            fi
+            blocked=$(grep -oE '\(\+[0-9]+ blocked' flate.err | grep -oE '[0-9]+' | head -1)
+            note="${blocked:-an unknown number of} Kustomizations blocked on runtime-only"
+            note="${note} dependencies (Reflector-replicated k8s-cluster-info);"
+            note="${note} their images are not pre-pulled"
+            echo "::warning::${{ inputs.cluster }} (${{ matrix.branch }}): 0 render failures, ${note}"
+            echo "> ⚠️ ${note}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Downstream jobs jq over this — a truncated/invalid file must not
+          # silently become an empty diff.
+          jq -e 'type == "array"' images.json > /dev/null
 
       - name: Extract Images
         id: extract
