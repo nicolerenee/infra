@@ -121,6 +121,14 @@ data:
                 communities:
                   - freckle-public
       core:
+        # ipt_NETFLOW exports unsampled, so it emits no IPFIX sampling-rate
+        # field at all — and akvorado drops every flow it cannot scale
+        # ("sampling rate missing"). 1 means 1-in-1, i.e. take the byte and
+        # packet counts at face value, which is exactly right here.
+        #
+        # If the router is ever switched to sampled export, this MUST change
+        # to match or every count will be wrong by that factor.
+        default-sampling-rate: 1
         exporter-classifiers:
           # SNMP sysName is "border1.den1", so the trailing label is the site.
           - ClassifySiteRegex(Exporter.Name, "\\.([^.]+)$", "$1")
