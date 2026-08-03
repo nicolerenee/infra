@@ -1,0 +1,21 @@
+---
+# The cluster's postBuild substitution variables.
+#
+# Flux resolves `postBuild.substituteFrom` only in the Kustomization's own
+# namespace, so a copy of this has to exist in every namespace that substitutes.
+# Reflector still makes most of those copies at runtime — the annotations that
+# drive it are applied by a patch in ../../default/kustomization.yaml rather
+# than living here, so that namespaces pulling this in directly (see
+# ../../konflate/) get a plain ConfigMap and not a second auto-reflect source.
+#
+# Once every namespace declares its own copy, the patch goes away and Reflector
+# stops being involved in this ConfigMap at all.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k8s-cluster-info
+data:
+  CLUSTER_NAME: "atlantis-k8s01"
+  CLUSTER_SUBDOMAIN: "atlantis"
+  CLUSTER_DOMAIN: "atlantis.freckle.systems"
+  GARAGE_S3_REGION: "us-den1"

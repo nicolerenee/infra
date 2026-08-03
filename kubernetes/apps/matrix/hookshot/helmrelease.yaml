@@ -74,7 +74,7 @@ spec:
     route:
       webhooks:
         hostnames:
-          - "hookshot.${CHAT_DOMAIN}"
+          - "hookshot.freckle.chat"
         parentRefs:
           - name: public
             namespace: gateway-system
