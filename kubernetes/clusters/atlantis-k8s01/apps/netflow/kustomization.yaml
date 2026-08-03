@@ -6,6 +6,7 @@ namespace: netflow
 components:
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./external-secrets.yaml
   - ./site-public-ips.yaml
   - ./clickhouse.yaml
   - ./kafka.yaml
