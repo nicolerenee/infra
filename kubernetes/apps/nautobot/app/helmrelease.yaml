@@ -18,12 +18,24 @@ spec:
     remediation:
       retries: 3
   upgrade:
-    # Same headroom — the release already exists, so the fix rolls as an
-    # upgrade and migrations run in the upgrade hook.
-    timeout: 10m
+    # 20m, and deliberately NOT rolled back on failure.
+    #
+    # Migrations do NOT run in a hook Job — that only happens with
+    # `nautobot.singleInit: true`, which we do not set. They run in the web
+    # Deployment's `nautobot-init` init container, so the Helm timeout races
+    # the Deployment's own progressDeadlineSeconds (k8s default 600s = the old
+    # 10m here). Nautobot 3.2.x migrations are irreversible — dcim/0090 drops
+    # 30 columns — so a timeout that triggered Flux's default `rollback`
+    # remediation would put the 3.1.x image back in front of an already-migrated
+    # schema, which fails every cable/interface query. That is a self-inflicted
+    # outage, and rolling forward is the only real recovery.
+    #
+    # retries: 0 so a slow migration is reported as a stuck HelmRelease we can
+    # look at, rather than silently reverted three times.
+    timeout: 20m
     cleanupOnFail: true
     remediation:
-      retries: 3
+      retries: 0
   uninstall:
     keepHistory: false
   values:
