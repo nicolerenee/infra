@@ -36,7 +36,7 @@ spec:
       # flate resolves them from the git root, not from this directory.
       clusterPath: kubernetes/clusters/${CLUSTER_NAME}/flux
       # Only used to build the link a posted status/comment points back to.
-      publicUrl: https://konflate.${CLUSTER_SVCS_DOMAIN}
+      publicUrl: https://konflate.${CLUSTER_SUBDOMAIN}.freckle.services
     # No token: this repo is public, so anonymous reads work. That costs only
     # the forge's lower unauthenticated rate limit, and gates no feature.
     # Write-back (PR comments / commit status) is off by default and would need

@@ -9,11 +9,11 @@ spec:
   issuerRef:
     name: letsencrypt-production
     kind: ClusterIssuer
-  commonName: "${SVCS_DOMAIN}"
+  commonName: "freckle.services"
   dnsNames:
-    - "${SVCS_DOMAIN}"
-    - "*.${SVCS_DOMAIN}"
-    - "*.${CLUSTER_SVCS_DOMAIN}"
+    - "freckle.services"
+    - "*.freckle.services"
+    - "*.${CLUSTER_SUBDOMAIN}.freckle.services"
 
 ---
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cert-manager.io/certificate_v1.json
@@ -26,11 +26,11 @@ spec:
   issuerRef:
     name: letsencrypt-production
     kind: ClusterIssuer
-  commonName: "${MEDIA_DOMAIN}"
+  commonName: "freckle.media"
   dnsNames:
-    - "${MEDIA_DOMAIN}"
-    - "*.${MEDIA_DOMAIN}"
-    - "*.${CLUSTER_MEDIA_DOMAIN}"
+    - "freckle.media"
+    - "*.freckle.media"
+    - "*.${CLUSTER_SUBDOMAIN}.freckle.media"
 
 ---
 # Per-cluster cert for the freckle.systems apex hostnames we still use:

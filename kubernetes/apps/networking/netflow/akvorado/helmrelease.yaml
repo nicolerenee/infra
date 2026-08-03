@@ -239,7 +239,7 @@ spec:
     route:
       console:
         hostnames:
-          - "akvorado.${CLUSTER_SVCS_DOMAIN}"
+          - "akvorado.${CLUSTER_SUBDOMAIN}.freckle.services"
         parentRefs:
           - name: tailnet
             namespace: gateway-system
