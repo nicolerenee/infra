@@ -60,6 +60,16 @@ spec:
     vector:
       enabled: true
       resources: {}
+      # The three DGX Spark nodes are tainted nvidia.com/gpu:NoSchedule, and
+      # without this the DaemonSet reports desired: 3 — it only ever targets the
+      # amd64 nodes. Every GPU workload (the vLLM model servers) was therefore
+      # producing no collected logs at all: a crash or OOM left nothing behind
+      # once the pod was gone. The sparks are arm64; timberio/vector publishes
+      # linux/arm64, so no image change is needed.
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
       # Override the chart default config to also tail kube-apiserver
       # audit logs from each CP node's hostPath /var/log/audit/. Audit
       # is enabled via talconfig.yaml at Metadata level.

@@ -21,6 +21,15 @@ metadata:
 spec:
   mode: daemonset
   serviceAccount: otel-collector
+  # Same reason as the vector DaemonSet: the DGX Spark nodes carry
+  # nvidia.com/gpu:NoSchedule, so without this the collector never lands on
+  # them and GPU workloads can emit no traces or metrics through OTLP. The
+  # sparks are arm64 and otel/opentelemetry-collector-contrib publishes
+  # linux/arm64, so the existing image works unchanged.
+  tolerations:
+    - key: nvidia.com/gpu
+      operator: Exists
+      effect: NoSchedule
   image: otel/opentelemetry-collector-contrib:0.157.0
   resources:
     requests:
