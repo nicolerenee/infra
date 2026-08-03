@@ -44,6 +44,13 @@ spec:
             args:
               - orchestrator
               - /etc/akvorado/akvorado.yaml
+            env:
+              # Go does not know about the cgroup limit and will happily grow
+              # until the kernel kills it. Setting a soft limit below the hard
+              # one makes the GC work harder as it approaches, turning an
+              # OOMKill into a slower reconcile. Keep it comfortably under
+              # limits.memory below — this bounds heap, not total RSS.
+              GOMEMLIMIT: 3GiB
             probes: &probes
               liveness: &probe
                 enabled: true
@@ -66,11 +73,17 @@ spec:
                 memory: 256Mi
               # The orchestrator is the memory-hungry one despite doing the
               # least at steady state: it loads the GeoIP databases and the
-              # networks dictionary and pushes them into ClickHouse. 512Mi
-              # got it OOMKilled during that load, which then crash-looped
-              # every other service, since they all fetch config from it.
+              # networks dictionary and pushes them into ClickHouse. 512Mi got
+              # it OOMKilled during that load, which crash-looped every other
+              # service, since they all fetch config from it.
+              #
+              # 2Gi was then enough for IPinfo's 10MB country file but not for
+              # GeoLite2-City at 63MB — it OOMKilled once on the switch and
+              # settled at 2001Mi against a 2048Mi limit, i.e. 98% and one GC
+              # cycle from the next kill. The peak recurs on every start,
+              # because the whole database is walked to build the dictionary.
               limits:
-                memory: 2Gi
+                memory: 4Gi
           # Keeps the GeoLite2 databases fresh in a volume shared with the
           # orchestrator.
           #
