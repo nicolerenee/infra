@@ -38,7 +38,13 @@ spec:
               # KRaft: this single node is both controller and broker.
               KAFKA_NODE_ID: "1"
               KAFKA_PROCESS_ROLES: controller,broker
-              KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+              # localhost, not the Service name. Controller and broker are the
+              # same JVM here, and the Service is headless — which publishes
+              # only *ready* endpoints, so `kafka:9093` doesn't resolve until
+              # the broker is ready, which it can't be until it reaches the
+              # controller. Upstream's own single-node KRaft config uses
+              # localhost for exactly this reason.
+              KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
               # Listeners. CLIENT is advertised as the Service name, which is
               # how the akvorado inlet and outlet reach it.
               KAFKA_LISTENERS: CLIENT://:9092,CONTROLLER://:9093
