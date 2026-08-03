@@ -4,6 +4,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: janet
 components:
+  - ../_shared/cluster-info
   - ../../../../components/flux-post-build-variables
 # Floor (infra-owned) + the single bootstrap KS that points at the app-owned
 # topology (deploy/flux/). The per-component child KSs (migrate/brain/
