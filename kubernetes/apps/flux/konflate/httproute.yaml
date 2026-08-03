@@ -1,0 +1,26 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/gateway.networking.k8s.io/httproute_v1.json
+#
+# Public via the Cloudflare tunnel gateway. Deliberately not gated by OIDC: the
+# repo it renders is public, and konflate's HTTP surface is read-only by design
+# — writes come only from its own render loop using a credential held by the
+# process, never from a visitor's request.
+#
+# Cluster-scoped hostname because the cert only covers one wildcard level:
+# `*.freckle.services` would not match `konflate.fairy.freckle.services`, but
+# each cluster's own `*.${CLUSTER_SVCS_DOMAIN}` does. That is also why each
+# instance runs on the cluster it renders rather than both living on one.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: konflate
+spec:
+  hostnames:
+    - konflate.${CLUSTER_SVCS_DOMAIN}
+  parentRefs:
+    - name: tunnel
+      namespace: gateway-system
+  rules:
+    - backendRefs:
+        - name: konflate
+          port: 8080
