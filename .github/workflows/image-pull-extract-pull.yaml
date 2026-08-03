@@ -42,9 +42,17 @@ jobs:
       # source whose auth Secret is declared by an in-repo ExternalSecret.
       # Output is the same flat JSON array of image refs, so the diff below is
       # unchanged.
+      # base: "" is load-bearing. The action defaults base to the repo's
+      # default branch, which puts flate in changed-only mode — wrong twice
+      # over here. This job wants the FULL image list from each side so the
+      # diff job below can compute `pull - default`, and on the `pull` leg
+      # actions/checkout lands a shallow detached PR ref where neither `main`
+      # nor `origin/main` exists, so flate hard-errors resolving the base.
+      # Empty base restores `get`'s default full-tree behavior.
       - name: Setup flate
         uses: home-operations/flate/action@main
         with:
+          base: ""
           version: "0.4.12"
 
       - name: Gather Images
