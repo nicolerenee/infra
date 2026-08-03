@@ -38,10 +38,10 @@ jobs:
       # flate, not flux-local: the latter is deprecated and sunsetted, and it
       # broke here anyway — it followed the infra-private GitRepository it
       # cannot fetch, resolved that Kustomization's path against THIS checkout,
-      # and collapsed every Namespace onto flux-system. flate auto-skips a
-      # source whose auth Secret is declared by an in-repo ExternalSecret.
+      # and collapsed every Namespace onto flux-system.
       # Output is the same flat JSON array of image refs, so the diff below is
       # unchanged.
+      #
       # base: "" is load-bearing. The action defaults base to the repo's
       # default branch, which puts flate in changed-only mode — wrong twice
       # over here. This job wants the FULL image list from each side so the
@@ -55,10 +55,24 @@ jobs:
           base: ""
           version: "0.4.12"
 
+      # --allow-missing-secrets: the janet OCIRepository authenticates with the
+      # `ghcr-pull` dockerconfigjson, which is materialized by a
+      # ClusterExternalSecret (namespace-label gated), not by an in-repo
+      # ExternalSecret. flate's producer-aware auto-skip only recognizes
+      # ExternalSecret/SealedSecret with a static target name, so it has no
+      # evidence the Secret exists live, fails loud, and then resolves that
+      # Kustomization's `path: ./flux` against this checkout — taking 52
+      # dependent Kustomizations down with it. The flag soft-skips source auth
+      # Secrets that only materialize in-cluster. Trade-off: it is blanket, so a
+      # genuinely mistyped secretRef is skipped rather than caught here; cert
+      # and proxy secretRefs still fail loud. Images inside the private janet
+      # bundle are consequently not pre-pulled — they are owned by the app repo,
+      # not this one.
       - name: Gather Images
         run: |
           flate get images \
             --path kubernetes/clusters/${{ inputs.cluster }}/flux \
+            --allow-missing-secrets \
             --output json \
             --no-progress > images.json
 
