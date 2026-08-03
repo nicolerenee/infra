@@ -1,0 +1,52 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
+#
+# konflate renders this repo's open PRs as *rendered Flux diffs* rather than raw
+# file diffs, using flate. It replaces the flux-local diff job that used to post
+# a dyff comment on every PR.
+#
+# One instance renders exactly one cluster — it has no built-in notion of a
+# multi-cluster monorepo — so this app dir is deployed once per cluster, each
+# scoped by `clusterPath` to its own Flux entry point and reachable at its own
+# cluster subdomain. Everything cluster-specific comes from postBuild, so the
+# two deployments differ only in substituted values.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: konflate
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: konflate
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  driftDetection:
+    mode: enabled
+  values:
+    config:
+      repo: github://nicolerenee/infra
+      # The cluster's Flux entry point. Paths inside our Kustomizations are
+      # root-relative (`./kubernetes/apps/...`) and still resolve correctly —
+      # flate resolves them from the git root, not from this directory.
+      clusterPath: kubernetes/clusters/${CLUSTER_NAME}/flux
+      # Only used to build the link a posted status/comment points back to.
+      publicUrl: https://konflate.${CLUSTER_SVCS_DOMAIN}
+    # No token: this repo is public, so anonymous reads work. That costs only
+    # the forge's lower unauthenticated rate limit, and gates no feature.
+    # Write-back (PR comments / commit status) is off by default and would need
+    # a credential — see the chart's `secret.*` values.
+    persistence:
+      # Caches, the git mirror and rendered diffs. Without it every restart
+      # re-clones and re-renders all open PRs from scratch.
+      enabled: true
+      storageClass: ceph-block
+      size: 10Gi
+    # We route with Gateway API, not Ingress — see httproute.yaml.
+    ingress:
+      enabled: false

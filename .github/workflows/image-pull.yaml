@@ -21,14 +21,15 @@ jobs:
         uses: bjw-s-labs/action-changed-files@a9a36fb08ce06db9b02fbd8026cc2c0945eb9841 # v0.6.0
         with:
           patterns: |-
-            .github/workflows/flux-local.yaml
+            .github/workflows/image-pull.yaml
+            .github/workflows/image-pull-extract-pull.yaml
             kubernetes/**/*
             apps/**/*
 
   clusters:
     if: ${{ needs.filter.outputs.changed-files != '[]' }}
     needs: filter
-    name: Flux Local - Cluster List
+    name: Image Pull - Cluster List
     runs-on: ubuntu-latest
     outputs:
       cluster-list: ${{ steps.list.outputs.clusters }}
