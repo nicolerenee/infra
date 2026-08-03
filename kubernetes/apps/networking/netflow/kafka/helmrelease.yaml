@@ -121,4 +121,10 @@ spec:
         advancedMounts:
           kafka:
             app:
+              # subPath matters: ceph-block hands us an ext4 volume whose root
+              # contains lost+found, and Kafka refuses to start if its log dir
+              # holds anything that isn't a topic-partition directory
+              # ("'lost+found' is not in the form of topic-partition").
+              # Mounting a subdirectory keeps lost+found out of view.
               - path: /var/lib/kafka/data
+                subPath: data
