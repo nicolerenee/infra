@@ -78,3 +78,42 @@ spec:
       - openid
       - email
       - profile
+    # Pin the ID token cookie to a fixed name. By default EG appends a random
+    # suffix, which makes it impossible to name in the jwt extractFrom below.
+    cookieNames:
+      idToken: AkvoradoIdToken
+  # Validates the ID token the browser presents as a cookie, and maps its
+  # claims into the headers the console reads.
+  #
+  # This is the cookie route, NOT oidc.forwardIDToken — that field is declared
+  # in the v1.8.2 API and never read by the translator, so it silently forwards
+  # nothing and jwt_authn answers "Jwt is missing". Reading the cookie works
+  # because the browser supplies it on every request after login, so it does
+  # not depend on one filter mutating the request for another.
+  #
+  # Ordering still matters for the FIRST request: oauth2 (filter order 8) runs
+  # before jwt_authn (9), so an unauthenticated request is redirected to
+  # pocket-id rather than rejected for having no token.
+  #
+  # Bonus: envoyproxy/gateway#5414 — EG's OIDC filter does not validate the ID
+  # token at all (no signature or issuer check, contrary to the OIDC spec).
+  # This provider is what actually verifies it for this route.
+  jwt:
+    providers:
+      - name: pocket-id
+        issuer: https://freckle.id
+        remoteJWKS:
+          uri: https://freckle.id/.well-known/jwks.json
+        extractFrom:
+          cookies:
+            - AkvoradoIdToken
+        # No `audiences`: an ID token's aud is the client ID, which lives in a
+        # secret and cannot be templated in here. Issuer + JWKS signature are
+        # the checks that matter, and both now happen.
+        claimToHeaders:
+          - claim: preferred_username
+            header: Remote-User
+          - claim: name
+            header: Remote-Name
+          - claim: email
+            header: Remote-Email
