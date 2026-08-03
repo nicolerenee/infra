@@ -42,6 +42,12 @@ data:
     clickhouse:
       orchestrator-url: http://akvorado-orchestrator:8080
       prometheus-endpoint: /metrics
+      # Names for AS numbers, overriding the built-in list. 64610 is
+      # border1-den1's system-as; we reuse it below as "our" AS across both
+      # sites so all Freckle-owned public space aggregates under one entry,
+      # with the `site` attribute distinguishing den1 from btx1.
+      asns:
+        64610: Freckle
       # Names our own prefixes so flows involving them are labelled rather
       # than lumped in with the internet. Roles are a first pass and cheap to
       # refine once we see how the console groups things.
@@ -68,16 +74,53 @@ data:
           tenant: freckle
         # Public blocks come from the site-public-ips secret via postBuild so
         # they stay out of this public repo, same as the cilium CIDR groups.
+        #
+        # `asn` overrides what GeoIP reports. Our public space is announced by
+        # the upstreams that assigned it, so IPinfo attributes it to them —
+        # den1's block resolved to AS30475 (the provider), which buried our own
+        # DMZ egress in with third-party traffic in every top-AS view. Pinning
+        # it to 64610 attributes it to us instead. This makes the console
+        # disagree with real BGP data on purpose; cross-check against a looking
+        # glass, not against this.
+        ${SITE_ATLANTIS_PUBLIC_V4_GW}/32:
+          name: den1-public
+          role: dmz
+          site: den1
+          tenant: freckle
+          asn: 64610
         ${SITE_ATLANTIS_PUBLIC_V4_BLOCK}:
           name: den1-public
           role: dmz
           site: den1
           tenant: freckle
+          asn: 64610
         ${SITE_ATLANTIS_PUBLIC_V6_BLOCK}:
           name: den1-public
           role: dmz
           site: den1
           tenant: freckle
+          asn: 64610
+        # btx1 (fairy). Not an exporter — this collector only sees border1-den1
+        # — but btx1 traffic crosses the den1 transit link, so naming the
+        # ranges keeps site-to-site flows identifiable instead of anonymous.
+        ${SITE_FAIRY_PUBLIC_V4_GW}/32:
+          name: btx1-public
+          role: dmz
+          site: btx1
+          tenant: freckle
+          asn: 64610
+        ${SITE_FAIRY_PUBLIC_V4_BLOCK}:
+          name: btx1-public
+          role: dmz
+          site: btx1
+          tenant: freckle
+          asn: 64610
+        ${SITE_FAIRY_PUBLIC_V6_BLOCK}:
+          name: btx1-public
+          role: dmz
+          site: btx1
+          tenant: freckle
+          asn: 64610
 
     inlet:
       flow:
