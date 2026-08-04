@@ -1,11 +1,9 @@
 ---
 # yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
 #
-# No Reflector patch on k8s-cluster-info any more: every namespace on this
-# cluster declares its own copy, so `default` is just another consumer rather
-# than a replication source. k8s-cluster-secrets is still reflected — the
-# flux-post-build-variables component lists it for every namespace, and only
-# `default` declares it.
+# The patch makes only this copy a Reflector source. Every namespace in git
+# declares its own copy via the component, so Reflector is just the fallback for
+# namespaces that exist on the cluster but not in this repo.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: default
@@ -15,3 +13,15 @@ resources:
   - ./app-template.yaml
   - ./k8s-cluster-secrets.yaml
   - ./namespace.yaml
+patches:
+  - target:
+      kind: ConfigMap
+      name: k8s-cluster-info
+    patch: |
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: k8s-cluster-info
+        annotations:
+          reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+          reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
