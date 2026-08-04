@@ -1,19 +1,9 @@
 ---
 # yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
 #
-# `default` holds the Reflector source copy of k8s-cluster-info. Every namespace
-# in git also declares its own copy via the _shared/cluster-info component, so
-# Reflector is no longer how the ConfigMap gets delivered — it is the fallback
-# for namespaces that exist on the cluster but not in this repo (hand-made ones
-# like nicole-dev or benchmark), which would otherwise have nothing.
-#
-# Both mechanisms run at once and do not fight: server-side apply gives them
-# disjoint claims, Flux owning `data` and Reflector owning its own annotations.
-# Verified on konflate, where resourceVersion stayed flat with both active.
-#
-# The annotations live here as a patch rather than in the shared component so
-# that only this copy is a replication source; the copies in other namespaces
-# are plain ConfigMaps and cannot become sources themselves.
+# The patch makes only this copy a Reflector source. Every namespace in git
+# declares its own copy via the component, so Reflector is just the fallback for
+# namespaces that exist on the cluster but not in this repo.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: default
