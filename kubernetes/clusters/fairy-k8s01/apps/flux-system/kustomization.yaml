@@ -11,3 +11,5 @@ resources:
   - ./external-secrets.yaml
   - ./flux-instance.yaml
   - ./flux-operator.yaml
+  - ./infra-private-externalsecret.yaml
+  - ./infra-private.yaml
