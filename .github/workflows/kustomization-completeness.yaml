@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install yq for YAML processing
-        uses: mikefarah/yq@ce7026e3195aceac6b6a56a6b81fca4e8e466e36 # v4.53.4
+        uses: mikefarah/yq@e95064cd018c0e3d71ef83e4272b4722571dfa64 # v4.53.5
 
       - name: Setup kubectl
         uses: azure/setup-kubectl@829323503d1be3d00ca8346e5391ca0b07a9ab0d # v5.1.0
