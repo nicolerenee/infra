@@ -55,7 +55,7 @@ spec:
       image:
         registry: ghcr.io
         repository: nautobot/nautobot
-        tag: "3.2.2@sha256:dab5da8b1cd783e4f27109178b99a83164fb0d78e438393194f76abe4c6cdd72"
+        tag: "3.2.4@sha256:36a23296b7872442ac1a0c00f39a822a3a03d2d02d360fc24f91228eed69e00e"
 
       # Single web replica for a homelab DCIM; Celery worker + beat run as
       # their own deployments (chart defaults). Uploaded media (device-type
