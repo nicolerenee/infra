@@ -87,7 +87,7 @@ spec:
             # eugr spark-vllm (arm64, GB10-built): serves the distributed NVFP4
             # MoE path correctly (official v0.24.0 hangs on generation — see
             # header). Loads from the local NVMe cache. Digest-pinned.
-            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:e58fc97951c6c53822d743d4db2531b749c0ce8dd3a4cd8022b33d1b7495b562
+            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:590f914bfbfab2269db5795e9bc101d8773bbe3f6276abcb4b11cbc47bef0245
             command:
               - bash
               - -c
@@ -237,7 +237,7 @@ spec:
         containers:
           - name: vllm
             # eugr spark-vllm (arm64) — same image as the leader. Digest-pinned.
-            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:e58fc97951c6c53822d743d4db2531b749c0ce8dd3a4cd8022b33d1b7495b562
+            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:590f914bfbfab2269db5795e9bc101d8773bbe3f6276abcb4b11cbc47bef0245
             command:
               - bash
               - -c
