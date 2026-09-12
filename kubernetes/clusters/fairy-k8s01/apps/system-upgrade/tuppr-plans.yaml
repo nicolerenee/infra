@@ -19,7 +19,7 @@ spec:
       # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
       KUBERNETES_VERSION: v1.37.0
       # renovate: datasource=custom.talos-factory depName=siderolabs/talos
-      TALOS_VERSION: v1.13.8
+      TALOS_VERSION: v1.14.0
   prune: true
   retryInterval: 2m
   sourceRef:
