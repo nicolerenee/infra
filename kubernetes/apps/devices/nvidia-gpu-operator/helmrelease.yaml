@@ -22,6 +22,11 @@ spec:
         kind: HelmRepository
         name: nvidia
   interval: 1h
+  # The operator rolls several DaemonSets (dcgm, dcgm-exporter, validators,
+  # feature-discovery) one pod at a time across the GPU nodes. The v26.3.3 ->
+  # v26.7.0 upgrade ran close to Flux's 5m default, and a ClusterPolicy ->
+  # GPUCluster migration is a larger roll still.
+  timeout: 20m
   install:
     crds: CreateReplace
     remediation:
@@ -30,7 +35,12 @@ spec:
     cleanupOnFail: true
     crds: CreateReplace
     remediation:
-      retries: 3
+      # retries: 0 is load-bearing. Flux's default remediation is `rollback`,
+      # and with cleanupOnFail a timeout part-way through a GPU stack roll
+      # would roll back onto a half-migrated state, then retry the whole thing
+      # up to three more times. Hold Failed for a human instead. Same trap as
+      # the rook-ceph and cilium HelmReleases.
+      retries: 0
   values:
     # Manage the DRA driver through the GPU Operator (26.7.0+) instead of the
     # standalone dra-driver-nvidia-gpu chart. The operator drives this from a
