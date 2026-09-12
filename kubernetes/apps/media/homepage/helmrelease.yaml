@@ -29,7 +29,7 @@ spec:
           app:
             image:
               repository: ghcr.io/gethomepage/homepage
-              tag: v1.13.2@sha256:a0b71c8e757298d02560186bab9fbe3fc2d375c523a62cc1019177b37e48aa28
+              tag: v2.3.0@sha256:f820276654539cdc2cf0169f28188d135919a7984fad76d83d8d5ff1383f3705
             env:
               TZ: America/Chicago
               LOG_TARGETS: stdout
