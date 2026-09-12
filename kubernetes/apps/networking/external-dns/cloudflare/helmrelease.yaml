@@ -80,6 +80,13 @@ spec:
     txtOwnerId: "${CLUSTER_NAME}"
     txtPrefix: k8s-
     policy: sync
+    # external-dns 0.22 flips the default annotation prefix to the GA
+    # external-dns.kubernetes.io/ with NO fallback (upstream #6424). Our
+    # Gateway target, Service hostname and controller annotations all still
+    # use the alpha prefix, and policy: sync means an unrecognised annotation
+    # rewrites or deletes the record. Pin the prefix so the 0.22 bump is a
+    # no-op; migrating the annotations themselves is a separate change.
+    annotationPrefix: external-dns.alpha.kubernetes.io/
     securityContext:
       allowPrivilegeEscalation: false
       seccompProfile:
