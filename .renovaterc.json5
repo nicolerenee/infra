@@ -48,6 +48,19 @@
   },
   packageRules: [
     {
+      // Jellyfin publishes a two-segment tag (12.0) while we are pinned to a
+      // three-segment one (10.11.11). Renovate's default `docker` versioning
+      // requires both to have the same number of segments —
+      // lib/modules/versioning/docker/index.ts isCompatible():
+      //   parsed1.release.length === parsed2.release.length
+      // — so 12.0 is silently filtered out and no PR is ever opened. There is
+      // no 12.0.0 tag upstream to match instead. semver-coerced normalises
+      // "12.0" to "12.0.0", which compares correctly and keeps working if
+      // Jellyfin goes back to three segments.
+      matchPackageNames: ['ghcr.io/jellyfin/jellyfin'],
+      versioning: 'semver-coerced',
+    },
+    {
       // When the kubernetes-sigs/gateway-api tag in
       // scripts/vendor-gateway-api-crds.sh is bumped, re-run the vendor
       // script to regenerate the CRD YAML files in the same PR. Requires
