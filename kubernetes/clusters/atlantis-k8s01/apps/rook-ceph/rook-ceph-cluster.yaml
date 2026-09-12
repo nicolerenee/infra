@@ -31,16 +31,3 @@ spec:
       patch: |-
         - op: remove
           path: /spec/values/cephClusterSpec/storage/encryptedDevice
-        # TEMPORARY — remove once the OSDs are all on 20.2.4.
-        # Ceph 20.2.4 added the CVE-2025-30156 CephX audit, which puts this
-        # cluster in HEALTH_ERR because every daemon key is still the legacy
-        # aes type. Rook refuses to upgrade a cluster in HEALTH_ERR, so the 9
-        # OSDs are stranded on 20.2.2 while mon/mgr/mds/rgw are on 20.2.4 —
-        # and the HEALTH_ERR is itself caused by those OSDs' keys, so it
-        # cannot clear on its own. The stalled CephCluster also fails the
-        # HelmRelease, which blocks ~22 dependent Kustomizations.
-        # Data is healthy (265 PGs active+clean, 9/9 OSDs up/in), so the only
-        # thing this check is blocking on is the auth audit.
-        - op: add
-          path: /spec/values/cephClusterSpec/skipUpgradeChecks
-          value: true
