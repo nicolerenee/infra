@@ -17,6 +17,10 @@
     ':dependencyDashboard',
     ':semanticCommits',
     ':timezone(America/Chicago)',
+    // Defines the custom.talos-factory datasource, which lists the Talos
+    // versions the Image Factory can actually build. Must come before
+    // infraPackages so our per-cluster commit rules still take precedence.
+    'github>home-operations/renovate-presets//apps/talosFactory.json5#8.1.0',
     'github>nicolerenee/infra//.renovate/infraPackages.json5',
   ],
   rebaseWhen: 'behind-base-branch',

@@ -11,7 +11,7 @@
     },
     {
       description: "customize talos upgrades",
-      matchPackageNames: ["ghcr.io/siderolabs/installer"],
+      matchPackageNames: ["siderolabs/talos"],
       commitMessagePrefix: "{{semanticCommitType}}(infra/talos):",
       commitMessageTopic: "talos",
       commitMessageAction: "upgrade",
@@ -22,7 +22,7 @@
       matchFileNames: ["kubernetes/clusters/atlantis-k8s01/**"],
       matchPackageNames: [
         "ghcr.io/siderolabs/kubelet",
-        "ghcr.io/siderolabs/installer",
+        "siderolabs/talos",
       ],
       additionalBranchPrefix: "atlantis-k8s01-",
       commitMessageSuffix: "on atlantis-k8s01",
@@ -32,7 +32,7 @@
       matchFileNames: ["kubernetes/clusters/fairy-k8s01/**"],
       matchPackageNames: [
         "ghcr.io/siderolabs/kubelet",
-        "ghcr.io/siderolabs/installer",
+        "siderolabs/talos",
       ],
       additionalBranchPrefix: "fairy-k8s01-",
       commitMessageSuffix: "on fairy-k8s01",
