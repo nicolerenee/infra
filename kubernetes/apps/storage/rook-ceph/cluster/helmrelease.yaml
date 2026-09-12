@@ -75,6 +75,37 @@ spec:
             enabled: true
           - name: rook
             enabled: true
+      security:
+        cephx:
+          # Ceph 20.2.4 added the CVE-2025-30156 CephX audit, which flags every
+          # legacy `aes` key. Rotating the daemon keys (mon/mgr/osd/mds/rgw) to
+          # aes256k clears the two HEALTH_ERR checks. Bump keyGeneration again
+          # to force a future rotation.
+          daemon:
+            keyRotationPolicy: KeyGeneration
+            keyGeneration: 2
+          csi:
+            # aes256k on the CSI path needs a Linux 7.0+ kernel on every node to
+            # mount existing volumes. Talos is still on the 6.18 series as of
+            # v1.14 (6.18.48), so the CSI keys have to stay on aes for now.
+            keyType: aes
+          # Deliberately NOT setting allowedCiphers: [aes256k] — restricting the
+          # cluster to aes256k while the CSI keys are still aes makes the cluster
+          # unavailable.
+      healthCheck:
+        # These four cannot clear until the CSI keys move to aes256k, which is
+        # gated on the kernel above. Left unmuted they mask real warnings, and a
+        # permanently-warning cluster trains you to ignore `ceph health`.
+        # Revisit all of this when Talos ships a 7.0+ kernel.
+        muteHealthWarning:
+          AUTH_INSECURE_CLIENT_KEY_TYPE:
+            policy: mute
+          AUTH_INSECURE_KEYS_ALLOWED:
+            policy: mute
+          AUTH_INSECURE_KEYS_CREATABLE:
+            policy: mute
+          AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE:
+            policy: mute
       storage:
         encryptedDevice: true
     # default values, remove once I don't need a single node cluster
