@@ -85,9 +85,17 @@ jobs:
       - name: Gather Images
         run: |
           rc=0
+          # --api-versions declares APIs the real clusters serve but an offline
+          # render cannot discover. Charts that gate on API availability fail
+          # closed otherwise: the GPU Operator refuses to render a GPUCluster CR
+          # with "no resource.k8s.io DeviceClass API is served" unless told
+          # DRA exists. Both clusters run Kubernetes 1.37 and use DRA in anger
+          # (nvidia and intel GPU drivers), so asserting it here matches reality
+          # rather than papering over a gap.
           flate get images \
             --path kubernetes/clusters/${{ inputs.cluster }}/flux \
             --allow-missing-secrets \
+            --api-versions resource.k8s.io/v1/DeviceClass \
             --output json \
             --no-progress > images.json 2> flate.err || rc=$?
 
