@@ -42,6 +42,22 @@ spec:
       # the rook-ceph and cilium HelmReleases.
       retries: 0
   values:
+    # Manage the DRA driver through the GPU Operator (26.7.0+) instead of the
+    # standalone dra-driver-nvidia-gpu chart. The operator drives this from a
+    # GPUCluster CR, which is mutually exclusive with ClusterPolicy — the chart
+    # fails the render if both are enabled — so ClusterPolicy is turned off in
+    # the same change.
+    #
+    # GPUCluster is a slimmer CR than ClusterPolicy: it covers draDriver, dcgm,
+    # dcgmExporter, hostPaths and daemonsets only. Driver, toolkit and device
+    # plugin are not part of it, which suits us — Talos supplies the driver and
+    # container toolkit via system extensions, and the device plugin is replaced
+    # by DRA. Those values stay false to satisfy the chart's own validations.
+    clusterPolicy:
+      deployCR: false
+    gpuCluster:
+      deployCR: true
+
     # Talos provides NVIDIA drivers via system extensions
     driver:
       enabled: false
