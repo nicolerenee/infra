@@ -35,7 +35,7 @@ spec:
         - name: harvest
           # Image tag is rewritten by Flux image-automation (ImagePolicy
           # flux-system:harvest selects the newest main-<ts>-<sha> build).
-          image: ghcr.io/nicolerenee/harvest:main-20260622T224001Z-803a85e # {"$imagepolicy": "flux-system:harvest"}
+          image: ghcr.io/nicolerenee/harvest:main-20260917T233703Z-7f1d59b # {"$imagepolicy": "flux-system:harvest"}
           ports:
             - name: http
               containerPort: 8080
