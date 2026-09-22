@@ -50,7 +50,7 @@ jobs:
       # nor `origin/main` exists, so flate hard-errors resolving the base.
       # Empty base restores `get`'s default full-tree behavior.
       - name: Setup flate
-        uses: home-operations/flate/action@c97e789bc0724b029c54b13ed2578a9e22795c6d # main
+        uses: home-operations/flate/action@cacd25c7059806e50f988d28f9039df9196786b1 # main
         with:
           base: ""
           version: "0.4.12"
