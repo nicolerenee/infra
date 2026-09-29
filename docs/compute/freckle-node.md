@@ -121,6 +121,7 @@ the Talos ISO; read/push them over Redfish once the BMC is licensed.
 | `IPv4HTTPSupport` | `Enabled` | UEFI HTTP Boot of the signed Talos UKI (see Secure Boot below) |
 | `IPv4PXESupport`, `IPv6PXESupport` | `Disabled` | iPXE isn't Sidero-signed; PXE can't work under Secure Boot |
 | `SecureBootEnable` | `true` | set before first boot; the ISO enrollment below completes it |
+| `UEFIBootOption_1` (`BootOption_1` on 1.1a) | `UEFI Hard Disk:UEFI OS`, `_2`–`_9` `Disabled` | boot from the installed disk only; no USB/network fallback. Stage after Talos is installed, or the install media won't boot |
 | `TPMDeviceSelection` | `dTPM` | Talos disk encryption seals to the discrete TPM |
 | `SecureBootMode` | `Custom` | Sidero's keys enrolled, see below |
 | `PowerLimit1Override` / `PowerLimit1` | `Enabled` / `125000` | milliwatts. Caps the 265K at its 125 W TDP |
