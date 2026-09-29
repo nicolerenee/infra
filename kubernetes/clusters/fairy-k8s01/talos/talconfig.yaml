@@ -15,14 +15,14 @@ cniConfig:
   name: none
 
 nodes:
-  - hostname: fairy-r02-cn01
+  - hostname: cn01.fairy.freckle.systems
     ipAddress: 10.189.3.16
     controlPlane: true
     installDiskSelector:
-      model: "Samsung SSD 870*"
+      model: "Samsung SSD 990 PRO*"
     nodeLabels:
       networks.freckle.systems/home-lan: present
-      topology.freckle.systems/rack: r02
+      topology.freckle.systems/rack: r01
     machineSpec: &cn01-machineSpec
       mode: metal
       arch: amd64
