@@ -238,12 +238,12 @@ nodes:
         name: br300
         hardwareAddr: "02:1f:80:03:00:06"
 
-  - hostname: fairy-r02-dgx01
+  - hostname: dgx01.fairy.freckle.systems
     ipAddress: 10.189.3.22
     controlPlane: false
     installDisk: /dev/nvme0n1
     nodeLabels:
-      topology.freckle.systems/rack: r02
+      topology.freckle.systems/rack: r01
     nodeTaints:
       nvidia.com/gpu: ":NoSchedule"
     machineSpec: &dgx01-machineSpec
@@ -304,12 +304,12 @@ nodes:
       - ./patches/nvidia-runtime.yaml
       - ./patches/watchdog.yaml
 
-  - hostname: fairy-r02-dgx02
+  - hostname: dgx02.fairy.freckle.systems
     ipAddress: 10.189.3.23
     controlPlane: false
     installDisk: /dev/nvme0n1
     nodeLabels:
-      topology.freckle.systems/rack: r02
+      topology.freckle.systems/rack: r01
     nodeTaints:
       nvidia.com/gpu: ":NoSchedule"
     machineSpec: *dgx01-machineSpec
@@ -328,12 +328,12 @@ nodes:
       - ./patches/nvidia-runtime.yaml
       - ./patches/watchdog.yaml
 
-  - hostname: fairy-r02-dgx03
+  - hostname: dgx03.fairy.freckle.systems
     ipAddress: 10.189.3.24
     controlPlane: false
     installDisk: /dev/nvme0n1
     nodeLabels:
-      topology.freckle.systems/rack: r02
+      topology.freckle.systems/rack: r01
     nodeTaints:
       nvidia.com/gpu: ":NoSchedule"
     machineSpec: *dgx01-machineSpec
