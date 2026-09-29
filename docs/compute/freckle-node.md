@@ -116,13 +116,21 @@ the Talos ISO; read/push them over Redfish once the BMC is licensed.
 | `SR_IOVSupport` | `Enabled` | matches cn01; VF NICs for KubeVirt |
 | `ACPISleepState` | `Suspend Disabled` | server, never sleeps |
 | `OnboardLAN1Support`, `OnboardLAN2Support` | `Disabled` | the two i226 2.5G ports are unused; only the X550 pair (LAN3/LAN4 → `eno3`/`eno4`) is cabled |
+| `PowerButtonFunction` | `4 Seconds Override` | a brushed front button shouldn't instantly kill a Ceph node |
+| `RestoreonACPowerLoss` | `Power On` | nodes come back on their own after a PDU/UPS event |
+| `IPv4HTTPSupport` | `Enabled` | UEFI HTTP Boot of the signed Talos UKI (see Secure Boot below) |
+| `IPv4PXESupport`, `IPv6PXESupport` | `Disabled` | iPXE isn't Sidero-signed; PXE can't work under Secure Boot |
+| `SecureBootEnable` | `true` | set before first boot; the ISO enrollment below completes it |
 | `TPMDeviceSelection` | `dTPM` | Talos disk encryption seals to the discrete TPM |
 | `SecureBootMode` | `Custom` | Sidero's keys enrolled, see below |
 | `PowerLimit1Override` / `PowerLimit1` | `Enabled` / `125000` | milliwatts. Caps the 265K at its 125 W TDP |
 | `PowerLimit2Override` / `PowerLimit2` | `Enabled` / `150000` | stock PL2 is 250 W, which a 150 W-class low-profile cooler cannot sink |
 
-The full cn01 attribute set (248 keys) is the reference; diff a new node
-against it rather than trusting defaults.
+cn02's attribute set is the reference (it was configured by hand to this
+baseline on BIOS 2.0); diff a new node against it rather than trusting defaults.
+Attribute names carry a per-BIOS-version suffix for some keys (e.g.
+`PowerLimit1_004E`) and the BMC only refreshes its attribute set after the
+host POSTs on the new BIOS, so push those after the first boot.
 
 #### Reading and pushing BIOS settings over Redfish
 
