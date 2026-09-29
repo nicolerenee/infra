@@ -130,14 +130,14 @@ nodes:
         name: br300
         hardwareAddr: "02:1f:80:03:00:02"
 
-  - hostname: fairy-r02-cn03
+  - hostname: cn03.fairy.freckle.systems
     ipAddress: 10.189.3.18
     controlPlane: true
     installDiskSelector:
       model: "Samsung SSD 990 PRO*"
     nodeLabels:
       networks.freckle.systems/home-lan: present
-      topology.freckle.systems/rack: r02
+      topology.freckle.systems/rack: r01
     machineSpec: *cn01-machineSpec
     schematic: *cn01-schematic
     extensionServices:
