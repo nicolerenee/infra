@@ -36,6 +36,26 @@ vmsingle:
         cpu: 1200m
         memory: 3Gi
 
+defaultRules:
+  rules:
+    # A node that is serving a model is *supposed* to sit near full memory —
+    # vLLM pins most of a DGX Spark's unified memory up front — so skip the
+    # alert on nodes that currently run a vllm container. Node identity comes
+    # from the node-exporter pod's kube_pod_info; model presence from any
+    # inference pod whose container is named vllm (leaders and workers alike).
+    NodeMemoryHighUtilization:
+      spec:
+        expr: |-
+          (
+            (100 - ((node_memory_MemAvailable_bytes{job="node-exporter"} / node_memory_MemTotal_bytes{job="node-exporter"}) * 100)) > 90
+          )
+          * on (namespace, pod) group_left (node) kube_pod_info{job="kube-state-metrics"}
+          unless on (node)
+            count by (node) (
+              kube_pod_container_info{namespace="inference", container="vllm"}
+              * on (namespace, pod) group_left (node) kube_pod_info{job="kube-state-metrics"}
+            )
+
 defaultDashboards:
   enabled: true
   grafanaOperator:
