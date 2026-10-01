@@ -5,3 +5,4 @@ kind: Kustomization
 resources:
   - ./host-storage.yaml
   - ./kubevirt.yaml
+  - ./msw1-spine02-uplink.yaml

@@ -1,0 +1,19 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/observability.giantswarm.io/silence_v1alpha2.json
+# msw1 at den1 is deliberately single-homed to spine01. Its second uplink
+# (ethernet1/3/2 → spine2 Ethernet1/46, admin-shut on the spine side) stays
+# down: msw1 runs the switch image, not the L3 one, so dual-homing it would
+# mean MLAG, which is what the den1 overhaul moved away from. The port
+# keeps its "Uplink: spine02" alias so the cabling stays documented.
+apiVersion: observability.giantswarm.io/v1alpha2
+kind: Silence
+metadata:
+  name: msw1-spine02-uplink-single-homed
+spec:
+  matchers:
+    - name: alertname
+      value: UplinkPortDown
+    - name: instance
+      value: msw1.den1
+    - name: ifName
+      value: ethernet1/3/2
