@@ -8,6 +8,13 @@ spec:
     - interval: 30s
       port: http
       path: /metrics
+      # vllm:cache_config_info carries 40+ labels (one per cache setting),
+      # above vmsingle's default per-series limit, so every scrape logged a
+      # rejected row. It is a config dump, not a signal; drop it at scrape time.
+      metricRelabelConfigs:
+        - sourceLabels: [__name__]
+          regex: "vllm:cache_config_info"
+          action: drop
       relabelConfigs:
         - targetLabel: vllm_deployment
           replacement: vllm-gpt-oss-2node
