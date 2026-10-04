@@ -18,6 +18,10 @@ spec:
   driftDetection:
     mode: enabled
   values:
+    # Annotate the VolumeSnapshot CRDs with helm.sh/resource-policy: keep so a
+    # Helm uninstall or failed-upgrade remediation can't delete them and, with
+    # them, every VolumeSnapshot volsync depends on. Chart >= 5.3.0.
+    keepCRDs: true
     controller:
       serviceMonitor:
         create: true
