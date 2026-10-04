@@ -93,8 +93,8 @@ delivery.
 
 #### Status
 
-- Chassis: delivered; fairy-r02-cn02 built 2026-09-27 (BIOS 2.0, replaces
-  fairy-compute02 as the third control-plane node)
+- Chassis: delivered; cn02 built 2026-09-27 (BIOS 2.0, replaces the old
+  compute02 as the third control-plane node). cn01-cn03 are all Gen 3.1 now.
 - RAM: on hand
 - CPUs: 265K thermal test on cn01 (Sliger CX2151, AXP90-X53 Full) hit the
   105 °C Tjmax within a minute at stock power limits. The chassis' 66 mm cooler
