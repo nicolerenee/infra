@@ -20,40 +20,40 @@ secureboot: true
 secretsProvider: ../../../../.taskfiles/talos/resources/topf-secrets-provider
 
 nodes:
-  - host: cn01.fairy.freckle.systems
+  - host: cn01
     ip: 10.189.3.16
     role: control-plane
     schematicId: "@schematics/cn.yaml"
     data:
       homelanBridgeMac: "02:1f:80:03:00:01"
-  - host: cn02.fairy.freckle.systems
+  - host: cn02
     ip: 10.189.3.17
     role: control-plane
     schematicId: "@schematics/cn.yaml"
     data:
       homelanBridgeMac: "02:1f:80:03:00:02"
-  - host: cn03.fairy.freckle.systems
+  - host: cn03
     ip: 10.189.3.18
     role: control-plane
     schematicId: "@schematics/cn.yaml"
     data:
       homelanBridgeMac: "02:1f:80:03:00:03"
 
-  - host: dgx01.fairy.freckle.systems
+  - host: dgx01
     ip: 10.189.3.22
     role: worker
     schematicId: "@schematics/dgx.yaml"
     data:
       dhcp: true
       workloadIsolation: true
-  - host: dgx02.fairy.freckle.systems
+  - host: dgx02
     ip: 10.189.3.23
     role: worker
     schematicId: "@schematics/dgx.yaml"
     data:
       dhcp: true
       workloadIsolation: true
-  - host: dgx03.fairy.freckle.systems
+  - host: dgx03
     ip: 10.189.3.24
     role: worker
     schematicId: "@schematics/dgx.yaml"
@@ -62,28 +62,28 @@ nodes:
       workloadIsolation: true
   # All sparks take their address by DHCP (UDM reservation on the enP7s7
   # MAC); `ip` is that reserved lease and is only used to reach the node.
-  - host: dgx04.fairy.freckle.systems
+  - host: dgx04
     ip: 10.189.3.25
     role: worker
     schematicId: "@schematics/dgx.yaml"
     data:
       dhcp: true
       workloadIsolation: true
-  - host: dgx05.fairy.freckle.systems
+  - host: dgx05
     ip: 10.189.3.26
     role: worker
     schematicId: "@schematics/dgx.yaml"
     data:
       dhcp: true
       workloadIsolation: true
-  - host: dgx06.fairy.freckle.systems
+  - host: dgx06
     ip: 10.189.3.27
     role: worker
     schematicId: "@schematics/dgx.yaml"
     data:
       dhcp: true
       workloadIsolation: true
-  - host: dgx07.fairy.freckle.systems
+  - host: dgx07
     ip: 10.189.3.28
     role: worker
     schematicId: "@schematics/dgx.yaml"

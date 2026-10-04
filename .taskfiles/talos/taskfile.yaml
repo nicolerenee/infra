@@ -8,8 +8,8 @@ version: "3"
 # 1Password by resources/topf-secrets-provider, so nothing secret is on disk.
 #
 # Every task takes CLUSTER=<name>; most also take NODES=<regex> to act on a
-# subset (matched against the node host names), e.g. NODES='^dgx0[4-7]\.'.
-# Extra flags go after `--`, e.g. `task talos:apply CLUSTER=fairy-k8s01 -- --mode=staged`.
+# subset (matched against the node host names), e.g. NODES='^dgx0[4-7]$'.
+# Extra flags go after `--`, e.g. `CLUSTER=fairy-k8s01 task talos:apply -- --mode=staged`.
 
 vars:
   TALOS_RESOURCES_DIR: "{{.ROOT_DIR}}/.taskfiles/talos/resources"
