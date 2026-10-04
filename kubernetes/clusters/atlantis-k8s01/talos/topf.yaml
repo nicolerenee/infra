@@ -1,0 +1,55 @@
+---
+# Talos cluster definition for topf (https://postfinance.github.io/topf/).
+#
+# Node-level config lives in the patch tree next to this file:
+#   all/            every node (the five computes are identical hardware)
+#   control-plane/  cluster components, API access, the shared VIP
+#   worker/         (nothing extra today)
+# Per-node differences come from the node entries below, via `ip` and `data`,
+# into the *.tpl patches: `nic` is the ConnectX port name the 2x25G LACP bond
+# is built from (compute01 enumerates it as enp1s0, the rest as enp2s0), `ip6`
+# is the node's static v6 address on the same bond.
+#
+# Secrets never touch disk: the provider pulls the bundle from 1Password.
+clusterName: atlantis-k8s01
+clusterEndpoint: https://172.26.3.16:6443
+# renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
+kubernetesVersion: v1.37.1
+# renovate: datasource=custom.talos-factory depName=siderolabs/talos
+talosVersion: v1.14.0
+platform: metal
+secureboot: false
+schematicId: "@schematics/compute.yaml"
+secretsProvider: ../../../../.taskfiles/talos/resources/topf-secrets-provider
+
+nodes:
+  - host: atlantis-compute01
+    ip: 172.26.3.5
+    role: control-plane
+    data:
+      nic: enp1s0
+      ip6: "2607:fc88:200:403:202:3333::801"
+  - host: atlantis-compute02
+    ip: 172.26.3.6
+    role: control-plane
+    data:
+      nic: enp2s0
+      ip6: "2607:fc88:200:403:202:3333::802"
+  - host: atlantis-compute03
+    ip: 172.26.3.7
+    role: control-plane
+    data:
+      nic: enp2s0
+      ip6: "2607:fc88:200:403:202:3333::803"
+  - host: atlantis-compute04
+    ip: 172.26.3.8
+    role: worker
+    data:
+      nic: enp2s0
+      ip6: "2607:fc88:200:403:202:3333::804"
+  - host: atlantis-compute05
+    ip: 172.26.3.9
+    role: worker
+    data:
+      nic: enp2s0
+      ip6: "2607:fc88:200:403:202:3333::805"
