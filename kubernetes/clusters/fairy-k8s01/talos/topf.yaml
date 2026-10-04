@@ -14,7 +14,7 @@ clusterEndpoint: https://fairy-k8s01-api.freckle.systems:6443
 # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
 kubernetesVersion: v1.37.1
 # renovate: datasource=custom.talos-factory depName=siderolabs/talos
-talosVersion: v1.14.1
+talosVersion: v1.14.2
 platform: metal
 secureboot: true
 secretsProvider: ../../../../.taskfiles/talos/resources/topf-secrets-provider
