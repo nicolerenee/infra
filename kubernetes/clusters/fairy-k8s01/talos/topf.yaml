@@ -1,0 +1,84 @@
+---
+# Talos cluster definition for topf (https://postfinance.github.io/topf/).
+#
+# Node-level config lives in the patch tree next to this file:
+#   all/            every node
+#   control-plane/  the cn (Supermicro X14SAZ) hardware profile — all CP nodes
+#   worker/         the DGX Spark hardware profile — all workers
+# Per-node differences (IP, bridge MAC, DHCP vs static) come from the node
+# entries below, via `ip` and `data`, into the *.tpl patches.
+#
+# Secrets never touch disk: the provider pulls the bundle from 1Password.
+clusterName: fairy-k8s01
+clusterEndpoint: https://fairy-k8s01-api.freckle.systems:6443
+# renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
+kubernetesVersion: v1.37.1
+# renovate: datasource=custom.talos-factory depName=siderolabs/talos
+talosVersion: v1.14.1
+platform: metal
+secureboot: true
+secretsProvider: ../../../../.taskfiles/talos/resources/topf-secrets-provider
+
+nodes:
+  - host: cn01.fairy.freckle.systems
+    ip: 10.189.3.16
+    role: control-plane
+    schematicId: "@schematics/cn.yaml"
+    data:
+      homelanBridgeMac: "02:1f:80:03:00:01"
+  - host: cn02.fairy.freckle.systems
+    ip: 10.189.3.17
+    role: control-plane
+    schematicId: "@schematics/cn.yaml"
+    data:
+      homelanBridgeMac: "02:1f:80:03:00:02"
+  - host: cn03.fairy.freckle.systems
+    ip: 10.189.3.18
+    role: control-plane
+    schematicId: "@schematics/cn.yaml"
+    data:
+      homelanBridgeMac: "02:1f:80:03:00:03"
+
+  - host: dgx01.fairy.freckle.systems
+    ip: 10.189.3.22
+    role: worker
+    schematicId: "@schematics/dgx.yaml"
+  - host: dgx02.fairy.freckle.systems
+    ip: 10.189.3.23
+    role: worker
+    schematicId: "@schematics/dgx.yaml"
+  - host: dgx03.fairy.freckle.systems
+    ip: 10.189.3.24
+    role: worker
+    schematicId: "@schematics/dgx.yaml"
+  # dgx04-07 take their address by DHCP (UDM reservation on the enP7s7 MAC);
+  # `ip` is that reserved lease and is only used to reach the node. They were
+  # installed fresh on 1.14, so they run with workload isolation from day one.
+  - host: dgx04.fairy.freckle.systems
+    ip: 10.189.3.25
+    role: worker
+    schematicId: "@schematics/dgx.yaml"
+    data:
+      dhcp: true
+      workloadIsolation: true
+  - host: dgx05.fairy.freckle.systems
+    ip: 10.189.3.26
+    role: worker
+    schematicId: "@schematics/dgx.yaml"
+    data:
+      dhcp: true
+      workloadIsolation: true
+  - host: dgx06.fairy.freckle.systems
+    ip: 10.189.3.27
+    role: worker
+    schematicId: "@schematics/dgx.yaml"
+    data:
+      dhcp: true
+      workloadIsolation: true
+  - host: dgx07.fairy.freckle.systems
+    ip: 10.189.3.28
+    role: worker
+    schematicId: "@schematics/dgx.yaml"
+    data:
+      dhcp: true
+      workloadIsolation: true

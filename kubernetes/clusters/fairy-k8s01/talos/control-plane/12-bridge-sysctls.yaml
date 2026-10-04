@@ -1,0 +1,23 @@
+---
+# Suppress IPv6 on the home-LAN path — L2-only, no host addressing.
+#
+# Applied to:
+#  - bond0.500 (the home-LAN VLAN sub-interface; bridge port of br-homelan)
+#  - br-homelan (the host bridge that fans the home LAN out to pods + KubeVirt VMs)
+#
+# Without these, the bridge picks up an IPv6 SLAAC address from the LAN router
+# RAs on every boot (verified after 2026-05-26 reboot); we don't want the
+# bridge to be an L3 endpoint on the home LAN, only an L2 fanout.
+#
+# accept_ra=0      → ignore router advertisements
+# autoconf=0       → don't auto-configure an IPv6 address from RAs
+# addr_gen_mode=3  → "never generate any address" (incl. link-local)
+apiVersion: v1alpha1
+kind: SysctlConfig
+params:
+  net.ipv6.conf.bond0/500.accept_ra: "0"
+  net.ipv6.conf.bond0/500.autoconf: "0"
+  net.ipv6.conf.bond0/500.addr_gen_mode: "3"
+  net.ipv6.conf.br-homelan.accept_ra: "0"
+  net.ipv6.conf.br-homelan.autoconf: "0"
+  net.ipv6.conf.br-homelan.addr_gen_mode: "3"

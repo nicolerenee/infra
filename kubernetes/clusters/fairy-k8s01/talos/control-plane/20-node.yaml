@@ -1,0 +1,6 @@
+---
+apiVersion: v1alpha1
+kind: KubeNodeConfig
+labels:
+  networks.freckle.systems/home-lan: present
+  topology.freckle.systems/rack: r01

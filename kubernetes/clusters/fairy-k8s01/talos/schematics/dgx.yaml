@@ -1,0 +1,14 @@
+---
+# NVIDIA DGX Spark (GB10, arm64, secureboot UKI).
+customization:
+  extraKernelArgs:
+    - arm64.nobti
+  systemExtensions:
+    officialExtensions:
+      - siderolabs/iscsi-tools
+      - siderolabs/lldpd
+      - siderolabs/nvidia-container-toolkit-production
+      # Open-source drivers cause CUDA initialization failures in containers (cuInit error 3)
+      # - siderolabs/nvidia-open-gpu-kernel-modules-production
+      # Proprietary drivers required for CUDA to work properly on DGX Spark (GB10)
+      - siderolabs/nonfree-kmod-nvidia-production

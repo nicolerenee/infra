@@ -1,0 +1,27 @@
+---
+apiVersion: v1alpha1
+kind: KubeNetworkConfig
+dnsDomain: cluster.local
+podSubnets:
+  - 10.230.0.0/16
+  - fd2b:ec92:e232::/48
+serviceSubnets:
+  - 10.229.0.0/16
+  - fd2b:ec92:e230:1::/112
+---
+# Cilium is the CNI; the generator still emits a Flannel document by default
+# and omitting it is not enough, it has to be deleted.
+apiVersion: v1alpha1
+kind: KubeFlannelCNIConfig
+$patch: delete
+---
+# Keep the pre-1.14 behaviour (no sandboxd workload isolation) for now. Nodes
+# upgraded in place never had it, and enabling it is a reboot of every node
+# into a new PID/mount namespace for containerd + pods. Rollout plan: flip it
+# on one Spark first (no LUKS, no Ceph; validates the NVIDIA stack), then the
+# other Sparks, then one cn at a time -- the cn nodes are TPM-LUKS and hit the
+# known first-boot "luks2-EPHEMERAL still in use" close failure, which costs a
+# second reboot or an EPHEMERAL wipe.
+apiVersion: v1alpha1
+kind: SecurityProfileConfig
+workloadIsolation: false

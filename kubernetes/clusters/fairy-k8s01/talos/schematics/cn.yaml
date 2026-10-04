@@ -1,0 +1,10 @@
+---
+# Supermicro X14SAZ compute nodes (amd64, secureboot UKI).
+customization:
+  systemExtensions:
+    officialExtensions:
+      - siderolabs/i915
+      - siderolabs/intel-ucode
+      - siderolabs/iscsi-tools
+      - siderolabs/lldpd
+      - siderolabs/mei

@@ -1,0 +1,9 @@
+---
+# Present on the running sparks (applied live, never in talconfig); kept so
+# the migration is a no-op there. BBR is fine here, the sparks carry no
+# WireGuard traffic.
+apiVersion: v1alpha1
+kind: SysctlConfig
+params:
+  net.core.bpf_jit_enable: "1"
+  net.ipv4.tcp_congestion_control: bbr

@@ -2,5 +2,7 @@
 .task
 
 /**/talos/clusterconfig/
+# topf render output (full machine configs, secrets included)
+/**/talos/output/
 kubeconfig*
 talosconfig*

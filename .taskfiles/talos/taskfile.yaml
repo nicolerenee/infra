@@ -2,77 +2,83 @@
 # yaml-language-server: $schema=https://taskfile.dev/schema.json
 version: "3"
 
+# Talos machine configs are managed with topf (https://postfinance.github.io/topf/).
+# Each cluster has `kubernetes/clusters/<cluster>/talos/topf.yaml` plus a patch
+# tree (all/, control-plane/, worker/); the secrets bundle is served from
+# 1Password by resources/topf-secrets-provider, so nothing secret is on disk.
+#
+# Every task takes CLUSTER=<name>; most also take NODES=<regex> to act on a
+# subset (matched against the node host names), e.g. NODES='^dgx0[4-7]\.'.
+# Extra flags go after `--`, e.g. `task talos:apply CLUSTER=fairy-k8s01 -- --mode=staged`.
+
 vars:
   TALOS_RESOURCES_DIR: "{{.ROOT_DIR}}/.taskfiles/talos/resources"
   TALOS_DIR: "{{.CLUSTER_ROOT}}/talos"
-  SYSTEM_UPGRADE_YAML: "{{.CLUSTER_ROOT}}/apps/system-upgrade/tuppr-plans.yaml"
+  NODES_FILTER: '{{if .NODES}}--nodes-filter="{{.NODES}}"{{end}}'
 
 tasks:
-  generate:
-    desc: Generate Talos machine configurations
-    label: talos-generate-{{.CLUSTER}}
+  render:
+    desc: Render the machine configs to the (git-ignored) output/ dir for review
     dir: "{{.TALOS_DIR}}"
-    env:
-      VAULT: "Kubernetes"
-      CLUSTER: "{{.CLUSTER}}"
-      KUBERNETES_VERSION:
-        sh: yq '.spec.postBuild.substitute.KUBERNETES_VERSION | select(.)' {{.SYSTEM_UPGRADE_YAML}}
-      TALOS_VERSION:
-        sh: yq '.spec.postBuild.substitute.TALOS_VERSION | select(.)' {{.SYSTEM_UPGRADE_YAML}}
     cmds:
-      - op run --env-file="{{.TALOS_RESOURCES_DIR}}/op.env" --
-        talhelper genconfig -s "{{.TALOS_RESOURCES_DIR}}/talsecret.yaml" {{.CLI_ARGS}}
-    sources:
-      - "{{.TALOS_RESOURCES_DIR}}/talsecret.yaml"
-      - talconfig.yaml
-      - "{{.SYSTEM_UPGRADE_YAML}}"
-      - patches/**/*.yaml
-    generates:
-      - clusterconfig/*.yaml
-      - clusterconfig/talosconfig
+      - topf render {{.NODES_FILTER}} {{.CLI_ARGS}}
+      - echo "Rendered configs contain the cluster secrets - delete {{.TALOS_DIR}}/output when done."
     requires:
       vars: ["CLUSTER"]
     preconditions: &clusterValidPrecondition
-      - &clusterExistsCheck sh: test -d "{{.TALOS_DIR}}"
-        msg: "cluster {{.CLUSTER}} does not exist in kubernetes/clusters"
+      - &clusterExistsCheck sh: test -f "{{.TALOS_DIR}}/topf.yaml"
+        msg: "cluster {{.CLUSTER}} has no talos/topf.yaml"
 
-  apply-config:
-    desc: Apply Talos config on a node
+  diff:
+    desc: Show what an apply would change on the running nodes (dry run)
     dir: "{{.TALOS_DIR}}"
-    env:
-      KUBERNETES_VERSION:
-        sh: yq '.spec.postBuild.substitute.KUBERNETES_VERSION | select(.)' {{.SYSTEM_UPGRADE_YAML}}
-      TALOS_VERSION:
-        sh: yq '.spec.postBuild.substitute.TALOS_VERSION | select(.)' {{.SYSTEM_UPGRADE_YAML}}
     cmds:
-      - task: generate
-      - talhelper gencommand apply -n {{.node}} --extra-flags="{{.CLI_ARGS}}" | bash
+      - topf apply --dry-run {{.NODES_FILTER}} {{.CLI_ARGS}}
     requires:
-      vars: ["node"]
+      vars: ["CLUSTER"]
+    preconditions: *clusterValidPrecondition
+
+  apply:
+    desc: Apply the machine config to the running nodes (prompts before each change)
+    dir: "{{.TALOS_DIR}}"
+    cmds:
+      - topf apply {{.NODES_FILTER}} {{.CLI_ARGS}}
+    requires:
+      vars: ["CLUSTER"]
     preconditions: *clusterValidPrecondition
 
   upgrade:
-    desc: Upgrade Talos on a node
+    desc: Upgrade Talos on the nodes to the talosVersion in topf.yaml (drains, one CP at a time)
     dir: "{{.TALOS_DIR}}"
-    env:
-      KUBERNETES_VERSION:
-        sh: yq '.spec.postBuild.substitute.KUBERNETES_VERSION | select(.)' {{.SYSTEM_UPGRADE_YAML}}
-      TALOS_VERSION:
-        sh: yq '.spec.postBuild.substitute.TALOS_VERSION | select(.)' {{.SYSTEM_UPGRADE_YAML}}
     cmds:
-      - task: generate
-      - talhelper gencommand upgrade -n {{.node}} --extra-flags="{{.CLI_ARGS}}" | bash
+      - topf upgrade {{.NODES_FILTER}} {{.CLI_ARGS}}
     requires:
-      vars: ["node"]
+      vars: ["CLUSTER"]
+    preconditions: *clusterValidPrecondition
+
+  nodes:
+    desc: List the cluster's nodes and their current state
+    dir: "{{.TALOS_DIR}}"
+    cmds:
+      - topf nodes {{.NODES_FILTER}} {{.CLI_ARGS}}
+    requires:
+      vars: ["CLUSTER"]
+    preconditions: *clusterValidPrecondition
+
+  schematic-ids:
+    desc: Print the Image Factory schematic ID each node's installer resolves to
+    dir: "{{.TALOS_DIR}}"
+    cmds:
+      - topf schematic-ids {{.CLI_ARGS}}
+    requires:
+      vars: ["CLUSTER"]
     preconditions: *clusterValidPrecondition
 
   talosconfig:
-    desc: Get an updated version of talosconfig
+    desc: Generate a talosconfig for the cluster from the secrets bundle and merge it into ~/.talos/config
     dir: "{{.TALOS_DIR}}"
     cmds:
-      - cp clusterconfig/talosconfig ~/.talos/config
+      - topf talosconfig {{.CLI_ARGS}}
     requires:
       vars: ["CLUSTER"]
-    sources:
-      - clusterconfig/talosconfig
     preconditions: *clusterValidPrecondition

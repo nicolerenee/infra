@@ -1,0 +1,113 @@
+---
+apiVersion: v1alpha1
+kind: ResolverConfig
+nameservers:
+  - address: 1.1.1.1
+  - address: 1.0.0.1
+searchDomains:
+  disableDefault: true
+# Host DNS caching resolver.
+hostDNS:
+  enabled: true
+  # Cilium update "broke" this so disabling it
+  # * https://github.com/cilium/cilium/issues/35153
+  # * https://github.com/siderolabs/talos/pull/9200
+  forwardKubeDNSToHost: false
+  resolveMemberNames: true
+---
+# Containerd customization
+apiVersion: v1alpha1
+kind: CRICustomizationConfig
+name: freckle
+content: |
+  [plugins."io.containerd.cri.v1.images"]
+    discard_unpacked_layers = false
+  [plugins."io.containerd.cri.v1.runtime"]
+    device_ownership_from_security_context = true
+  [plugins."io.containerd.nri.v1.nri"]
+    disable = false
+---
+apiVersion: v1alpha1
+kind: SysctlConfig
+params:
+  # Kubernetes essentials
+  fs.inotify.max_user_watches: "1048576"
+  fs.inotify.max_user_instances: "8192"
+  user.max_user_namespaces: "11255"
+
+  # Network - 25Gb optimized
+  net.core.default_qdisc: fq
+  net.core.rmem_max: "67108864"
+  net.core.wmem_max: "67108864"
+  net.core.netdev_max_backlog: "30000"
+  net.ipv4.tcp_fastopen: "3"
+  net.ipv4.tcp_rmem: 4096 131072 67108864
+  net.ipv4.tcp_wmem: 4096 131072 67108864
+  net.ipv4.tcp_slow_start_after_idle: "0"
+  net.ipv4.tcp_fin_timeout: "30"
+  net.ipv4.tcp_keepalive_time: "600"
+  net.ipv4.tcp_keepalive_intvl: "30"
+  net.ipv4.tcp_keepalive_probes: "10"
+
+  # NFS optimations
+  sunrpc.tcp_slot_table_entries: "128"
+  sunrpc.tcp_max_slot_table_entries: "128"
+---
+apiVersion: v1alpha1
+kind: UnattendedInstallConfig
+provisioning:
+  wipe: true
+---
+apiVersion: v1alpha1
+kind: KubeletConfig
+config:
+  # Let IPv6 RAs through on 'net1' for thread announcements getting to HA additional NIC
+  allowedUnsafeSysctls:
+    - net.ipv6.conf.net1.accept_ra_rt_info_max_plen
+  # Make image cleanup more aggressive
+  imageMaximumGCAge: 168h # One week
+  imageGCHighThresholdPercent: 50 # Default is 85%
+  imageGCLowThresholdPercent: 20 # Default is 80%
+  # Equivalent of `rotate-server-certificates` arg, for one less thing
+  serverTLSBootstrap: true
+  clusterDNS:
+    - 10.229.0.10
+    - fd2b:ec92:e230:1::a
+---
+apiVersion: v1alpha1
+kind: KubeNodeConfig
+nodeIP:
+  validSubnets:
+    - 10.189.3.0/24
+---
+apiVersion: v1alpha1
+kind: TimeSyncConfig
+ntp:
+  servers:
+    - time.cloudflare.com # leave it as cloudflare but the router will hijack this and respond
+---
+# Still v1alpha1: seccompProfiles has no multi-doc equivalent in 1.14.
+#
+# Node-local seccomp profile for the janet-coding namespace's sandbox pods:
+# denies the cross-process memory-read syscalls (ptrace, process_vm_readv/
+# writev, process_madvise, kcmp). Talos writes it to
+# /var/lib/kubelet/seccomp/profiles/janet-no-ptrace.json; pods select it via
+# localhostProfile: profiles/janet-no-ptrace.json.
+machine:
+  seccompProfiles:
+    - name: janet-no-ptrace.json
+      value:
+        defaultAction: SCMP_ACT_ALLOW
+        architectures:
+          - SCMP_ARCH_X86_64
+          - SCMP_ARCH_X86
+          - SCMP_ARCH_X32
+        syscalls:
+          - names:
+              - ptrace
+              - process_vm_readv
+              - process_vm_writev
+              - process_madvise
+              - kcmp
+            action: SCMP_ACT_ERRNO
+            errnoRet: 1

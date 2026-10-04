@@ -39,7 +39,7 @@ spec:
               preallocateMaps: true
               distributedLRU:
                 enabled: true
-              # VLAN 300 (home LAN) is bridged onto br300 via bond0.300
+              # The home LAN VLAN is bridged onto br-homelan via bond0.<id>
               # for KubeVirt VMs and macvlan-style pods (scrypted,
               # esphome). Cilium's TCX program on bond0 drops VLAN-tagged
               # ingress with "VLAN traffic disallowed by VLAN filter"
@@ -47,8 +47,10 @@ spec:
               # only registers VLAN sub-interfaces that have an IP at
               # agent startup, which is fragile; explicit bypass is
               # the durable fix.
+              # Keep this in step with the VLANConfig in
+              # clusters/fairy-k8s01/talos/control-plane/40-network.yaml.tpl.
               vlanBypass:
-                - 300
+                - 500
             loadBalancer:
               algorithm: maglev
             bpfClockProbe: true

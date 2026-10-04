@@ -61,6 +61,13 @@ spec:
                 nodeAffinityType:
                   - requiredDuringSchedulingIgnoredDuringExecution
             - name: RemovePodsViolatingNodeTaints
+              args:
+                # Cilium puts a transient NoSchedule taint on a node while its
+                # agent restarts (chart upgrades, config changes). Evicting on
+                # it only reschedules a healthy pod -- it took the Qwen model
+                # out once -- so leave that taint to Cilium.
+                excludedTaints:
+                  - node.cilium.io/agent-not-ready
             - name: PodLifeTime
               args:
                 states:

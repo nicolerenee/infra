@@ -1,0 +1,7 @@
+---
+apiVersion: v1alpha1
+kind: KubeNodeConfig
+labels:
+  topology.freckle.systems/rack: r01
+taints:
+  nvidia.com/gpu: ":NoSchedule"
