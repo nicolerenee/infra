@@ -3,6 +3,12 @@
 customization:
   extraKernelArgs:
     - arm64.nobti
+    # DGX OS default that Talos lacks: the ConnectX-7 (01:00.0/.1) and its root
+    # port negotiate PCIe MaxPayload 128 B although DevCap allows 512 B, which
+    # caps NCCL all-reduce over the 200G link at ~130-165 Gb/s. pcie_bus_safe
+    # raises every device's MPS to the largest value its parent bus supports
+    # (178-189 Gb/s after the fix in the Spark guide's measurements).
+    - pci=pcie_bus_safe
   systemExtensions:
     officialExtensions:
       - siderolabs/iscsi-tools
