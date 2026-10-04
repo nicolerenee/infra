@@ -68,7 +68,7 @@ spec:
             set -eu
 
             # renovate: datasource=github-releases depName=merbanan/rtl_433
-            RTL_433_VERSION=25.02
+            RTL_433_VERSION=25.12
 
             wget -q "https://raw.githubusercontent.com/merbanan/rtl_433/refs/tags/${RTL_433_VERSION}/examples/rtl_433_mqtt_hass.py"
             pip install --no-cache-dir --prefer-binary paho-mqtt==1.6.1
