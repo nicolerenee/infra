@@ -93,6 +93,91 @@ delivery.
 
 #### Status
 
-- Chassis: ordered (2–3 week lead time from Sliger)
+- Chassis: delivered; cn02 built 2026-09-27 (BIOS 2.0, replaces the old
+  compute02 as the third control-plane node). cn01-cn03 are all Gen 3.1 now.
 - RAM: on hand
-- CPUs: pending thermal validation
+- CPUs: 265K thermal test on cn01 (Sliger CX2151, AXP90-X53 Full) hit the
+  105 °C Tjmax within a minute at stock power limits. The chassis' 66 mm cooler
+  ceiling rules out a bigger heatsink, so the fix is a BIOS power-limit cap
+  (see below) rather than the 65 W 265 non-K.
+
+### BIOS and BMC baseline
+
+New X14SAZ boards ship with BIOS 2.0 (02/2026), whose defaults differ from the
+1.1a boards in ways that break a Talos bring-up. Fix these **before** booting
+the Talos ISO; read/push them over Redfish once the BMC is licensed.
+
+#### Settings that differ from BIOS 2.0 defaults
+
+| Attribute | Value | Why |
+|-----------|-------|-----|
+| `PrimaryDisplay` | `Auto` | 2.0 defaults to `IGFX`, which hands the kernel an iGPU framebuffer. systemd-boot still shows on the BMC KVM, then the console goes black the moment Talos starts and never comes back. |
+| `Re_SizeBARSupport` | `Enabled` | matches cn01 |
+| `SR_IOVSupport` | `Enabled` | matches cn01; VF NICs for KubeVirt |
+| `ACPISleepState` | `Suspend Disabled` | server, never sleeps |
+| `OnboardLAN1Support`, `OnboardLAN2Support` | `Disabled` | the two i226 2.5G ports are unused; only the X550 pair (LAN3/LAN4 → `eno3`/`eno4`) is cabled |
+| `PowerButtonFunction` | `4 Seconds Override` | a brushed front button shouldn't instantly kill a Ceph node |
+| `RestoreonACPowerLoss` | `Power On` | nodes come back on their own after a PDU/UPS event |
+| `IPv4HTTPSupport` | `Enabled` | UEFI HTTP Boot of the signed Talos UKI (see Secure Boot below) |
+| `IPv4PXESupport`, `IPv6PXESupport` | `Disabled` | iPXE isn't Sidero-signed; PXE can't work under Secure Boot |
+| `SecureBootEnable` | `true` | set before first boot; the ISO enrollment below completes it |
+| `UEFIBootOption_1` (`BootOption_1` on 1.1a) | `UEFI Hard Disk:UEFI OS`, `_2`–`_9` `Disabled` | boot from the installed disk only; no USB/network fallback. Stage after Talos is installed, or the install media won't boot |
+| `TPMDeviceSelection` | `dTPM` | Talos disk encryption seals to the discrete TPM |
+| `SecureBootMode` | `Custom` | Sidero's keys enrolled, see below |
+| `PowerLimit1Override` / `PowerLimit1` | `Enabled` / `125000` | milliwatts. Caps the 265K at its 125 W TDP |
+| `PowerLimit2Override` / `PowerLimit2` | `Enabled` / `150000` | stock PL2 is 250 W, which a 150 W-class low-profile cooler cannot sink |
+
+cn02's attribute set is the reference (it was configured by hand to this
+baseline on BIOS 2.0); diff a new node against it rather than trusting defaults.
+Attribute names carry a per-BIOS-version suffix for some keys (e.g.
+`PowerLimit1_004E`) and the BMC only refreshes its attribute set after the
+host POSTs on the new BIOS, so push those after the first boot.
+
+#### Reading and pushing BIOS settings over Redfish
+
+Supermicro gates the BIOS endpoints behind a node-locked **SFT-DCMS** license.
+Buy one per node up front (Supermicro Store); without it `GET
+/redfish/v1/Systems/1/Bios` returns `403 Not licensed`. With it:
+
+```bash
+# read
+curl -sk -u "$USER:$PASS" https://<bmc>/redfish/v1/Systems/1/Bios | jq .Attributes
+# stage changes (applied at next POST)
+curl -sk -u "$USER:$PASS" -X PATCH -H 'Content-Type: application/json' \
+  https://<bmc>/redfish/v1/Systems/1/Bios/SD \
+  -d '{"Attributes":{"PrimaryDisplay":"Auto","PowerLimit1Override":"Enabled","PowerLimit1":125000}}'
+# apply
+curl -sk -u "$USER:$PASS" -X POST -H 'Content-Type: application/json' \
+  https://<bmc>/redfish/v1/Systems/1/Actions/ComputerSystem.Reset -d '{"ResetType":"ForceRestart"}'
+```
+
+Allowed values and units are in the registry at
+`https://<bmc>/registries/BiosAttributeRegistry.1.0.0.json`. Redfish only
+inventories the BMC's own NIC on these boards; host NIC MACs come from the
+Talos dashboard or the switch, not the BMC.
+
+#### BMC network mode: Dedicated, not Failover
+
+Supermicro's default `Failover` mode lets the BMC take over a host LAN port via
+NC-SI when its dedicated link drops. On the X14SAZ the shared port is one of
+the **X550 10G ports**. During cn02's bring-up the BMC grabbed the switch port
+at 100 Mbps while the host was down, and after switching the BMC to
+`Dedicated` that switch port stayed dead (LED lit, controller reporting it
+down) through a host cold cycle. Moving the cable to a fresh port linked at 10G
+immediately. Set `LAN Interface: Dedicated` in the BMC before first boot.
+
+#### Secure Boot key enrollment
+
+The Talos secureboot ISO and installer are signed with Sidero's key. A fresh
+board only trusts Microsoft's, and Supermicro firmware rejects the image
+silently (black screen, no error). One-time per board:
+
+1. BIOS → Security → Secure Boot: mode `Custom`, then reset to **Setup Mode**
+   (erase keys). Leave Secure Boot enabled.
+2. Boot the Talos secureboot ISO. Auto-enrollment only happens inside a
+   hypervisor, so press `Esc` at the systemd-boot menu and choose
+   **Enroll Secure Boot keys: auto**.
+3. It enrolls PK/KEK/db and reboots into the UKI under Secure Boot.
+
+`talosctl get securitystate` on a booted node should report `secureBoot: true`
+and `bootedWithUKI: true`.
