@@ -1,0 +1,41 @@
+---
+# KubeVirt VM L2 attachment to the home LAN (VLAN 300).
+#
+# Uses the bridge CNI plugin on br-homelan (a host Linux bridge whose only
+# port is the home-LAN VLAN sub-interface; see
+# fairy-k8s01/talos/control-plane/40-network.yaml.tpl). The host
+# bridge handles MAC learning natively, which avoids the macvlan kernel
+# module's destination-MAC filter that's incompatible with KubeVirt's
+# bridge binding (KubeVirt swaps the VM's MAC onto the pod-side iface,
+# leaving macvlan with a different MAC; macvlan then drops the unicast
+# replies addressed to the VM). See KubeVirt docs:
+# https://kubevirt.io/user-guide/network/interfaces_and_networks/
+#
+# No IPAM — the VM's guest OS DHCPs through the bridged interface
+# directly from the home-LAN DHCP server. macspoofchk disabled so
+# QEMU/virt-launcher can use the VM's MAC rather than the veth's.
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: multus-vm-trusted
+spec:
+  config: |
+    {
+      "cniVersion": "0.3.1",
+      "name": "multus-vm-trusted",
+      "plugins": [
+        {
+          "type": "bridge",
+          "bridge": "br-homelan",
+          "macspoofchk": false,
+          "capabilities": { "mac": true, "ips": true }
+        },
+        {
+          "type": "tuning",
+          "capabilities": { "mac": true },
+          "sysctl": {
+            "net.ipv6.conf.IFNAME.accept_ra_rt_info_max_plen": "64"
+          }
+        }
+      ]
+    }

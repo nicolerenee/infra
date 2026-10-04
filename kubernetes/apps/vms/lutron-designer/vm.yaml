@@ -1,0 +1,167 @@
+---
+# Win11 25H2 admin workstation for running Lutron Designer (RadioRA 3
+# processor programming tool). Bridged onto the home LAN via multus so it
+# can reach the Lutron processor directly. Pinned to nodes with the
+# `home-lan` label since multus-trusted only attaches on those nodes.
+#
+# Initial install workflow:
+#   1. Ensure CDI imports of ISOs in ns vms are Succeeded:
+#      kubectl get dv -n vms iso-win11-25h2 iso-virtio-win
+#   2. Start the VM:    virtctl start lutron-designer -n vms
+#   3. Console:         virtctl vnc lutron-designer -n vms
+#   4. During install, "Load driver" → browse virtio-win CD → vioscsi
+#      (Windows 11 / amd64) so the installer sees the virtio root disk.
+#   5. Load NetKVM the same way if needed for networking on first boot.
+#   6. After install, the CDROMs can be left attached (harmless) or
+#      removed by editing this file to drop the win11-iso / virtio-iso
+#      disks + volumes.
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: lutron-designer
+spec:
+  # Start manually after the install media is ready; avoids accidental
+  # boots before drivers are loaded.
+  runStrategy: Always
+  dataVolumeTemplates:
+    - metadata:
+        name: lutron-designer-root
+      spec:
+        storage:
+          accessModes: [ReadWriteOnce]
+          storageClassName: ceph-block
+          volumeMode: Block
+          resources:
+            requests:
+              storage: 100Gi
+        source:
+          blank: {}
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: lutron-designer
+        kubevirt.io/domain: lutron-designer
+    spec:
+      # multus-trusted (macvlan on bond0.300) only attaches on home-lan-
+      # labelled nodes; pinning here also avoids relying on the macvlan
+      # CNI succeeding on every node.
+      nodeSelector:
+        networks.freckle.systems/home-lan: present
+      terminationGracePeriodSeconds: 180
+      networks:
+        - name: lan
+          multus:
+            # multus-vm-trusted is the no-IPAM variant of multus-trusted;
+            # see kubernetes/apps/vms/multus-vm-trusted/nad.yaml for why.
+            networkName: vms/multus-vm-trusted
+      domain:
+        # Dedicated I/O thread for the virtio root disk; auto policy pairs
+        # each disk that opts in (`dedicatedIOThread: true`) with its own
+        # thread so vCPU stalls don't block disk I/O. Cheap win on
+        # Windows installs (300+ small synchronous writes/sec).
+        ioThreadsPolicy: auto
+        cpu:
+          cores: 4
+          sockets: 1
+          threads: 1
+          model: host-model
+        memory:
+          guest: 8Gi
+        machine:
+          # Pinned to the exact pc-q35 version Windows was installed
+          # against. The `q35` alias resolves to whatever QEMU calls
+          # latest, which can move under upgrades and look like a
+          # hardware swap to Windows (reactivation, BitLocker recovery,
+          # "new hardware detected" toasts). Pin so Windows sees stable
+          # emulated hardware forever.
+          type: pc-q35-rhel9.8.0
+        firmware:
+          # Captured from the live VMI after first boot. Pinning makes
+          # the firmware UUID survive VM CR deletion + recreate, which
+          # Windows activation / BitLocker / various licensing tie to.
+          uuid: "b8e0153f-5a7b-40a8-bba2-f6c407f423a7"
+          bootloader:
+            efi:
+              # Secure Boot is required for Win11 install. SMM feature
+              # below is the matching CPU side of that requirement.
+              secureBoot: true
+              persistent: true
+        features:
+          acpi: {}
+          apic: {}
+          smm:
+            enabled: true
+          # Hyper-V enlightenments — required for stable Win10/11 perf
+          # and TPM passthrough timing; matches the kubevirt
+          # documented baseline for Windows guests.
+          hyperv:
+            relaxed: {}
+            vapic: {}
+            spinlocks:
+              spinlocks: 8191
+            vpindex: {}
+            runtime: {}
+            synic: {}
+            synictimer:
+              direct: {}
+            tlbflush: {}
+            frequencies: {}
+            reenlightenment: {}
+            ipi: {}
+            reset: {}
+        clock:
+          utc: {}
+          timer:
+            hpet:
+              present: false
+            pit:
+              tickPolicy: delay
+            rtc:
+              tickPolicy: catchup
+            hyperv: {}
+        devices:
+          tpm:
+            # vTPM 2.0 is a hard Win11 requirement; persistence keeps
+            # BitLocker / Hello state across VM restarts.
+            persistent: true
+          rng: {}
+          disks:
+            - name: root
+              # writeback lets the host kernel coalesce Windows' many
+              # small synchronous writes (registry, NTFS journal); huge
+              # speedup on installs. Tradeoff: a host crash can lose up
+              # to a few seconds of in-flight writes — fine for an admin
+              # VM, not appropriate for a database disk.
+              cache: writeback
+              dedicatedIOThread: true
+              disk:
+                bus: virtio
+              bootOrder: 1
+            - name: win11-iso
+              cdrom:
+                bus: sata
+                readonly: true
+              bootOrder: 2
+            - name: virtio-iso
+              cdrom:
+                bus: sata
+                readonly: true
+          interfaces:
+            - name: lan
+              bridge: {}
+              macAddress: "52:54:00:11:00:01"
+              model: virtio
+          inputs:
+            - name: tablet
+              type: tablet
+              bus: usb
+      volumes:
+        - name: root
+          dataVolume:
+            name: lutron-designer-root
+        - name: win11-iso
+          persistentVolumeClaim:
+            claimName: iso-win11-25h2
+        - name: virtio-iso
+          persistentVolumeClaim:
+            claimName: iso-virtio-win
