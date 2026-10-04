@@ -1,0 +1,8 @@
+---
+# Shared control-plane VIP on the cn nodes' bond, so kubelets and admins keep an
+# API endpoint through a cn node outage. k8s01-api.btx01.freckle.systems is the
+# name for it (DNS in the private repo's tofu).
+apiVersion: v1alpha1
+kind: Layer2VIPConfig
+name: 10.189.3.15
+link: bond0
