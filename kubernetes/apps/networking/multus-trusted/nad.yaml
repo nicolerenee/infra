@@ -1,5 +1,5 @@
 ---
-# Pod L2 attachment to the home LAN (VLAN 300).
+# Pod L2 attachment to the home LAN (Trusted - Clients).
 #
 # Uses the bridge CNI plugin on br-homelan (a host Linux bridge whose only
 # port is the home-LAN VLAN sub-interface; see

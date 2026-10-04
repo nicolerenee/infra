@@ -43,14 +43,20 @@ nodes:
     ip: 10.189.3.22
     role: worker
     schematicId: "@schematics/dgx.yaml"
+    data:
+      workloadIsolation: true
   - host: dgx02.fairy.freckle.systems
     ip: 10.189.3.23
     role: worker
     schematicId: "@schematics/dgx.yaml"
+    data:
+      workloadIsolation: true
   - host: dgx03.fairy.freckle.systems
     ip: 10.189.3.24
     role: worker
     schematicId: "@schematics/dgx.yaml"
+    data:
+      workloadIsolation: true
   # dgx04-07 take their address by DHCP (UDM reservation on the enP7s7 MAC);
   # `ip` is that reserved lease and is only used to reach the node. They were
   # installed fresh on 1.14, so they run with workload isolation from day one.
