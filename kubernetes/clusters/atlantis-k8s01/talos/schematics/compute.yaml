@@ -1,6 +1,13 @@
 ---
 # atlantis compute nodes (amd64, Intel iGPU, no secureboot).
 customization:
+  # Same Intel hardware class as fairy's cn nodes, where kernel 6.18.52+
+  # (Talos v1.14.2) failed every NVMe write on the OSD drives with
+  # "I/O Error (sct 0x0 / sc 0x4)": the block layer's IOVA-coalescing DMA path
+  # rejects the request before it reaches the drive. Identity-map host DMA
+  # (the IOMMU stays on for device passthrough) before taking that kernel.
+  extraKernelArgs:
+    - iommu=pt
   systemExtensions:
     officialExtensions:
       - siderolabs/i915
