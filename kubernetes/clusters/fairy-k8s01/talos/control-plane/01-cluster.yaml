@@ -1,6 +1,11 @@
 ---
 apiVersion: v1alpha1
 kind: KubeAPIServerConfig
+# Site-coded API name that will resolve to the control-plane VIP
+# (control-plane/40-vip.yaml); the current clusterEndpoint name is added by
+# Talos automatically.
+certExtraSANs:
+  - k8s01-api.btx01.freckle.systems
 extraArgs:
   # SA token issuer is decoupled from the cluster's API endpoint
   # so external validators (Tailscale, GCP WIF) can fetch the
