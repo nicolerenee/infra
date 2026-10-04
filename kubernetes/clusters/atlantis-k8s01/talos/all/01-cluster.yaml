@@ -1,0 +1,24 @@
+---
+apiVersion: v1alpha1
+kind: KubeNetworkConfig
+dnsDomain: cluster.local
+podSubnets:
+  - 10.244.0.0/16
+  - fd2b:ec21:3ff2::/48
+serviceSubnets:
+  - 10.96.0.0/12
+  - fd2b:ec21:3ff0:1::/112
+---
+# Cilium is the CNI; the generator still emits a Flannel document by default
+# and omitting it is not enough, it has to be deleted.
+apiVersion: v1alpha1
+kind: KubeFlannelCNIConfig
+$patch: delete
+---
+# Keep the pre-1.14 behaviour (no sandboxd workload isolation): these nodes
+# were upgraded in place and have never run isolated. Turning it on is a
+# reboot of every node into a new PID/mount namespace for containerd + pods;
+# roll it one node at a time as a deliberate change (see fairy for the pattern).
+apiVersion: v1alpha1
+kind: SecurityProfileConfig
+workloadIsolation: false

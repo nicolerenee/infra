@@ -20,7 +20,7 @@ spec:
           app:
             image:
               repository: ghcr.io/matrix-construct/tuwunel
-              tag: v1.9.1@sha256:634609b554f05d90960ce096dda13e39cf45b692518e8cf734e255e1b9bddbe5
+              tag: v1.9.3@sha256:678b7f5350e06a41614444497c587da9dddf66767e4068a27480402f3c1367d0
             env:
               - name: TUWUNEL_SERVER_NAME
                 value: freckle.chat

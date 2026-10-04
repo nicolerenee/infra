@@ -10,7 +10,7 @@
 #
 # Secrets never touch disk: the provider pulls the bundle from 1Password.
 clusterName: fairy-k8s01
-clusterEndpoint: https://fairy-k8s01-api.freckle.systems:6443
+clusterEndpoint: https://k8s01-api.btx01.freckle.systems:6443
 # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
 kubernetesVersion: v1.37.1
 # renovate: datasource=custom.talos-factory depName=siderolabs/talos
