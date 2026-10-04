@@ -1,6 +1,14 @@
 ---
 # Supermicro X14SAZ compute nodes (amd64, secureboot UKI).
 customization:
+  # Kernel 6.18.52+ (Talos v1.14.2) fails NVMe writes on these nodes' OSD drives
+  # with "I/O Error (sct 0x0 / sc 0x4)": the block layer's IOVA coalescing path
+  # (dma_iova_link) rejects the request before it reaches the drive, so the
+  # drives' own error logs stay empty while BlueFS aborts on fsync. Identity-map
+  # host DMA (IOMMU stays on for device passthrough) to bypass that path. Revisit
+  # once a Talos kernel carries the upstream fix.
+  extraKernelArgs:
+    - iommu=pt
   systemExtensions:
     officialExtensions:
       - siderolabs/i915

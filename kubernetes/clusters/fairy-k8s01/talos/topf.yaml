@@ -26,18 +26,21 @@ nodes:
     schematicId: "@schematics/cn.yaml"
     data:
       homelanBridgeMac: "02:1f:80:03:00:01"
+      workloadIsolation: true
   - host: cn02
     ip: 10.189.3.17
     role: control-plane
     schematicId: "@schematics/cn.yaml"
     data:
       homelanBridgeMac: "02:1f:80:03:00:02"
+      workloadIsolation: true
   - host: cn03
     ip: 10.189.3.18
     role: control-plane
     schematicId: "@schematics/cn.yaml"
     data:
       homelanBridgeMac: "02:1f:80:03:00:03"
+      workloadIsolation: true
 
   - host: dgx01
     ip: 10.189.3.22
