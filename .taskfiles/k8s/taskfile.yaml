@@ -33,6 +33,10 @@ tasks:
                   mkdir -p /boot/efi /var/lib/fwupd/local.d
                   ESP_DEV=$(blkid -t TYPE=vfat -o device | head -1)
                   if [ -n "$ESP_DEV" ]; then mount "$ESP_DEV" /boot/efi; fi
+                  # Talos mounts efivarfs read-only; fwupd needs it writable to set the
+                  # OsIndications capsule-delivery bit, otherwise staging is a silent no-op.
+                  mount -o remount,rw /sys/firmware/efi/efivars
+                  fwupdtool refresh >/dev/null 2>&1 || true
                   echo "FWUPD_READY"
                   sleep infinity
               env:

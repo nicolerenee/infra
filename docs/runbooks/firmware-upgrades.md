@@ -22,11 +22,17 @@ kubectl exec -n kube-system -it fwupd-dgx01 -- bash
 fwupdtool get-updates
 
 # Stage all updates (applied on next reboot)
-fwupdtool update --no-reboot-check
+fwupdtool update --no-reboot-check -y
+
+# Confirm the capsule-delivery bit is set (byte 5 must be 04, not 00)
+od -An -tx1 /sys/firmware/efi/efivars/OsIndications-8be4df61-93ca-11d2-aa0d-00e098032b8c
 
 # Clean up
 kubectl delete pod -n kube-system fwupd-dgx01
 ```
+
+The pod startup also remounts efivarfs read-write and runs `fwupdtool refresh`; see
+[Known Issues](#known-issues-and-gotchas) for why both are required on Talos.
 
 The `task k8s:fwupd` command creates a privileged pod pinned to the specified node,
 waits for it to be ready (fwupd is installed at startup), and prints the exec
@@ -49,6 +55,16 @@ The DGX Spark has the following firmware components accessible via fwupd/LVFS:
 | ConnectX-7 NICs | — | **Not updatable via fwupd** | Use mlxfwmanager instead |
 
 ### Firmware Update History
+
+Updated on dgx01, dgx02, dgx03 from Talos via the fwupd pod (2026-10-03). All three
+components flashed in a single reboot even from the `0x02004xxx` EC line; no
+intermediate EC step was needed. dgx04 through dgx07 shipped at this level.
+
+| Component | dgx01 | dgx02 | dgx03 | After (all) | LVFS Release |
+|-----------|-------|-------|-------|-------------|--------------|
+| Embedded Controller | `0x02004e18` | `0x02004b03` | `0x02004e12` | `0x03000508` | 2026-06-05 |
+| SoC Firmware (UEFI+GPU) | `0x0200941a` | `0x02009009` | `0x02009418` | `0x02009b0b` | 2026-06-12 |
+| USB-C PD Controller | `0x00000507` | `0x00000001` | `0x00000500` | `0x00000516` | 2026-02-19 |
 
 Updated on dgx01 from stock DGX OS (2026-04-13):
 
@@ -137,6 +153,30 @@ fwupdtool refresh
 
 ## Known Issues and Gotchas
 
+### Talos mounts efivarfs read-only, so staging silently does nothing
+
+Talos mounts `/sys/firmware/efi/efivars` read-only. `fwupdtool update` still
+downloads the capsules and writes them to the ESP, exits 0, and reports the device
+as updated, but it cannot set bit 2 (`FILE_CAPSULE_DELIVERY`) in the `OsIndications`
+EFI variable. UEFI then ignores the capsules on reboot and the versions come back
+unchanged. The pod startup now runs `mount -o remount,rw /sys/firmware/efi/efivars`
+(a superblock remount from the privileged container is enough). After staging,
+`get-devices` must show `Update State: Needs reboot` and `OsIndications` must have
+byte 5 set to `04`; if either is missing, nothing will flash.
+
+### A fresh pod has no LVFS metadata
+
+`get-updates` and `update` only know about releases after `fwupdtool refresh`.
+Without it the DGX devices show as generic `UEFI Device Firmware` with no updates,
+which looks like "already current". The pod startup now runs the refresh, but if
+it was cut short (no egress yet, LVFS slow) run it again by hand.
+
+### Stray capsules left on the ESP
+
+Occasionally one capsule file stays in `/boot/efi/EFI/UpdateCapsule/` after a
+successful flash (seen with the USB-C PD capsule on dgx01). Once `get-devices`
+confirms the new version, delete the leftover so a later staging run starts clean.
+
 ### `fwupdtool get-updates --json` does not output JSON
 
 This is a bug in the fwupd version shipped with Ubuntu 24.04. The `--json` flag
@@ -166,15 +206,17 @@ pre-installed.
 After staging firmware updates, reboot the node with:
 
 ```bash
-talosctl reboot -n <node-ip>
+talosctl reboot -n <node-ip> --mode powercycle
 ```
 
-The firmware flash happens during POST. The node will be unavailable for several
-minutes. If running workloads on the node, drain it first:
+Always use `--mode powercycle`; the Sparks hang on a kexec reboot. The firmware
+flash happens during POST. Expect the node to be NotReady for roughly 10 minutes
+when all three capsules are staged (the EC update power-cycles the board on its
+own). If running workloads on the node, drain it first:
 
 ```bash
 kubectl drain <node-name> --ignore-daemonsets --delete-emptydir-data
-talosctl reboot -n <node-ip>
+talosctl reboot -n <node-ip> --mode powercycle
 # After it comes back:
 kubectl uncordon <node-name>
 ```
