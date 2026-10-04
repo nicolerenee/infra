@@ -20,6 +20,10 @@ spec:
       KUBERNETES_VERSION: v1.37.1
       # renovate: datasource=custom.talos-factory depName=siderolabs/talos
       TALOS_VERSION: v1.14.2
+      # Suspended while the sparks are re-installed by hand with the
+      # pci=pcie_bus_safe schematic (tuppr version-swaps the node's runtime
+      # schematic and would undo it). Flip back to "false" afterwards.
+      TUPPR_TALOS_SUSPEND: "true"
   prune: true
   retryInterval: 2m
   sourceRef:

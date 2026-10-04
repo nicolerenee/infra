@@ -4,6 +4,12 @@ apiVersion: tuppr.home-operations.com/v1alpha1
 kind: TalosUpgrade
 metadata:
   name: talos
+  annotations:
+    # Flux owns this object, so an in-cluster `kubectl annotate` suspend is
+    # reverted on the next reconcile (that is how the sparks got rolled on
+    # 2026-10-04 while we thought tuppr was paused). Suspend from git instead:
+    # set TUPPR_TALOS_SUSPEND: "true" in the cluster's tuppr-plans postBuild.
+    tuppr.home-operations.com/suspend: "${TUPPR_TALOS_SUSPEND:=false}"
 spec:
   talos:
     version: ${TALOS_VERSION}
