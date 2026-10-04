@@ -7,3 +7,12 @@ kind: SysctlConfig
 params:
   net.core.bpf_jit_enable: "1"
   net.ipv4.tcp_congestion_control: bbr
+  # Spark cluster-fabric tuning (DGX Spark on Talos guide, platform level):
+  # answer ARP only for addresses on the receiving interface and source
+  # replies from it, so RoCE on a second ConnectX subnet resolves to the
+  # right port instead of the first one that answers.
+  net.ipv4.conf.all.arp_ignore: "1"
+  net.ipv4.conf.all.arp_announce: "2"
+  # Proactive compaction stalls the GB10 for 4-5 s every ~37 s under memory
+  # pressure; the unified memory is nearly all pinned by the model anyway.
+  vm.compaction_proactiveness: "0"
