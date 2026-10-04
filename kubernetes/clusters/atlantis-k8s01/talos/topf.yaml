@@ -16,7 +16,7 @@ clusterEndpoint: https://172.26.3.16:6443
 # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
 kubernetesVersion: v1.37.1
 # renovate: datasource=custom.talos-factory depName=siderolabs/talos
-talosVersion: v1.14.0
+talosVersion: v1.14.2
 platform: metal
 secureboot: false
 schematicId: "@schematics/compute.yaml"
