@@ -61,6 +61,18 @@
       versioning: 'semver-coerced',
     },
     {
+      // MariaDB 13.x is a rolling (non-LTS) series: taking it means riding
+      // 13.1/13.2 until the next LTS, the major bump needs mariadb-upgrade via
+      // the operator (updateStrategy.mariadbAutoUpgradeEnabled), and there is
+      // no in-place downgrade once 13 touches the datadir. mariadb-main has no
+      // operator-managed backup today, so stay on the 12.3 LTS line and revisit
+      // when the next LTS (13.3) ships. Exact name match, so mariadb-operator
+      // charts are unaffected.
+      matchDatasources: ['docker'],
+      matchPackageNames: ['mariadb'],
+      allowedVersions: '<13',
+    },
+    {
       // When the kubernetes-sigs/gateway-api tag in
       // scripts/vendor-gateway-api-crds.sh is bumped, re-run the vendor
       // script to regenerate the CRD YAML files in the same PR. Requires
