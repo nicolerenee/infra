@@ -15,7 +15,7 @@ spec:
   # v1.39.0, v1.7.0 -> v2.0.0), which couples a DB major bump to an operator
   # bump. Pinning here lets Renovate track the DB version on its own.
   # renovate: datasource=docker depName=docker.dragonflydb.io/dragonflydb/dragonfly
-  image: docker.dragonflydb.io/dragonflydb/dragonfly:v1.39.0
+  image: docker.dragonflydb.io/dragonflydb/dragonfly:v2.0.0
   replicas: 3
   authentication:
     passwordFromSecret:
