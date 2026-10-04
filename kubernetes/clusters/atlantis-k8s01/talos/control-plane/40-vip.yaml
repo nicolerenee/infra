@@ -1,0 +1,7 @@
+---
+# Shared control-plane VIP (the clusterEndpoint) floats between the CP nodes
+# on their bond.
+apiVersion: v1alpha1
+kind: Layer2VIPConfig
+name: 172.26.3.16
+link: bond0
