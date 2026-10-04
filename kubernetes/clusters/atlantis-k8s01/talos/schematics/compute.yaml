@@ -1,0 +1,10 @@
+---
+# atlantis compute nodes (amd64, Intel iGPU, no secureboot).
+customization:
+  systemExtensions:
+    officialExtensions:
+      - siderolabs/i915
+      - siderolabs/intel-ucode
+      - siderolabs/iscsi-tools
+      - siderolabs/lldpd
+      - siderolabs/mei
