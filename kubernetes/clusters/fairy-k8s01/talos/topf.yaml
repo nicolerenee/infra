@@ -5,7 +5,7 @@
 #   all/            every node
 #   control-plane/  the cn (Supermicro X14SAZ) hardware profile — all CP nodes
 #   worker/         the DGX Spark hardware profile — all workers
-# Per-node differences (IP, bridge MAC, DHCP vs static) come from the node
+# Per-node differences (IP, bridge MAC, DHCP, isolation) come from the node
 # entries below, via `ip` and `data`, into the *.tpl patches.
 #
 # Secrets never touch disk: the provider pulls the bundle from 1Password.
@@ -44,22 +44,24 @@ nodes:
     role: worker
     schematicId: "@schematics/dgx.yaml"
     data:
+      dhcp: true
       workloadIsolation: true
   - host: dgx02.fairy.freckle.systems
     ip: 10.189.3.23
     role: worker
     schematicId: "@schematics/dgx.yaml"
     data:
+      dhcp: true
       workloadIsolation: true
   - host: dgx03.fairy.freckle.systems
     ip: 10.189.3.24
     role: worker
     schematicId: "@schematics/dgx.yaml"
     data:
+      dhcp: true
       workloadIsolation: true
-  # dgx04-07 take their address by DHCP (UDM reservation on the enP7s7 MAC);
-  # `ip` is that reserved lease and is only used to reach the node. They were
-  # installed fresh on 1.14, so they run with workload isolation from day one.
+  # All sparks take their address by DHCP (UDM reservation on the enP7s7
+  # MAC); `ip` is that reserved lease and is only used to reach the node.
   - host: dgx04.fairy.freckle.systems
     ip: 10.189.3.25
     role: worker
