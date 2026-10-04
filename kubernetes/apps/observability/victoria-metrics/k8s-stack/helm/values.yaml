@@ -211,3 +211,15 @@ kubelet:
           targetLabel: metrics_path
         - targetLabel: job
           replacement: kubelet
+
+prometheus-node-exporter:
+  extraArgs:
+    # node_exporter >= 1.12 reads the new cpuinfo_avg_freq sysfs attribute,
+    # which on the DGX Sparks (arm64, cppc_cpufreq, kernel 6.18) sometimes
+    # returns EAGAIN; Go parks the read on the netpoller forever, goroutines
+    # pile up until the exporter hits its 40-request limit and every scrape
+    # gets a 503 -- so ALL node_* metrics for the Sparks vanish. Upstream:
+    # https://github.com/prometheus/node_exporter/issues/3791 (fix pending in
+    # prometheus/procfs#861). Drop this flag once a node_exporter release
+    # bounds the read; it only costs node_cpu_scaling_* / node_cpu_frequency_*.
+    - --no-collector.cpufreq

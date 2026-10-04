@@ -28,8 +28,8 @@ spec:
             }
           },
           "targets": [{
-            "expr": "max by (Hostname) (DCGM_FI_DEV_GPU_UTIL{Hostname=~\"$node\"})",
-            "legendFormat": "{{Hostname}}"
+            "expr": "max by (hostname) (DCGM_FI_DEV_GPU_UTIL{hostname=~\"$node\"})",
+            "legendFormat": "{{hostname}}"
           }]
         },
         {
@@ -44,8 +44,8 @@ spec:
             }
           },
           "targets": [{
-            "expr": "max by (Hostname) (DCGM_FI_DEV_POWER_USAGE{Hostname=~\"$node\"})",
-            "legendFormat": "{{Hostname}}"
+            "expr": "max by (hostname) (DCGM_FI_DEV_POWER_USAGE{hostname=~\"$node\"})",
+            "legendFormat": "{{hostname}}"
           }]
         },
         {
@@ -69,8 +69,8 @@ spec:
           },
           "targets": [
             {
-              "expr": "max by (Hostname) (DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$node\"})",
-              "legendFormat": "{{Hostname}} GPU"
+              "expr": "max by (hostname) (DCGM_FI_DEV_GPU_TEMP{hostname=~\"$node\"})",
+              "legendFormat": "{{hostname}} GPU"
             }
           ]
         },
@@ -86,8 +86,8 @@ spec:
             }
           },
           "targets": [{
-            "expr": "max by (Hostname) (DCGM_FI_DEV_SM_CLOCK{Hostname=~\"$node\"})",
-            "legendFormat": "{{Hostname}}"
+            "expr": "max by (hostname) (DCGM_FI_DEV_SM_CLOCK{hostname=~\"$node\"})",
+            "legendFormat": "{{hostname}}"
           }]
         },
         {
@@ -102,8 +102,8 @@ spec:
             }
           },
           "targets": [{
-            "expr": "rate(DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION{Hostname=~\"$node\", gpu=\"0\"}[$__rate_interval]) / 1000",
-            "legendFormat": "{{Hostname}}"
+            "expr": "rate(DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION{hostname=~\"$node\", gpu=\"0\"}[$__rate_interval]) / 1000",
+            "legendFormat": "{{hostname}}"
           }]
         },
         {
@@ -306,8 +306,8 @@ spec:
           "gridPos": { "h": 4, "w": 12, "x": 0, "y": 56 },
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "targets": [{
-            "expr": "max by (Hostname) (DCGM_FI_DEV_PCIE_REPLAY_COUNTER{Hostname=~\"$node\"})",
-            "legendFormat": "{{Hostname}}"
+            "expr": "max by (hostname) (DCGM_FI_DEV_PCIE_REPLAY_COUNTER{hostname=~\"$node\"})",
+            "legendFormat": "{{hostname}}"
           }]
         },
         {
@@ -323,12 +323,12 @@ spec:
           },
           "targets": [
             {
-              "expr": "max by (Hostname) (DCGM_FI_DEV_ENC_UTIL{Hostname=~\"$node\"})",
-              "legendFormat": "{{Hostname}} Encoder"
+              "expr": "max by (hostname) (DCGM_FI_DEV_ENC_UTIL{hostname=~\"$node\"})",
+              "legendFormat": "{{hostname}} Encoder"
             },
             {
-              "expr": "max by (Hostname) (DCGM_FI_DEV_DEC_UTIL{Hostname=~\"$node\"})",
-              "legendFormat": "{{Hostname}} Decoder"
+              "expr": "max by (hostname) (DCGM_FI_DEV_DEC_UTIL{hostname=~\"$node\"})",
+              "legendFormat": "{{hostname}} Decoder"
             }
           ]
         }
@@ -347,7 +347,7 @@ spec:
             "label": "DGX Node",
             "type": "query",
             "datasource": { "type": "prometheus", "uid": "${datasource}" },
-            "query": "label_values(DCGM_FI_DEV_GPU_UTIL, Hostname)",
+            "query": "label_values(DCGM_FI_DEV_GPU_UTIL, hostname)",
             "includeAll": true,
             "multi": true,
             "current": { "text": "All", "value": "$__all" }
