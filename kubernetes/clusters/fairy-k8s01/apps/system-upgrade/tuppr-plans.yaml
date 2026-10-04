@@ -20,10 +20,6 @@ spec:
       KUBERNETES_VERSION: v1.37.1
       # renovate: datasource=custom.talos-factory depName=siderolabs/talos
       TALOS_VERSION: v1.14.2
-      # Set to "true" to pause tuppr from git (an in-cluster annotation is
-      # reverted by Flux). Used 2026-10-04 while the sparks were re-installed
-      # by hand with the pci=pcie_bus_safe schematic.
-      TUPPR_TALOS_SUSPEND: "false"
   prune: true
   retryInterval: 2m
   sourceRef:
