@@ -51,20 +51,14 @@ spec:
           value:
             networks.freckle.systems/home-lan: present
 
-        - op: add
-          path: /spec/values/persistence/nvr-fast
-          value:
-            enabled: true
-            type: persistentVolumeClaim
-            accessMode: ReadWriteOnce
-            size: 500Gi
-            retain: true
-            globalMounts:
-              - path: /nvr-fast
+        # Recording lives on the UNVR; scrypted only bridges cameras to HomeKit, so
+        # /nvr is scratch. emptyDir with a size limit (kubelet evicts the pod if it
+        # fills) instead of the old 5 TiB store01 share + 500 GiB ceph fast tier.
         - op: add
           path: /spec/values/persistence/nvr
           value:
             enabled: true
-            existingClaim: store01-vault01-scrypted
+            type: emptyDir
+            sizeLimit: 5Gi
             globalMounts:
               - path: /nvr

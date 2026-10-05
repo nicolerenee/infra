@@ -6,4 +6,3 @@ resources:
   - ./even-sparks-parked.yaml
   - ./host-storage.yaml
   - ./kubevirt.yaml
-  - ./scrypted.yaml
