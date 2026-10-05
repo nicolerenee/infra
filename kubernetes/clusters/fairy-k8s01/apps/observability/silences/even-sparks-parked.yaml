@@ -62,3 +62,19 @@ spec:
     - name: job
       matchType: "=~"
       value: "kubelet|spegel|nvidia-dcgm-exporter"
+---
+# The three outlets were switched off on purpose (see above).
+apiVersion: observability.giantswarm.io/v1alpha2
+kind: Silence
+metadata:
+  name: even-sparks-parked-pdu
+spec:
+  endsAt: "2026-10-10T14:00:00Z"
+  matchers:
+    - name: alertname
+      value: PduOutletOff
+    - name: instance
+      value: r01-pdu02.btx01
+    - name: outlet
+      matchType: "=~"
+      value: "1[123]"
