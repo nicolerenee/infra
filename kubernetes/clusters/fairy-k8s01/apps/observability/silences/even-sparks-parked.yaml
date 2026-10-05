@@ -1,0 +1,64 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/observability.giantswarm.io/silence_v1alpha2.json
+# dgx02/04/06 are drained, halted and switched off at the PDU (2026-10-05) until the
+# rack work is finished. Everything that notices a missing node is expected until then.
+# Remove this file (or let it expire) when they come back.
+apiVersion: observability.giantswarm.io/v1alpha2
+kind: Silence
+metadata:
+  name: even-sparks-parked-node
+spec:
+  endsAt: "2026-10-10T14:00:00Z"
+  matchers:
+    - name: node
+      matchType: "=~"
+      value: "dgx0[246]"
+---
+apiVersion: observability.giantswarm.io/v1alpha2
+kind: Silence
+metadata:
+  name: even-sparks-parked-instance
+spec:
+  endsAt: "2026-10-10T14:00:00Z"
+  matchers:
+    - name: instance
+      matchType: "=~"
+      value: "10\\.189\\.3\\.(23|25|27)(:.*)?"
+---
+apiVersion: observability.giantswarm.io/v1alpha2
+kind: Silence
+metadata:
+  name: even-sparks-parked-hostname
+spec:
+  endsAt: "2026-10-10T14:00:00Z"
+  matchers:
+    - name: hostname
+      matchType: "=~"
+      value: "dgx0[246]"
+---
+apiVersion: observability.giantswarm.io/v1alpha2
+kind: Silence
+metadata:
+  name: even-sparks-parked-nodename
+spec:
+  endsAt: "2026-10-10T14:00:00Z"
+  matchers:
+    - name: nodename
+      matchType: "=~"
+      value: "dgx0[246]"
+---
+# TargetDown is a per-job percentage with no node label; with 3 of 7 Sparks off the
+# kubelet, spegel and dcgm-exporter jobs sit above the 10% threshold. This hides any
+# OTHER target of those three jobs going down for the week, which is accepted.
+apiVersion: observability.giantswarm.io/v1alpha2
+kind: Silence
+metadata:
+  name: even-sparks-parked-targetdown
+spec:
+  endsAt: "2026-10-10T14:00:00Z"
+  matchers:
+    - name: alertname
+      value: TargetDown
+    - name: job
+      matchType: "=~"
+      value: "kubelet|spegel|nvidia-dcgm-exporter"
