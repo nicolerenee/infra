@@ -9,6 +9,7 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - esphome.yaml
+  - external-secrets.yaml
   # disabled for now
   # - homeassistant.yaml
   - mosquitto.yaml
