@@ -45,7 +45,7 @@ spec:
     name: qwen36-35b-a3b
 ---
 # MiniMax-M2.7 (NVFP4), served by the 2-node vLLM LeaderWorkerSet. Only the
-# leader exposes the OpenAI API, so the minimax-m27-nvfp4 Service selects the
+# leader exposes the OpenAI API, so the minimax-m27-nvfp4-api Service selects the
 # leader pod only — this Backend resolves that single ready A record (no
 # per-request LB to do; it's one serving replica across two tensor-parallel
 # ranks, unlike qwen's headless multi-replica pool).
@@ -56,7 +56,7 @@ metadata:
 spec:
   endpoints:
     - fqdn:
-        hostname: minimax-m27-nvfp4.inference.svc.cluster.local
+        hostname: minimax-m27-nvfp4-api.inference.svc.cluster.local
         port: 8000
 ---
 apiVersion: aigateway.envoyproxy.io/v1beta1
