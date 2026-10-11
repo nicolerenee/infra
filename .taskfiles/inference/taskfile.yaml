@@ -59,7 +59,7 @@ tasks:
       markdown results table to your terminal.
 
       Required vars:
-        SVC     Service name of the served model (e.g. minimax-m27-nvfp4, qwen36-35b-a3b)
+        SVC     Service name of the served model (e.g. minimax-m27-nvfp4-api, qwen36-35b-a3b)
         MODEL   Served model id as vLLM reports it at /v1/models
                 (e.g. openai/gpt-oss-120b). Find it with:
                   kubectl -n inference run -q --rm -it curl --image=curlimages/curl --restart=Never -- \
@@ -74,7 +74,7 @@ tasks:
         BENCHY       llama-benchy version     (default: latest on PyPI; e.g. BENCHY=0.4.0)
 
       Example:
-        task inference:benchmark SVC=minimax-m27-nvfp4 MODEL=MiniMaxAI/MiniMax-M2.7
+        task inference:benchmark SVC=minimax-m27-nvfp4-api MODEL=MiniMaxAI/MiniMax-M2.7
     vars:
       NS: '{{.NS | default "inference"}}'
       KCTX: '{{if .CONTEXT}}--context={{.CONTEXT}}{{end}}'
