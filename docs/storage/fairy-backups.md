@@ -99,11 +99,27 @@ after its PV (`pvc-<uuid>`). To find an app's dataset:
 kubectl -n <ns> get pvc <app>-backup -o jsonpath='{.spec.volumeName}{"\n"}'
 ```
 
-Snapshot and replication tasks are configured on the NAS against the
-`vault01/kubernetes/backups` parent, recursively, so new apps are covered
-without touching the NAS. The per-volume `snapshot.*` StorageClass
-parameters are intentionally unused: they would create one snapshot task per
-PVC.
+`vault01/kubernetes/backups` is an encrypted dataset (AES-256-GCM, key-based so
+it unlocks at boot); children inherit the encryption. The recovery copy of
+the key is the GSM secret `fairy-store01-backups-zfs-key`. The driver
+authenticates as the least-privilege TrueNAS user `truenas-csi` (dataset,
+snapshot, snapshot-task and sharing roles only).
+
+Snapshot and replication tasks are configured on the NAS, recursively, so
+new apps are covered without touching the NAS. The per-volume `snapshot.*`
+StorageClass parameters are intentionally unused: they would create one
+snapshot task per PVC.
+
+| Task | Dataset | Schedule | Keep |
+|---|---|---|---|
+| hourly snapshots (pool-wide, pre-existing) | `vault01` | :47 | 2 days |
+| daily snapshots (pool-wide, pre-existing) | `vault01` | 02:23 | 2 weeks |
+| weekly snapshots | `vault01/kubernetes/backups` | Sun 03:00 | 3 months |
+| replication to `atlantis-store01` | `vault01/kubernetes/backups` | TODO | raw send, keeps encryption |
+
+Files in a backup dataset are owned `root:<app gid>` because the NFS export
+squashes all client access to root (`mapall`). That is fine for a mirror;
+a restore runs as the app's UID and produces files it owns.
 
 ## Restore runbook
 
@@ -127,6 +143,12 @@ empty PVC over the backup.
 
 ## Operating notes
 
+- Verified 2026-10-13 on fairy: two consecutive syncs of a test PVC landed
+  with matching checksums and symlinks intact, into an encrypted child
+  dataset with a 1 GiB quota and an export limited to the compute VLAN.
+- On Talos the chart's node DaemonSet needs its `/etc/iscsi` hostPath
+  relocated (see the postRenderer in the HelmRelease) or every node pod
+  stays in ContainerCreating.
 - NFS mounts use `hard,nfsvers=4.1`; a NAS outage stalls the destination
   mover rather than corrupting anything, and the ReplicationSource reports
   the failed sync.
