@@ -21,3 +21,4 @@ resources:
   - ./reloader.yaml
   - ./site-public-ips.yaml
   - ./snapshot-controller.yaml
+  - ./snapshot-controller-classes.yaml

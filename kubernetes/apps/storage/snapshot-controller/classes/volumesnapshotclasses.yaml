@@ -9,6 +9,9 @@ metadata:
   name: csi-ceph-blockpool
   annotations:
     snapshot.storage.kubernetes.io/is-default-class: "true"
+    # Moved between Flux Kustomizations once; never let the old owner prune it
+    # out from under in-flight volsync snapshots.
+    kustomize.toolkit.fluxcd.io/prune: disabled
 driver: rook-ceph.rbd.csi.ceph.com
 deletionPolicy: Delete
 parameters:

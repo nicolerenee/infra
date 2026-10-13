@@ -1,0 +1,11 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+# VolumeSnapshotClasses live in their own Flux Kustomization: the CRD they
+# use is installed by the snapshot-controller chart, and a Kustomization
+# that both installs a CRD and applies a CR of that kind fails its
+# server-side dry run on a fresh cluster (no matches for kind). Pointers
+# must dependsOn snapshot-controller.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./volumesnapshotclasses.yaml

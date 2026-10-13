@@ -16,7 +16,7 @@ spec:
   dependsOn:
     # The movers' CSI snapshots of ceph-block PVCs need the snapshot CRDs
     # and VolumeSnapshotClass.
-    - name: snapshot-controller
+    - name: snapshot-controller-classes
       namespace: kube-system
   sourceRef:
     kind: GitRepository

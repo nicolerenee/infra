@@ -21,3 +21,4 @@ resources:
   - ./reflector.yaml
   - ./reloader.yaml
   - ./snapshot-controller.yaml
+  - ./snapshot-controller-classes.yaml
