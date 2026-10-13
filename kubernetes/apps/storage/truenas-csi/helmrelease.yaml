@@ -30,6 +30,31 @@ spec:
       retries: 3
   driftDetection:
     mode: enabled
+  # The chart hard-codes a hostPath /etc/iscsi (type Directory) on the node
+  # DaemonSet. On Talos that directory belongs to the iscsi-tools extension
+  # and isn't visible to the kubelet's hostPath check, so every node pod
+  # sticks in ContainerCreating. The driver itself never reads it — iscsiadm
+  # runs on the host via nsenter — so point the mount at a writable /var
+  # path instead (democratic-csi does the same on Talos).
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: DaemonSet
+              name: truenas-csi-node
+            patch: |
+              apiVersion: apps/v1
+              kind: DaemonSet
+              metadata:
+                name: truenas-csi-node
+              spec:
+                template:
+                  spec:
+                    volumes:
+                      - name: iscsi-dir
+                        hostPath:
+                          path: /var/iscsi
+                          type: DirectoryOrCreate
   values:
     truenas:
       url: ${TRUENAS_API_URL}
