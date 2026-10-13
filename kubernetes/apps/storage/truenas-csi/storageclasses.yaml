@@ -1,0 +1,38 @@
+---
+# General-purpose NFS volumes (ReadWriteMany). Datasets land under
+# <pool>/kubernetes/nfs/<pv-name>; deleting the PVC deletes the dataset.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: truenas-nfs
+provisioner: csi.truenas.io
+parameters:
+  protocol: nfs
+  datasetPath: kubernetes/nfs
+  compression: LZ4
+  nfs.networks: ${TRUENAS_NFS_CLIENT_NETWORKS}
+  nfs.mountOptions: hard,nfsvers=4.1
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+---
+# Volsync rsync-tls destinations. One dataset per app under
+# <pool>/kubernetes/backups/<cluster>/<pv-name>. Retain: the dataset and its
+# ZFS snapshots outlive the PVC and the cluster. Snapshot schedule and
+# off-site replication are configured on the parent dataset on the NAS, so
+# the per-volume snapshot.* parameters are deliberately NOT set here — they
+# would create one periodic-snapshot task per PVC.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: truenas-nfs-backup
+provisioner: csi.truenas.io
+parameters:
+  protocol: nfs
+  datasetPath: kubernetes/backups/${CLUSTER_NAME}
+  compression: LZ4
+  nfs.networks: ${TRUENAS_NFS_CLIENT_NETWORKS}
+  nfs.mountOptions: hard,nfsvers=4.1
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+allowVolumeExpansion: true

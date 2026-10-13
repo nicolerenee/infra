@@ -1,0 +1,18 @@
+---
+# The app's live PVC. No dataSourceRef: with rsync-tls there is no
+# in-cluster "restore into a new PVC" primitive, so a fresh install starts
+# empty and a restore is done by the runbook. Prune-disabled so dropping the
+# component or the app manifest never deletes data; `kubectl delete pvc` is
+# the only way.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ${APP}${VOLSYNC_PVC_SUFFIX:=}
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: ${VOLSYNC_CAPACITY:=10Gi}
+  storageClassName: ${VOLSYNC_STORAGE_CLASS:=ceph-block}

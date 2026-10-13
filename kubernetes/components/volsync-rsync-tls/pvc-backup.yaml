@@ -1,0 +1,21 @@
+---
+# The destination: one NFS-backed ZFS dataset per app, provisioned by the
+# TrueNAS CSI driver under the parent dataset the backup StorageClass points
+# at. The StorageClass is reclaimPolicy Retain, so deleting this PVC (or the
+# whole cluster) leaves the dataset — and every ZFS snapshot of it — on the
+# NAS. Prune-disabled for the same reason as the live PVC.
+#
+# The CSI driver names the dataset after the PV (pvc-<uuid>), not this PVC.
+# To find an app's dataset: kubectl get pvc ${APP}-backup -o jsonpath='{.spec.volumeName}'.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ${APP}${VOLSYNC_PVC_SUFFIX:=}-backup
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: ${VOLSYNC_CAPACITY:=10Gi}
+  storageClassName: ${VOLSYNC_BACKUP_STORAGE_CLASS:=truenas-nfs-backup}

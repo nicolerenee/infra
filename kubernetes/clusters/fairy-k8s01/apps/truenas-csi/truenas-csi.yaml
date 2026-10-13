@@ -1,0 +1,39 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+# TrueNAS CSI driver against fairy-store01 (vault01 pool). The API and NFS
+# traffic use the NAS's compute-VLAN address; the API key comes from GSM via
+# the cluster-wide store.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app truenas-csi
+  namespace: &namespace truenas-csi
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: external-secrets
+      namespace: external-secrets
+    - name: ghcr-pull
+      namespace: flux-system
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/storage/truenas-csi
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true
+  postBuild:
+    substitute:
+      TRUENAS_API_URL: https://10.189.3.8
+      TRUENAS_NFS_SERVER: 10.189.3.8
+      TRUENAS_POOL: vault01
+      # Compute VLAN — every node (cn + Spark) mounts from here.
+      TRUENAS_NFS_CLIENT_NETWORKS: 10.189.3.0/24

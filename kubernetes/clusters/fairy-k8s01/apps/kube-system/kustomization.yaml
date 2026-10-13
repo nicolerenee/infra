@@ -20,3 +20,4 @@ resources:
   - ./node-feature-discovery.yaml
   - ./reflector.yaml
   - ./reloader.yaml
+  - ./snapshot-controller.yaml

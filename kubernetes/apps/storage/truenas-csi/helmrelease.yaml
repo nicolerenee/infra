@@ -1,0 +1,49 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
+# Official iXsystems CSI driver for TrueNAS (NFS, iSCSI, NVMe-oF/TCP).
+# Here it provisions NFS datasets on the site NAS; the node plugin needs no
+# host packages for NFS. The node DaemonSet is privileged + hostPID (it has
+# to reach the host mount namespace for iSCSI/NVMe), so the namespace must be
+# labelled pod-security privileged.
+#
+# Cluster-specific connection details come in as postBuild substitutions on
+# the cluster pointer: TRUENAS_API_URL, TRUENAS_NFS_SERVER, TRUENAS_POOL.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: truenas-csi
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: truenas-csi
+      version: 1.4.0
+      sourceRef:
+        kind: HelmRepository
+        name: truenas-csi
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  driftDetection:
+    mode: enabled
+  values:
+    truenas:
+      url: ${TRUENAS_API_URL}
+      defaultPool: ${TRUENAS_POOL}
+      nfsServer: ${TRUENAS_NFS_SERVER}
+      # The NAS presents its self-signed certificate on the LAN address the
+      # driver talks to. Flip this to false and set caBundle once the NAS
+      # carries a cert the cluster can verify.
+      insecureSkipTLS: ${TRUENAS_INSECURE_TLS:=true}
+      existingSecret: truenas-csi-api
+      existingSecretKey: api-key
+    controller:
+      replicas: 1
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true

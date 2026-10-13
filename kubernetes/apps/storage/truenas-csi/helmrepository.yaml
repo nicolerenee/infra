@@ -1,0 +1,11 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/source.toolkit.fluxcd.io/helmrepository_v1.json
+# The chart is published as a classic Helm index straight out of the
+# driver's git repo (no OCI package yet).
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: truenas-csi
+spec:
+  interval: 24h
+  url: https://raw.githubusercontent.com/truenas/truenas-csi/master/charts

@@ -1,0 +1,22 @@
+---
+# Persistent rsync-tls listener for this app. No trigger: the destination
+# side of rsync-tls runs continuously and accepts whatever the source sends
+# on its schedule. copyMethod Direct writes straight into the backup PVC —
+# history is ZFS snapshots on the NAS, so no VolumeSnapshots are taken here.
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: ${APP}${VOLSYNC_PVC_SUFFIX:=}
+spec:
+  rsyncTLS:
+    destinationPVC: ${APP}${VOLSYNC_PVC_SUFFIX:=}-backup
+    copyMethod: Direct
+    serviceType: ClusterIP
+    moverSecurityContext:
+      runAsUser: ${VOLSYNC_UID}
+      runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID}}
+      fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID}}
+      fsGroupChangePolicy: OnRootMismatch
+      runAsNonRoot: ${VOLSYNC_RUN_AS_NON_ROOT:=true}
+      seccompProfile:
+        type: RuntimeDefault

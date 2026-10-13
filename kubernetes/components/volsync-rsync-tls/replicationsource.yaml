@@ -1,0 +1,31 @@
+---
+# Scheduled push of the app's PVC to its listener. copyMethod Snapshot takes
+# a CSI snapshot of the live PVC first so the copy is crash-consistent even
+# while the app runs, then rsyncs only the delta (plus a delete pass so the
+# destination mirrors the source exactly — ZFS snapshots are what keep
+# deleted files recoverable).
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: ${APP}${VOLSYNC_PVC_SUFFIX:=}
+spec:
+  sourcePVC: ${APP}${VOLSYNC_PVC_SUFFIX:=}
+  trigger:
+    schedule: "${VOLSYNC_SCHEDULE:=37 * * * *}"
+  rsyncTLS:
+    # Same-namespace Service + PSK Secret that volsync creates for the
+    # ReplicationDestination of the same name.
+    address: volsync-rsync-tls-dst-${APP}${VOLSYNC_PVC_SUFFIX:=}
+    keySecret: volsync-rsync-tls-${APP}${VOLSYNC_PVC_SUFFIX:=}
+    copyMethod: Snapshot
+    volumeSnapshotClassName: ${VOLSYNC_SNAPSHOT_CLASS:=csi-ceph-blockpool}
+    storageClassName: ${VOLSYNC_STORAGE_CLASS:=ceph-block}
+    accessModes: [ReadWriteOnce]
+    moverSecurityContext:
+      runAsUser: ${VOLSYNC_UID}
+      runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID}}
+      fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID}}
+      fsGroupChangePolicy: OnRootMismatch
+      runAsNonRoot: ${VOLSYNC_RUN_AS_NON_ROOT:=true}
+      seccompProfile:
+        type: RuntimeDefault

@@ -1,0 +1,55 @@
+---
+# Volsync rsync-tls component — mirrors an app's PVC into its own NFS-backed
+# dataset on the site TrueNAS and relies on ZFS for history.
+#
+# Why not the restic component (../volsync): that one needs a restic
+# rest-server to operate and keeps versions inside the restic repo. This one
+# keeps the destination as a plain, browseable copy of the PVC on a per-app
+# ZFS dataset; point-in-time history comes from a recursive periodic snapshot
+# task on the parent dataset (configured on the NAS, not here), and off-site
+# comes from ZFS replication of that same parent. Nothing in the cluster can
+# delete a ZFS snapshot, which is a stronger guarantee than restic's
+# append-only server flag.
+#
+# Resources added per app:
+#   PVC ${APP}            the app's live data (ceph-block), prune-disabled
+#   PVC ${APP}-backup     the destination dataset (NFS StorageClass, Retain)
+#   ReplicationDestination ${APP}   persistent rsync-tls listener writing
+#                                   straight into ${APP}-backup (copyMethod
+#                                   Direct — no CSI snapshots on NFS needed)
+#   ReplicationSource ${APP}        scheduled: CSI-snapshot the live PVC,
+#                                   rsync the delta over TLS to the listener
+#
+# Volsync generates the TLS pre-shared key on the destination and names it
+# volsync-rsync-tls-<rd-name>; the Service it exposes is
+# volsync-rsync-tls-dst-<rd-name>. The source references both by name, which
+# works because source and destination share the app's namespace.
+#
+# RESTORE is a runbook, not a CR (see docs/storage/fairy-backups.md): pick a
+# ZFS snapshot on the NAS, then copy from the dataset (or its .zfs/snapshot/
+# directory) into a fresh ${APP} PVC with a Job running as ${VOLSYNC_UID}.
+#
+# Required substitutes (set on the cluster overlay Flux KS):
+#   APP             App name. Drives every resource name.
+#   VOLSYNC_UID     UID the movers run as. Match the app's runAsUser so a
+#                   restore produces files the app can read; the destination
+#                   side doesn't care (the NFS export squashes to one user).
+#
+# Optional substitutes:
+#   VOLSYNC_GID / VOLSYNC_FSGROUP      Default to VOLSYNC_UID.
+#   VOLSYNC_RUN_AS_NON_ROOT            Default true; "false" only with UID 0.
+#   VOLSYNC_CAPACITY                   Live PVC + backup PVC size. Default 10Gi.
+#   VOLSYNC_SCHEDULE                   RS cron. Default :37 hourly — pick a
+#                                      different minute per app.
+#   VOLSYNC_PVC_SUFFIX                 Default empty (PVC is just ${APP}).
+#   VOLSYNC_STORAGE_CLASS              Live PVC class. Default ceph-block.
+#   VOLSYNC_SNAPSHOT_CLASS             VolumeSnapshotClass for the live PVC's
+#                                      pre-sync snapshot. Default csi-ceph-blockpool.
+#   VOLSYNC_BACKUP_STORAGE_CLASS       Destination class. Default truenas-nfs-backup.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - ./pvc.yaml
+  - ./pvc-backup.yaml
+  - ./replicationdestination.yaml
+  - ./replicationsource.yaml
