@@ -14,12 +14,14 @@ spec:
     passwordFromSecret:
       name: paperless-queue-secrets
       key: password
+  # Dragonfly refuses to start unless maxmemory >= 256MiB per proactor
+  # thread; one thread is plenty for a Celery broker.
   args:
-    - --proactor_threads=2
+    - --proactor_threads=1
     - --maxmemory=256mb
   resources:
     requests:
       cpu: 50m
       memory: 128Mi
     limits:
-      memory: 384Mi
+      memory: 512Mi
