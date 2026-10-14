@@ -5,6 +5,10 @@ kind: Kustomization
 metadata:
   name: &app barman-cloud-plugin
   namespace: &namespace cnpg-system
+  labels:
+    # The shared HR's namespaceOverride is ${CNPG_OPERATOR_NAMESPACE:=cnpg-system};
+    # without substitution the literal string reaches Helm.
+    infra.freckle.systems/post-build-variables: enabled
 spec:
   commonMetadata:
     labels:
