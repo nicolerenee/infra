@@ -96,7 +96,7 @@ spec:
               PAPERLESS_AI_ENABLED: "true"
               PAPERLESS_AI_LLM_BACKEND: openai-like
               PAPERLESS_AI_LLM_ENDPOINT: http://ai-gateway.inference.svc.cluster.local/v1
-              PAPERLESS_AI_LLM_MODEL: nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4
+              PAPERLESS_AI_LLM_MODEL: nvidia/Qwen3.8-Flash-Next-NVFP4
               PAPERLESS_AI_LLM_API_KEY: local
               PAPERLESS_AI_LLM_REQUEST_TIMEOUT: "600"
               PAPERLESS_AI_LLM_EMBEDDING_BACKEND: huggingface
