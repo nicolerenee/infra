@@ -11,7 +11,7 @@ to `atlantis-store01`; no restic repository or rest-server is involved.
 
 ## How it fits together
 
-```
+```text
 app PVC (ceph-block)
   └─ ReplicationSource  — hourly: CSI snapshot, rsync delta over TLS
        └─ ReplicationDestination — persistent listener in the app namespace
