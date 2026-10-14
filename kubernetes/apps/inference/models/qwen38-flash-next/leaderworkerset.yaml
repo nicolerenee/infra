@@ -3,7 +3,7 @@
 # by vLLM across 2 DGX Sparks as one tensor-parallel + expert-parallel replica.
 # Flags follow the MiaAI-Lab dual-Spark recipe that the NVIDIA-forum 2x Spark
 # write-up ran (TP2+EP, allgather_reducescatter all2all, native MTP k=3, 262K
-# context, 16 seqs, 8192 batched tokens, GMU 0.78). Deviations from that recipe:
+# context, 16 seqs, 8192 batched tokens, GMU 0.80). Deviations from that recipe:
 #   - eugr's spark-vllm image (which now carries the Qwen3.8 patch series) instead
 #     of the day-0 NVIDIA image + bind-mounted patches — Talos has no Docker.
 #   - KV cache left at `auto` (bf16): fp8 KV needs the recipe's QSA attention
@@ -14,11 +14,12 @@
 #     With this it is Ready in ~7 min. data-mode encoder TP, bf16 SSM cache and
 #     explicit chunked prefill are the recipe's other launch flags.
 #   - vLLM's native multi-node launch over a LeaderWorkerSet, same as minimax.
-#   - GMU 0.78, not 0.80: at 0.80 the worker rank ran its host memory down to
-#     ~650 MB during profiling and the engine never came up (the forum write-up
-#     hit the same wall at 0.80 and settled on 0.78). The second init container
-#     also evicts the freshly rclone'd checkpoint from page cache — on these
-#     unified-memory nodes those cached pages are not free for the GPU.
+#   - GMU 0.80 (the forum write-up backed off to 0.78 on Ubuntu hosts that also
+#     run a desktop; Talos leaves ~12 GiB free per rank at 0.78 with compile
+#     off). The 650 MB-free hang seen on the first attempt was torch.compile,
+#     not the reservation. The second init container evicts the freshly
+#     rclone'd checkpoint from page cache — on unified-memory nodes those
+#     cached pages are not free for the GPU.
 # No node pinning: the scheduler picks any two Sparks with a free GPU; the
 # power-feed podAffinity only prefers keeping both ranks on one PDU.
 # Weight staging and --load-format instanttensor are the proven minimax pattern
@@ -135,7 +136,7 @@ spec:
                   --tensor-parallel-size 2 \
                   --enable-expert-parallel \
                   --all2all-backend allgather_reducescatter \
-                  --gpu-memory-utilization 0.78 \
+                  --gpu-memory-utilization 0.80 \
                   --max-model-len 262144 \
                   --max-num-seqs 16 \
                   --max-num-batched-tokens 8192 \
@@ -330,7 +331,7 @@ spec:
                   --tensor-parallel-size 2 \
                   --enable-expert-parallel \
                   --all2all-backend allgather_reducescatter \
-                  --gpu-memory-utilization 0.78 \
+                  --gpu-memory-utilization 0.80 \
                   --max-model-len 262144 \
                   --max-num-seqs 16 \
                   --max-num-batched-tokens 8192 \
