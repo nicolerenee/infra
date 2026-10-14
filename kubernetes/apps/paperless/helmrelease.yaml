@@ -86,14 +86,21 @@ spec:
               # Built-in AI: suggestions + chat through the local AI gateway,
               # RAG index with the local Hugging Face embedding model (downloaded
               # once into the data dir).
+              #
+              # Model: Nemotron 3.5 Lightning. Paperless demands a tool call
+              # (tool_choice=required) for every suggestion; on the Qwen3.6
+              # deployment vLLM can't enforce that through the XML tool parser,
+              # so thin-content scans (certified-copy stamps) came back as prose
+              # and failed. Lightning's parser enforces it (3/3 under a prompt
+              # that begs for prose, 7/7 on the real documents, ~4 s each).
               PAPERLESS_AI_ENABLED: "true"
               PAPERLESS_AI_LLM_BACKEND: openai-like
               PAPERLESS_AI_LLM_ENDPOINT: http://ai-gateway.inference.svc.cluster.local/v1
-              PAPERLESS_AI_LLM_MODEL: Qwen3.6-35B-A3B-FP8
+              PAPERLESS_AI_LLM_MODEL: nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4
               PAPERLESS_AI_LLM_API_KEY: local
               PAPERLESS_AI_LLM_REQUEST_TIMEOUT: "600"
               PAPERLESS_AI_LLM_EMBEDDING_BACKEND: huggingface
-              # Qwen3.6 thinks before every reply by default; suggestions are
+              # Nemotron thinks before every reply by default; suggestions are
               # short structured output that doesn't need it and it multiplies
               # latency. Paperless passes this JSON as keyword args to the OpenAI
               # SDK, so vLLM-only fields must ride inside `extra_body` (a bare
