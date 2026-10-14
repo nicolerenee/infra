@@ -95,6 +95,30 @@ spec:
     kind: Backend
     name: nemotron-35-lightning
 ---
+# Qwen3.8-Flash-Next (NVFP4, TP2+EP across two Sparks). Leader-only API
+# Service, like minimax.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: qwen38-flash-next
+spec:
+  endpoints:
+    - fqdn:
+        hostname: qwen38-flash-next-api.inference.svc.cluster.local
+        port: 8000
+---
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: AIServiceBackend
+metadata:
+  name: local-qwen38-flash-next
+spec:
+  schema:
+    name: OpenAI
+  backendRef:
+    group: gateway.envoyproxy.io
+    kind: Backend
+    name: qwen38-flash-next
+---
 apiVersion: aigateway.envoyproxy.io/v1beta1
 kind: AIGatewayRoute
 metadata:
@@ -149,5 +173,15 @@ spec:
       backendRefs:
         - name: local-nemotron-35-lightning
           modelNameOverride: nemotron-3.5-lightning
+      timeouts:
+        request: 1800s
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: nvidia/Qwen3.8-Flash-Next-NVFP4
+      backendRefs:
+        - name: local-qwen38-flash-next
+          modelNameOverride: qwen3.8-flash-next
       timeouts:
         request: 1800s

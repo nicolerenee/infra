@@ -1,0 +1,30 @@
+---
+# Leader-only API endpoint for the gateway. Headless (clusterIP: None) so a
+# per-request load-balancer (the AI gateway) sees an endpoint per READY pod
+# rather than a single VIP. Only the leader serves the OpenAI API — the worker
+# is headless (--headless) and never becomes Ready on :8000 — so in practice
+# this returns the leader's address. publishNotReadyAddresses keeps the leader
+# discoverable during the long model load so clients/scrapers can attach
+# before it flips Ready.
+#
+# Deliberately NOT named after the LeaderWorkerSet: with the default shared
+# subdomain policy, the LWS controller creates (and since LWS 0.11 insists on
+# OWNING) a headless Service called `qwen38-flash-next` that selects every pod
+# in the group — that is what backs the pods' subdomain DNS and
+# LWS_LEADER_ADDRESS. Shadowing that name with our own Service makes every LWS
+# reconcile fail ("has controller owner nil"), its observedGeneration never
+# advances after a spec change, and the Flux health check times out.
+apiVersion: v1
+kind: Service
+metadata:
+  name: qwen38-flash-next-api
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/name: qwen38-flash-next
+    app.kubernetes.io/component: leader
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http

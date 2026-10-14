@@ -1,0 +1,323 @@
+---
+# Qwen3.8-Flash-Next (NVIDIA NVFP4 build: 125B MoE, 6B active, ~124 GiB) served
+# by vLLM across 2 DGX Sparks as one tensor-parallel + expert-parallel replica.
+# Flags follow the MiaAI-Lab dual-Spark recipe that the NVIDIA-forum 2x Spark
+# write-up ran (TP2+EP, allgather_reducescatter all2all, native MTP k=3, 262K
+# context, 16 seqs, 8192 batched tokens, GMU 0.80). Deviations from that recipe:
+#   - eugr's spark-vllm image (which now carries the Qwen3.8 patch series) instead
+#     of the day-0 NVIDIA image + bind-mounted patches — Talos has no Docker.
+#   - KV cache left at `auto` (bf16): fp8 KV needs the recipe's QSA attention
+#     patch and it is unknown whether eugr's build includes it. Revisit.
+#   - vLLM's native multi-node launch over a LeaderWorkerSet, same as minimax.
+# No node pinning: the scheduler picks any two Sparks with a free GPU; the
+# power-feed podAffinity only prefers keeping both ranks on one PDU.
+# Weight staging and --load-format instanttensor are the proven minimax pattern
+# (see that file's header for why instanttensor is mandatory on unified-memory
+# GB10). Served offline, egress locked in cnp.yaml.
+apiVersion: leaderworkerset.x-k8s.io/v1
+kind: LeaderWorkerSet
+metadata:
+  name: qwen38-flash-next
+spec:
+  replicas: 1
+  leaderWorkerTemplate:
+    size: 2
+    restartPolicy: RecreateGroupOnPodRestart
+    leaderTemplate:
+      metadata:
+        labels:
+          app.kubernetes.io/name: qwen38-flash-next
+          app.kubernetes.io/component: leader
+      spec:
+        runtimeClassName: nvidia
+        # Keep both ranks of this tensor-parallel pair on the same power feed
+        # (topology.freckle.systems/power-feed = pdu01 or pdu02, from the Talos node config):
+        # a single UPS/PDU event then takes the whole model down or not at
+        # all, instead of leaving one rank up and the set wedged. Preferred,
+        # not required, so an odd number of free Sparks still schedules.
+        affinity:
+          podAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  topologyKey: topology.freckle.systems/power-feed
+                  labelSelector:
+                    matchLabels:
+                      leaderworkerset.sigs.k8s.io/name: qwen38-flash-next
+        tolerations:
+          - key: nvidia.com/gpu
+            operator: Exists
+            effect: NoSchedule
+        resourceClaims:
+          - name: gpu-rdma
+            resourceClaimTemplateName: gpu-rdma
+        initContainers:
+          # Cache the checkpoint from CephFS to node-local NVMe before vLLM starts.
+          # -L dereferences the HF-cache symlinks so the local copy is
+          # self-contained; scoped to the minimax dir (the `models` PVC is shared
+          # with qwen + gpt-oss) and excludes blobs/ since the deref'd snapshot
+          # already holds the data (avoids a 2x copy). hostPath persists across
+          # RecreateGroupOnPodRestart, so restarts re-sync incrementally (fast).
+          - name: cache-models
+            image: mirror.gcr.io/rclone/rclone:1.75.2@sha256:2687085f718d3c628f7fdfb77c52a1d344332aed543110bb88088f2c70d43eb5
+            command:
+              - rclone
+              - sync
+              - /ceph-models/hub/models--nvidia--Qwen3.8-Flash-Next-NVFP4/
+              - /models/hub/models--nvidia--Qwen3.8-Flash-Next-NVFP4/
+              - --copy-links
+              - --exclude
+              - blobs/**
+              - --transfers
+              - "8"
+              - --checkers
+              - "16"
+              # One-line stats each minute instead of --progress (which floods
+              # non-TTY pod logs with continuous progress redraws).
+              - --stats
+              - 1m
+              - --stats-one-line
+            volumeMounts:
+              - name: ceph-models
+                mountPath: /ceph-models
+                readOnly: true
+              - name: local-models
+                mountPath: /models
+        containers:
+          - name: vllm
+            # eugr spark-vllm, 2026-10-13 build (post-v0.31 main + the Qwen3.8
+            # patch series). Pinned here independently of minimax's digest so
+            # that deployment stays on its known-good build.
+            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:d33f2b78ef6b4f11447521a3e496a0711bbd2ac9bb3ff8802a27ab757de9637a
+            command:
+              - bash
+              - -c
+              - |
+                vllm serve nvidia/Qwen3.8-Flash-Next-NVFP4 \
+                  --served-model-name nvidia/Qwen3.8-Flash-Next-NVFP4 qwen3.8-flash-next \
+                  --trust-remote-code \
+                  --tensor-parallel-size 2 \
+                  --enable-expert-parallel \
+                  --all2all-backend allgather_reducescatter \
+                  --gpu-memory-utilization 0.80 \
+                  --max-model-len 262144 \
+                  --max-num-seqs 16 \
+                  --max-num-batched-tokens 8192 \
+                  --load-format instanttensor \
+                  --speculative-config '{"method":"mtp","num_speculative_tokens":3}' \
+                  --enable-auto-tool-choice \
+                  --tool-call-parser qwen3_coder \
+                  --reasoning-parser qwen3 \
+                  --enable-prompt-tokens-details \
+                  --nnodes 2 \
+                  --node-rank 0 \
+                  --master-addr $${LWS_LEADER_ADDRESS} \
+                  --master-port 29500 \
+                  --host 0.0.0.0 \
+                  --port 8000
+            env:
+              - name: HF_HOME
+                value: /models
+              # Weights pre-staged on CephFS (/models/hub); never reach HF at
+              # serve time (egress is locked — see cnp.yaml).
+              - name: HF_HUB_OFFLINE
+                value: "1"
+              - name: DO_NOT_TRACK
+                value: "1"
+              - name: PYTORCH_CUDA_ALLOC_CONF
+                value: expandable_segments:True
+              # NCCL: use RDMA over the ConnectX-7 fabric (dranet gpu-rdma claim).
+              - name: NCCL_IB_HCA
+                value: mlx5
+              - name: NCCL_NET_GDR_LEVEL
+                value: "2"
+            ports:
+              - containerPort: 8000
+                name: http
+              - containerPort: 29500
+                name: dist-coord
+            startupProbe:
+              httpGet:
+                path: /health
+                port: http
+              initialDelaySeconds: 60
+              periodSeconds: 10
+              timeoutSeconds: 5
+              # Long — covers the vLLM load from node-local NVMe (the CephFS→local
+              # rclone sync runs first as an initContainer) + torch.compile +
+              # cudagraph capture. The startup-probe clock starts after init.
+              failureThreshold: 360
+            livenessProbe:
+              httpGet:
+                path: /health
+                port: http
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 3
+            readinessProbe:
+              httpGet:
+                path: /health
+                port: http
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 3
+            securityContext:
+              capabilities:
+                add:
+                  - IPC_LOCK
+            resources:
+              claims:
+                - name: gpu-rdma
+            volumeMounts:
+              - name: local-models
+                mountPath: /models
+              - name: shm
+                mountPath: /dev/shm
+        volumes:
+          # Source: shared models PVC on CephFS (read-only; init copies out of it).
+          - name: ceph-models
+            persistentVolumeClaim:
+              claimName: models
+              readOnly: true
+          # Dest: node-local NVMe cache. hostPath persists across pod restarts so
+          # the CephFS sync is a one-time-per-node cost; vLLM reads weights here.
+          - name: local-models
+            hostPath:
+              path: /var/local/inference-models
+              type: DirectoryOrCreate
+          - name: shm
+            emptyDir:
+              medium: Memory
+              sizeLimit: 16Gi
+    workerTemplate:
+      metadata:
+        labels:
+          app.kubernetes.io/name: qwen38-flash-next
+          app.kubernetes.io/component: worker
+      spec:
+        runtimeClassName: nvidia
+        # Keep both ranks of this tensor-parallel pair on the same power feed
+        # (topology.freckle.systems/power-feed = pdu01 or pdu02, from the Talos node config):
+        # a single UPS/PDU event then takes the whole model down or not at
+        # all, instead of leaving one rank up and the set wedged. Preferred,
+        # not required, so an odd number of free Sparks still schedules.
+        affinity:
+          podAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  topologyKey: topology.freckle.systems/power-feed
+                  labelSelector:
+                    matchLabels:
+                      leaderworkerset.sigs.k8s.io/name: qwen38-flash-next
+        tolerations:
+          - key: nvidia.com/gpu
+            operator: Exists
+            effect: NoSchedule
+        resourceClaims:
+          - name: gpu-rdma
+            resourceClaimTemplateName: gpu-rdma
+        initContainers:
+          # Cache the checkpoint from CephFS to node-local NVMe before vLLM starts.
+          # -L dereferences the HF-cache symlinks so the local copy is
+          # self-contained; scoped to the minimax dir (the `models` PVC is shared
+          # with qwen + gpt-oss) and excludes blobs/ since the deref'd snapshot
+          # already holds the data (avoids a 2x copy). hostPath persists across
+          # RecreateGroupOnPodRestart, so restarts re-sync incrementally (fast).
+          - name: cache-models
+            image: mirror.gcr.io/rclone/rclone:1.75.2@sha256:2687085f718d3c628f7fdfb77c52a1d344332aed543110bb88088f2c70d43eb5
+            command:
+              - rclone
+              - sync
+              - /ceph-models/hub/models--nvidia--Qwen3.8-Flash-Next-NVFP4/
+              - /models/hub/models--nvidia--Qwen3.8-Flash-Next-NVFP4/
+              - --copy-links
+              - --exclude
+              - blobs/**
+              - --transfers
+              - "8"
+              - --checkers
+              - "16"
+              # One-line stats each minute instead of --progress (which floods
+              # non-TTY pod logs with continuous progress redraws).
+              - --stats
+              - 1m
+              - --stats-one-line
+            volumeMounts:
+              - name: ceph-models
+                mountPath: /ceph-models
+                readOnly: true
+              - name: local-models
+                mountPath: /models
+        containers:
+          - name: vllm
+            # eugr spark-vllm (arm64) — same image as the leader. Digest-pinned.
+            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:d33f2b78ef6b4f11447521a3e496a0711bbd2ac9bb3ff8802a27ab757de9637a
+            command:
+              - bash
+              - -c
+              - |
+                vllm serve nvidia/Qwen3.8-Flash-Next-NVFP4 \
+                  --served-model-name nvidia/Qwen3.8-Flash-Next-NVFP4 qwen3.8-flash-next \
+                  --trust-remote-code \
+                  --tensor-parallel-size 2 \
+                  --enable-expert-parallel \
+                  --all2all-backend allgather_reducescatter \
+                  --gpu-memory-utilization 0.80 \
+                  --max-model-len 262144 \
+                  --max-num-seqs 16 \
+                  --max-num-batched-tokens 8192 \
+                  --load-format instanttensor \
+                  --speculative-config '{"method":"mtp","num_speculative_tokens":3}' \
+                  --enable-auto-tool-choice \
+                  --tool-call-parser qwen3_coder \
+                  --reasoning-parser qwen3 \
+                  --enable-prompt-tokens-details \
+                  --nnodes 2 \
+                  --node-rank 1 \
+                  --master-addr $${LWS_LEADER_ADDRESS} \
+                  --master-port 29500 \
+                  --headless \
+                  --host 0.0.0.0 \
+                  --port 8000
+            env:
+              - name: HF_HOME
+                value: /models
+              - name: HF_HUB_OFFLINE
+                value: "1"
+              - name: DO_NOT_TRACK
+                value: "1"
+              - name: PYTORCH_CUDA_ALLOC_CONF
+                value: expandable_segments:True
+              - name: NCCL_IB_HCA
+                value: mlx5
+              - name: NCCL_NET_GDR_LEVEL
+                value: "2"
+            securityContext:
+              capabilities:
+                add:
+                  - IPC_LOCK
+            resources:
+              claims:
+                - name: gpu-rdma
+            volumeMounts:
+              - name: local-models
+                mountPath: /models
+              - name: shm
+                mountPath: /dev/shm
+        volumes:
+          # Source: shared models PVC on CephFS (read-only; init copies out of it).
+          - name: ceph-models
+            persistentVolumeClaim:
+              claimName: models
+              readOnly: true
+          # Dest: node-local NVMe cache. hostPath persists across pod restarts so
+          # the CephFS sync is a one-time-per-node cost; vLLM reads weights here.
+          - name: local-models
+            hostPath:
+              path: /var/local/inference-models
+              type: DirectoryOrCreate
+          - name: shm
+            emptyDir:
+              medium: Memory
+              sizeLimit: 16Gi
