@@ -9,3 +9,4 @@ resources:
   - ./pg-18a-objectstore.yaml
   - ./pg-18a-cluster.yaml
   - ./pg-18a-bucket-mirror.yaml
+  - ./paperless-db.yaml

@@ -1,0 +1,42 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app paperless
+  namespace: &namespace paperless
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: external-secrets
+      namespace: external-secrets
+    # pg-18a + the paperless role/Database live in the db clusters KS.
+    - name: cloudnative-pg-clusters
+      namespace: db
+    - name: dragonfly-operator
+      namespace: db
+    - name: volsync
+      namespace: volsync-system
+    - name: truenas-csi
+      namespace: truenas-csi
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/paperless
+  interval: 2m
+  retryInterval: 1m
+  timeout: 10m
+  prune: true
+  wait: true
+  postBuild:
+    substitute:
+      APP: *app
+      VOLSYNC_UID: "1000"
+      VOLSYNC_CAPACITY: 100Gi
+      VOLSYNC_SCHEDULE: "12 * * * *"

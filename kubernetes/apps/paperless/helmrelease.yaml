@@ -1,0 +1,217 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+# Paperless-ngx with its two document-conversion sidecars (Gotenberg, Tika).
+# Runs rootless as UID 1000 (the image supports an arbitrary `user:`; don't
+# combine with USERMAP_* or extra OCR languages). Postgres is the shared
+# pg-18a cluster (managed role + Database CR in clusters/fairy-k8s01/apps/db),
+# the broker is the Dragonfly CR next door, and the built-in AI features talk
+# to the in-cluster AI gateway so documents never leave the cluster.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: paperless
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: default
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  driftDetection:
+    mode: enabled
+
+  values:
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+    controllers:
+      paperless:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/paperless-ngx/paperless-ngx
+              tag: 3.3.1@sha256:cb91bfb468e63025a9d10c01b54c33665113668eee61b490db96de19b860b9c4
+            env:
+              PAPERLESS_URL: https://paperless.${CLUSTER_SVCS_DOMAIN}
+              # TLS terminates at the gateway; tell Django the original scheme.
+              PAPERLESS_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'
+              PAPERLESS_TIME_ZONE: America/Chicago
+              PAPERLESS_OCR_LANGUAGE: eng
+              PAPERLESS_PORT: "8000"
+              PAPERLESS_WEBSERVER_WORKERS: "2"
+              PAPERLESS_TASK_WORKERS: "2"
+              PAPERLESS_THREADS_PER_WORKER: "2"
+              # Storage layout inside the single backed-up PVC (subPath mounts).
+              PAPERLESS_DATA_DIR: /usr/src/paperless/data
+              PAPERLESS_MEDIA_ROOT: /usr/src/paperless/media
+              PAPERLESS_CONSUMPTION_DIR: /usr/src/paperless/consume
+              PAPERLESS_EXPORT_DIR: /usr/src/paperless/export
+              # Database: shared pg-18a; user/password come from the secret.
+              PAPERLESS_DBENGINE: postgresql
+              PAPERLESS_DBHOST: pg-18a-rw.db.svc.cluster.local
+              PAPERLESS_DBPORT: "5432"
+              PAPERLESS_DBNAME: paperless
+              # Office/email documents via the sidecars.
+              PAPERLESS_TIKA_ENABLED: "true"
+              PAPERLESS_TIKA_ENDPOINT: http://localhost:9998
+              PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://localhost:3000
+              # SSO via Freckle ID (provider JSON lives in the secret). Group
+              # sync mirrors the pocket-id groups onto same-named Django groups,
+              # which must exist first — create `paperless_users` in the admin
+              # once, then membership follows the groups claim on every login.
+              # paperless_admins grants superuser directly (no Django group needed).
+              PAPERLESS_APPS: allauth.socialaccount.providers.openid_connect
+              PAPERLESS_SOCIAL_AUTO_SIGNUP: "true"
+              PAPERLESS_SOCIAL_ACCOUNT_SYNC_GROUPS: "true"
+              PAPERLESS_SOCIAL_ACCOUNT_SYNC_SUPERUSER_GROUP: paperless_admins
+              PAPERLESS_DISABLE_REGULAR_LOGIN: "true"
+              PAPERLESS_REDIRECT_LOGIN_TO_SSO: "true"
+              PAPERLESS_ACCOUNT_SESSION_REMEMBER: "true"
+              # Built-in AI: suggestions + chat through the local AI gateway,
+              # RAG index with the local Hugging Face embedding model (downloaded
+              # once into the data dir).
+              PAPERLESS_AI_ENABLED: "true"
+              PAPERLESS_AI_LLM_BACKEND: openai-like
+              PAPERLESS_AI_LLM_ENDPOINT: http://ai-gateway.inference.svc.cluster.local/v1
+              PAPERLESS_AI_LLM_MODEL: Qwen3.6-35B-A3B-FP8
+              PAPERLESS_AI_LLM_API_KEY: local
+              PAPERLESS_AI_LLM_REQUEST_TIMEOUT: "600"
+              PAPERLESS_AI_LLM_EMBEDDING_BACKEND: huggingface
+            envFrom:
+              - secretRef:
+                  name: paperless-secrets
+            probes:
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/
+                    port: 8000
+                  failureThreshold: 60
+                  periodSeconds: 10
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/
+                    port: 8000
+                  periodSeconds: 30
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/
+                    port: 8000
+                  periodSeconds: 10
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: [ALL]
+            resources:
+              requests:
+                cpu: 250m
+                memory: 1Gi
+              limits:
+                memory: 4Gi
+          gotenberg:
+            image:
+              repository: docker.io/gotenberg/gotenberg
+              tag: 8.37.0@sha256:f29984bd1e226bf1b93ba90af06000afa8b315853e99d27b9aaa41b93f15c769
+            # The chromium route only ever converts .eml/.html from the consume
+            # dir; lock it down like the upstream compose file does.
+            args:
+              - gotenberg
+              - --chromium-disable-javascript=true
+              - --chromium-allow-list=^file:///tmp/.*
+            securityContext:
+              runAsUser: 1001
+              runAsGroup: 1001
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: [ALL]
+            resources:
+              requests:
+                cpu: 50m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+          tika:
+            image:
+              repository: docker.io/apache/tika
+              tag: 3.3.1.0@sha256:90b7fa1dc018434075fce9e1d9b88b1e3d0ea6979d0cf86e116c79a8073ae973
+            securityContext:
+              runAsUser: 35002
+              runAsGroup: 35002
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: [ALL]
+            resources:
+              requests:
+                cpu: 50m
+                memory: 512Mi
+              limits:
+                memory: 2Gi
+
+    service:
+      app:
+        controller: paperless
+        ports:
+          http:
+            port: 8000
+
+    route:
+      app:
+        hostnames: ["paperless.${CLUSTER_SVCS_DOMAIN}"]
+        parentRefs:
+          - name: tailnet
+            namespace: gateway-system
+        rules:
+          - backendRefs:
+              - name: paperless
+                port: 8000
+
+    persistence:
+      # One PVC (from the volsync component) holds everything paperless
+      # must keep; subPaths keep the four trees separate.
+      data:
+        existingClaim: ${APP}
+        advancedMounts:
+          paperless:
+            app:
+              - path: /usr/src/paperless/data
+                subPath: data
+              - path: /usr/src/paperless/media
+                subPath: media
+              - path: /usr/src/paperless/consume
+                subPath: consume
+              - path: /usr/src/paperless/export
+                subPath: export
+      tmp:
+        type: emptyDir
+        advancedMounts:
+          paperless:
+            app:
+              - path: /tmp
+            gotenberg:
+              - path: /tmp
+            tika:
+              - path: /tmp

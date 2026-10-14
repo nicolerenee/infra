@@ -1,0 +1,74 @@
+---
+# Paperless holds every scanned document, so its network is pinned down:
+# ingress only from the tailnet gateway; egress only to what it needs. Any
+# egress rule flips the endpoint to default-deny egress, so everything the
+# pod talks to is listed. Tika and Gotenberg are sidecars (localhost).
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: paperless
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: paperless
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: gateway-system
+            gateway.envoyproxy.io/owning-gateway-name: tailnet
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+          rules:
+            dns:
+              - matchPattern: "*"
+    # Celery broker (same namespace).
+    - toEndpoints:
+        - matchLabels:
+            app: paperless-queue
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP
+    # Shared Postgres.
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: db
+            cnpg.io/cluster: pg-18a
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP
+    # Built-in AI features: OpenAI-compatible endpoint on the in-cluster AI
+    # gateway (ClusterIP, never leaves the cluster).
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: inference
+            gateway.envoyproxy.io/owning-gateway-name: ai
+      toPorts:
+        - ports:
+            - port: "10080"
+              protocol: TCP
+    # OIDC discovery/token/userinfo against Freckle ID, and the one-time
+    # download of the local embedding model (RAG index) from Hugging Face.
+    - toFQDNs:
+        - matchName: freckle.id
+        - matchPattern: "**.huggingface.co"
+        - matchName: huggingface.co
+        - matchPattern: "**.hf.co"
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP

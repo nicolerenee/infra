@@ -36,6 +36,16 @@ spec:
   monitoring:
     enablePodMonitor: true
 
+  # One managed role per tenant; each tenant's Database CR + role secret sits
+  # in <tenant>-db.yaml in this directory.
+  managed:
+    roles:
+      - name: paperless
+        ensure: present
+        login: true
+        passwordSecret:
+          name: paperless-db-role
+
   plugins:
     - name: barman-cloud.cloudnative-pg.io
       isWALArchiver: true

@@ -1,0 +1,25 @@
+---
+# Redis-compatible broker for paperless's Celery queue. Single replica — the
+# queue is transient (consumption tasks re-run), so HA and persistence buy
+# nothing here. Memory-only: no snapshot PVC.
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: paperless-queue
+spec:
+  # renovate: datasource=docker depName=docker.dragonflydb.io/dragonflydb/dragonfly
+  image: docker.dragonflydb.io/dragonflydb/dragonfly:v2.0.2
+  replicas: 1
+  authentication:
+    passwordFromSecret:
+      name: paperless-queue-secrets
+      key: password
+  args:
+    - --proactor_threads=2
+    - --maxmemory=256mb
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 384Mi
