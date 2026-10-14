@@ -25,6 +25,7 @@ nodes:
     role: control-plane
     schematicId: "@schematics/cn.yaml"
     data:
+      powerFeed: pdu01
       homelanBridgeMac: "02:1f:80:03:00:01"
       workloadIsolation: true
   - host: cn02
@@ -32,6 +33,7 @@ nodes:
     role: control-plane
     schematicId: "@schematics/cn.yaml"
     data:
+      powerFeed: pdu02
       homelanBridgeMac: "02:1f:80:03:00:02"
       workloadIsolation: true
   - host: cn03
@@ -39,6 +41,7 @@ nodes:
     role: control-plane
     schematicId: "@schematics/cn.yaml"
     data:
+      powerFeed: pdu01
       homelanBridgeMac: "02:1f:80:03:00:03"
       workloadIsolation: true
 
@@ -47,6 +50,7 @@ nodes:
     role: worker
     schematicId: "@schematics/dgx.yaml"
     data:
+      powerFeed: pdu01
       dhcp: true
       workloadIsolation: true
   - host: dgx02
@@ -54,6 +58,7 @@ nodes:
     role: worker
     schematicId: "@schematics/dgx.yaml"
     data:
+      powerFeed: pdu02
       dhcp: true
       workloadIsolation: true
   - host: dgx03
@@ -61,6 +66,7 @@ nodes:
     role: worker
     schematicId: "@schematics/dgx.yaml"
     data:
+      powerFeed: pdu01
       dhcp: true
       workloadIsolation: true
   # All sparks take their address by DHCP (UDM reservation on the enP7s7
@@ -70,6 +76,7 @@ nodes:
     role: worker
     schematicId: "@schematics/dgx.yaml"
     data:
+      powerFeed: pdu02
       dhcp: true
       workloadIsolation: true
   - host: dgx05
@@ -77,6 +84,7 @@ nodes:
     role: worker
     schematicId: "@schematics/dgx.yaml"
     data:
+      powerFeed: pdu01
       dhcp: true
       workloadIsolation: true
   - host: dgx06
@@ -84,6 +92,7 @@ nodes:
     role: worker
     schematicId: "@schematics/dgx.yaml"
     data:
+      powerFeed: pdu02
       dhcp: true
       workloadIsolation: true
   - host: dgx07
@@ -91,5 +100,6 @@ nodes:
     role: worker
     schematicId: "@schematics/dgx.yaml"
     data:
+      powerFeed: pdu01
       dhcp: true
       workloadIsolation: true

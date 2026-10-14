@@ -43,6 +43,20 @@ spec:
           app.kubernetes.io/component: leader
       spec:
         runtimeClassName: nvidia
+        # Keep both ranks of this tensor-parallel pair on the same power feed
+        # (topology.freckle.systems/power-feed = pdu01 or pdu02, from the Talos node config):
+        # a single UPS/PDU event then takes the whole model down or not at
+        # all, instead of leaving one rank up and the set wedged. Preferred,
+        # not required, so an odd number of free Sparks still schedules.
+        affinity:
+          podAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  topologyKey: topology.freckle.systems/power-feed
+                  labelSelector:
+                    matchLabels:
+                      leaderworkerset.sigs.k8s.io/name: minimax-m27-nvfp4
         tolerations:
           - key: nvidia.com/gpu
             operator: Exists
@@ -195,6 +209,20 @@ spec:
           app.kubernetes.io/component: worker
       spec:
         runtimeClassName: nvidia
+        # Keep both ranks of this tensor-parallel pair on the same power feed
+        # (topology.freckle.systems/power-feed = pdu01 or pdu02, from the Talos node config):
+        # a single UPS/PDU event then takes the whole model down or not at
+        # all, instead of leaving one rank up and the set wedged. Preferred,
+        # not required, so an odd number of free Sparks still schedules.
+        affinity:
+          podAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  topologyKey: topology.freckle.systems/power-feed
+                  labelSelector:
+                    matchLabels:
+                      leaderworkerset.sigs.k8s.io/name: minimax-m27-nvfp4
         tolerations:
           - key: nvidia.com/gpu
             operator: Exists
