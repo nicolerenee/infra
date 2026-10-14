@@ -4,8 +4,12 @@
 # Flags follow the MiaAI-Lab dual-Spark recipe that the NVIDIA-forum 2x Spark
 # write-up ran (TP2+EP, allgather_reducescatter all2all, native MTP k=3, 262K
 # context, 16 seqs, 8192 batched tokens, GMU 0.80). Deviations from that recipe:
-#   - eugr's spark-vllm image (which now carries the Qwen3.8 patch series) instead
-#     of the day-0 NVIDIA image + bind-mounted patches — Talos has no Docker.
+#   - the upstream multi-arch vllm/vllm-openai release image (same one Lightning
+#     runs): 0.31.0 registers Qwen4Exp incl. its MTP drafter, ships the
+#     instanttensor loader, and accepts every flag below. The first deploy ran
+#     eugr's spark-vllm nightly (inherited from the minimax pattern, where
+#     upstream 0.24 hung in multi-node generation); that build is an untagged
+#     `latest` digest Renovate cannot track, so this is the attempt to leave it.
 #   - KV cache left at `auto` (bf16): fp8 KV needs the recipe's QSA attention
 #     patch and it is unknown whether eugr's build includes it. Revisit.
 #   - torch.compile OFF + decode-only CUDA graphs (the recipe's
@@ -35,6 +39,14 @@ metadata:
   name: qwen38-flash-next
 spec:
   replicas: 2
+  # CANARY (2026-10-14): partition 1 = only group 1 rolls to the image below;
+  # group 0 keeps serving on eugr's spark-vllm build until the upstream image has
+  # been verified and benchmarked. Drop the partition to roll group 0 too.
+  rolloutStrategy:
+    type: RollingUpdate
+    rollingUpdateConfiguration:
+      maxUnavailable: 1
+      partition: 1
   leaderWorkerTemplate:
     size: 2
     restartPolicy: RecreateGroupOnPodRestart
@@ -102,7 +114,7 @@ spec:
           # ~124 GiB through it). On unified-memory GB10 the cache competes with
           # the GPU reservation; instanttensor reads the files O_DIRECT anyway.
           - name: evict-page-cache
-            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:d33f2b78ef6b4f11447521a3e496a0711bbd2ac9bb3ff8802a27ab757de9637a
+            image: mirror.gcr.io/vllm/vllm-openai:v0.31.0@sha256:c1c9f6fd5c109ba7f0546a59f5b2f15fb87f64c77782e90a27b648b42a8e67c3
             command:
               - python3
               - -c
@@ -129,7 +141,7 @@ spec:
             # eugr spark-vllm, 2026-10-13 build (post-v0.31 main + the Qwen3.8
             # patch series). Pinned here independently of minimax's digest so
             # that deployment stays on its known-good build.
-            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:d33f2b78ef6b4f11447521a3e496a0711bbd2ac9bb3ff8802a27ab757de9637a
+            image: mirror.gcr.io/vllm/vllm-openai:v0.31.0@sha256:c1c9f6fd5c109ba7f0546a59f5b2f15fb87f64c77782e90a27b648b42a8e67c3
             command:
               - bash
               - -c
@@ -299,7 +311,7 @@ spec:
           # ~124 GiB through it). On unified-memory GB10 the cache competes with
           # the GPU reservation; instanttensor reads the files O_DIRECT anyway.
           - name: evict-page-cache
-            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:d33f2b78ef6b4f11447521a3e496a0711bbd2ac9bb3ff8802a27ab757de9637a
+            image: mirror.gcr.io/vllm/vllm-openai:v0.31.0@sha256:c1c9f6fd5c109ba7f0546a59f5b2f15fb87f64c77782e90a27b648b42a8e67c3
             command:
               - python3
               - -c
@@ -324,7 +336,7 @@ spec:
         containers:
           - name: vllm
             # eugr spark-vllm (arm64) — same image as the leader. Digest-pinned.
-            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:d33f2b78ef6b4f11447521a3e496a0711bbd2ac9bb3ff8802a27ab757de9637a
+            image: mirror.gcr.io/vllm/vllm-openai:v0.31.0@sha256:c1c9f6fd5c109ba7f0546a59f5b2f15fb87f64c77782e90a27b648b42a8e67c3
             command:
               - bash
               - -c
