@@ -3,12 +3,17 @@
 # by vLLM across 2 DGX Sparks as one tensor-parallel + expert-parallel replica.
 # Flags follow the MiaAI-Lab dual-Spark recipe that the NVIDIA-forum 2x Spark
 # write-up ran (TP2+EP, allgather_reducescatter all2all, native MTP k=3, 262K
-# context, 16 seqs, 8192 batched tokens, GMU 0.80). Deviations from that recipe:
+# context, 16 seqs, 8192 batched tokens, GMU 0.78). Deviations from that recipe:
 #   - eugr's spark-vllm image (which now carries the Qwen3.8 patch series) instead
 #     of the day-0 NVIDIA image + bind-mounted patches — Talos has no Docker.
 #   - KV cache left at `auto` (bf16): fp8 KV needs the recipe's QSA attention
 #     patch and it is unknown whether eugr's build includes it. Revisit.
 #   - vLLM's native multi-node launch over a LeaderWorkerSet, same as minimax.
+#   - GMU 0.78, not 0.80: at 0.80 the worker rank ran its host memory down to
+#     ~650 MB during profiling and the engine never came up (the forum write-up
+#     hit the same wall at 0.80 and settled on 0.78). The second init container
+#     also evicts the freshly rclone'd checkpoint from page cache — on these
+#     unified-memory nodes those cached pages are not free for the GPU.
 # No node pinning: the scheduler picks any two Sparks with a free GPU; the
 # power-feed podAffinity only prefers keeping both ranks on one PDU.
 # Weight staging and --load-format instanttensor are the proven minimax pattern
@@ -83,6 +88,32 @@ spec:
                 readOnly: true
               - name: local-models
                 mountPath: /models
+          # Evict the just-copied checkpoint from host page cache (rclone wrote
+          # ~124 GiB through it). On unified-memory GB10 the cache competes with
+          # the GPU reservation; instanttensor reads the files O_DIRECT anyway.
+          - name: evict-page-cache
+            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:d33f2b78ef6b4f11447521a3e496a0711bbd2ac9bb3ff8802a27ab757de9637a
+            command:
+              - python3
+              - -c
+              - |
+                import os, sys
+                root = "/models/hub/models--nvidia--Qwen3.8-Flash-Next-NVFP4"
+                n = 0
+                for d, _, files in os.walk(root):
+                    for f in files:
+                        p = os.path.join(d, f)
+                        try:
+                            fd = os.open(p, os.O_RDONLY)
+                            os.fsync(fd) if False else None
+                            os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
+                            os.close(fd); n += 1
+                        except OSError as e:
+                            print("skip", p, e)
+                print("evicted page cache for", n, "files")
+            volumeMounts:
+              - name: local-models
+                mountPath: /models
         containers:
           - name: vllm
             # eugr spark-vllm, 2026-10-13 build (post-v0.31 main + the Qwen3.8
@@ -99,7 +130,7 @@ spec:
                   --tensor-parallel-size 2 \
                   --enable-expert-parallel \
                   --all2all-backend allgather_reducescatter \
-                  --gpu-memory-utilization 0.80 \
+                  --gpu-memory-utilization 0.78 \
                   --max-model-len 262144 \
                   --max-num-seqs 16 \
                   --max-num-batched-tokens 8192 \
@@ -249,6 +280,32 @@ spec:
                 readOnly: true
               - name: local-models
                 mountPath: /models
+          # Evict the just-copied checkpoint from host page cache (rclone wrote
+          # ~124 GiB through it). On unified-memory GB10 the cache competes with
+          # the GPU reservation; instanttensor reads the files O_DIRECT anyway.
+          - name: evict-page-cache
+            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:d33f2b78ef6b4f11447521a3e496a0711bbd2ac9bb3ff8802a27ab757de9637a
+            command:
+              - python3
+              - -c
+              - |
+                import os, sys
+                root = "/models/hub/models--nvidia--Qwen3.8-Flash-Next-NVFP4"
+                n = 0
+                for d, _, files in os.walk(root):
+                    for f in files:
+                        p = os.path.join(d, f)
+                        try:
+                            fd = os.open(p, os.O_RDONLY)
+                            os.fsync(fd) if False else None
+                            os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
+                            os.close(fd); n += 1
+                        except OSError as e:
+                            print("skip", p, e)
+                print("evicted page cache for", n, "files")
+            volumeMounts:
+              - name: local-models
+                mountPath: /models
         containers:
           - name: vllm
             # eugr spark-vllm (arm64) — same image as the leader. Digest-pinned.
@@ -263,7 +320,7 @@ spec:
                   --tensor-parallel-size 2 \
                   --enable-expert-parallel \
                   --all2all-backend allgather_reducescatter \
-                  --gpu-memory-utilization 0.80 \
+                  --gpu-memory-utilization 0.78 \
                   --max-model-len 262144 \
                   --max-num-seqs 16 \
                   --max-num-batched-tokens 8192 \
