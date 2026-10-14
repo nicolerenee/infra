@@ -72,6 +72,22 @@ All DGX nodes are tainted with `nvidia.com/gpu=NoSchedule` so only workloads
 that explicitly tolerate GPU scheduling land on them. Typical workloads include
 vLLM inference and model loading.
 
+## Power Feed Labels
+
+Every fairy node carries `topology.freckle.systems/power-feed`, set from
+`data.powerFeed` in the cluster's `topf.yaml` through the worker and
+control-plane `20-node.yaml.tpl` patches. The value is the PDU that feeds the
+node: `pdu01` (ups01, odd-numbered devices) or `pdu02` (ups02, even). The two
+feeds balance load; they are not redundant.
+
+Multi-node inference deployments (the LeaderWorkerSets) carry a preferred
+`podAffinity` on that key so both ranks of a tensor-parallel pair land on one
+feed. A single UPS or PDU event then takes the whole model down or not at all,
+rather than leaving one rank alive and the set wedged. It is preferred, not
+required, so an odd number of free Sparks still schedules. Copy the affinity
+block from `kubernetes/apps/inference/models/minimax-m27-nvfp4/` into any new
+multi-node deployment.
+
 ## Network Interfaces
 
 Each DGX Spark has 2 physical ConnectX-7 QSFP56 ports and 1 Realtek RTL8127
