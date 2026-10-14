@@ -33,6 +33,12 @@ parameters:
   compression: LZ4
   nfs.networks: ${TRUENAS_NFS_CLIENT_NETWORKS}
   nfs.mountOptions: hard,nfsvers=4.1
+  # No root squash: files on the mirror must be owned by the mover's UID.
+  # VolSync's rsync daemon opens files with O_NOATIME, which Linux only
+  # permits for the file owner; with mapall=root every file is root-owned
+  # and the non-root receiver can't open a basis file, so every delta
+  # transfer dies (code 12) while first-time copies succeed.
+  nfs.rootSquash: "false"
 reclaimPolicy: Retain
 volumeBindingMode: Immediate
 allowVolumeExpansion: true

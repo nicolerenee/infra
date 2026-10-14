@@ -117,9 +117,11 @@ snapshot task per PVC.
 | weekly snapshots | `vault01/kubernetes/backups` | Sun 03:00 | 3 months |
 | replication to `atlantis-store01` | `vault01/kubernetes/backups` | TODO | raw send, keeps encryption |
 
-Files in a backup dataset are owned `root:<app gid>` because the NFS export
-squashes all client access to root (`mapall`). That is fine for a mirror;
-a restore runs as the app's UID and produces files it owns.
+The backup exports do NOT squash root (`nfs.rootSquash: "false"`), so files in
+a backup dataset are owned by the app's UID (the mover runs as `VOLSYNC_UID`).
+This is required, not cosmetic: VolSync's rsync daemon opens files with
+`O_NOATIME`, which Linux only allows for the owner, so with root-squashed
+exports every delta transfer against an existing file failed.
 
 ## Restore runbook
 

@@ -30,6 +30,9 @@ spec:
   timeout: 5m
   prune: true
   wait: true
+  # StorageClass parameters are immutable; force lets Flux delete+recreate the
+  # class when they change (bound PVs are unaffected).
+  force: true
   postBuild:
     substitute:
       TRUENAS_API_URL: https://10.189.3.8
