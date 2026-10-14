@@ -95,9 +95,11 @@ spec:
               PAPERLESS_AI_LLM_EMBEDDING_BACKEND: huggingface
               # Qwen3.6 thinks before every reply by default; suggestions are
               # short structured output that doesn't need it and it multiplies
-              # latency. vLLM honours this per-request switch. Drop the line to
-              # compare quality with thinking on.
-              PAPERLESS_AI_LLM_EXTRA_PARAMS: '{"chat_template_kwargs": {"enable_thinking": false}}'
+              # latency. Paperless passes this JSON as keyword args to the OpenAI
+              # SDK, so vLLM-only fields must ride inside `extra_body` (a bare
+              # chat_template_kwargs is a TypeError). Drop the line to compare
+              # quality with thinking on.
+              PAPERLESS_AI_LLM_EXTRA_PARAMS: '{"extra_body": {"chat_template_kwargs": {"enable_thinking": false}}}'
             envFrom:
               - secretRef:
                   name: paperless-secrets
