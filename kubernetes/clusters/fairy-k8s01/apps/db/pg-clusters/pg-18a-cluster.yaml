@@ -1,0 +1,77 @@
+---
+# Shared PostgreSQL 18 for small services on fairy (paperless, mealie,
+# windmill, litellm...). Successor to pg-17a: same shape, but backups go
+# through the barman-cloud plugin (in-tree barman is removed in CNPG 1.31)
+# and secrets come from GSM. Apps get a managed role + Database CR each
+# (see the janet-db pattern) rather than postgres-init with the superuser.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: pg-18a
+spec:
+  instances: 3
+  # CNPG "standard" image — bundles pgvector, PGAudit, Failover Slots, locales, JIT.
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.3-standard-trixie@sha256:9f9f53c9e07e5b2924945e6eaeb9168f7e856786d221839866ac85ccd703b3ba
+  primaryUpdateStrategy: unsupervised
+  primaryUpdateMethod: switchover
+  storage:
+    size: 50Gi
+    storageClass: ceph-block
+  superuserSecret:
+    name: pg-18a-superuser
+  enableSuperuserAccess: true
+  postgresql:
+    parameters:
+      max_connections: "400"
+      shared_buffers: 512MB
+  nodeMaintenanceWindow:
+    inProgress: false
+    reusePVC: true
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      memory: 4Gi
+  monitoring:
+    enablePodMonitor: true
+
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: pg-18a-ceph-store
+        # Bump the version suffix when recovering from a prior cluster.
+        serverName: pg-18a-v1
+
+  # When recovering from a prior cluster, uncomment and set source/serverName
+  # to the previous cluster's serverName (restore the bucket from the NAS
+  # mirror first if the cluster is gone — see docs/storage/fairy-backups.md).
+  # bootstrap:
+  #   recovery:
+  #     source: &previousCluster pg-18a-v0
+  # externalClusters:
+  #   - name: *previousCluster
+  #     plugin:
+  #       name: barman-cloud.cloudnative-pg.io
+  #       parameters:
+  #         barmanObjectName: pg-18a-ceph-store
+  #         serverName: *previousCluster
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: pg-18a-backup
+spec:
+  # CNPG schedule is a 6-field cron, SECONDS-FIRST (sec min hour dom mon dow).
+  # A 5-field "0 0 * * *" is read as every-hour and silently produces 24x the
+  # base backups. This is every 6h (00/06/12/18:00); PITR granularity comes from
+  # WAL archiving, so base-backup cadence only trades restore speed vs. storage.
+  schedule: "0 0 */6 * * *"
+  backupOwnerReference: self
+  cluster:
+    name: pg-18a
+  target: prefer-standby
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io

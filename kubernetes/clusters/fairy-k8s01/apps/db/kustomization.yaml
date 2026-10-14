@@ -8,5 +8,7 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./external-secrets.yaml
   - ./cloudnative-pg.yaml
+  - ./barman-plugin.yaml
   - ./dragonfly-operator.yaml

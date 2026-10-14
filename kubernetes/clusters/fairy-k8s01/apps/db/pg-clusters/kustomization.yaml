@@ -5,3 +5,7 @@ kind: Kustomization
 resources:
   - ./pg-17a-cluster.yaml
   - ./pg-17a-externalsecret.yaml
+  - ./pg-18a-externalsecret.yaml
+  - ./pg-18a-objectstore.yaml
+  - ./pg-18a-cluster.yaml
+  - ./pg-18a-bucket-mirror.yaml

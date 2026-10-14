@@ -19,7 +19,10 @@ spec:
     remediation:
       retries: 1
   values:
-    namespaceOverride: cnpg-system
+    # The plugin must run in the CNPG operator's namespace (the operator
+    # discovers plugins by Service in its own namespace). atlantis runs the
+    # operator in cnpg-system, fairy in db — the cluster pointer substitutes.
+    namespaceOverride: ${CNPG_OPERATOR_NAMESPACE:=cnpg-system}
     image:
       registry: ghcr.io
       repository: cloudnative-pg/plugin-barman-cloud

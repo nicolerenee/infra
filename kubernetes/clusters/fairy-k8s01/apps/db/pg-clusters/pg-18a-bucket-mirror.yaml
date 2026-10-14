@@ -1,0 +1,109 @@
+---
+# Off-cluster copy of the pg-18a barman bucket. rclone mirrors the RGW
+# bucket into a dataset on fairy-store01 every 15 minutes; the dataset is
+# then covered by the same ZFS snapshot + replication tasks as the VolSync
+# targets. Worst case a cluster loss costs one interval of WAL beyond the
+# last mirror. The mirror propagates barman's retention deletes (ZFS
+# snapshots keep the longer history), which is why `sync` not `copy`.
+#
+# Restore after a cluster rebuild: recreate the OBC, `rclone sync` the
+# dataset back into the bucket (reverse of the command below), then
+# bootstrap the Cluster with recovery from serverName pg-18a-v1.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pg-18a-bucket-mirror
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: truenas-nfs-backup
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pg-18a-bucket-mirror
+spec:
+  schedule: "*/15 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 840
+      template:
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: rclone
+              image: rclone/rclone:1.75.2
+              args:
+                - sync
+                - rgw:$(BUCKET_NAME)
+                - /mirror
+                - --fast-list
+                - --transfers=8
+                - --stats-one-line
+                - --stats=0
+                - --log-level=INFO
+              env:
+                - name: RCLONE_CONFIG_RGW_TYPE
+                  value: s3
+                - name: RCLONE_CONFIG_RGW_PROVIDER
+                  value: Ceph
+                - name: RCLONE_CONFIG_RGW_ENDPOINT
+                  value: http://rook-ceph-rgw-ceph-objectstore.rook-ceph.svc:80
+                - name: RCLONE_CONFIG_RGW_REGION
+                  value: us-east-1
+                - name: RCLONE_CONFIG_RGW_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: pg-18a-bucket
+                      key: AWS_ACCESS_KEY_ID
+                - name: RCLONE_CONFIG_RGW_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: pg-18a-bucket
+                      key: AWS_SECRET_ACCESS_KEY
+                - name: BUCKET_NAME
+                  valueFrom:
+                    configMapKeyRef:
+                      name: pg-18a-bucket
+                      key: BUCKET_NAME
+                # rclone writes its config under $HOME; the root fs is read-only.
+                - name: RCLONE_CONFIG
+                  value: /tmp/rclone.conf
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: [ALL]
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  memory: 512Mi
+              volumeMounts:
+                - name: mirror
+                  mountPath: /mirror
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: mirror
+              persistentVolumeClaim:
+                claimName: pg-18a-bucket-mirror
+            - name: tmp
+              emptyDir: {}

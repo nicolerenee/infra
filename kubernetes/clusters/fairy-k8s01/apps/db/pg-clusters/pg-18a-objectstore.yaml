@@ -1,0 +1,40 @@
+---
+# Rook OBC: provisions `pg-18a-backups` in the in-cluster Ceph RGW and
+# creates a Secret + ConfigMap named after the OBC. The Secret carries
+# AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY scoped to this bucket; both the
+# barman ObjectStore and the NAS mirror CronJob consume it directly, so no
+# off-cluster credential exists for this path.
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: pg-18a-bucket
+spec:
+  bucketName: pg-18a-backups
+  storageClassName: ceph-bucket
+---
+# Barman target: Ceph RGW via the OBC bucket. Retention here governs the
+# bucket; the NAS mirror keeps longer history through ZFS snapshots.
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: pg-18a-ceph-store
+spec:
+  configuration:
+    destinationPath: s3://pg-18a-backups/
+    endpointURL: http://rook-ceph-rgw-ceph-objectstore.rook-ceph.svc:80
+    s3Credentials:
+      region:
+        name: pg-18a-superuser
+        key: s3-region
+      accessKeyId:
+        name: pg-18a-bucket
+        key: AWS_ACCESS_KEY_ID
+      secretAccessKey:
+        name: pg-18a-bucket
+        key: AWS_SECRET_ACCESS_KEY
+    wal:
+      compression: bzip2
+      maxParallel: 8
+    data:
+      compression: bzip2
+  retentionPolicy: "30d"

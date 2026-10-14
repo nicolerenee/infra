@@ -141,6 +141,38 @@ steps above. Pausing the app's ReplicationSource (`spec.paused: true`) until
 the restore is verified prevents the next scheduled sync from mirroring an
 empty PVC over the backup.
 
+## PostgreSQL (CNPG) backups
+
+CNPG clusters on fairy back up through the barman-cloud plugin into a
+bucket on the in-cluster Ceph RGW (an ObjectBucketClaim per cluster, so the
+credentials never leave the cluster), and an rclone CronJob mirrors that
+bucket into a `truenas-nfs-backup` PVC every 15 minutes. From there the
+same ZFS snapshot and replication tasks apply. A cluster loss therefore
+costs at most one mirror interval of WAL.
+
+| Piece | Location |
+|---|---|
+| plugin | `kubernetes/apps/database/cloudnative-pg/barman-plugin/`, pointer `clusters/fairy-k8s01/apps/db/barman-plugin.yaml` |
+| pg-18a cluster, ObjectStore, ScheduledBackup, mirror | `clusters/fairy-k8s01/apps/db/pg-clusters/pg-18a-*.yaml` |
+
+Base backups run every 6 hours (the ScheduledBackup cron is six fields,
+seconds first); point-in-time granularity comes from WAL archiving. Bucket
+retention is 30 days; the mirror follows the bucket, and ZFS snapshots keep
+the longer tail.
+
+### Restore after a cluster rebuild
+
+1. Deploy the plugin and the OBC so the bucket exists again (it will be
+   empty).
+2. Run the mirror in reverse from a one-off pod with the mirror PVC
+   mounted: `rclone sync /mirror rgw:pg-18a-backups`. To restore to an
+   older point, copy from `.zfs/snapshot/<name>/` instead of the live
+   mirror.
+3. In `pg-18a-cluster.yaml`, uncomment `bootstrap.recovery` and
+   `externalClusters` pointing at the previous `serverName`, and bump the
+   cluster's own `serverName` suffix so the new archive doesn't collide.
+4. After the cluster is healthy, remove the bootstrap block.
+
 ## Operating notes
 
 - Verified 2026-10-13 on fairy: two consecutive syncs of a test PVC landed
