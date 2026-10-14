@@ -59,7 +59,7 @@ tasks:
       markdown results table to your terminal.
 
       Required vars:
-        SVC     Service name of the served model (e.g. minimax-m27-nvfp4-api, qwen36-35b-a3b)
+        SVC     Service name of the served model (e.g. minimax-m27-nvfp4-api, qwen38-flash-next-api)
         MODEL   Served model id as vLLM reports it at /v1/models
                 (e.g. openai/gpt-oss-120b). Find it with:
                   kubectl -n inference run -q --rm -it curl --image=curlimages/curl --restart=Never -- \
@@ -84,7 +84,9 @@ tasks:
       CONCURRENCY: '{{.CONCURRENCY | default "1 2 5 10"}}'
       BENCHY_SPEC: '{{if .BENCHY}}llama-benchy@{{.BENCHY}}{{else}}llama-benchy{{end}}'
       JOB_NAME: "bench-{{.SVC}}"
-      BASE_URL: "http://{{.SVC}}.{{.NS}}.svc.cluster.local:8000/v1"
+      # Override to benchmark through the ai gateway instead of the pod service,
+      # e.g. BASE_URL=http://ai.inference.svc.cluster.local/v1 (routes on the model id).
+      BASE_URL: '{{.BASE_URL | default (printf "http://%s.%s.svc.cluster.local:8000/v1" .SVC .NS)}}'
     cmds:
       # Replace any prior run so the job name stays stable and re-runnable.
       - kubectl {{.KCTX}} -n {{.NS}} delete job {{.JOB_NAME}} --ignore-not-found
@@ -101,7 +103,8 @@ tasks:
           template:
             metadata:
               labels:
-                # Source label the model ingress CNP allows through to :8000.
+                # Intended as the source label for a model-CNP ingress rule to :8000.
+                # No model CNP allows it yet, so benchmark via BASE_URL=<ai gateway>.
                 inference.freckle.systems/role: benchmark
             spec:
               restartPolicy: Never

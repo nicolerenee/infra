@@ -1,7 +1,7 @@
 ---
 # Headless (clusterIP: None) so the AI gateway resolves one A record per READY
 # pod and load-balances per request if this is ever scaled past one replica
-# (see the qwen36-35b-a3b Service for the kube-proxy pinning this avoids).
+# (see the ai-routes header for the kube-proxy pinning this avoids).
 apiVersion: v1
 kind: Service
 metadata:

@@ -7,7 +7,7 @@
 # Flags follow NVIDIA's model-card recipe for DGX Spark (hybrid Mamba-2 MoE:
 # flashinfer mamba backend + aligned cache, marlin MoE, fp8 KV).
 #
-# Unlike qwen36-35b-a3b there is NO CephFS -> node-local NVMe staging: the
+# Unlike the LWS models there is NO CephFS -> node-local NVMe staging: the
 # Sparks and the Ceph nodes now share the 10G switch, and this deployment is
 # the experiment to see how fast vLLM loads a 20 GiB checkpoint straight off
 # the CephFS `models` PVC (HF cache layout, offline). If load time is poor,

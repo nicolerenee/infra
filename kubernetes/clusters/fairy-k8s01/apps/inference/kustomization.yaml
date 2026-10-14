@@ -15,7 +15,6 @@ resources:
   - ./minimax-m27-nvfp4.yaml
   - ./nemotron-35-lightning.yaml
   - ./models-pvc.yaml
-  - ./qwen36-35b-a3b.yaml
   - ./qwen38-flash-next.yaml
   - ./resource-claims.yaml
   # vllm-gpt-oss-2node disabled — torn down to free DGX GPUs for the Qwen

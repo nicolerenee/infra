@@ -7,10 +7,10 @@
 # Janet sends Anthropic Messages with model = a semantic name; the "ai" Gateway
 # extracts it into x-ai-eg-model and routes here. Backend schema is OpenAI, so
 # EAG translates Anthropic→OpenAI for vLLM. The concrete model id stays
-# gateway-only — each rule rewrites the semantic name to qwen3.6-35b-a3b via
+# gateway-only — each rule rewrites the served name to a short semantic id via
 # modelNameOverride.
 #
-# HA: the qwen Service is HEADLESS, so this FQDN resolves to one A record per
+# HA: the *-api Services are HEADLESS, so each FQDN resolves to one A record per
 # ready pod and Envoy's STRICT_DNS cluster load-balances per REQUEST (round-robin)
 # across the pods, dropping any that fail /health. This replaced a ClusterIP,
 # which gave Envoy a single VIP endpoint and let kube-proxy pin ~99% of traffic
@@ -22,28 +22,6 @@
 # BackendTrafficPolicy can only target a Gateway/Route — a Gateway-scoped policy
 # would also hit the shared Anthropic backend. Revisit if backend-scoped traffic
 # policy lands.)
-apiVersion: gateway.envoyproxy.io/v1alpha1
-kind: Backend
-metadata:
-  name: qwen36-35b-a3b
-spec:
-  endpoints:
-    - fqdn:
-        hostname: qwen36-35b-a3b.inference.svc.cluster.local
-        port: 8000
----
-apiVersion: aigateway.envoyproxy.io/v1beta1
-kind: AIServiceBackend
-metadata:
-  name: local-qwen36-35b-a3b
-spec:
-  schema:
-    name: OpenAI
-  backendRef:
-    group: gateway.envoyproxy.io
-    kind: Backend
-    name: qwen36-35b-a3b
----
 # MiniMax-M2.7 (NVFP4), served by the 2-node vLLM LeaderWorkerSet. Only the
 # leader exposes the OpenAI API, so the minimax-m27-nvfp4-api Service selects the
 # leader pod only — this Backend resolves that single ready A record (no
@@ -128,28 +106,10 @@ spec:
     - name: ai
       kind: Gateway
       group: gateway.networking.k8s.io
-  # The brain's models.json registry sends model=Qwen3.6-35B-A3B-FP8 directly, so
-  # this single rule (matching the real served name) is what Janet hits and what
-  # surfaces the model in the gateway's GET /v1/models. The old tier names
-  # (chat/fast/planning/code/secure-local/secure-ephemeral) were removed once
-  # nothing referenced them. When a dedicated coder/27B backend lands, add a rule
-  # matching its served name pointing at that backend.
+  # One rule per served model: clients send the canonical served name (also what
+  # surfaces in the gateway's GET /v1/models) and the override rewrites it to the
+  # short id each deploy passes as --served-model-name.
   rules:
-    - matches:
-        - headers:
-            - type: Exact
-              name: x-ai-eg-model
-              value: Qwen3.6-35B-A3B-FP8
-      backendRefs:
-        - name: local-qwen36-35b-a3b
-          modelNameOverride: qwen3.6-35b-a3b
-      # Streaming LLM responses legitimately run several minutes; Envoy AI
-      # Gateway's implicit 60s request-timeout default truncated long single
-      # generations mid-stream. 30m is a runaway backstop a real turn never
-      # reaches — a genuinely stalled stream is reaped far sooner by the
-      # gateway-wide streamIdleTimeout (see ai-buffer-limit ClientTrafficPolicy).
-      timeouts:
-        request: 1800s
     # MiniMax-M2.7 (NVFP4). Clients send model=nvidia/MiniMax-M2.7-NVFP4 (the
     # canonical served name, also what surfaces in GET /v1/models); the override
     # sends the shorter semantic id, also in the deploy's --served-model-name.

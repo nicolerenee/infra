@@ -20,8 +20,12 @@
 #     not the reservation. The second init container evicts the freshly
 #     rclone'd checkpoint from page cache — on unified-memory nodes those
 #     cached pages are not free for the GPU.
-# No node pinning: the scheduler picks any two Sparks with a free GPU; the
-# power-feed podAffinity only prefers keeping both ranks on one PDU.
+# Two independent serving groups (replicas: 2), each a leader+worker pair: the
+# headless -api Service lists every ready leader, so the gateway round-robins
+# requests across groups and one group can be bounced without an outage.
+# No node pinning: the scheduler picks any two Sparks with a free GPU per group;
+# the power-feed podAffinity only prefers keeping ranks on one PDU (it matches
+# the LWS name, so it also pulls groups toward each other — preferred only).
 # Weight staging and --load-format instanttensor are the proven minimax pattern
 # (see that file's header for why instanttensor is mandatory on unified-memory
 # GB10). Served offline, egress locked in cnp.yaml.
@@ -30,7 +34,7 @@ kind: LeaderWorkerSet
 metadata:
   name: qwen38-flash-next
 spec:
-  replicas: 1
+  replicas: 2
   leaderWorkerTemplate:
     size: 2
     restartPolicy: RecreateGroupOnPodRestart
