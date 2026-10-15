@@ -1,0 +1,19 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./helmrepository.yaml
+  - ./externalsecret.yaml
+  - ./helmrelease.yaml
+  - ./httproute.yaml
+configMapGenerator:
+  - name: windmill-grants
+    files:
+      - grants.sh=./resources/grants.sh
+generatorOptions:
+  disableNameSuffixHash: true
+  # grants.sh is a shell script full of ${INIT_POSTGRES_*} that the init
+  # container expands at runtime; keep Flux's (strict) post-build substitution
+  # off this ConfigMap or those become unset-variable failures at render time.
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled

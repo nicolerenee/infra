@@ -1,0 +1,62 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: windmill
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: windmill
+      version: 4.0.264
+      sourceRef:
+        kind: HelmRepository
+        name: windmill
+  values:
+    postgresql:
+      enabled: false
+
+    windmill:
+      appReplicas: 1
+      databaseUrlSecretName: windmill
+      baseDomain: windmill.fairy.freckle.systems
+      baseProtocol: https
+
+      workerGroups:
+        - name: default
+          replicas: 1
+          privileged: false
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+
+      app:
+        initContainers:
+          - name: 01-init-db
+            image: ghcr.io/home-operations/postgres-init:18.3@sha256:6fa1f331cddd2eb0b6afa7b8d3685c864127a81ab01c3d9400bc3ff5263a51cf
+            envFrom: &envFrom
+              - secretRef:
+                  name: windmill
+          - name: 02-init-grants
+            image: ghcr.io/home-operations/postgres-init:18.3@sha256:6fa1f331cddd2eb0b6afa7b8d3685c864127a81ab01c3d9400bc3ff5263a51cf
+            command:
+              - /bin/bash
+              - -c
+              - /var/run/grants.sh
+            envFrom: *envFrom
+            volumeMounts:
+              - name: grants
+                readOnly: true
+                subPath: grants.sh
+                mountPath: /var/run/grants.sh
+        volumes:
+          - name: grants
+            configMap:
+              name: windmill-grants
+              defaultMode: 0755
+
+    ingress:
+      enabled: false

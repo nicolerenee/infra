@@ -1,0 +1,12 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: mealie
+components:
+  - ../_shared/cluster-info
+  - ../../../../components/common
+  - ../../../../components/flux-post-build-variables
+resources:
+  - ./external-secrets.yaml
+  - ./mealie.yaml

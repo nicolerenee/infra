@@ -1,0 +1,26 @@
+---
+# Plain-HTTP tailnet endpoint for this cluster's vmsingle, separate from the
+# Envoy tailnet gateway. Things on the tailnet (and, through a Tailscale
+# egress Service, pods on the other cluster — DCIM is the first consumer)
+# get a stable per-cluster name: <cluster>-victoriametrics.<tailnet>:8428.
+# Rides the existing ingress-proxy ProxyGroup like the tailnet gateway does.
+apiVersion: v1
+kind: Service
+metadata:
+  name: vmsingle-vm-tailnet
+  annotations:
+    tailscale.com/hostname: ${CLUSTER_SUBDOMAIN}-victoriametrics
+    tailscale.com/proxy-group: ingress-proxy
+    tailscale.com/tags: tag:${CLUSTER_NAME}-gw
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  selector:
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/instance: vm
+    app.kubernetes.io/name: vmsingle
+    managed-by: vm-operator
+  ports:
+    - name: http
+      port: 8428
+      targetPort: 8428

@@ -1,0 +1,101 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: mealie
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: default
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+
+  values:
+    controllers:
+      mealie:
+        annotations:
+          reloader.stakater.com/auto: "true"
+
+        initContainers:
+          init-db:
+            image:
+              repository: ghcr.io/home-operations/postgres-init
+              tag: 17.6@sha256:86a1992d46273c58fd4ad95b626081dfaabfe16bd56944675169e406d1a660dd
+              pullPolicy: IfNotPresent
+            envFrom: &envFrom
+              - secretRef:
+                  name: mealie
+
+        containers:
+          app:
+            image:
+              repository: ghcr.io/mealie-recipes/mealie
+              tag: v3.28.0@sha256:8b02290f4d1806f02acac6f25f6d48a3c965612fda1f8e914d5af533276f8688
+            env:
+              TZ: "America/Chicago"
+              BASE_URL: https://mealie.fairy.freckle.systems
+              DB_ENGINE: postgres
+              SMTP_HOST: smtp.mailgun.org
+              SMTP_PORT: 587
+              SMTP_FROM_NAME: Mealie
+              SMTP_FROM_EMAIL: noreply@freckle.systems
+              SMTP_AUTH_STRATEGY: TLS
+              SMTP_USER: mealie@freckle.systems
+              OPENAI_BASE_URL: https://openrouter.ai/api/v1
+              OIDC_AUTH_ENABLED: true
+              OIDC_PROVIDER_NAME: Freckle ID
+              OIDC_CONFIGURATION_URL: https://freckle.id/.well-known/openid-configuration
+              OIDC_SIGNUP_ENABLED: true
+              OIDC_USER_GROUP: mealie_users
+              OIDC_ADMIN_GROUP: mealie_admins
+              # OIDC_AUTO_REDIRECT: true   # Optional: The login page will be bypassed and you will be sent directly to your Identity Provider.
+              OIDC_REMEMBER_ME: true
+            envFrom:
+              - secretRef:
+                  name: mealie
+              # OIDC_CLIENT_ID + OIDC_CLIENT_SECRET
+              - secretRef:
+                  name: mealie-oidc
+            resources:
+              requests:
+                memory: 250Mi
+                cpu: 50m
+              limits:
+                memory: 500Mi
+
+    service:
+      app:
+        controller: mealie
+        ports:
+          http:
+            port: 9000
+
+    route:
+      app:
+        hostnames: ["{{ .Release.Name }}.fairy.freckle.systems"]
+        parentRefs:
+          - name: tailnet
+            namespace: gateway-system
+        rules:
+          - backendRefs:
+              - name: mealie
+                port: 9000
+
+    persistence:
+      data:
+        enabled: true
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 15Gi
+        retain: true
+        suffix: "config"
+        globalMounts:
+          - path: /app/data

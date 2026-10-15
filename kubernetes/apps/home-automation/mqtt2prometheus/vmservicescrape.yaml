@@ -1,0 +1,20 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: mqtt2prometheus
+spec:
+  endpoints:
+    # SolarAssistant publishes every ~1s and the exporter only keeps the latest
+    # value per topic, so a slow scrape throws most of the detail away. ~50
+    # series at 5s is still tiny.
+    - interval: 5s
+      scrapeTimeout: 4s
+      port: metrics
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - home-automation
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mqtt2prometheus
