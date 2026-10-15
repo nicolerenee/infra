@@ -1,0 +1,85 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
+# kagent controller: the Kubernetes-native agent runtime (Agent / ModelConfig /
+# RemoteMCPServer CRDs; each Agent becomes a Deployment exposing an A2A endpoint
+# on :8080). Controller-only install: every built-in agent is off, the bundled
+# Grafana MCP and the kmcp (MCPServer-deploying) controller are off. Agents are
+# plain read-only Deployments that call the in-cluster AI gateway; the
+# scheduling, triggering and posting live in Windmill, not here.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kagent
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: kagent
+  dependsOn:
+    - name: kagent-crds
+  driftDetection:
+    mode: enabled
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    # The controller only watches its own namespace: namespaced Role/RoleBinding
+    # instead of the chart's default cluster-wide read on apiGroups "*".
+    rbac:
+      namespaces:
+        - ai-agents
+    providers:
+      default: openAI
+      openAI:
+        provider: OpenAI
+        # Default ModelConfig the chart generates (`default-model-config`):
+        # Flash-Next through the AI gateway, which routes on the model id. The
+        # gateway is unauthenticated but kagent's OpenAI provider refuses to
+        # start without a key secret, so the chart mints one with this value.
+        model: nvidia/Qwen3.8-Flash-Next-NVFP4
+        apiKeySecretRef: kagent-openai
+        apiKeySecretKey: OPENAI_API_KEY
+        apiKey: unused
+        config:
+          baseUrl: http://ai-gateway.inference.svc.cluster.local/v1
+    database:
+      postgres:
+        bundled:
+          enabled: true
+          storage: 2Gi
+          storageClassName: ceph-block
+    # Built-in tool server (read-only Kubernetes tools agents may opt into).
+    kagent-tools:
+      enabled: true
+      tools:
+        loglevel: info
+    kmcp:
+      enabled: false
+    grafana-mcp:
+      enabled: false
+    k8s-agent: { enabled: false }
+    kgateway-agent: { enabled: false }
+    istio-agent: { enabled: false }
+    promql-agent: { enabled: false }
+    observability-agent: { enabled: false }
+    argo-rollouts-agent: { enabled: false }
+    helm-agent: { enabled: false }
+    cilium-policy-agent: { enabled: false }
+    cilium-manager-agent: { enabled: false }
+    cilium-debug-agent: { enabled: false }
+    ui:
+      # No route yet — port-forward while this is a trial.
+      httpRoute:
+        enabled: false
+    otel:
+      tracing:
+        enabled: true
+        exporter:
+          otlp:
+            endpoint: otel-collector.observability.svc.cluster.local:4317
+            protocol: grpc
+            insecure: true

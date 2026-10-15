@@ -1,0 +1,104 @@
+---
+# Namespace-wide policy for ai-agents. Nothing here holds a credential: agents
+# reach the AI gateway and read-only MCP servers, and are called by Windmill.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: ai-agents
+spec:
+  endpointSelector: {}
+  ingress:
+    # Intra-namespace (controller <-> agents <-> tools <-> bundled postgres).
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: ai-agents
+    # Windmill drives the agents over A2A (:8080) and the controller API (:8083).
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: windmill
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+            - port: "8083"
+              protocol: TCP
+    # Metrics scrape.
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/name: vmagent
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+          rules:
+            dns:
+              - matchPattern: "*"
+    - toEntities:
+        - kube-apiserver
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: ai-agents
+    # Models: the AI gateway (listener :10080 on the Envoy pods).
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: inference
+            gateway.envoyproxy.io/owning-gateway-name: ai
+      toPorts:
+        - ports:
+            - port: "10080"
+              protocol: TCP
+    # Read-only MCP servers. The Victoria charts label pods by chart name
+    # (victoria-metrics-mcp / victoria-logs-mcp); the release name is in the
+    # instance label, which all three share consistently.
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/instance: mcp-victoriametrics
+        - matchLabels:
+            io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/instance: mcp-victorialogs
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/instance: mcp-victoriatraces
+      toPorts:
+        - ports:
+            - port: "8081"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: flux-system
+            app.kubernetes.io/name: flux-operator-mcp
+      toPorts:
+        - ports:
+            - port: "9090"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: janet-mcp
+            app: jina-reader
+      toPorts:
+        - ports:
+            - port: "8081"
+              protocol: TCP
+    # Traces.
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/name: otel-collector
+      toPorts:
+        - ports:
+            - port: "4317"
+              protocol: TCP

@@ -1,0 +1,16 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ai-agents
+components:
+  - ../_shared/cluster-info
+  - ../../../../components/common
+  - ../../../../components/flux-post-build-variables
+resources:
+  - ./kagent-crds.yaml
+  - ./kagent.yaml
+  - ./mcp-servers.yaml
+  - ./probe.yaml
+  - ./log-search.yaml
+  - ./cluster-triage.yaml

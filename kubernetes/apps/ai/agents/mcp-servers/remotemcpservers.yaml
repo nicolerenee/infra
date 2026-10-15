@@ -1,0 +1,41 @@
+---
+# Read-only MCP servers the agents may be given. Each Agent still opts in per
+# tool via `toolNames`; defining a server here grants nothing by itself. All are
+# existing in-cluster services (observability + flux-system); none hold write
+# credentials. The chart's kagent-tool-server (read-only Kubernetes tools) is
+# created by the kagent HelmRelease.
+apiVersion: kagent.dev/v1alpha2
+kind: RemoteMCPServer
+metadata:
+  name: victoriametrics
+spec:
+  description: VictoriaMetrics (PromQL queries, alerts, rules, metadata) for this cluster — read-only
+  protocol: STREAMABLE_HTTP
+  url: http://mcp-victoriametrics.observability.svc.cluster.local:8080/mcp
+---
+apiVersion: kagent.dev/v1alpha2
+kind: RemoteMCPServer
+metadata:
+  name: victorialogs
+spec:
+  description: VictoriaLogs (LogsQL queries over pod and node logs) for this cluster — read-only
+  protocol: STREAMABLE_HTTP
+  url: http://mcp-victorialogs.observability.svc.cluster.local:8080/mcp
+---
+apiVersion: kagent.dev/v1alpha2
+kind: RemoteMCPServer
+metadata:
+  name: victoriatraces
+spec:
+  description: VictoriaTraces (distributed traces, service dependencies) for this cluster — read-only
+  protocol: STREAMABLE_HTTP
+  url: http://mcp-victoriatraces.observability.svc.cluster.local:8081/mcp
+---
+apiVersion: kagent.dev/v1alpha2
+kind: RemoteMCPServer
+metadata:
+  name: flux
+spec:
+  description: Flux Operator MCP (Kustomization / HelmRelease / source status, reconcile history) for this cluster — read-only use only
+  protocol: STREAMABLE_HTTP
+  url: http://flux-operator-mcp.flux-system.svc.cluster.local:9090/mcp
