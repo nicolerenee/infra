@@ -85,6 +85,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ./cdi-cr.yaml
+  # Ours, not upstream: claim property sets for CSI classes CDI can't infer.
+  - ./storageprofiles.yaml
 EOF
 
 if [[ "${MODE}" == "--check" ]]; then
