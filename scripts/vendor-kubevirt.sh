@@ -92,6 +92,22 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ./kubevirt-cr.yaml
+# Upstream ships these as empty maps (`{}`) and lets the operator's webhook
+# default them. Flux's server-side apply sends an empty map as null, which the
+# CRD rejects ("must be of type object: null") and the Kustomization never
+# reconciles. Dropping the keys lets the webhook default them exactly as the
+# empty maps would have.
+patches:
+  - target:
+      kind: KubeVirt
+      name: kubevirt
+    patch: |
+      - op: remove
+        path: /spec/certificateRotateStrategy
+      - op: remove
+        path: /spec/customizeComponents
+      - op: remove
+        path: /spec/workloadUpdateStrategy
 EOF
 
 if [[ "${MODE}" == "--check" ]]; then
