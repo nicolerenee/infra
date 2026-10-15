@@ -1,0 +1,314 @@
+---
+# Turns the SolarAssistant MQTT feed into Prometheus metrics. The Pi is a
+# locked appliance with no exporter of its own, but mosquitto already bridges
+# every solar_assistant/<device>/<metric>/state topic in from it, each with a
+# bare number as the payload, so a subscribe-only exporter on the broker is
+# all it takes. The broker allows anonymous subscribers, so no credentials.
+#
+# Only live measurements are mapped below; the inverter's configuration
+# topics (charge points, timers, limits) and the string-valued ones are left
+# out on purpose. SolarAssistant reports temperatures in Fahrenheit.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: mqtt2prometheus
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: default
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths: ["/spec/replicas"]
+  values:
+    controllers:
+      mqtt2prometheus:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        strategy: Recreate
+        containers:
+          app:
+            image:
+              repository: ghcr.io/hikhvar/mqtt2prometheus
+              tag: v0.1.5
+            # the image declares its binary as CMD, not ENTRYPOINT, so args alone
+            # would replace it
+            command:
+              - /mqtt2prometheus
+            args:
+              - -config
+              - /config/config.yaml
+              - -listen-port
+              - "9641"
+            # v0.1.5 has no /healthz; /metrics is served by the same listener
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /metrics
+                    port: 9641
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /metrics
+                    port: 9641
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32Mi
+              limits:
+                memory: 128Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop: ["ALL"]
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+    service:
+      app:
+        controller: mqtt2prometheus
+        ports:
+          metrics:
+            port: 9641
+    configMaps:
+      config:
+        enabled: true
+        # pin the -config suffix; with a single entry the chart would otherwise
+        # name it after the release, and adding a second map would rename it
+        suffix: config
+        data:
+          config.yaml: |
+            mqtt:
+              server: tcp://mosquitto.home-automation.svc.cluster.local:1883
+              client_id: mqtt2prometheus
+              qos: 0
+              topic_path: solar_assistant/+/+/state
+              device_id_regex: "solar_assistant/(?P<deviceid>[^/]+)/"
+              metric_per_topic_config:
+                metric_name_regex: "solar_assistant/[^/]+/(?P<metricname>[^/]+)/state"
+            cache:
+              timeout: 5m
+            metrics:
+              # battery_1 and total
+              - prom_name: solar_assistant_battery_state_of_charge_percent
+                mqtt_name: state_of_charge
+                help: Battery state of charge
+                type: gauge
+              - prom_name: solar_assistant_battery_voltage_volts
+                mqtt_name: voltage
+                help: Battery voltage
+                type: gauge
+              - prom_name: solar_assistant_battery_current_amps
+                mqtt_name: current
+                help: Battery current (positive = charging)
+                type: gauge
+              - prom_name: solar_assistant_battery_power_watts
+                mqtt_name: power
+                help: Battery power (positive = charging)
+                type: gauge
+              # both battery_1 and inverter_1 publish a bare "temperature" topic,
+              # so this one is named generically and the sensor label tells them apart
+              - prom_name: solar_assistant_temperature_fahrenheit
+                mqtt_name: temperature
+                help: Device temperature as reported, see the sensor label (Fahrenheit)
+                type: gauge
+              - prom_name: solar_assistant_battery_capacity_amp_hours
+                mqtt_name: capacity
+                help: Battery capacity
+                type: gauge
+              - prom_name: solar_assistant_total_battery_power_watts
+                mqtt_name: battery_power
+                help: Total battery power (positive = charging)
+                type: gauge
+              - prom_name: solar_assistant_total_battery_state_of_charge_percent
+                mqtt_name: battery_state_of_charge
+                help: Total battery state of charge
+                type: gauge
+              - prom_name: solar_assistant_total_battery_temperature_fahrenheit
+                mqtt_name: battery_temperature
+                help: Total battery temperature (Fahrenheit)
+                type: gauge
+              # inverter_1 live values
+              - prom_name: solar_assistant_inverter_ac_output_power_watts
+                mqtt_name: ac_output_power
+                help: Inverter AC output power
+                type: gauge
+              - prom_name: solar_assistant_inverter_ac_output_voltage_volts
+                mqtt_name: ac_output_voltage
+                help: Inverter AC output voltage (L1+L2)
+                type: gauge
+              - prom_name: solar_assistant_inverter_ac_output_voltage_l1_volts
+                mqtt_name: ac_output_voltage_1
+                help: Inverter AC output voltage L1
+                type: gauge
+              - prom_name: solar_assistant_inverter_ac_output_voltage_l2_volts
+                mqtt_name: ac_output_voltage_2
+                help: Inverter AC output voltage L2
+                type: gauge
+              - prom_name: solar_assistant_inverter_ac_output_frequency_hertz
+                mqtt_name: ac_output_frequency
+                help: Inverter AC output frequency
+                type: gauge
+              - prom_name: solar_assistant_inverter_battery_voltage_volts
+                mqtt_name: battery_voltage
+                help: Battery voltage as seen by the inverter
+                type: gauge
+              - prom_name: solar_assistant_inverter_battery_current_amps
+                mqtt_name: battery_current
+                help: Battery current as seen by the inverter
+                type: gauge
+              - prom_name: solar_assistant_inverter_grid_power_watts
+                mqtt_name: grid_power
+                help: Grid power (positive = importing)
+                type: gauge
+              - prom_name: solar_assistant_inverter_grid_power_l1_watts
+                mqtt_name: grid_power_ld_1
+                help: Grid power L1
+                type: gauge
+              - prom_name: solar_assistant_inverter_grid_power_l2_watts
+                mqtt_name: grid_power_ld_2
+                help: Grid power L2
+                type: gauge
+              - prom_name: solar_assistant_inverter_grid_ct_power_watts
+                mqtt_name: grid_power_ct
+                help: Grid power measured by the external CTs
+                type: gauge
+              - prom_name: solar_assistant_inverter_grid_voltage_volts
+                mqtt_name: grid_voltage
+                help: Grid voltage (L1+L2)
+                type: gauge
+              - prom_name: solar_assistant_inverter_grid_voltage_l1_volts
+                mqtt_name: grid_voltage_1
+                help: Grid voltage L1
+                type: gauge
+              - prom_name: solar_assistant_inverter_grid_voltage_l2_volts
+                mqtt_name: grid_voltage_2
+                help: Grid voltage L2
+                type: gauge
+              - prom_name: solar_assistant_inverter_grid_frequency_hertz
+                mqtt_name: grid_frequency
+                help: Grid frequency
+                type: gauge
+              - prom_name: solar_assistant_inverter_load_power_watts
+                mqtt_name: load_power
+                help: Total load power
+                type: gauge
+              - prom_name: solar_assistant_inverter_load_power_essential_watts
+                mqtt_name: load_power_essential
+                help: Essential (backed-up) load power
+                type: gauge
+              - prom_name: solar_assistant_inverter_load_power_non_essential_watts
+                mqtt_name: load_power_non-essential
+                help: Non-essential load power
+                type: gauge
+              - prom_name: solar_assistant_inverter_load_percent
+                mqtt_name: load_percentage
+                help: Load as a percentage of inverter capacity
+                type: gauge
+              - prom_name: solar_assistant_inverter_pv_power_watts
+                mqtt_name: pv_power
+                help: Total PV power
+                type: gauge
+              - prom_name: solar_assistant_inverter_pv_power_string1_watts
+                mqtt_name: pv_power_1
+                help: PV power, string 1
+                type: gauge
+              - prom_name: solar_assistant_inverter_pv_power_string2_watts
+                mqtt_name: pv_power_2
+                help: PV power, string 2
+                type: gauge
+              - prom_name: solar_assistant_inverter_pv_power_string3_watts
+                mqtt_name: pv_power_3
+                help: PV power, string 3
+                type: gauge
+              - prom_name: solar_assistant_inverter_pv_voltage_string1_volts
+                mqtt_name: pv_voltage_1
+                help: PV voltage, string 1
+                type: gauge
+              - prom_name: solar_assistant_inverter_pv_voltage_string2_volts
+                mqtt_name: pv_voltage_2
+                help: PV voltage, string 2
+                type: gauge
+              - prom_name: solar_assistant_inverter_pv_voltage_string3_volts
+                mqtt_name: pv_voltage_3
+                help: PV voltage, string 3
+                type: gauge
+              - prom_name: solar_assistant_inverter_pv_current_string1_amps
+                mqtt_name: pv_current_1
+                help: PV current, string 1
+                type: gauge
+              - prom_name: solar_assistant_inverter_pv_current_string2_amps
+                mqtt_name: pv_current_2
+                help: PV current, string 2
+                type: gauge
+              - prom_name: solar_assistant_inverter_pv_current_string3_amps
+                mqtt_name: pv_current_3
+                help: PV current, string 3
+                type: gauge
+              - prom_name: solar_assistant_inverter_generator_power_watts
+                mqtt_name: generator_power
+                help: Generator input power
+                type: gauge
+              # the two inverter settings the runtime estimate depends on
+              - prom_name: solar_assistant_inverter_stop_battery_discharge_capacity_percent
+                mqtt_name: stop_battery_discharge_capacity
+                help: SoC at which the inverter stops discharging the battery
+                type: gauge
+              - prom_name: solar_assistant_inverter_output_shutdown_capacity_percent
+                mqtt_name: output_shutdown_capacity
+                help: SoC at which the inverter shuts its output down
+                type: gauge
+              # the Pi itself and the forecast
+              - prom_name: solar_assistant_system_cpu_temperature_fahrenheit
+                mqtt_name: cpu_temperature
+                help: SolarAssistant Pi CPU temperature (Fahrenheit)
+                type: gauge
+              - prom_name: solar_assistant_system_free_storage_megabytes
+                mqtt_name: free_storage
+                help: SolarAssistant Pi free storage
+                type: gauge
+              - prom_name: solar_assistant_weather_pv_power_predicted_watts
+                mqtt_name: pv_power_predicted
+                help: Forecast PV power right now
+                type: gauge
+              - prom_name: solar_assistant_weather_pv_energy_remaining_today_kwh
+                mqtt_name: pv_energy_remaining_today
+                help: Forecast PV energy still to come today
+                type: gauge
+              - prom_name: solar_assistant_weather_cloud_cover_percent
+                mqtt_name: cloud_cover
+                help: Forecast cloud cover
+                type: gauge
+              - prom_name: solar_assistant_weather_outside_temperature_fahrenheit
+                mqtt_name: outside_temperature
+                help: Outside temperature (Fahrenheit)
+                type: gauge
+    persistence:
+      config:
+        type: configMap
+        name: mqtt2prometheus-config
+        advancedMounts:
+          mqtt2prometheus:
+            app:
+              - path: /config
+                readOnly: true

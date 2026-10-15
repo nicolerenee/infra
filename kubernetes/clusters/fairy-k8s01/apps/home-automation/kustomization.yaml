@@ -13,5 +13,6 @@ resources:
   # disabled for now
   # - homeassistant.yaml
   - mosquitto.yaml
+  - mqtt2prometheus.yaml
   - rtl915.yaml
   - scrypted.yaml

@@ -1,0 +1,33 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+# Windmill: the scheduler/trigger/poster for the janet automations and the
+# ai-agents flows (windmill-jobs repo holds the flows). Secrets still come from
+# the 1Password ClusterSecretStore and the database is on pg-17a — both are on
+# the migration backlog (GSM via tofu; pg-18a managed role), not changed here.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app windmill
+  namespace: &namespace windmill
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: onepassword-store
+      namespace: external-secrets
+    - name: cloudnative-pg-clusters
+      namespace: db
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/windmill
+  interval: 2m
+  retryInterval: 1m
+  timeout: 10m
+  prune: true
+  wait: true
