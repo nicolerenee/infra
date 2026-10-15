@@ -1,7 +1,19 @@
 ---
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/observability.giantswarm.io/silence_v1alpha2.json
-# kubevirt causes kubeapi to complain about client certificates expiring
-# ignoring the alerts entirely until I track this down
+# KubeClientCertificateExpiration is a false positive by construction with
+# KubeVirt on Talos (verified on fairy 2026-10-15 from the kube-apiserver audit
+# log and a Node diff):
+#   1. virt-handler rewrites the `kubevirt.io/heartbeat` annotation on every
+#      node it runs on, once a minute — control-plane nodes included.
+#   2. Each write is a Node change event; Talos's node-label controller
+#      re-reconciles the Node on every change and issues an `update` as the
+#      `admin` identity with a freshly minted, sub-30-minute client cert.
+#   3. On a control-plane node that isn't serving the VIP, those updates are
+#      ~100% of its cert-authenticated requests, so the rule's 1st-percentile
+#      of remaining lifetime interpolates to seconds.
+# Nothing is near expiry (kubelet, cert-manager and Talos component certs all
+# have months left) and no auth fails. Clusters without KubeVirt never see it.
+# Silenced permanently; the Talos client is not ours to change.
 apiVersion: observability.giantswarm.io/v1alpha2
 kind: Silence
 metadata:

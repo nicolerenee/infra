@@ -1,0 +1,9 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+# KubeVirt CR — vendored at the same TAG as the operator. Edits beyond the
+# upstream defaults live in this kustomization (patches/), not the vendored
+# kubevirt-cr.yaml itself.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./kubevirt-cr.yaml

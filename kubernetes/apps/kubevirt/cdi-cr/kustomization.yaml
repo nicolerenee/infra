@@ -1,0 +1,10 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+# CDI CR — vendored at the same TAG as the operator. Edits beyond upstream
+# defaults live in this kustomization (patches/), not the vendored CR file.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./cdi-cr.yaml
+  # Ours, not upstream: claim property sets for CSI classes CDI can't infer.
+  - ./storageprofiles.yaml
