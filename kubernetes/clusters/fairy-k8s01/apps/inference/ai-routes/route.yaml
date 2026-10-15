@@ -49,30 +49,6 @@ spec:
     kind: Backend
     name: minimax-m27-nvfp4
 ---
-# Nemotron 3.5 Lightning (NVFP4 + DSpark), single Spark. Candidate fast
-# structured-task model (paperless). Headless Service, one replica today.
-apiVersion: gateway.envoyproxy.io/v1alpha1
-kind: Backend
-metadata:
-  name: nemotron-35-lightning
-spec:
-  endpoints:
-    - fqdn:
-        hostname: nemotron-35-lightning.inference.svc.cluster.local
-        port: 8000
----
-apiVersion: aigateway.envoyproxy.io/v1beta1
-kind: AIServiceBackend
-metadata:
-  name: local-nemotron-35-lightning
-spec:
-  schema:
-    name: OpenAI
-  backendRef:
-    group: gateway.envoyproxy.io
-    kind: Backend
-    name: nemotron-35-lightning
----
 # Qwen3.8-Flash-Next (NVFP4, TP2+EP across two Sparks). Leader-only API
 # Service, like minimax.
 apiVersion: gateway.envoyproxy.io/v1alpha1
@@ -121,18 +97,6 @@ spec:
       backendRefs:
         - name: local-minimax-m27-nvfp4
           modelNameOverride: minimax-m2.7
-      timeouts:
-        request: 1800s
-    # Nemotron 3.5 Lightning. Clients send the canonical HF id; the override is
-    # the short served name.
-    - matches:
-        - headers:
-            - type: Exact
-              name: x-ai-eg-model
-              value: nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4
-      backendRefs:
-        - name: local-nemotron-35-lightning
-          modelNameOverride: nemotron-3.5-lightning
       timeouts:
         request: 1800s
     - matches:
