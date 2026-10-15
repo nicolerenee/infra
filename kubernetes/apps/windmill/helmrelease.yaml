@@ -12,7 +12,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: windmill
-        namespace: flux-system
   values:
     postgresql:
       enabled: false
