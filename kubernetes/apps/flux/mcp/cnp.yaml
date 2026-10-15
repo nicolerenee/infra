@@ -12,6 +12,14 @@ spec:
     matchLabels:
       app.kubernetes.io/name: flux-operator-mcp
   ingress:
+    # Agents in ai-agents (kagent) read Flux state through this server.
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: ai-agents
+      toPorts:
+        - ports:
+            - port: "9090"
+              protocol: TCP
     - fromEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: gateway-system

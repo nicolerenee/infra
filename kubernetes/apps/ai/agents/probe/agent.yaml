@@ -1,0 +1,19 @@
+---
+# Smoke-test agent: no tools, default model. Exists so the model path
+# (agent -> AI gateway -> Flash-Next) and the A2A call shape can be verified
+# without involving any MCP server. Windmill's agents/run script is tested
+# against this first.
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: probe
+spec:
+  type: Declarative
+  description: Connectivity probe. Replies briefly; has no tools.
+  declarative:
+    modelConfig: default-model-config
+    stream: true
+    systemMessage: |
+      You are a connectivity probe for an agent platform. Reply in one short
+      sentence. If asked to echo something, echo it exactly. Never use tools;
+      you have none.
