@@ -140,6 +140,11 @@ alertmanager:
   enabled: true
   spec:
     externalURL: "https://alertmanager.${CLUSTER_DOMAIN}"
+    # Routes merged from VMAlertmanagerConfig objects (e.g. the ai-agents
+    # alert bridge) are cluster-wide; without this the operator injects
+    # `namespace="<config's namespace>"` into each merged route and nothing
+    # outside that namespace ever matches.
+    disableNamespaceMatcher: true
 
 kubeControllerManager:
   enabled: true

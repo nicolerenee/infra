@@ -1,0 +1,19 @@
+# Vendored from kubevirt/kubevirt @ v1.9.1
+# Source: https://github.com/kubevirt/kubevirt/releases/download/v1.9.1/kubevirt-cr.yaml
+# To bump: change TAG in scripts/vendor-kubevirt.sh and re-run.
+---
+---
+apiVersion: kubevirt.io/v1
+kind: KubeVirt
+metadata:
+  name: kubevirt
+  namespace: kubevirt
+spec:
+  certificateRotateStrategy: {}
+  configuration:
+    developerConfiguration:
+      featureGates: []
+    imagePullPolicy: IfNotPresent
+  customizeComponents: {}
+  imagePullPolicy: IfNotPresent
+  workloadUpdateStrategy: {}

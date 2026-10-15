@@ -1,0 +1,34 @@
+---
+# Alertmanager -> Windmill: every CRITICAL alert group is also POSTed to the
+# f/agents/alert_triage flow, which has the read-only cluster-triage agent
+# investigate and posts the evidence to #infra-agents. `continue: true` keeps
+# the normal Discord page; this only adds context. Merged into the operator-
+# managed config as a VMAlertmanagerConfig, so it lives beside the agents
+# rather than in the shared k8s-stack values. Requires
+# `disableNamespaceMatcher: true` on the VMAlertmanager, or the operator
+# scopes this route to alerts from the observability namespace only.
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAlertmanagerConfig
+metadata:
+  name: agent-triage
+spec:
+  route:
+    receiver: windmill-agent-triage
+    matchers:
+      - severity="critical"
+    continue: true
+    group_by: ["alertname"]
+    # Let a transient settle before spending a model run; the page already went.
+    group_wait: 2m
+    group_interval: 10m
+    repeat_interval: 24h
+  receivers:
+    - name: windmill-agent-triage
+      webhook_configs:
+        - send_resolved: false
+          max_alerts: 10
+          # Windmill's async run endpoint; auth is the ?token= query parameter,
+          # so the whole URL is the secret (a token scoped to run only this flow).
+          url_secret:
+            name: windmill-alert-triage-webhook
+            key: url

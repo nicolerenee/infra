@@ -16,6 +16,7 @@ resources:
   - ./prometheus-operator-crds.yaml
   - ./silence-operator.yaml
   - ./silences.yaml
+  - ./agent-alert-bridge.yaml
   - ./victoria-logs.yaml
   - ./victoria-traces.yaml
   - ./vm-operator-crds.yaml

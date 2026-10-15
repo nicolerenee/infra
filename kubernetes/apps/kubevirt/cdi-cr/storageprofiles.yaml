@@ -1,0 +1,27 @@
+---
+# CDI auto-creates a StorageProfile per StorageClass and, for CSI drivers it
+# doesn't know, leaves the claim property sets empty — which fires
+# CDIStorageProfilesIncomplete and makes DataVolumes on these classes fail
+# unless accessModes/volumeMode are spelled out. The truenas-csi NFS classes
+# are shared filesystems: RWX, Filesystem. CDI owns .status; we own .spec.
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: StorageProfile
+metadata:
+  name: truenas-nfs
+spec:
+  claimPropertySets:
+    - accessModes: [ReadWriteMany]
+      volumeMode: Filesystem
+    - accessModes: [ReadWriteOnce]
+      volumeMode: Filesystem
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: StorageProfile
+metadata:
+  name: truenas-nfs-backup
+spec:
+  claimPropertySets:
+    - accessModes: [ReadWriteMany]
+      volumeMode: Filesystem
+    - accessModes: [ReadWriteOnce]
+      volumeMode: Filesystem

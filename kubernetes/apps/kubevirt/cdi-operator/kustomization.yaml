@@ -1,0 +1,8 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+# Vendored upstream CDI operator manifest. To bump, change TAG in
+# scripts/vendor-cdi.sh and re-run (or let Renovate bump it).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./cdi-operator.yaml
