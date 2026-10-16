@@ -40,10 +40,10 @@ spec:
             host: pg-18a-rw.db.svc.cluster.local:5432
             name: grafana
             user: grafana
-            # Password via GF_DATABASE_PASSWORD below: a $${VAR} inside this
-            # pointer gets un-escaped by the parent Kustomization's own
-            # post-build pass, so by the time it reaches the Grafana CR it is
-            # a bare ${VAR} that strict substitution rejects.
+            # Password via GF_DATABASE_PASSWORD below: this pointer is itself
+            # rendered by the parent Kustomization's post-build pass, so any
+            # dollar-brace reference here (even escaped, even in a comment)
+            # fails strict substitution.
             ssl_mode: require
         - op: add
           path: /spec/deployment/spec/replicas
