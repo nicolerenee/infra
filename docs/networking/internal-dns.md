@@ -4,25 +4,23 @@ description: Internal-only DNS for both sites — a hidden BIND9 primary fed by 
 
 # Internal DNS
 
-`freckle.services` (whole zone), the `fairy.`/`atlantis.` subzones of
-`freckle.systems` and `freckle.media`, `freckle.network` and the two site
-reverse zones are served by BIND9 inside the clusters. Internal-only names
-in them only resolve from inside the network; public DNS at Cloudflare never
-learns them.
+`freckle.services`, `freckle.systems`, `freckle.media`, `freckle.network` and
+the two site reverse zones are served whole by BIND9 inside the clusters.
+Internal-only names in them only resolve from inside the network; public DNS
+at Cloudflare never learns them.
 
-`freckle.services` is split-horizon: Cloudflare keeps serving the public
-view, BIND serves a superset internally, and the gateways forward the whole
-zone to BIND. Anything published publicly by something other than our two
-clusters (another cluster's external-dns, hand-made records) has to be
-mirrored by hand in tofu or it vanishes from the inside view.
+The three `freckle.*` zones are split-horizon: Cloudflare keeps serving the
+public view, BIND serves a superset internally, and the gateways forward the
+whole zones to BIND. Anything published publicly by something other than
+our two clusters' external-dns (tofu-managed records, mail records, another
+cluster, hand edits) has to be mirrored in tofu or it vanishes from the
+inside view — `internal-dns-records.tf` in the private repo is that list.
 
 ## Zones
 
 | Zone | Purpose | Written by |
 |------|---------|------------|
-| `freckle.services` | **whole zone**, mirrored from public: every record either cluster publishes plus the few hand-made ones | external-dns (both), tofu |
-| `fairy.freckle.systems` / `fairy.freckle.media` | fairy-k8s01 services | external-dns (fairy) |
-| `atlantis.freckle.systems` / `atlantis.freckle.media` | atlantis-k8s01 services | external-dns (atlantis) |
+| `freckle.services` / `freckle.systems` / `freckle.media` | whole zones, superset of public: every record either cluster publishes plus the mirrored non-cluster ones | external-dns (both), tofu |
 | `freckle.network` | network gear, OOB, anything not a Kubernetes Service; `<host>.den1` and `<host>.btx1` | tofu |
 | `140.10.in-addr.arpa` | den1 reverse (10.140.0.0/16) | tofu |
 | `189.10.in-addr.arpa` | btx1 reverse (10.189.0.0/16) | tofu |
@@ -60,14 +58,16 @@ bind9-secondary (fairy)   bind9-secondary (atlantis)
   primary. SOA expiry is 14 days so a secondary keeps serving long after the
   primary goes away.
 - **external-dns-internal** — `kubernetes/apps/networking/external-dns/internal`,
-  one per cluster, `rfc2136` provider, `freckle.services` plus that cluster's
-  two subzones. No gateway label filter: it mirrors every route on every
+  one per cluster, `rfc2136` provider, the three `freckle.*` zones. No gateway label filter: it mirrors every route on every
   gateway (tailnet, tunnel, internal), so the internal zone is a superset of
   the public one. Separate `txtOwnerId` (`<cluster>-internal`) from the
   Cloudflare instances.
 - **Static records** — `tofu/platform/internal-dns-records.tf` in the private
-  repo, one host map that generates the `freckle.network` A/AAAA records and
-  the matching PTRs.
+  repo: one host map that generates the `freckle.network` A/AAAA records and
+  the matching PTRs, internal twins of every tofu-managed Cloudflare record
+  (cluster API names, tunnel gateways), and the hand-kept mirrors (mail
+  records, the R2-backed `k8s-oidc`/`k8s-schemas` names, another cluster's
+  names).
 
 Both TSIG keys and the ESO grants for the `dns` namespace come from
 `tofu/platform/internal-dns.tf` (private repo) via GSM.
@@ -75,14 +75,10 @@ Both TSIG keys and the ESO grants for the `dns` namespace come from
 ## Who resolves what
 
 Site gateways are the only resolvers clients see. Each forwards just the
-eight hosted zones to its site's secondary and resolves everything else
+six hosted zones to its site's secondary and resolves everything else
 itself, so BIND never talks to the internet and the gateway's own DNS
 features (filtering, logging, encrypted upstream) stay in the loop.
 
-Forward the **exact zones**: `freckle.systems` and `freckle.media` are only
-hosted as subzones because their apexes carry public records BIND knows
-nothing about, and an authoritative-only server answers REFUSED for any name
-outside its zones.
 
 | Client | Resolver | Internal zones go to |
 |--------|----------|----------------------|

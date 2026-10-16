@@ -59,29 +59,19 @@ data:
       file "zones/freckle.services.db";
       update-policy { grant freckle-dns-update zonesub ANY; };
     };
+    zone "freckle.systems" {
+      type primary;
+      file "zones/freckle.systems.db";
+      update-policy { grant freckle-dns-update zonesub ANY; };
+    };
+    zone "freckle.media" {
+      type primary;
+      file "zones/freckle.media.db";
+      update-policy { grant freckle-dns-update zonesub ANY; };
+    };
     zone "freckle.network" {
       type primary;
       file "zones/freckle.network.db";
-      update-policy { grant freckle-dns-update zonesub ANY; };
-    };
-    zone "fairy.freckle.systems" {
-      type primary;
-      file "zones/fairy.freckle.systems.db";
-      update-policy { grant freckle-dns-update zonesub ANY; };
-    };
-    zone "fairy.freckle.media" {
-      type primary;
-      file "zones/fairy.freckle.media.db";
-      update-policy { grant freckle-dns-update zonesub ANY; };
-    };
-    zone "atlantis.freckle.systems" {
-      type primary;
-      file "zones/atlantis.freckle.systems.db";
-      update-policy { grant freckle-dns-update zonesub ANY; };
-    };
-    zone "atlantis.freckle.media" {
-      type primary;
-      file "zones/atlantis.freckle.media.db";
       update-policy { grant freckle-dns-update zonesub ANY; };
     };
     zone "189.10.in-addr.arpa" {
@@ -112,7 +102,7 @@ data:
     # because from then on the zone is dynamic and owned by named's journal.
     set -eu
     mkdir -p /data/zones
-    ZONES="freckle.services freckle.network fairy.freckle.systems fairy.freckle.media atlantis.freckle.systems atlantis.freckle.media 189.10.in-addr.arpa 140.10.in-addr.arpa"
+    ZONES="freckle.services freckle.systems freckle.media freckle.network 189.10.in-addr.arpa 140.10.in-addr.arpa"
     for z in $ZONES; do
       f="/data/zones/$z.db"
       [ -e "$f" ] && continue
