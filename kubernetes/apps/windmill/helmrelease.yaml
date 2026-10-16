@@ -19,7 +19,7 @@ spec:
     windmill:
       appReplicas: 1
       databaseUrlSecretName: windmill
-      baseDomain: windmill.fairy.freckle.systems
+      baseDomain: windmill.fairy.freckle.tools
       baseProtocol: https
 
       workerGroups:
