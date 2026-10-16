@@ -1,0 +1,170 @@
+# OIDC gates for the three Victoria UIs (same shape as hubble: the OIDC filter
+# does the login, the jwt provider validates the ID-token cookie).
+---
+# alertmanager: no authentication of its own; on the internal gateway this policy is
+# the access control. pocket-id client tofu-managed (`oidc_clients.alertmanager_<env>`
+# in the private repo) → GSM <cluster>-observability-alertmanager-oidc.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: alertmanager-oidc
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: SecretStore
+    name: gcp-sm
+  target:
+    name: alertmanager-oidc
+  dataFrom:
+    - extract:
+        key: ${CLUSTER_NAME}-observability-alertmanager-oidc
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: alertmanager-oidc
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: vm-alertmanager
+  oidc:
+    provider:
+      issuer: https://freckle.id
+    clientIDRef:
+      group: ""
+      kind: Secret
+      name: alertmanager-oidc
+    clientSecret:
+      group: ""
+      kind: Secret
+      name: alertmanager-oidc
+    redirectURL: https://alertmanager.${CLUSTER_SUBDOMAIN}.freckle.tools/oauth2/callback
+    logoutPath: /logout
+    scopes:
+      - openid
+      - email
+      - profile
+    cookieNames:
+      idToken: AlertmanagerIdToken
+  jwt:
+    providers:
+      - name: pocket-id
+        issuer: https://freckle.id
+        remoteJWKS:
+          uri: https://freckle.id/.well-known/jwks.json
+        extractFrom:
+          cookies:
+            - AlertmanagerIdToken
+---
+# vmalert: no authentication of its own; on the internal gateway this policy is
+# the access control. pocket-id client tofu-managed (`oidc_clients.vmalert_<env>`
+# in the private repo) → GSM <cluster>-observability-vmalert-oidc.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: vmalert-oidc
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: SecretStore
+    name: gcp-sm
+  target:
+    name: vmalert-oidc
+  dataFrom:
+    - extract:
+        key: ${CLUSTER_NAME}-observability-vmalert-oidc
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: vmalert-oidc
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: vmalert-vm
+  oidc:
+    provider:
+      issuer: https://freckle.id
+    clientIDRef:
+      group: ""
+      kind: Secret
+      name: vmalert-oidc
+    clientSecret:
+      group: ""
+      kind: Secret
+      name: vmalert-oidc
+    redirectURL: https://vmalert.${CLUSTER_SUBDOMAIN}.freckle.tools/oauth2/callback
+    logoutPath: /logout
+    scopes:
+      - openid
+      - email
+      - profile
+    cookieNames:
+      idToken: VmalertIdToken
+  jwt:
+    providers:
+      - name: pocket-id
+        issuer: https://freckle.id
+        remoteJWKS:
+          uri: https://freckle.id/.well-known/jwks.json
+        extractFrom:
+          cookies:
+            - VmalertIdToken
+---
+# victoriametrics: no authentication of its own; on the internal gateway this policy is
+# the access control. pocket-id client tofu-managed (`oidc_clients.victoriametrics_<env>`
+# in the private repo) → GSM <cluster>-observability-victoriametrics-oidc.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: victoriametrics-oidc
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: SecretStore
+    name: gcp-sm
+  target:
+    name: victoriametrics-oidc
+  dataFrom:
+    - extract:
+        key: ${CLUSTER_NAME}-observability-victoriametrics-oidc
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: victoriametrics-oidc
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: vm-single
+  oidc:
+    provider:
+      issuer: https://freckle.id
+    clientIDRef:
+      group: ""
+      kind: Secret
+      name: victoriametrics-oidc
+    clientSecret:
+      group: ""
+      kind: Secret
+      name: victoriametrics-oidc
+    redirectURL: https://victoriametrics.${CLUSTER_SUBDOMAIN}.freckle.tools/oauth2/callback
+    logoutPath: /logout
+    scopes:
+      - openid
+      - email
+      - profile
+    cookieNames:
+      idToken: VictoriametricsIdToken
+  jwt:
+    providers:
+      - name: pocket-id
+        issuer: https://freckle.id
+        remoteJWKS:
+          uri: https://freckle.id/.well-known/jwks.json
+        extractFrom:
+          cookies:
+            - VictoriametricsIdToken
