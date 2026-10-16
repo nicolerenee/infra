@@ -79,6 +79,12 @@ kind: KubeNodeConfig
 nodeIP:
   validSubnets:
     - 10.189.3.0/24
+    # On-link ULA for the compute VLAN (see 40-network). Registering it as the
+    # node's IPv6 InternalIP is what lets Cilium (native routing) install
+    # IPv6 direct routes to each node's pod /64 via a reachable next hop;
+    # without it Cilium falls back to the cilium_host address inside the pod
+    # range, which is not on-link.
+    - fd2b:ec92:e233::/64
 ---
 apiVersion: v1alpha1
 kind: TimeSyncConfig
