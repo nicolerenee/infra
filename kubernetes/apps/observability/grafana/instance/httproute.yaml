@@ -4,9 +4,9 @@ metadata:
   name: grafana
 spec:
   hostnames:
-    - grafana.${CLUSTER_DOMAIN}
+    - grafana.${CLUSTER_SUBDOMAIN}.freckle.tools
   parentRefs:
-    - name: tailnet
+    - name: internal
       namespace: gateway-system
   rules:
     - backendRefs:

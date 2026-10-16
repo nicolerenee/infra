@@ -27,7 +27,7 @@ spec:
       token_url: https://freckle.id/api/oidc/token
       use_pkce: "True"
     server:
-      root_url: https://grafana.${CLUSTER_DOMAIN}
+      root_url: https://grafana.${CLUSTER_SUBDOMAIN}.freckle.tools
 
   deployment:
     metadata:
