@@ -1,0 +1,37 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+# The hidden primary runs on atlantis only (colo power + uplink). Losing it
+# freezes updates, never resolution: both sites' secondaries keep serving their
+# secondary copies.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app bind9-primary
+  namespace: &namespace dns
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: external-secrets
+      namespace: external-secrets
+    - name: rook-ceph-cluster
+      namespace: rook-ceph
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/networking/bind9/primary
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true
+  postBuild:
+    substitute:
+      DNS_PRIMARY_IP: 10.140.250.54
+      DNS_SECONDARY_FAIRY_IP: 10.189.250.53
+      DNS_SECONDARY_ATLANTIS_IP: 10.140.250.53

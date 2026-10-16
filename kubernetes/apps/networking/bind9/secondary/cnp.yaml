@@ -1,0 +1,38 @@
+---
+# Ingress: DNS from anywhere (gateways, tailnet). Egress: only AXFR/SOA to the
+# hidden primary — by pod identity when it is local, by address when it is the
+# other site. Nothing else, ever: this server is authoritative-only.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: bind9-secondary
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: bind9-secondary
+  ingress:
+    - fromEntities: ["all"]
+      toPorts:
+        - ports:
+            - port: "5353"
+              protocol: UDP
+            - port: "5353"
+              protocol: TCP
+  egress:
+    - toCIDR:
+        - ${DNS_PRIMARY_IP}/32
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: bind9-primary
+      toPorts:
+        - ports:
+            - port: "5353"
+              protocol: UDP
+            - port: "5353"
+              protocol: TCP
