@@ -13,6 +13,7 @@ spec:
       app.kubernetes.io/name: *app
   dependsOn:
     - name: grafana-operator
+    - name: grafana-db
   targetNamespace: *namespace
   path: ./kubernetes/apps/observability/grafana/instance
   prune: true
@@ -23,3 +24,32 @@ spec:
   interval: 30s
   retryInterval: 1m
   timeout: 5m
+  # Fairy-only: Grafana's state lives on the shared pg-18a (CNPG managed role
+  # + Database, like paperless) instead of the emptyDir default, so restarts
+  # keep dashboards/preferences and two replicas can run behind the gateway
+  # (alerting is vmalert's job, so nothing to coordinate between them).
+  patches:
+    - target:
+        kind: Grafana
+        name: grafana
+      patch: |-
+        - op: add
+          path: /spec/config/database
+          value:
+            type: postgres
+            host: pg-18a-rw.db.svc.cluster.local:5432
+            name: grafana
+            user: grafana
+            password: $${DB_PASSWORD}
+            ssl_mode: require
+        - op: add
+          path: /spec/deployment/spec/replicas
+          value: 2
+        - op: add
+          path: /spec/deployment/spec/template/spec/containers/0/env/-
+          value:
+            name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: grafana-db
+                key: password
