@@ -1,7 +1,8 @@
 ---
-# Ingress: DNS from anywhere (gateways, tailnet). Egress: only AXFR/SOA to the
+# Ingress: DNS from anywhere (gateways, tailnet). Egress: AXFR/SOA to the
 # hidden primary — by pod identity when it is local, by address when it is the
-# other site. Nothing else, ever: this server is authoritative-only.
+# other site — and DNS-over-TLS to Cloudflare for chasing CNAMEs that leave
+# our zones. No plaintext 53 to the world, ever.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -19,6 +20,15 @@ spec:
             - port: "5353"
               protocol: TCP
   egress:
+    - toCIDR:
+        - 1.1.1.1/32
+        - 1.0.0.1/32
+        - 2606:4700:4700::1111/128
+        - 2606:4700:4700::1001/128
+      toPorts:
+        - ports:
+            - port: "853"
+              protocol: TCP
     - toCIDR:
         - ${DNS_PRIMARY_IP}/32
       toPorts:
