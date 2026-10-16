@@ -5,12 +5,27 @@ metadata:
 spec:
   hostnames:
     - hubble.${CLUSTER_SUBDOMAIN}.freckle.tools
-    # Legacy name on the tailnet gateway — removed once the .tools name is
-    # proven (internal gateway migration pilot).
-    - hubble.${CLUSTER_DOMAIN}
   parentRefs:
     - name: internal
       namespace: gateway-system
+  rules:
+    - backendRefs:
+        - kind: Service
+          name: hubble-ui
+          port: 80
+---
+# Legacy name on the tailnet gateway, kept as a SEPARATE route during the
+# internal gateway pilot: a single route with both parents makes external-dns
+# merge both gateways' addresses under every hostname and publish the .tools
+# name publicly. Delete this route once the .tools name is proven.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: hubble-legacy
+spec:
+  hostnames:
+    - hubble.${CLUSTER_DOMAIN}
+  parentRefs:
     - name: tailnet
       namespace: gateway-system
   rules:
