@@ -44,6 +44,12 @@ data:
     # NOTIFYs from the primary arrive masqueraded (its pod egresses via a node
     # IP when it crosses sites), so accept them from any RFC1918 address — a
     # forged NOTIFY only triggers an authenticated SOA check.
+    zone "freckle.services" {
+      type secondary;
+      primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
+      file "zones/freckle.services.db";
+      allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
+    };
     zone "freckle.network" {
       type secondary;
       primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
@@ -56,12 +62,6 @@ data:
       file "zones/fairy.freckle.systems.db";
       allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
     };
-    zone "fairy.freckle.services" {
-      type secondary;
-      primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
-      file "zones/fairy.freckle.services.db";
-      allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
-    };
     zone "fairy.freckle.media" {
       type secondary;
       primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
@@ -72,12 +72,6 @@ data:
       type secondary;
       primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
       file "zones/atlantis.freckle.systems.db";
-      allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
-    };
-    zone "atlantis.freckle.services" {
-      type secondary;
-      primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
-      file "zones/atlantis.freckle.services.db";
       allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
     };
     zone "atlantis.freckle.media" {

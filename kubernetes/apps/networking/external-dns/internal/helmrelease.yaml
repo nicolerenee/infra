@@ -19,12 +19,14 @@ spec:
         subject: "^https://github.com/home-operations/charts-mirror.*$"
 ---
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
-# Internal-only names. Writes RFC2136 dynamic updates to the hidden BIND
-# primary for this cluster's three subzones; the per-site secondaries serve
-# them. Picks up routes on gateways labelled `gateway.freckle.systems/dns:
-# internal` and LoadBalancer Services with a hostname annotation. Separate
-# txtOwnerId from the Cloudflare instance so the two never fight over a
-# name that is published in both places during a migration.
+# Internal mirror. Writes RFC2136 dynamic updates to the hidden BIND primary
+# for everything this cluster publishes under freckle.services (the whole
+# zone is hosted internally — the site gateways forward all of it to BIND,
+# so every public record must exist here too) and under this cluster's
+# freckle.systems / freckle.media subzones. No gateway label filter on
+# purpose: tailnet, tunnel and internal gateways all get mirrored, which is
+# what makes the internal view a superset of the public one. Separate
+# txtOwnerId from the Cloudflare instances so ownership never collides.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -52,11 +54,10 @@ spec:
   values:
     fullnameOverride: *app
     extraArgs:
-      - --gateway-label-filter=gateway.freckle.systems/dns==internal
       - --rfc2136-host=${DNS_PRIMARY_IP}
       - --rfc2136-port=53
+      - --rfc2136-zone=freckle.services
       - --rfc2136-zone=${CLUSTER_SUBDOMAIN}.freckle.systems
-      - --rfc2136-zone=${CLUSTER_SUBDOMAIN}.freckle.services
       - --rfc2136-zone=${CLUSTER_SUBDOMAIN}.freckle.media
       - --rfc2136-tsig-keyname=freckle-dns-update
       - --rfc2136-tsig-secret-alg=hmac-sha256
@@ -65,13 +66,14 @@ spec:
       - --rfc2136-min-ttl=60s
     sources:
       - service
+      - ingress
       - gateway-httproute
       - gateway-grpcroute
     provider:
       name: rfc2136
     domainFilters:
+      - freckle.services
       - ${CLUSTER_SUBDOMAIN}.freckle.systems
-      - ${CLUSTER_SUBDOMAIN}.freckle.services
       - ${CLUSTER_SUBDOMAIN}.freckle.media
     env:
       - name: TSIG_SECRET
