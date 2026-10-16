@@ -33,7 +33,7 @@ update. Never edit a zone file on the PVC by hand.
 
 ## Components
 
-```
+```text
 external-dns (fairy) ──RFC2136──┐
 external-dns (atlantis) ─RFC2136┤
 tofu (hashicorp/dns) ───RFC2136─┤

@@ -40,7 +40,7 @@ spec:
           init-zones:
             image: &image
               repository: docker.io/internetsystemsconsortium/bind9
-              tag: 9.20
+              tag: "9.20"
             command: ["/bin/sh", "/init/init-zones.sh"]
             env:
               DNS_SECONDARY_FAIRY_IP: ${DNS_SECONDARY_FAIRY_IP}
