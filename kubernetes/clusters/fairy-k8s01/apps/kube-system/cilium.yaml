@@ -59,6 +59,13 @@ spec:
             ipv6NativeRoutingCIDR: fd2b:ec92:e232::/48
             clustermesh:
               useAPIServer: true
+              # Rendering the peer config (even with no peers yet) is what
+              # makes the chart emit the clustermesh-remote-users ConfigMap
+              # and cilium-clustermesh Secret the apiserver mounts; without
+              # it the pods never leave Init. Remote clusters get listed
+              # here once atlantis exposes its apiserver.
+              config:
+                enabled: true
               apiserver:
                 replicas: 2
                 tls:
