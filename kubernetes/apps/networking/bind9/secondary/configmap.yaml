@@ -76,36 +76,36 @@ data:
     zone "freckle.services" {
       type secondary;
       primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
-      file "zones/freckle.services.db";
+      file "freckle.services.db";
       allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
     };
     zone "freckle.systems" {
       type secondary;
       primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
-      file "zones/freckle.systems.db";
+      file "freckle.systems.db";
       allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
     };
     zone "freckle.media" {
       type secondary;
       primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
-      file "zones/freckle.media.db";
+      file "freckle.media.db";
       allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
     };
     zone "freckle.network" {
       type secondary;
       primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
-      file "zones/freckle.network.db";
+      file "freckle.network.db";
       allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
     };
     zone "189.10.in-addr.arpa" {
       type secondary;
       primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
-      file "zones/189.10.in-addr.arpa.db";
+      file "189.10.in-addr.arpa.db";
       allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
     };
     zone "140.10.in-addr.arpa" {
       type secondary;
       primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
-      file "zones/140.10.in-addr.arpa.db";
+      file "140.10.in-addr.arpa.db";
       allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
     };
