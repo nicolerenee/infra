@@ -67,14 +67,18 @@ Both TSIG keys and the ESO grants for the `dns` namespace come from
 ## Who resolves what
 
 Site gateways are the only resolvers clients see. Each forwards just the
-internal domains to its site's secondary and resolves everything else
+nine hosted zones to its site's secondary and resolves everything else
 itself, so BIND never talks to the internet and the gateway's own DNS
 features (filtering, logging, encrypted upstream) stay in the loop.
 
+Forward the **exact zones**, never the bare TLDs: `freckle.services`,
+`freckle.systems` and `freckle.media` also carry public apex records, and an
+authoritative-only server answers REFUSED for any name outside its zones.
+
 | Client | Resolver | Internal zones go to |
 |--------|----------|----------------------|
-| fairy LAN + Talos nodes | UDM (DHCP) | UniFi **Forward Domain** records → 10.189.250.53 |
-| den1 LAN + Talos nodes | den1 gateway | per-domain forward → 10.140.250.53 (VyOS `service dns forwarding domain …` until the UniFi gateway lands) |
+| fairy LAN + Talos nodes | UDM (DHCP) | UniFi **Forward Domain** records → 10.189.250.53 (`network/btx01/udm-dns` in the private repo) |
+| den1 LAN + Talos nodes | den1 gateway | per-zone forward → 10.140.250.53 (VyOS `service dns forwarding domain <zone> name-server …` until the UniFi gateway lands) |
 | Tailnet | MagicDNS split DNS for the internal domains | both secondaries |
 | Pods | kube-dns → node resolvers | same path as the node |
 
