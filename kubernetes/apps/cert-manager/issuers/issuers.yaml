@@ -17,3 +17,14 @@ spec:
             apiTokenSecretRef:
               name: cloudflare-token
               key: api_token
+---
+# CA issuer for Cilium Cluster Mesh certificates. The CA is shared across the
+# meshed clusters (externalsecret-cilium-clustermesh-ca.yaml), which is what
+# lets one cluster's agents authenticate to another's clustermesh-apiserver.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: cilium-clustermesh-ca
+spec:
+  ca:
+    secretName: cilium-clustermesh-ca
