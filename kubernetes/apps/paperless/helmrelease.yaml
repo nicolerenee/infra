@@ -48,7 +48,7 @@ spec:
               repository: ghcr.io/paperless-ngx/paperless-ngx
               tag: 3.3.1@sha256:cb91bfb468e63025a9d10c01b54c33665113668eee61b490db96de19b860b9c4
             env:
-              PAPERLESS_URL: https://paperless.${CLUSTER_SVCS_DOMAIN}
+              PAPERLESS_URL: https://paperless.${CLUSTER_SUBDOMAIN}.freckle.tools
               # TLS terminates at the gateway; tell Django the original scheme.
               PAPERLESS_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'
               PAPERLESS_TIME_ZONE: America/Chicago
@@ -191,9 +191,9 @@ spec:
 
     route:
       app:
-        hostnames: ["paperless.${CLUSTER_SVCS_DOMAIN}"]
+        hostnames: ["paperless.${CLUSTER_SUBDOMAIN}.freckle.tools"]
         parentRefs:
-          - name: tailnet
+          - name: internal
             namespace: gateway-system
         rules:
           - backendRefs:

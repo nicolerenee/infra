@@ -15,7 +15,7 @@ spec:
     - fromEndpoints:
         - matchLabels:
             io.kubernetes.pod.namespace: gateway-system
-            gateway.envoyproxy.io/owning-gateway-name: tailnet
+            gateway.envoyproxy.io/owning-gateway-name: internal
       toPorts:
         - ports:
             - port: "8000"
