@@ -41,7 +41,7 @@ spec:
               tag: v3.28.0@sha256:8b02290f4d1806f02acac6f25f6d48a3c965612fda1f8e914d5af533276f8688
             env:
               TZ: "America/Chicago"
-              BASE_URL: https://mealie.fairy.freckle.systems
+              BASE_URL: https://mealie.fairy.freckle.tools
               DB_ENGINE: postgres
               SMTP_HOST: smtp.mailgun.org
               SMTP_PORT: 587
@@ -80,9 +80,9 @@ spec:
 
     route:
       app:
-        hostnames: ["{{ .Release.Name }}.fairy.freckle.systems"]
+        hostnames: ["{{ .Release.Name }}.fairy.freckle.tools"]
         parentRefs:
-          - name: tailnet
+          - name: internal
             namespace: gateway-system
         rules:
           - backendRefs:
