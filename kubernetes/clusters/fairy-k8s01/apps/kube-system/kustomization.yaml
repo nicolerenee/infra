@@ -9,6 +9,7 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - ./cilium.yaml
+  - ./bgp.yaml
   - ./descheduler.yaml
   - ./dranet.yaml
   - ./generic-device-plugin.yaml

@@ -1,0 +1,24 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumbgpclusterconfig_v2.json
+# Every fairy node runs one eBGP session to the UDM's gateway address on the
+# Infra - Compute & Storage VLAN (1000). Only LoadBalancer IPs are advertised
+# (see advertisement.yaml); pod CIDRs stay on the VXLAN overlay. The UDM side
+# is a passive peer-group with a listen range over the VLAN, so adding a node
+# needs no router change.
+apiVersion: cilium.io/v2
+kind: CiliumBGPClusterConfig
+metadata:
+  name: cilium-bgp
+spec:
+  nodeSelector:
+    matchLabels:
+      kubernetes.io/os: linux
+  bgpInstances:
+    - name: udm
+      localASN: 64613
+      peers:
+        - name: fairy-udm01
+          peerAddress: 10.189.3.1
+          peerASN: 64614
+          peerConfigRef:
+            name: fairy-udm01
