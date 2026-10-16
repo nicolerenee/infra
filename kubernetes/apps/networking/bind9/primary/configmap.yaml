@@ -69,6 +69,11 @@ data:
       file "zones/freckle.media.db";
       update-policy { grant freckle-dns-update zonesub ANY; };
     };
+    zone "freckle.tools" {
+      type primary;
+      file "zones/freckle.tools.db";
+      update-policy { grant freckle-dns-update zonesub ANY; };
+    };
     zone "freckle.network" {
       type primary;
       file "zones/freckle.network.db";
@@ -102,7 +107,7 @@ data:
     # because from then on the zone is dynamic and owned by named's journal.
     set -eu
     mkdir -p /data/zones
-    ZONES="freckle.services freckle.systems freckle.media freckle.network 189.10.in-addr.arpa 140.10.in-addr.arpa"
+    ZONES="freckle.services freckle.systems freckle.media freckle.tools freckle.network 189.10.in-addr.arpa 140.10.in-addr.arpa"
     for z in $ZONES; do
       f="/data/zones/$z.db"
       [ -e "$f" ] && continue

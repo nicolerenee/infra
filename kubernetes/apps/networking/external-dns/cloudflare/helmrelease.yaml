@@ -70,6 +70,7 @@ spec:
       - freckle.media
       - freckle.services
       - freckle.systems
+      - freckle.tools
       - warehouse43.com
     env:
       - name: CF_API_TOKEN

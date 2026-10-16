@@ -91,6 +91,12 @@ data:
       file "freckle.media.db";
       allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
     };
+    zone "freckle.tools" {
+      type secondary;
+      primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
+      file "freckle.tools.db";
+      allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
+    };
     zone "freckle.network" {
       type secondary;
       primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };

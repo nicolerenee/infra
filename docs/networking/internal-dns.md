@@ -20,7 +20,7 @@ inside view — `internal-dns-records.tf` in the private repo is that list.
 
 | Zone | Purpose | Written by |
 |------|---------|------------|
-| `freckle.services` / `freckle.systems` / `freckle.media` | whole zones, superset of public: every record either cluster publishes plus the mirrored non-cluster ones | external-dns (both), tofu |
+| `freckle.services` / `freckle.systems` / `freckle.media` / `freckle.tools` | whole zones, superset of public: every record either cluster publishes plus the mirrored non-cluster ones | external-dns (both), tofu |
 | `freckle.network` | network gear, OOB, anything not a Kubernetes Service; `<host>.den1` and `<host>.btx1` | tofu |
 | `140.10.in-addr.arpa` | den1 reverse (10.140.0.0/16) | tofu |
 | `189.10.in-addr.arpa` | btx1 reverse (10.189.0.0/16) | tofu |
@@ -77,7 +77,7 @@ Both TSIG keys and the ESO grants for the `dns` namespace come from
 ## Who resolves what
 
 Site gateways are the only resolvers clients see. Each forwards just the
-six hosted zones to its site's secondary and resolves everything else
+seven hosted zones to its site's secondary and resolves everything else
 itself, so the gateway's own DNS features (filtering, logging, encrypted
 upstream) stay in the loop. BIND's only upstream traffic is DoT to Cloudflare
 for CNAME targets outside our zones.
