@@ -16,11 +16,13 @@
 apiVersion: kagent.dev/v1alpha2
 kind: Agent
 metadata:
-  name: cluster-triage
+  # One instance per cluster it triages: the pointer sets the suffixes so the
+  # same method runs against another cluster's MCP servers (over Cluster Mesh).
+  name: cluster-triage${AGENT_SUFFIX}
 spec:
   type: Declarative
   description: >-
-    Read-only triage of firing alerts for this cluster: real vs noise, likely
+    Read-only triage of firing alerts for ${TRIAGE_CLUSTER}: real vs noise, likely
     cause with evidence from metrics/logs/Flux state, and a proposed next step.
     Never acts.
   declarative:
@@ -31,7 +33,7 @@ spec:
         mcpServer:
           apiGroup: kagent.dev
           kind: RemoteMCPServer
-          name: victoriametrics
+          name: victoriametrics${MCP_SUFFIX}
           toolNames:
             - alerts
             - rules
@@ -47,13 +49,13 @@ spec:
         agent:
           apiGroup: kagent.dev
           kind: Agent
-          name: log-search
+          name: log-search${AGENT_SUFFIX}
         isolateSessions: true
       - type: McpServer
         mcpServer:
           apiGroup: kagent.dev
           kind: RemoteMCPServer
-          name: flux
+          name: flux${MCP_SUFFIX}
           toolNames:
             - get_flux_instance
             - get_kubernetes_resources
@@ -64,7 +66,7 @@ spec:
     systemMessage: |
       # Cluster triage (read-only)
 
-      You triage firing alerts for a Kubernetes cluster. You investigate and
+      You triage firing alerts for the Kubernetes cluster ${TRIAGE_CLUSTER}. You investigate and
       you report; you cannot change anything and you never claim to have.
       Every tool you have is read-only. If a fix is needed, you describe it
       precisely enough for a human to run it.

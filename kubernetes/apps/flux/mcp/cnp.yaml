@@ -12,10 +12,16 @@ spec:
     matchLabels:
       app.kubernetes.io/name: flux-operator-mcp
   ingress:
-    # Agents in ai-agents (kagent) read Flux state through this server.
+    # Agents in ai-agents (kagent) read Flux state through this server —
+    # the local ones, and fairy's over Cluster Mesh (policy-default-local-
+    # cluster is on, so a remote peer must be named by its cluster label).
     - fromEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: ai-agents
+        - matchLabels:
+            k8s:io.cilium.k8s.policy.cluster: fairy-k8s01
+            k8s:io.kubernetes.pod.namespace: ai-agents
+            k8s:app.kubernetes.io/part-of: kagent
       toPorts:
         - ports:
             - port: "9090"

@@ -1,0 +1,65 @@
+# Cluster Mesh imports: selector-less, unshared global Services whose
+# backends come from atlantis-k8s01 (the Services of the same name there carry
+# the selectors). A fairy client dials the usual in-cluster DNS name and
+# Cilium load-balances to the atlantis pods over the site-to-site tunnel; the
+# atlantis pods' policies admit fairy's ai-agents pods by identity.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-victoriametrics-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+    service.cilium.io/shared: "false"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-victorialogs-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+    service.cilium.io/shared: "false"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-victoriatraces-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+    service.cilium.io/shared: "false"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vmalertmanager-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+    service.cilium.io/shared: "false"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9093
+      targetPort: 9093
+      protocol: TCP

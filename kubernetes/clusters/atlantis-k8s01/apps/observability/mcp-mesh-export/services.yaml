@@ -1,0 +1,76 @@
+# Cluster Mesh exports: global Services that let fairy's agents reach this
+# cluster's read-only MCP servers (and Alertmanager) by identity rather than by
+# a LoadBalancer IP. They are copies of the local Services with a cluster
+# suffix in the name, so the global merge only ever contains THIS cluster's
+# backends: the matching Services on fairy carry no selector and are not
+# shared. Who may actually connect is decided by the CiliumNetworkPolicies on
+# the pods (they admit fairy's ai-agents pods by cluster + pod labels).
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-victoriametrics-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: mcp-victoriametrics
+    app.kubernetes.io/name: victoria-metrics-mcp
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-victorialogs-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: mcp-victorialogs
+    app.kubernetes.io/name: victoria-logs-mcp
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-victoriatraces-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: mcp-victoriatraces
+    app.kubernetes.io/name: mcp-victoriatraces
+  ports:
+    - name: http
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vmalertmanager-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: vm
+    app.kubernetes.io/name: vmalertmanager
+    managed-by: vm-operator
+  ports:
+    - name: http
+      port: 9093
+      targetPort: 9093
+      protocol: TCP

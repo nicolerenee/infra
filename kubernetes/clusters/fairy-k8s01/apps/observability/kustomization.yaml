@@ -8,6 +8,7 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./mcp-mesh-import.yaml
   - ./external-secrets.yaml
   - ./gatus.yaml
   - ./grafana-dashboards.yaml

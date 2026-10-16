@@ -27,3 +27,8 @@ spec:
   timeout: 5m
   prune: true
   wait: true
+  postBuild:
+    substitute:
+      AGENT_SUFFIX: ""
+      MCP_SUFFIX: ""
+      TRIAGE_CLUSTER: ${CLUSTER_NAME}

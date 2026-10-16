@@ -85,6 +85,40 @@ spec:
         - ports:
             - port: "9090"
               protocol: TCP
+    # atlantis-k8s01's MCP servers over Cluster Mesh (dialled through the
+    # mcp-mesh-import global Services; the destination identity is the remote
+    # pod's, so each rule names its cluster explicitly).
+    - toEndpoints:
+        - matchLabels:
+            io.cilium.k8s.policy.cluster: atlantis-k8s01
+            io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/instance: mcp-victoriametrics
+        - matchLabels:
+            io.cilium.k8s.policy.cluster: atlantis-k8s01
+            io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/instance: mcp-victorialogs
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            io.cilium.k8s.policy.cluster: atlantis-k8s01
+            io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/instance: mcp-victoriatraces
+      toPorts:
+        - ports:
+            - port: "8081"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            io.cilium.k8s.policy.cluster: atlantis-k8s01
+            io.kubernetes.pod.namespace: flux-system
+            app.kubernetes.io/name: flux-operator-mcp
+      toPorts:
+        - ports:
+            - port: "9090"
+              protocol: TCP
     - toEndpoints:
         - matchLabels:
             io.kubernetes.pod.namespace: janet-mcp

@@ -1,0 +1,24 @@
+# Cluster Mesh exports: global Services that let fairy's agents reach this
+# cluster's read-only MCP servers (and Alertmanager) by identity rather than by
+# a LoadBalancer IP. They are copies of the local Services with a cluster
+# suffix in the name, so the global merge only ever contains THIS cluster's
+# backends: the matching Services on fairy carry no selector and are not
+# shared. Who may actually connect is decided by the CiliumNetworkPolicies on
+# the pods (they admit fairy's ai-agents pods by cluster + pod labels).
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flux-operator-mcp-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: flux-operator-mcp
+    app.kubernetes.io/name: flux-operator-mcp
+  ports:
+    - name: http
+      port: 9090
+      targetPort: http
+      protocol: TCP

@@ -7,11 +7,11 @@
 apiVersion: kagent.dev/v1alpha2
 kind: Agent
 metadata:
-  name: log-search
+  name: log-search${AGENT_SUFFIX}
 spec:
   type: Declarative
   description: >-
-    Searches this cluster's logs (VictoriaLogs) for a specific question and
+    Searches ${TRIAGE_CLUSTER}'s logs (VictoriaLogs) for a specific question and
     returns only the relevant lines with timestamps and counts. Read-only.
   declarative:
     modelConfig: default-model-config
@@ -21,7 +21,7 @@ spec:
         mcpServer:
           apiGroup: kagent.dev
           kind: RemoteMCPServer
-          name: victorialogs
+          name: victorialogs${MCP_SUFFIX}
           toolNames:
             - query
             - hits
