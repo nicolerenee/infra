@@ -7,4 +7,5 @@ components:
   - ../_shared/cluster-info
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./external-secrets.yaml
   - ./harvest.yaml

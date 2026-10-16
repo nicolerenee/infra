@@ -96,11 +96,12 @@ spec:
           - port: http
     route:
       app:
+        # One hostname only: the OIDC SecurityPolicy's redirect URL is a
+        # single host, so a second name would bounce through the first.
         hostnames:
-          - "{{ .Release.Name }}.${CLUSTER_DOMAIN}"
-          - status.${CLUSTER_DOMAIN}
+          - status.${CLUSTER_SUBDOMAIN}.freckle.tools
         parentRefs:
-          - name: tailnet
+          - name: internal
             namespace: gateway-system
         rules:
           - backendRefs:

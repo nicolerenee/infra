@@ -1,22 +1,17 @@
 ---
-# Internal (tailnet) ingress for the harvest dashboard. The tailnet Gateway in
-# gateway-system terminates TLS — harvest.freckle.services is covered by the
-# cluster-svcs-tls cert's `*.freckle.services` SAN, and
-# external-dns (cloudflare) publishes the record because that gateway carries
-# the `gateway.freckle.systems/dns: cloudflare` label.
-#
-# Reachable only from the tailnet — that network boundary is the access
-# control for now (the page shows personal comp data). Add app-level auth
-# before exposing it any wider.
+# harvest.freckle.tools on the internal gateway (docs/networking/domains.md:
+# human-facing, not tied to one environment). The page shows personal comp
+# data and the app has no auth of its own, so the SecurityPolicy in oidc.yaml
+# is the access control — it must exist before this route does.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: harvest
 spec:
   hostnames:
-    - harvest.freckle.services
+    - harvest.freckle.tools
   parentRefs:
-    - name: tailnet
+    - name: internal
       namespace: gateway-system
   rules:
     - backendRefs:

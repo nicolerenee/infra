@@ -86,9 +86,9 @@ spec:
 
     route:
       app:
-        hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
+        hostnames: ["{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.tools"]
         parentRefs:
-          - name: tailnet
+          - name: internal
             namespace: gateway-system
         rules:
           - backendRefs:

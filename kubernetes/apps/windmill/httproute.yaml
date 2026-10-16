@@ -5,9 +5,9 @@ metadata:
   name: windmill
 spec:
   hostnames:
-    - windmill.fairy.freckle.systems
+    - windmill.fairy.freckle.tools
   parentRefs:
-    - name: tailnet
+    - name: internal
       namespace: gateway-system
   rules:
     - backendRefs:
