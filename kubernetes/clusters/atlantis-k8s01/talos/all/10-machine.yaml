@@ -1,9 +1,13 @@
 ---
 apiVersion: v1alpha1
 kind: ResolverConfig
+# Internal DNS (docs/networking/internal-dns.md): den1 has no gateway resolver
+# yet, so nodes use the BIND secondaries directly — atlantis first, fairy across
+# the tunnel as the cold-start fallback. Both answer internal zones
+# authoritatively and forward the rest over DoT.
 nameservers:
-  - address: 1.1.1.1
-  - address: 1.0.0.1
+  - address: 10.140.250.53
+  - address: 10.189.250.53
 searchDomains:
   disableDefault: true
 # Host DNS caching resolver.

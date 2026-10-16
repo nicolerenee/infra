@@ -1,9 +1,11 @@
 ---
 apiVersion: v1alpha1
 kind: ResolverConfig
+# Internal DNS (docs/networking/internal-dns.md): the UDM is the resolver for
+# everything at fairy; it forwards the hosted zones to the fairy secondary and
+# resolves the rest itself. Compute-VLAN gateway address.
 nameservers:
-  - address: 1.1.1.1
-  - address: 1.0.0.1
+  - address: 10.189.3.1
 searchDomains:
   disableDefault: true
 # Host DNS caching resolver.
