@@ -47,14 +47,17 @@ spec:
       createPrometheusRules: true
     toolbox:
       enabled: true
+    # Ceph dashboard on the internal gateway (docs/networking/domains.md). The
+    # dashboard has its own login, so no gateway policy. Replaces the
+    # hand-applied `ceph.<env>.freckle.systems` route on fairy.
     route:
       dashboard:
         host:
-          name: rook.${CLUSTER_DOMAIN}
+          name: ceph.${CLUSTER_SUBDOMAIN}.freckle.tools
           path: /
           pathType: PathPrefix
         parentRefs:
-          - name: tailnet
+          - name: internal
             namespace: gateway-system
     cephClusterSpec:
       cephConfig:
