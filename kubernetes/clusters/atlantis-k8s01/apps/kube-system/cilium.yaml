@@ -33,9 +33,46 @@ spec:
           value:
             bandwidthManager:
               enabled: true
-            # BGP enabled for LoadBalancer IP advertisement only (not pod routes)
+            # BGP to the den1 ToR: LoadBalancer IPs and (for native routing)
+            # the per-node pod CIDRs. Peering CRs live in the private repo.
             bgpControlPlane:
               enabled: true
+            # Cluster Mesh identity (fairy-k8s01 is id 2). Changing name/id
+            # re-allocates every security identity: a restart-everything roll.
+            cluster:
+              name: atlantis-k8s01
+              id: 1
+            # Native routing instead of VXLAN: the nodes share one L2 segment
+            # (172.26.3.0/24 + the public /64) so autoDirectNodeRoutes covers
+            # the cluster and the ToR learns the pod /24s over BGP. The
+            # native-routing CIDR spans BOTH clusters' pod ranges (10.244/16
+            # here, 10.230/16 fairy) so cross-cluster pod traffic is not
+            # masqueraded.
+            routingMode: native
+            autoDirectNodeRoutes: true
+            ipv4NativeRoutingCIDR: 10.224.0.0/11
+            ipv6NativeRoutingCIDR: fd2b:ec21:3ff2::/48
+            clustermesh:
+              useAPIServer: true
+              config:
+                enabled: true
+              apiserver:
+                replicas: 2
+                tls:
+                  auto:
+                    enabled: true
+                    method: certmanager
+                    certManagerIssuerRef:
+                      group: cert-manager.io
+                      kind: ClusterIssuer
+                      name: cilium-clustermesh-ca
+                service:
+                  type: LoadBalancer
+                  labels:
+                    ipam.freckle.systems/lb-pool: internal
+                  annotations:
+                    # Pinned: this address is what fairy is told to dial.
+                    lbipam.cilium.io/ips: 10.140.250.250
             bpf:
               datapathMode: netkit
               preallocateMaps: true
