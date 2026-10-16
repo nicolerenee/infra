@@ -59,6 +59,7 @@ nav = [
     { "Networking" = "networking/index.md" },
     { "Fairy Network Topology" = "networking/fairy-network.md" },
     { "Fairy BGP (Cilium to UDM)" = "networking/fairy-bgp.md" },
+    { "Cilium Cluster Mesh" = "networking/cluster-mesh.md" },
   ]},
   { "Storage" = [
     { "Storage" = "storage/index.md" },
