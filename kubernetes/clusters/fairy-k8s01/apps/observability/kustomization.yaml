@@ -13,6 +13,7 @@ resources:
   - ./gatus.yaml
   - ./grafana-dashboards.yaml
   - ./grafana-operator.yaml
+  - ./grafana-db.yaml
   - ./grafana-instance.yaml
   - ./prometheus-operator-crds.yaml
   - ./silence-operator.yaml

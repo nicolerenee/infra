@@ -45,6 +45,11 @@ spec:
         login: true
         passwordSecret:
           name: paperless-db-role
+      - name: grafana
+        ensure: present
+        login: true
+        passwordSecret:
+          name: grafana-db-role
 
   plugins:
     - name: barman-cloud.cloudnative-pg.io

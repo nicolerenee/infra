@@ -1,0 +1,40 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/external-secrets.io/externalsecret_v1.json
+# Password for the CNPG managed `grafana` role on pg-18a. Same tofu-generated
+# value the observability namespace reads as fairy-k8s01-observability-grafana-db.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: grafana-db-role
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: SecretStore
+    name: gcp-sm
+  target:
+    name: grafana-db-role
+    creationPolicy: Owner
+    template:
+      engineVersion: v2
+      metadata:
+        labels:
+          cnpg.io/reload: "true"
+      data:
+        username: "{{ .username }}"
+        password: "{{ .password }}"
+  dataFrom:
+    - extract:
+        key: ${CLUSTER_NAME}-db-grafana-role
+---
+# Declarative database owned by the managed role; Grafana runs its own
+# migrations on start.
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: pg-18a-grafana
+spec:
+  name: grafana
+  owner: grafana
+  cluster:
+    name: pg-18a
+  ensure: present
