@@ -96,10 +96,12 @@ spec:
           - port: http
     route:
       app:
-        # One hostname only: the OIDC SecurityPolicy's redirect URL is a
-        # single host, so a second name would bounce through the first.
+        # Deliberately open: the status page is meant to be reachable without
+        # a login (Nicole, 2026-10-16). Network-layer only (internal pools are
+        # blocked from guest/IoT VLANs on the UDM).
         hostnames:
           - status.${CLUSTER_SUBDOMAIN}.freckle.tools
+          - "{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.tools"
         parentRefs:
           - name: internal
             namespace: gateway-system

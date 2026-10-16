@@ -5,9 +5,9 @@ metadata:
   name: vm-alertmanager
 spec:
   hostnames:
-    - alertmanager.${CLUSTER_DOMAIN}
+    - alertmanager.${CLUSTER_SUBDOMAIN}.freckle.tools
   parentRefs:
-    - name: tailnet
+    - name: internal
       namespace: gateway-system
   rules:
     - backendRefs:
@@ -21,9 +21,9 @@ metadata:
   name: vmalert-vm
 spec:
   hostnames:
-    - vmalert.${CLUSTER_DOMAIN}
+    - vmalert.${CLUSTER_SUBDOMAIN}.freckle.tools
   parentRefs:
-    - name: tailnet
+    - name: internal
       namespace: gateway-system
   rules:
     - backendRefs:
@@ -37,9 +37,9 @@ metadata:
   name: vm-single
 spec:
   hostnames:
-    - victoriametrics.${CLUSTER_DOMAIN}
+    - victoriametrics.${CLUSTER_SUBDOMAIN}.freckle.tools
   parentRefs:
-    - name: tailnet
+    - name: internal
       namespace: gateway-system
   rules:
     - backendRefs:
