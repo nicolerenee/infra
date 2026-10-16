@@ -7,10 +7,14 @@ metadata:
 spec:
   config:
     auth:
-      disable_login_form: "false"
+      # OIDC is the only way in: no password form, and an unauthenticated
+      # visit goes straight to pocket-id. The local admin is still reachable
+      # at /login?disableAutoLogin=true for recovery.
+      disable_login_form: "true"
     auth.generic_oauth:
       allow_assign_grafana_admin: "True"
       allow_sign_up: "True"
+      auto_login: "True"
       api_url: https://freckle.id/api/oidc/userinfo
       auth_url: https://freckle.id/authorize
       client_id: $${AUTH_CLIENT_ID}
