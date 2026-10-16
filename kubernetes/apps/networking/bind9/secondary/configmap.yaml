@@ -1,10 +1,14 @@
 ---
-# Per-site authoritative secondary for every internal zone (AXFR from the
-# hidden primary). No recursion: the site gateway (UDM at fairy, the den1
-# router) forwards only the internal domains here and resolves everything
-# else itself, so this never needs to talk to the internet. Zone copies live
-# on emptyDir on purpose — a PVC would make DNS depend on Ceph coming up
-# first; a fresh pod just re-pulls the zones from the primary.
+# Per-site secondary for every internal zone (AXFR from the hidden primary).
+# The site gateway (UDM at fairy, the den1 router) forwards only the hosted
+# zones here and resolves everything else itself — but it does NOT chase a
+# CNAME whose target lies outside the forwarded zone (k8s-oidc -> public.r2.dev,
+# tunnel names -> *.cfargotunnel.com), and a stub resolver can't either. So
+# this server recurses just enough to complete those chains: forward-only to
+# Cloudflare over DNS-over-TLS, recursion allowed from internal space only.
+# It is never a client-facing general resolver. Zone copies live on emptyDir
+# on purpose — a PVC would make DNS depend on Ceph coming up first; a fresh
+# pod just re-pulls the zones from the primary.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -23,9 +27,21 @@ data:
       statistics-file "/data/named.stats";
       listen-on port 5353 { any; };
       listen-on-v6 port 5353 { any; };
-      recursion no;
+      recursion yes;
       allow-query { any; };
+      allow-recursion { internal; };
+      allow-query-cache { internal; };
       allow-transfer { none; };
+      # Only used to complete CNAME chains that leave our zones. No plaintext
+      # upstream exists and the CNP only permits 853, so a mistake here fails
+      # closed instead of leaking.
+      forward only;
+      forwarders {
+        1.1.1.1 port 853 tls cloudflare;
+        1.0.0.1 port 853 tls cloudflare;
+        2606:4700:4700::1111 port 853 tls cloudflare;
+        2606:4700:4700::1001 port 853 tls cloudflare;
+      };
       dnssec-validation no;
       minimal-responses yes;
       version none;

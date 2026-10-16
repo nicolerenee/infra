@@ -53,7 +53,9 @@ bind9-secondary (fairy)   bind9-secondary (atlantis)
   both secondaries. Losing it freezes updates, never resolution.
 - **bind9-secondary** — `kubernetes/apps/networking/bind9/secondary`, two
   replicas per cluster behind a pinned internal LoadBalancer IP. Authoritative
-  only (`recursion no`); zones on emptyDir because a PVC would make DNS depend
+  for the hosted zones, plus just enough recursion (forward-only, DNS-over-TLS
+  to Cloudflare, internal clients only) to complete CNAME chains that leave
+  our zones — the UDM does not chase those, and stub resolvers cannot; zones on emptyDir because a PVC would make DNS depend
   on Ceph during a cold start, and a fresh pod simply re-pulls from the
   primary. SOA expiry is 14 days so a secondary keeps serving long after the
   primary goes away.
@@ -76,8 +78,9 @@ Both TSIG keys and the ESO grants for the `dns` namespace come from
 
 Site gateways are the only resolvers clients see. Each forwards just the
 six hosted zones to its site's secondary and resolves everything else
-itself, so BIND never talks to the internet and the gateway's own DNS
-features (filtering, logging, encrypted upstream) stay in the loop.
+itself, so the gateway's own DNS features (filtering, logging, encrypted
+upstream) stay in the loop. BIND's only upstream traffic is DoT to Cloudflare
+for CNAME targets outside our zones.
 
 | Client | Resolver | Internal zones go to |
 |--------|----------|----------------------|
