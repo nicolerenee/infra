@@ -13,6 +13,11 @@ metadata:
     advertise: bgp
 spec:
   advertisements:
+    # Each node's pod /24. Needed for native routing: the UDM must know which
+    # node owns a pod address (return traffic from den1, and anything the
+    # compute VLAN sends to a pod). Other VLANs are blocked from these ranges
+    # by the UDM firewall (private repo, udm-firewall).
+    - advertisementType: PodCIDR
     - advertisementType: Service
       service:
         addresses:
