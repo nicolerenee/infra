@@ -10,6 +10,10 @@ bondMode: active-backup
 mtu: 9000
 addresses:
   - address: {{ .Node.IP }}/24
+  # Static on-link IPv6 (host part = the IPv4 last octet). No IPv6 router on
+  # this VLAN is used; it exists so every node has a reachable IPv6 node
+  # address for Cilium's native-routing direct routes.
+  - address: fd2b:ec92:e233::{{ .Node.IP.String | splitList "." | last }}/64
 routes:
   - gateway: 10.189.3.1
     metric: 1024
