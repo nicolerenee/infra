@@ -79,7 +79,6 @@ six hosted zones to its site's secondary and resolves everything else
 itself, so BIND never talks to the internet and the gateway's own DNS
 features (filtering, logging, encrypted upstream) stay in the loop.
 
-
 | Client | Resolver | Internal zones go to |
 |--------|----------|----------------------|
 | fairy LAN + Talos nodes | UDM (DHCP) | UniFi **Forward Domain** records → 10.189.250.53 (`network/btx01/udm-dns` in the private repo) |
