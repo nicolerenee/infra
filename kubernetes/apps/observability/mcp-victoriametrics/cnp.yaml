@@ -1,7 +1,8 @@
 ---
 # Read-only MCP server, but it still gets an ingress allow-list: the local
-# ai-agents namespace, fairy's ai-agents pods over Cluster Mesh (named by
-# cluster label: policy-default-local-cluster is on), and the tailnet
+# ai-agents namespace, fairy's ai-agents namespace over Cluster Mesh (named by
+# cluster label: policy-default-local-cluster is on; the kagent controller
+# that discovers tools lives there too), and the tailnet
 # gateway that fronts the HTTPRoute. Anything else in the cluster is denied.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
@@ -18,7 +19,6 @@ spec:
         - matchLabels:
             k8s:io.cilium.k8s.policy.cluster: fairy-k8s01
             k8s:io.kubernetes.pod.namespace: ai-agents
-            k8s:app.kubernetes.io/part-of: kagent
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: gateway-system
             gateway.envoyproxy.io/owning-gateway-name: tailnet
