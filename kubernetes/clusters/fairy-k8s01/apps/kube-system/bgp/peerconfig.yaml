@@ -1,0 +1,23 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumbgppeerconfig_v2.json
+apiVersion: cilium.io/v2
+kind: CiliumBGPPeerConfig
+metadata:
+  name: fairy-udm01
+spec:
+  # The UDM is directly connected on VLAN 1000; TTL 1 is the eBGP default and
+  # keeps a misrouted session from forming through anything else.
+  ebgpMultihop: 1
+  timers:
+    connectRetryTimeSeconds: 10
+    holdTimeSeconds: 30
+    keepAliveTimeSeconds: 10
+  gracefulRestart:
+    enabled: true
+    restartTimeSeconds: 120
+  families:
+    - afi: ipv4
+      safi: unicast
+      advertisements:
+        matchLabels:
+          advertise: bgp

@@ -1,0 +1,26 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumbgpadvertisement_v2.json
+# Advertise the LoadBalancer IP of every LoadBalancer Service as a /32. Both
+# fairy pools (internal 10.189.250.0/24, and the public pool) are reachable
+# only through these routes: nothing on the home network announces them at L2.
+# Services with externalTrafficPolicy=Local are announced only from nodes that
+# have a ready endpoint, so the UDM's ECMP set tracks pod placement.
+apiVersion: cilium.io/v2
+kind: CiliumBGPAdvertisement
+metadata:
+  name: bgp-advertisements
+  labels:
+    advertise: bgp
+spec:
+  advertisements:
+    - advertisementType: Service
+      service:
+        addresses:
+          - LoadBalancerIP
+      # An always-true selector: the API requires one, and we want every
+      # LoadBalancer Service. Opting a Service out means giving it this label.
+      selector:
+        matchExpressions:
+          - key: bgp.freckle.systems/advertise
+            operator: NotIn
+            values: ["false"]
