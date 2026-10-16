@@ -6,3 +6,4 @@ resources:
   - ./deployment.yaml
   - ./service.yaml
   - ./httproute.yaml
+  - ./oidc.yaml

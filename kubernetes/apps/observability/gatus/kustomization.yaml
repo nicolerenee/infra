@@ -6,6 +6,7 @@ resources:
   - ./pvc.yaml
   - ./helmrelease.yaml
   - ./prometheusrule.yaml
+  - ./oidc.yaml
 configMapGenerator:
   - name: gatus-configmap
     files:

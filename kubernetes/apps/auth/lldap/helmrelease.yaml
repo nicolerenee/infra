@@ -81,9 +81,9 @@ spec:
     route:
       lldap:
         hostnames:
-          - "lldap.${CLUSTER_DOMAIN}"
+          - "lldap.${CLUSTER_SUBDOMAIN}.freckle.tools"
         parentRefs:
-          - name: tailnet
+          - name: internal
             namespace: gateway-system
         rules:
           - backendRefs:
