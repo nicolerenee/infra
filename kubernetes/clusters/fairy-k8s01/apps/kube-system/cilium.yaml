@@ -66,6 +66,15 @@ spec:
               # here once atlantis exposes its apiserver.
               config:
                 enabled: true
+                # The other cluster's clustermesh-apiserver. The name must be
+                # its cluster.name; the host is resolved through the ips list
+                # (the server certificate carries *.mesh.cilium.io).
+                clusters:
+                  atlantis-k8s01:
+                    address: atlantis-k8s01.mesh.cilium.io
+                    port: 2379
+                    ips:
+                      - 10.140.250.250
               apiserver:
                 replicas: 2
                 tls:
