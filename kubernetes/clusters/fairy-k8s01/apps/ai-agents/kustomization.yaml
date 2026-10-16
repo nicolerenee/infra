@@ -14,3 +14,5 @@ resources:
   - ./probe.yaml
   - ./log-search.yaml
   - ./cluster-triage.yaml
+  - ./log-search-atlantis.yaml
+  - ./cluster-triage-atlantis.yaml
