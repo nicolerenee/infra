@@ -36,7 +36,7 @@ Pod addresses are routed addresses now. On fairy the UDM blocks every VLAN excep
 ```bash
 # on either cluster
 kubectl -n kube-system exec ds/cilium -c cilium-agent -- cilium-dbg status | grep -E 'Cluster|ClusterMesh|Routing'
-kubectl -n kube-system exec ds/cilium -c cilium-agent -- cilium-dbg clustermesh status
+kubectl -n kube-system exec ds/cilium -c cilium-agent -- cilium-dbg troubleshoot clustermesh   # TLS + etcd checks per peer
 kubectl -n kube-system exec ds/cilium -c cilium-agent -- cilium-dbg node list   # remote nodes appear with their cluster prefix
 ```
 
