@@ -1,0 +1,100 @@
+---
+# Per-site authoritative secondary for every internal zone (AXFR from the
+# hidden primary). No recursion: the site gateway (UDM at fairy, the den1
+# router) forwards only the internal domains here and resolves everything
+# else itself, so this never needs to talk to the internet. Zone copies live
+# on emptyDir on purpose — a PVC would make DNS depend on Ceph coming up
+# first; a fresh pod just re-pulls the zones from the primary.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bind9-secondary-config
+data:
+  named.conf: |
+    include "/secrets/tsig-keys.conf";
+
+
+    options {
+      directory "/data";
+      pid-file "/data/named.pid";
+      session-keyfile "/data/session.key";
+      managed-keys-directory "/data";
+      dump-file "/data/named_dump.db";
+      statistics-file "/data/named.stats";
+      listen-on port 5353 { any; };
+      listen-on-v6 port 5353 { any; };
+      recursion no;
+      allow-query { any; };
+      allow-transfer { none; };
+      dnssec-validation no;
+      minimal-responses yes;
+      version none;
+    };
+
+    logging {
+      channel stderr { stderr; severity info; print-time yes; print-category yes; };
+      category default { stderr; };
+      category xfer-in { stderr; };
+      category notify { stderr; };
+    };
+
+    include "/config/zones.conf";
+
+  zones.conf: |
+    # NOTIFYs from the primary arrive masqueraded (its pod egresses via a node
+    # IP when it crosses sites), so accept them from any RFC1918 address — a
+    # forged NOTIFY only triggers an authenticated SOA check.
+    zone "freckle.network" {
+      type secondary;
+      primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
+      file "zones/freckle.network.db";
+      allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
+    };
+    zone "fairy.freckle.systems" {
+      type secondary;
+      primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
+      file "zones/fairy.freckle.systems.db";
+      allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
+    };
+    zone "fairy.freckle.services" {
+      type secondary;
+      primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
+      file "zones/fairy.freckle.services.db";
+      allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
+    };
+    zone "fairy.freckle.media" {
+      type secondary;
+      primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
+      file "zones/fairy.freckle.media.db";
+      allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
+    };
+    zone "atlantis.freckle.systems" {
+      type secondary;
+      primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
+      file "zones/atlantis.freckle.systems.db";
+      allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
+    };
+    zone "atlantis.freckle.services" {
+      type secondary;
+      primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
+      file "zones/atlantis.freckle.services.db";
+      allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
+    };
+    zone "atlantis.freckle.media" {
+      type secondary;
+      primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
+      file "zones/atlantis.freckle.media.db";
+      allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
+    };
+    zone "189.10.in-addr.arpa" {
+      type secondary;
+      primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
+      file "zones/189.10.in-addr.arpa.db";
+      allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
+    };
+    zone "140.10.in-addr.arpa" {
+      type secondary;
+      primaries { ${DNS_PRIMARY_IP} port 53 key "freckle-dns-xfr"; };
+      file "zones/140.10.in-addr.arpa.db";
+      allow-notify { 10.0.0.0/8; 172.16.0.0/12; 192.168.0.0/16; };
+    };

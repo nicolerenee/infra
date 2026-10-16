@@ -1,0 +1,95 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/source.toolkit.fluxcd.io/ocirepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: external-dns-internal
+spec:
+  interval: 5m
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
+  ref:
+    tag: 1.23.0
+  url: oci://ghcr.io/home-operations/charts-mirror/external-dns
+  verify:
+    provider: cosign
+    matchOIDCIdentity:
+      - issuer: "^https://token.actions.githubusercontent.com$"
+        subject: "^https://github.com/home-operations/charts-mirror.*$"
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
+# Internal-only names. Writes RFC2136 dynamic updates to the hidden BIND
+# primary for this cluster's three subzones; the per-site secondaries serve
+# them. Picks up routes on gateways labelled `gateway.freckle.systems/dns:
+# internal` and LoadBalancer Services with a hostname annotation. Separate
+# txtOwnerId from the Cloudflare instance so the two never fight over a
+# name that is published in both places during a migration.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app external-dns-internal
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: external-dns-internal
+  dependsOn:
+    - name: prometheus-operator-crds
+      namespace: observability
+  install:
+    crds: CreateReplace
+    disableSchemaValidation: true # Ref: https://github.com/kubernetes-sigs/external-dns/issues/5206
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    crds: CreateReplace
+    disableSchemaValidation: true # Ref: https://github.com/kubernetes-sigs/external-dns/issues/5206
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    fullnameOverride: *app
+    extraArgs:
+      - --gateway-label-filter=gateway.freckle.systems/dns==internal
+      - --rfc2136-host=${DNS_PRIMARY_IP}
+      - --rfc2136-port=53
+      - --rfc2136-zone=${CLUSTER_SUBDOMAIN}.freckle.systems
+      - --rfc2136-zone=${CLUSTER_SUBDOMAIN}.freckle.services
+      - --rfc2136-zone=${CLUSTER_SUBDOMAIN}.freckle.media
+      - --rfc2136-tsig-keyname=freckle-dns-update
+      - --rfc2136-tsig-secret-alg=hmac-sha256
+      - --rfc2136-tsig-secret=$(TSIG_SECRET)
+      - --rfc2136-tsig-axfr
+      - --rfc2136-min-ttl=60s
+    sources:
+      - service
+      - gateway-httproute
+      - gateway-grpcroute
+    provider:
+      name: rfc2136
+    domainFilters:
+      - ${CLUSTER_SUBDOMAIN}.freckle.systems
+      - ${CLUSTER_SUBDOMAIN}.freckle.services
+      - ${CLUSTER_SUBDOMAIN}.freckle.media
+    env:
+      - name: TSIG_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: &secret external-dns-internal-tsig
+            key: tsig_secret
+    txtOwnerId: "${CLUSTER_NAME}-internal"
+    txtPrefix: k8s-
+    policy: sync
+    # Same prefix pin as the Cloudflare instance (external-dns 0.22 default
+    # change); our Gateway annotations use the alpha prefix.
+    annotationPrefix: external-dns.alpha.kubernetes.io/
+    securityContext:
+      allowPrivilegeEscalation: false
+      seccompProfile:
+        type: RuntimeDefault
+    serviceMonitor:
+      enabled: true
+    podAnnotations:
+      secret.reloader.stakater.com/reload: *secret

@@ -10,4 +10,5 @@ components:
 resources:
   - ./cloudflare.yaml
   - ./cloudflare-tunnel.yaml
+  - ./internal.yaml
   - ./external-secrets.yaml

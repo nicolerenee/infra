@@ -1,0 +1,43 @@
+---
+# The primary only ever speaks DNS: updates and AXFR in on 5353 (external-dns
+# from both clusters, tofu from the tailnet, the secondaries), NOTIFY out to the
+# two secondary addresses. Fairy's external-dns arrives masqueraded as a fairy
+# node IP, so ingress is by port, not by identity.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: bind9-primary
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: bind9-primary
+  ingress:
+    - fromEntities: ["all"]
+      toPorts:
+        - ports:
+            - port: "5353"
+              protocol: UDP
+            - port: "5353"
+              protocol: TCP
+  egress:
+    - toCIDR:
+        - ${DNS_SECONDARY_FAIRY_IP}/32
+        - ${DNS_SECONDARY_ATLANTIS_IP}/32
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+    # The local secondary is reached in-cluster by Cilium's service handling,
+    # which resolves the LB IP to pod endpoints before policy — so allow the
+    # pods too.
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: bind9-secondary
+      toPorts:
+        - ports:
+            - port: "5353"
+              protocol: UDP
+            - port: "5353"
+              protocol: TCP

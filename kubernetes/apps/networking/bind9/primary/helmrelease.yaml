@@ -1,0 +1,127 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: bind9-primary
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: default
+  maxHistory: 2
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
+  values:
+    controllers:
+      bind9-primary:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        # One replica, PVC-backed: the zone journals are the source of truth.
+        strategy: Recreate
+        pod:
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            fsGroup: 1000
+            fsGroupChangePolicy: OnRootMismatch
+            seccompProfile:
+              type: RuntimeDefault
+        initContainers:
+          init-zones:
+            image: &image
+              repository: docker.io/internetsystemsconsortium/bind9
+              tag: 9.20
+            command: ["/bin/sh", "/init/init-zones.sh"]
+            env:
+              DNS_SECONDARY_FAIRY_IP: ${DNS_SECONDARY_FAIRY_IP}
+              DNS_SECONDARY_ATLANTIS_IP: ${DNS_SECONDARY_ATLANTIS_IP}
+            securityContext: &sc
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop: ["ALL"]
+        containers:
+          app:
+            image: *image
+            command: ["/usr/sbin/named", "-g", "-c", "/config/named.conf"]
+            securityContext: *sc
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: 5353
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+              readiness: *probe
+              startup:
+                enabled: false
+            resources:
+              requests:
+                cpu: 20m
+                memory: 64Mi
+              limits:
+                memory: 256Mi
+
+    service:
+      app:
+        controller: bind9-primary
+        type: LoadBalancer
+        labels:
+          ipam.freckle.systems/lb-pool: internal
+        annotations:
+          lbipam.cilium.io/ips: ${DNS_PRIMARY_IP}
+        ipFamilyPolicy: SingleStack
+        ports:
+          dns-udp:
+            port: 53
+            targetPort: 5353
+            protocol: UDP
+          dns-tcp:
+            port: 53
+            targetPort: 5353
+            protocol: TCP
+
+    persistence:
+      config:
+        type: configMap
+        name: bind9-primary-config
+        globalMounts:
+          - path: /config
+            readOnly: true
+      init:
+        type: configMap
+        name: bind9-primary-init
+        advancedMounts:
+          bind9-primary:
+            init-zones:
+              - path: /init
+                readOnly: true
+      secrets:
+        type: secret
+        name: bind9-primary-tsig
+        globalMounts:
+          - path: /secrets
+            readOnly: true
+      data:
+        type: persistentVolumeClaim
+        storageClass: ceph-block
+        accessMode: ReadWriteOnce
+        size: 1Gi
+        globalMounts:
+          - path: /data
+      tmp:
+        type: emptyDir
+        globalMounts:
+          - path: /tmp

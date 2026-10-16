@@ -1,0 +1,11 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: dns
+components:
+  - ../_shared/cluster-info
+  - ../../../../components/flux-post-build-variables
+resources:
+  - ./external-secrets.yaml
+  - ./bind9-primary.yaml
+  - ./bind9-secondary.yaml

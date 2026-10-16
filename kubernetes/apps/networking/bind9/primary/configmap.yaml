@@ -1,0 +1,143 @@
+---
+# Hidden primary for the internal zones. Never handed to clients: it only
+# takes RFC2136 updates (external-dns on each cluster, tofu for static hosts)
+# and feeds the per-site secondaries by AXFR. Zone contents live on the PVC as
+# dynamic zones (journal files), so the skeletons below are written ONCE by the
+# init script and never touched again; every record after that arrives as an
+# update. Editing a zone file by hand on a dynamic zone is the classic BIND
+# trap (needs rndc freeze/thaw) — don't.
+#
+# Secondary addresses come in by postBuild substitution so this dir stays
+# cluster-agnostic; the primary itself runs on one cluster only.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bind9-primary-config
+data:
+  named.conf: |
+    include "/secrets/tsig-keys.conf";
+
+    options {
+      directory "/data";
+      pid-file "/data/named.pid";
+      session-keyfile "/data/session.key";
+      managed-keys-directory "/data";
+      dump-file "/data/named_dump.db";
+      statistics-file "/data/named.stats";
+      # Unprivileged port; the Service maps 53 -> 5353.
+      listen-on port 5353 { any; };
+      listen-on-v6 port 5353 { any; };
+      recursion no;
+      allow-query { any; };
+      # Secondaries pull with the xfr key; external-dns lists zones over
+      # AXFR with its update key (--rfc2136-tsig-axfr).
+      allow-transfer { key "freckle-dns-xfr"; key "freckle-dns-update"; };
+      # NOTIFY the two site secondaries directly (they're behind a LoadBalancer
+      # Service, so only one replica hears it; the other catches up on the
+      # SOA refresh timer).
+      notify explicit;
+      also-notify { ${DNS_SECONDARY_FAIRY_IP} port 53; ${DNS_SECONDARY_ATLANTIS_IP} port 53; };
+      dnssec-validation no;
+      minimal-responses yes;
+      version none;
+    };
+
+    logging {
+      channel stderr { stderr; severity info; print-time yes; print-category yes; };
+      category default { stderr; };
+      category update { stderr; };
+      category update-security { stderr; };
+      category xfer-out { stderr; };
+      category notify { stderr; };
+    };
+
+    include "/config/zones.conf";
+
+  zones.conf: |
+    zone "freckle.network" {
+      type primary;
+      file "zones/freckle.network.db";
+      update-policy { grant freckle-dns-update zonesub ANY; };
+    };
+    zone "fairy.freckle.systems" {
+      type primary;
+      file "zones/fairy.freckle.systems.db";
+      update-policy { grant freckle-dns-update zonesub ANY; };
+    };
+    zone "fairy.freckle.services" {
+      type primary;
+      file "zones/fairy.freckle.services.db";
+      update-policy { grant freckle-dns-update zonesub ANY; };
+    };
+    zone "fairy.freckle.media" {
+      type primary;
+      file "zones/fairy.freckle.media.db";
+      update-policy { grant freckle-dns-update zonesub ANY; };
+    };
+    zone "atlantis.freckle.systems" {
+      type primary;
+      file "zones/atlantis.freckle.systems.db";
+      update-policy { grant freckle-dns-update zonesub ANY; };
+    };
+    zone "atlantis.freckle.services" {
+      type primary;
+      file "zones/atlantis.freckle.services.db";
+      update-policy { grant freckle-dns-update zonesub ANY; };
+    };
+    zone "atlantis.freckle.media" {
+      type primary;
+      file "zones/atlantis.freckle.media.db";
+      update-policy { grant freckle-dns-update zonesub ANY; };
+    };
+    zone "189.10.in-addr.arpa" {
+      type primary;
+      file "zones/189.10.in-addr.arpa.db";
+      update-policy { grant freckle-dns-update zonesub ANY; };
+    };
+    zone "140.10.in-addr.arpa" {
+      type primary;
+      file "zones/140.10.in-addr.arpa.db";
+      update-policy { grant freckle-dns-update zonesub ANY; };
+    };
+---
+# Shell script, so it is full of `$` that Flux's strict post-build substitution
+# would choke on: substitution is disabled for this object and the secondary
+# addresses arrive as environment variables from the HelmRelease instead.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bind9-primary-init
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+data:
+  init-zones.sh: |
+    #!/bin/sh
+    # Write a skeleton (SOA + NS) for any zone that has no file yet. Runs as
+    # an init container on every start but is a no-op once the files exist,
+    # because from then on the zone is dynamic and owned by named's journal.
+    set -eu
+    mkdir -p /data/zones
+    ZONES="freckle.network fairy.freckle.systems fairy.freckle.services fairy.freckle.media atlantis.freckle.systems atlantis.freckle.services atlantis.freckle.media 189.10.in-addr.arpa 140.10.in-addr.arpa"
+    for z in $ZONES; do
+      f="/data/zones/$z.db"
+      [ -e "$f" ] && continue
+      echo "init: creating skeleton for $z"
+      # refresh 300 / retry 60 / expire 14d / negative TTL 60. The long expire
+      # is deliberate: secondaries keep serving for two weeks with the primary
+      # unreachable.
+      cat > "$f" <<ZONE
+    \$ORIGIN $z.
+    \$TTL 300
+    @ IN SOA ns1.freckle.network. hostmaster.freckle.network. ( 1 300 60 1209600 60 )
+    @ IN NS ns1.freckle.network.
+    @ IN NS ns2.freckle.network.
+    ZONE
+      if [ "$z" = "freckle.network" ]; then
+        # In-zone addresses for the NS names (ns1 = fairy secondary, ns2 =
+        # atlantis secondary). Everything else in this zone comes via tofu.
+        cat >> "$f" <<ZONE
+    ns1 IN A $DNS_SECONDARY_FAIRY_IP
+    ns2 IN A $DNS_SECONDARY_ATLANTIS_IP
+    ZONE
+      fi
+    done
