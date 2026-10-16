@@ -17,6 +17,19 @@ data:
   named.conf: |
     include "/secrets/tsig-keys.conf";
 
+    tls cloudflare {
+      remote-hostname "cloudflare-dns.com";
+      ca-file "/etc/ssl/certs/ca-certificates.crt";
+    };
+
+    acl internal {
+      10.0.0.0/8;
+      172.16.0.0/12;
+      192.168.0.0/16;
+      100.64.0.0/10;
+      fd00::/8;
+      localhost;
+    };
 
     options {
       directory "/data";
