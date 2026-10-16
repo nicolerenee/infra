@@ -4,8 +4,13 @@ metadata:
   name: hubble
 spec:
   hostnames:
+    - hubble.${CLUSTER_SUBDOMAIN}.freckle.tools
+    # Legacy name on the tailnet gateway — removed once the .tools name is
+    # proven (internal gateway migration pilot).
     - hubble.${CLUSTER_DOMAIN}
   parentRefs:
+    - name: internal
+      namespace: gateway-system
     - name: tailnet
       namespace: gateway-system
   rules:

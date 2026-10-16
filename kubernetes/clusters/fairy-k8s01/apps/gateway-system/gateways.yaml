@@ -26,6 +26,10 @@ spec:
   interval: 1h
   retryInterval: 2m
   timeout: 5m
+  postBuild:
+    substitute:
+      # Internal gateway address (internal LB pool; BGP-routed on site).
+      INTERNAL_GW_IP: 10.189.250.20
   # gw-public is in the shared base so the CI completeness check passes;
   # fairy is internal-only, so strip the public Gateway plus its companion
   # EnvoyPatchPolicy out at apply time.

@@ -53,3 +53,21 @@ spec:
   dnsNames:
     - "${CLUSTER_NAME}-cf-tun-gw.freckle.systems"
     - "*.${CLUSTER_SUBDOMAIN}.freckle.systems"
+
+---
+# freckle.tools — the human-facing zone (docs/networking/domains.md).
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cluster-tools-tls
+spec:
+  secretName: cluster-tools-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "freckle.tools"
+  dnsNames:
+    - "freckle.tools"
+    - "*.freckle.tools"
+    - "*.${CLUSTER_SUBDOMAIN}.freckle.tools"
