@@ -78,6 +78,15 @@ the alias moves.
 
 ## Exposure
 
+**Nothing on the internal gateway is anonymous.** The tailnet gateway got
+identity for free from Tailscale ACLs; the internal gateway is reachable from
+every allowed VLAN, so every route on it must be gated before it moves: either
+the app's own login (Grafana, Paperless, Mealie…) or an Envoy Gateway
+`SecurityPolicy` (OIDC against pocket-id, with the `jwt` provider validating
+the cookie — see `kubernetes/apps/networking/cilium/app/oidc.yaml`). The
+network layer adds a second cut: the UDM keeps guest and IoT VLANs away from
+the internal LB pools entirely.
+
 **Every name exists in the internal zones.** It exists publicly only when a
 route sits on the tunnel or public gateway, because only the Cloudflare
 external-dns instances write public records. Moving an app from internal-only

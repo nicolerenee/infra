@@ -8,6 +8,7 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./external-secrets.yaml
   - ./cilium.yaml
   - ./bgp.yaml
   - ./descheduler.yaml
