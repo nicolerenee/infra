@@ -84,8 +84,9 @@ for CNAME targets outside our zones.
 
 | Client | Resolver | Internal zones go to |
 |--------|----------|----------------------|
-| fairy LAN + Talos nodes | UDM (DHCP) | UniFi **Forward Domain** records → 10.189.250.53 (`network/btx01/udm-dns` in the private repo) |
-| den1 LAN + Talos nodes | den1 gateway | per-zone forward → 10.140.250.53 (VyOS `service dns forwarding domain <zone> name-server …` until the UniFi gateway lands) |
+| fairy LAN + Talos nodes | UDM (DHCP; nodes use the compute-VLAN gateway 10.189.3.1) | UniFi **Forward Domain** DNS policies → 10.189.250.53 (`network/btx01/udm-dns` in the private repo, Integration API) |
+| atlantis Talos nodes | the secondaries directly: 10.140.250.53 then 10.189.250.53 | authoritative locally; the rest forwarded over DoT |
+| den1 devices | nothing yet — border1 runs no resolver; the UniFi gateway on order will get the same Forward Domain policies as fairy | — |
 | Tailnet | MagicDNS split DNS for the internal domains | both secondaries |
 | Pods | kube-dns → node resolvers | same path as the node |
 
