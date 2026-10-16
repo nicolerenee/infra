@@ -7,8 +7,12 @@ apiVersion: v1alpha1
 kind: LinkConfig
 name: enP7s7
 mtu: 9000
-{{- if not (hasKey .Node.Data "dhcp") }}
 addresses:
+  # Static on-link IPv6 (host part = the IPv4 last octet), on every node even
+  # when IPv4 comes from DHCP: Cilium's native-routing direct routes need a
+  # reachable IPv6 node address (see all/10-machine nodeIP.validSubnets).
+  - address: fd2b:ec92:e233::{{ .Node.IP.String | splitList "." | last }}/64
+{{- if not (hasKey .Node.Data "dhcp") }}
   - address: {{ .Node.IP }}/24
 routes:
   - gateway: 10.189.3.1
