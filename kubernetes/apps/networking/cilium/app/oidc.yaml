@@ -1,0 +1,64 @@
+---
+# Hubble UI has no authentication of its own. On the tailnet gateway that was
+# fine (Tailscale ACLs decided who could reach it); on the internal gateway
+# anyone on an allowed VLAN could, so this gate is load-bearing. The pocket-id
+# client is tofu-managed (`oidc_clients.hubble_<env>` in the private repo),
+# which pushes client-id + client-secret into GSM as
+# <cluster>-kube-system-hubble-oidc.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/external-secrets.io/externalsecret_v1.json
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: hubble-oidc
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: SecretStore
+    name: gcp-sm
+  target:
+    name: hubble-oidc
+  dataFrom:
+    - extract:
+        key: ${CLUSTER_NAME}-kube-system-hubble-oidc
+---
+# Same shape as akvorado's: the OIDC filter does the login dance, the jwt
+# provider is what actually validates the ID-token cookie (EG's OIDC filter
+# does not — envoyproxy/gateway#5414). Targets the `hubble` route only; the
+# legacy tailnet route stays Tailscale-gated until it is removed.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: hubble-oidc
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: hubble
+  oidc:
+    provider:
+      issuer: https://freckle.id
+    clientIDRef:
+      group: ""
+      kind: Secret
+      name: hubble-oidc
+    clientSecret:
+      group: ""
+      kind: Secret
+      name: hubble-oidc
+    redirectURL: https://hubble.${CLUSTER_SUBDOMAIN}.freckle.tools/oauth2/callback
+    logoutPath: /logout
+    scopes:
+      - openid
+      - email
+      - profile
+    cookieNames:
+      idToken: HubbleIdToken
+  jwt:
+    providers:
+      - name: pocket-id
+        issuer: https://freckle.id
+        remoteJWKS:
+          uri: https://freckle.id/.well-known/jwks.json
+        extractFrom:
+          cookies:
+            - HubbleIdToken
