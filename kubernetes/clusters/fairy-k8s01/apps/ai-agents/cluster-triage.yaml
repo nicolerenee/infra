@@ -31,4 +31,7 @@ spec:
     substitute:
       AGENT_SUFFIX: ""
       MCP_SUFFIX: ""
-      TRIAGE_CLUSTER: ${CLUSTER_NAME}
+      # Literal on purpose: a ${VAR} inside a substitute value is NOT expanded
+      # by Flux, and kagent reads the leftover {CLUSTER_NAME} as a session-state
+      # template ("state key does not exist") — the fairy digest failed on it.
+      TRIAGE_CLUSTER: fairy-k8s01
