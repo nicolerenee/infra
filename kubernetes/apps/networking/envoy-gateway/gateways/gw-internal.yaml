@@ -1,0 +1,45 @@
+---
+# Internal gateway: an Envoy on a pinned address from the cluster's internal
+# LoadBalancer pool, routed on the LAN by BGP and reachable off-site through
+# the Tailscale subnet routers. This is where every human-facing route lands
+# as it leaves the tailnet gateway (docs/networking/domains.md): the name
+# resolves in the internal zones to this address and nowhere else, and the
+# internal external-dns instance publishes it automatically.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/gateway.networking.k8s.io/gateway_v1.json
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  annotations: {}
+  labels:
+    gateway.freckle.systems/dns: internal
+  name: internal
+spec:
+  gatewayClassName: envoy
+  infrastructure:
+    annotations:
+      lbipam.cilium.io/ips: ${INTERNAL_GW_IP}
+    labels:
+      ipam.freckle.systems/lb-pool: internal
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: https
+      protocol: HTTPS
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        certificateRefs:
+          - kind: Secret
+            name: cluster-tools-tls
+          - kind: Secret
+            name: media-tls
+          - kind: Secret
+            name: cluster-svcs-tls
+          - kind: Secret
+            name: cluster-systems-tls

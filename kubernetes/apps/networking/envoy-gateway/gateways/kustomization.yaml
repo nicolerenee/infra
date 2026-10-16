@@ -11,6 +11,7 @@ resources:
   - ./envoy.yaml
   - ./envoy-clusterip.yaml
   - ./envoy-tailscale.yaml
+  - ./gw-internal.yaml
   - ./gw-public.yaml
   - ./gw-tailnet.yaml
   - ./gw-tunnel.yaml

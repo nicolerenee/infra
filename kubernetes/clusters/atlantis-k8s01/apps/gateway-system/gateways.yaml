@@ -26,6 +26,10 @@ spec:
   interval: 1h
   retryInterval: 2m
   timeout: 5m
+  postBuild:
+    substitute:
+      # Internal gateway address (internal LB pool; BGP-routed on site).
+      INTERNAL_GW_IP: 10.140.250.20
   patches:
     # Dedicated freckle.id listener restricted to HTTPRoutes from the
     # freckle-id namespace. Keeps the auth surface firewalled off from
