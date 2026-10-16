@@ -6,6 +6,7 @@ resources:
   - ccnp-dns.yaml
   - helmrelease.yaml
   - httproute.yaml
+  - oidc.yaml
 configMapGenerator:
   - name: cilium-values
     files:
