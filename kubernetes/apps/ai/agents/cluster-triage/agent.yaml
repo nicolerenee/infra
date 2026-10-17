@@ -29,40 +29,35 @@ spec:
     modelConfig: default-model-config
     stream: true
     tools:
+      # Everything comes through the MCP gateway on one per-agent server; tool
+      # names carry the backend prefix the gateway adds (<server>-<cluster>__).
       - type: McpServer
         mcpServer:
           apiGroup: kagent.dev
           kind: RemoteMCPServer
-          name: victoriametrics${MCP_SUFFIX}
+          name: mcp-gateway-cluster-triage${AGENT_SUFFIX}
           toolNames:
-            - alerts
-            - rules
-            - query
-            - query_range
-            - labels
-            - label_values
-            - metrics_metadata
-      # Logs go through the log-search sub-agent: kagent flattens tool names,
-      # so victorialogs' `query` would collide with victoriametrics' `query`,
-      # and a sub-agent returns a digest instead of raw log dumps.
+            - vmetrics-${MCP_TARGET}__alerts
+            - vmetrics-${MCP_TARGET}__rules
+            - vmetrics-${MCP_TARGET}__query
+            - vmetrics-${MCP_TARGET}__query_range
+            - vmetrics-${MCP_TARGET}__labels
+            - vmetrics-${MCP_TARGET}__label_values
+            - vmetrics-${MCP_TARGET}__metrics_metadata
+            - flux-${MCP_TARGET}__get_flux_instance
+            - flux-${MCP_TARGET}__get_kubernetes_resources
+            - flux-${MCP_TARGET}__get_kubernetes_events
+            - flux-${MCP_TARGET}__get_kubernetes_logs
+            - flux-${MCP_TARGET}__get_kubernetes_metrics
+            - flux-${MCP_TARGET}__trace_kubernetes_resource
+      # Logs go through the log-search sub-agent: a sub-agent returns a digest
+      # instead of raw log dumps.
       - type: Agent
         agent:
           apiGroup: kagent.dev
           kind: Agent
           name: log-search${AGENT_SUFFIX}
         isolateSessions: true
-      - type: McpServer
-        mcpServer:
-          apiGroup: kagent.dev
-          kind: RemoteMCPServer
-          name: flux${MCP_SUFFIX}
-          toolNames:
-            - get_flux_instance
-            - get_kubernetes_resources
-            - get_kubernetes_events
-            - get_kubernetes_logs
-            - get_kubernetes_metrics
-            - trace_kubernetes_resource
     systemMessage: |
       # Cluster triage (read-only)
 

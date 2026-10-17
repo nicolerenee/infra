@@ -55,6 +55,17 @@ spec:
         - ports:
             - port: "10080"
               protocol: TCP
+    # The MCP gateway (gateway-system): every MCP tool an agent uses goes
+    # through its agents' route (TLS on the Envoy's 10443). The direct server
+    # rules below are retired once the agents are verified on it.
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: gateway-system
+            gateway.envoyproxy.io/owning-gateway-name: mcp
+      toPorts:
+        - ports:
+            - port: "10443"
+              protocol: TCP
     # Read-only MCP servers. The Victoria charts label pods by chart name
     # (victoria-metrics-mcp / victoria-logs-mcp); the release name is in the
     # instance label, which all three share consistently.

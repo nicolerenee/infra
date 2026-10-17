@@ -21,14 +21,14 @@ spec:
         mcpServer:
           apiGroup: kagent.dev
           kind: RemoteMCPServer
-          name: victorialogs${MCP_SUFFIX}
+          name: mcp-gateway-log-search${AGENT_SUFFIX}
           toolNames:
-            - query
-            - hits
-            - stats_query
-            - streams
-            - field_values
-            - stream_field_values
+            - vlogs-${MCP_TARGET}__query
+            - vlogs-${MCP_TARGET}__hits
+            - vlogs-${MCP_TARGET}__stats_query
+            - vlogs-${MCP_TARGET}__streams
+            - vlogs-${MCP_TARGET}__field_values
+            - vlogs-${MCP_TARGET}__stream_field_values
     systemMessage: |
       # Log search (read-only)
 
