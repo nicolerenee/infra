@@ -30,7 +30,11 @@ spec:
           app:
             image:
               repository: tmmrtn/mousehole
-              tag: latest
+              # Pinned to the build atlantis has been running: v0.5.0 behind
+              # `latest` refuses to start unless MOUSEHOLE_AUTH_PASSWORD/TOKEN
+              # (or MOUSEHOLE_INSECURE_ALLOW_NO_AUTH) is set. Wire auth before
+              # moving this forward.
+              tag: latest@sha256:903eaac224b02327b6d4ef6238c0b78950ae62037f6863a3cc01118cb305f747
             env:
               TZ: America/Chicago
             ports:
