@@ -1,0 +1,159 @@
+---
+# Mints the agents' gateway tokens. A ServiceAccount token stored by Kubernetes
+# in a kubernetes.io/service-account-token Secret carries the legacy issuer
+# `kubernetes/serviceaccount`, which the gateway cannot be told to trust, so
+# the tokens come from the TokenRequest API instead: bound to this gateway's
+# audience, 48 h lifetime, re-minted every 6 h into <agent>-gateway-token.
+# ExternalSecrets template the Bearer header from there, and kagent rolls the
+# agent when it changes. The minter may only request tokens for the agents
+# named here and only touch their token Secrets.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mcp-gateway-token-minter
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mcp-gateway-token-minter
+rules:
+  - apiGroups: [""]
+    resources: [serviceaccounts/token]
+    verbs: [create]
+    resourceNames:
+      - cluster-triage
+      - cluster-triage-atlantis
+      - log-search
+      - log-search-atlantis
+  # `create` cannot be scoped by name; everything else is.
+  - apiGroups: [""]
+    resources: [secrets]
+    verbs: [create]
+  - apiGroups: [""]
+    resources: [secrets]
+    verbs: [get, update, patch]
+    resourceNames:
+      - cluster-triage-gateway-token
+      - cluster-triage-atlantis-gateway-token
+      - log-search-gateway-token
+      - log-search-atlantis-gateway-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mcp-gateway-token-minter
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: mcp-gateway-token-minter
+subjects:
+  - kind: ServiceAccount
+    name: mcp-gateway-token-minter
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-gateway-token-minter
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+data:
+  mint.py: |
+    import json, os, ssl, sys, urllib.request
+
+    ns = open("/var/run/secrets/kubernetes.io/serviceaccount/namespace").read().strip()
+    own = open("/var/run/secrets/kubernetes.io/serviceaccount/token").read().strip()
+    api = "https://kubernetes.default.svc"
+    ctx = ssl.create_default_context(cafile="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
+    audience = os.environ["AUDIENCE"]
+    ttl = int(os.environ.get("TTL_SECONDS", "172800"))
+
+    def call(method, path, body=None, ctype="application/json"):
+        req = urllib.request.Request(api + path, method=method,
+                                     data=None if body is None else json.dumps(body).encode())
+        req.add_header("Authorization", "Bearer " + own)
+        req.add_header("Content-Type", ctype)
+        try:
+            with urllib.request.urlopen(req, context=ctx) as r:
+                return r.status, json.load(r)
+        except urllib.error.HTTPError as e:
+            return e.code, json.load(e)
+
+    failed = 0
+    for agent in os.environ["AGENTS"].split(","):
+        agent = agent.strip()
+        st, tr = call("POST", f"/api/v1/namespaces/{ns}/serviceaccounts/{agent}/token",
+                      {"apiVersion": "authentication.k8s.io/v1", "kind": "TokenRequest",
+                       "spec": {"audiences": [audience], "expirationSeconds": ttl}})
+        if st != 201:
+            print(f"{agent}: token request failed: {st} {tr.get('message')}", file=sys.stderr)
+            failed += 1
+            continue
+        secret = {"apiVersion": "v1", "kind": "Secret", "type": "Opaque",
+                  "metadata": {"name": f"{agent}-gateway-token", "namespace": ns},
+                  "stringData": {"token": tr["status"]["token"]}}
+        st, _ = call("GET", f"/api/v1/namespaces/{ns}/secrets/{agent}-gateway-token")
+        if st == 404:
+            st, res = call("POST", f"/api/v1/namespaces/{ns}/secrets", secret)
+        else:
+            st, res = call("PATCH", f"/api/v1/namespaces/{ns}/secrets/{agent}-gateway-token",
+                           {"stringData": secret["stringData"]}, ctype="application/merge-patch+json")
+        if st not in (200, 201):
+            print(f"{agent}: secret write failed: {st} {res.get('message')}", file=sys.stderr)
+            failed += 1
+            continue
+        print(f"{agent}: minted {ttl}s token for {audience}, expires {tr['status']['expirationTimestamp']}")
+    sys.exit(1 if failed else 0)
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mcp-gateway-token-minter
+spec:
+  schedule: "0 */6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      ttlSecondsAfterFinished: 86400
+      template:
+        spec:
+          serviceAccountName: mcp-gateway-token-minter
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: mint
+              image: python:3.13-alpine
+              command: [python3, -I, /opt/mint.py]
+              env:
+                - name: AGENTS
+                  value: cluster-triage,cluster-triage-atlantis,log-search,log-search-atlantis
+                - name: AUDIENCE
+                  value: https://mcp-agents.fairy.freckle.services/mcp
+                - name: TTL_SECONDS
+                  value: "172800"
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: [ALL]
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  memory: 64Mi
+              volumeMounts:
+                - name: script
+                  mountPath: /opt
+                  readOnly: true
+          volumes:
+            - name: script
+              configMap:
+                name: mcp-gateway-token-minter
