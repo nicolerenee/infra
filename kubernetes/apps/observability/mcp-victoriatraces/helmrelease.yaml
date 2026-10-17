@@ -70,13 +70,5 @@ spec:
           http:
             port: &port 8081
 
-    route:
-      app:
-        hostnames: ["{{ .Release.Name }}.${CLUSTER_DOMAIN}"]
-        parentRefs:
-          - name: tailnet
-            namespace: gateway-system
-        rules:
-          - backendRefs:
-              - identifier: app
-                port: *port
+    # No route of its own: clients reach this server only through the MCP
+    # gateway (kubernetes/apps/networking/mcp-gateway).

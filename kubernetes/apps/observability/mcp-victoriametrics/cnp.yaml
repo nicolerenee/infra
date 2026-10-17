@@ -1,9 +1,6 @@
 ---
-# Read-only MCP server, but it still gets an ingress allow-list: the local
-# ai-agents namespace, fairy's ai-agents namespace over Cluster Mesh (named by
-# cluster label: policy-default-local-cluster is on; the kagent controller
-# that discovers tools lives there too), and the tailnet
-# gateway that fronts the HTTPRoute. Anything else in the cluster is denied.
+# Read-only MCP server, but it still gets an ingress allow-list: nothing in
+# either cluster may reach it except the MCP gateway.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -13,18 +10,10 @@ spec:
     matchLabels:
       app.kubernetes.io/instance: mcp-victoriametrics
   ingress:
+    # Only the MCP gateway on fairy, which fronts this server for both
+    # clusters: named by cluster label so the rule also matches when the Envoy
+    # is a Cluster Mesh peer (atlantis instance of this dir).
     - fromEndpoints:
-        - matchLabels:
-            k8s:io.kubernetes.pod.namespace: ai-agents
-        - matchLabels:
-            k8s:io.cilium.k8s.policy.cluster: fairy-k8s01
-            k8s:io.kubernetes.pod.namespace: ai-agents
-        - matchLabels:
-            k8s:io.kubernetes.pod.namespace: gateway-system
-            gateway.envoyproxy.io/owning-gateway-name: tailnet
-        # The MCP gateway on fairy fronts this server for both clusters: named
-        # by cluster label so the rule also matches when the Envoy is a
-        # Cluster Mesh peer (atlantis instance of this dir).
         - matchLabels:
             k8s:io.cilium.k8s.policy.cluster: fairy-k8s01
             k8s:io.kubernetes.pod.namespace: gateway-system

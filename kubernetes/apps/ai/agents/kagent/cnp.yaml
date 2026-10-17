@@ -1,6 +1,6 @@
 ---
 # Namespace-wide policy for ai-agents. Nothing here holds a credential: agents
-# reach the AI gateway and read-only MCP servers, and are called by Windmill.
+# reach the AI gateway and the MCP gateway, and are called by Windmill.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -56,8 +56,8 @@ spec:
             - port: "10080"
               protocol: TCP
     # The MCP gateway (gateway-system): every MCP tool an agent uses goes
-    # through its agents' route (TLS on the Envoy's 10443). The direct server
-    # rules below are retired once the agents are verified on it.
+    # through its agents' route (TLS on the Envoy's 10443); the agents have no
+    # direct path to any MCP server.
     - toEndpoints:
         - matchLabels:
             io.kubernetes.pod.namespace: gateway-system
@@ -65,70 +65,6 @@ spec:
       toPorts:
         - ports:
             - port: "10443"
-              protocol: TCP
-    # Read-only MCP servers. The Victoria charts label pods by chart name
-    # (victoria-metrics-mcp / victoria-logs-mcp); the release name is in the
-    # instance label, which all three share consistently.
-    - toEndpoints:
-        - matchLabels:
-            io.kubernetes.pod.namespace: observability
-            app.kubernetes.io/instance: mcp-victoriametrics
-        - matchLabels:
-            io.kubernetes.pod.namespace: observability
-            app.kubernetes.io/instance: mcp-victorialogs
-      toPorts:
-        - ports:
-            - port: "8080"
-              protocol: TCP
-    - toEndpoints:
-        - matchLabels:
-            io.kubernetes.pod.namespace: observability
-            app.kubernetes.io/instance: mcp-victoriatraces
-      toPorts:
-        - ports:
-            - port: "8081"
-              protocol: TCP
-    - toEndpoints:
-        - matchLabels:
-            io.kubernetes.pod.namespace: flux-system
-            app.kubernetes.io/name: flux-operator-mcp
-      toPorts:
-        - ports:
-            - port: "9090"
-              protocol: TCP
-    # atlantis-k8s01's MCP servers over Cluster Mesh (dialled through the
-    # mcp-mesh-import global Services; the destination identity is the remote
-    # pod's, so each rule names its cluster explicitly).
-    - toEndpoints:
-        - matchLabels:
-            io.cilium.k8s.policy.cluster: atlantis-k8s01
-            io.kubernetes.pod.namespace: observability
-            app.kubernetes.io/instance: mcp-victoriametrics
-        - matchLabels:
-            io.cilium.k8s.policy.cluster: atlantis-k8s01
-            io.kubernetes.pod.namespace: observability
-            app.kubernetes.io/instance: mcp-victorialogs
-      toPorts:
-        - ports:
-            - port: "8080"
-              protocol: TCP
-    - toEndpoints:
-        - matchLabels:
-            io.cilium.k8s.policy.cluster: atlantis-k8s01
-            io.kubernetes.pod.namespace: observability
-            app.kubernetes.io/instance: mcp-victoriatraces
-      toPorts:
-        - ports:
-            - port: "8081"
-              protocol: TCP
-    - toEndpoints:
-        - matchLabels:
-            io.cilium.k8s.policy.cluster: atlantis-k8s01
-            io.kubernetes.pod.namespace: flux-system
-            app.kubernetes.io/name: flux-operator-mcp
-      toPorts:
-        - ports:
-            - port: "9090"
               protocol: TCP
     - toEndpoints:
         - matchLabels:
