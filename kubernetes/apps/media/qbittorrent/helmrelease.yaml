@@ -94,6 +94,9 @@ spec:
       transfer-port:
         controller: qbittorrent
         type: LoadBalancer
+        # Peers must land on the node that runs the pod, not be SNAT'd
+        # through whichever node the LB IP happened to be routed to.
+        externalTrafficPolicy: Local
         ipFamilyPolicy: PreferDualStack
         ipFamilies:
           - IPv4
