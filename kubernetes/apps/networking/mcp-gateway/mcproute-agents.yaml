@@ -62,6 +62,8 @@ spec:
   securityPolicy:
     oauth:
       issuer: https://k8s-oidc.freckle.systems/${CLUSTER_NAME}
+      audiences:
+        - https://mcp-agents.${CLUSTER_SUBDOMAIN}.freckle.services/mcp
       # The cluster publishes OIDC discovery, not RFC 8414 metadata, and its
       # advertised jwks_uri is the apiserver's own address; point both at the
       # public mirror instead.

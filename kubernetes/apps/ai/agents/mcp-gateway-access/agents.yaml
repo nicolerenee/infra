@@ -1,23 +1,15 @@
 ---
-# One non-expiring ServiceAccount token per agent (a projected token cannot be
-# handed to kagent), the "Bearer"-prefixed copy of it, and the RemoteMCPServer
-# that presents it to the agents' route on the MCP gateway. The gateway
-# authorizes by the token's subject (system:serviceaccount:ai-agents:<agent>),
-# so revocation is deleting the token Secret.
-apiVersion: v1
-kind: Secret
-metadata:
-  name: cluster-triage-sa-token
-  annotations:
-    kubernetes.io/service-account.name: cluster-triage
-type: kubernetes.io/service-account-token
----
+# Per agent: the "Bearer"-prefixed copy of its gateway token (minted into
+# <agent>-gateway-token by the CronJob in token-minter.yaml; a projected token
+# cannot be handed to kagent) and the RemoteMCPServer that presents it to the
+# agents' route on the MCP gateway. The gateway authorizes by the token's
+# subject (system:serviceaccount:ai-agents:<agent>) and audience.
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
   name: cluster-triage-mcp-gateway
 spec:
-  refreshInterval: 1h
+  refreshInterval: 15m
   secretStoreRef:
     kind: SecretStore
     name: agent-tokens
@@ -29,7 +21,7 @@ spec:
   data:
     - secretKey: token
       remoteRef:
-        key: cluster-triage-sa-token
+        key: cluster-triage-gateway-token
         property: token
 ---
 apiVersion: kagent.dev/v1alpha2
@@ -47,20 +39,12 @@ spec:
         name: cluster-triage-mcp-gateway
         key: Authorization
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: cluster-triage-atlantis-sa-token
-  annotations:
-    kubernetes.io/service-account.name: cluster-triage-atlantis
-type: kubernetes.io/service-account-token
----
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
   name: cluster-triage-atlantis-mcp-gateway
 spec:
-  refreshInterval: 1h
+  refreshInterval: 15m
   secretStoreRef:
     kind: SecretStore
     name: agent-tokens
@@ -72,7 +56,7 @@ spec:
   data:
     - secretKey: token
       remoteRef:
-        key: cluster-triage-atlantis-sa-token
+        key: cluster-triage-atlantis-gateway-token
         property: token
 ---
 apiVersion: kagent.dev/v1alpha2
@@ -90,20 +74,12 @@ spec:
         name: cluster-triage-atlantis-mcp-gateway
         key: Authorization
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: log-search-sa-token
-  annotations:
-    kubernetes.io/service-account.name: log-search
-type: kubernetes.io/service-account-token
----
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
   name: log-search-mcp-gateway
 spec:
-  refreshInterval: 1h
+  refreshInterval: 15m
   secretStoreRef:
     kind: SecretStore
     name: agent-tokens
@@ -115,7 +91,7 @@ spec:
   data:
     - secretKey: token
       remoteRef:
-        key: log-search-sa-token
+        key: log-search-gateway-token
         property: token
 ---
 apiVersion: kagent.dev/v1alpha2
@@ -133,20 +109,12 @@ spec:
         name: log-search-mcp-gateway
         key: Authorization
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: log-search-atlantis-sa-token
-  annotations:
-    kubernetes.io/service-account.name: log-search-atlantis
-type: kubernetes.io/service-account-token
----
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
   name: log-search-atlantis-mcp-gateway
 spec:
-  refreshInterval: 1h
+  refreshInterval: 15m
   secretStoreRef:
     kind: SecretStore
     name: agent-tokens
@@ -158,7 +126,7 @@ spec:
   data:
     - secretKey: token
       remoteRef:
-        key: log-search-atlantis-sa-token
+        key: log-search-atlantis-gateway-token
         property: token
 ---
 apiVersion: kagent.dev/v1alpha2
