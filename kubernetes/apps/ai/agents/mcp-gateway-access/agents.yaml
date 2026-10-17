@@ -1,0 +1,177 @@
+---
+# One non-expiring ServiceAccount token per agent (a projected token cannot be
+# handed to kagent), the "Bearer"-prefixed copy of it, and the RemoteMCPServer
+# that presents it to the agents' route on the MCP gateway. The gateway
+# authorizes by the token's subject (system:serviceaccount:ai-agents:<agent>),
+# so revocation is deleting the token Secret.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cluster-triage-sa-token
+  annotations:
+    kubernetes.io/service-account.name: cluster-triage
+type: kubernetes.io/service-account-token
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: cluster-triage-mcp-gateway
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: SecretStore
+    name: agent-tokens
+  target:
+    name: cluster-triage-mcp-gateway
+    template:
+      data:
+        Authorization: "Bearer {{ .token }}"
+  data:
+    - secretKey: token
+      remoteRef:
+        key: cluster-triage-sa-token
+        property: token
+---
+apiVersion: kagent.dev/v1alpha2
+kind: RemoteMCPServer
+metadata:
+  name: mcp-gateway-cluster-triage
+spec:
+  description: Every MCP tool this agent may use, through the MCP gateway (tool names are prefixed by server, e.g. vmetrics-fairy__query)
+  protocol: STREAMABLE_HTTP
+  url: https://mcp-agents.fairy.freckle.services/mcp
+  headersFrom:
+    - name: Authorization
+      valueFrom:
+        type: Secret
+        name: cluster-triage-mcp-gateway
+        key: Authorization
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cluster-triage-atlantis-sa-token
+  annotations:
+    kubernetes.io/service-account.name: cluster-triage-atlantis
+type: kubernetes.io/service-account-token
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: cluster-triage-atlantis-mcp-gateway
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: SecretStore
+    name: agent-tokens
+  target:
+    name: cluster-triage-atlantis-mcp-gateway
+    template:
+      data:
+        Authorization: "Bearer {{ .token }}"
+  data:
+    - secretKey: token
+      remoteRef:
+        key: cluster-triage-atlantis-sa-token
+        property: token
+---
+apiVersion: kagent.dev/v1alpha2
+kind: RemoteMCPServer
+metadata:
+  name: mcp-gateway-cluster-triage-atlantis
+spec:
+  description: Every MCP tool this agent may use, through the MCP gateway (tool names are prefixed by server, e.g. vmetrics-fairy__query)
+  protocol: STREAMABLE_HTTP
+  url: https://mcp-agents.fairy.freckle.services/mcp
+  headersFrom:
+    - name: Authorization
+      valueFrom:
+        type: Secret
+        name: cluster-triage-atlantis-mcp-gateway
+        key: Authorization
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: log-search-sa-token
+  annotations:
+    kubernetes.io/service-account.name: log-search
+type: kubernetes.io/service-account-token
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: log-search-mcp-gateway
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: SecretStore
+    name: agent-tokens
+  target:
+    name: log-search-mcp-gateway
+    template:
+      data:
+        Authorization: "Bearer {{ .token }}"
+  data:
+    - secretKey: token
+      remoteRef:
+        key: log-search-sa-token
+        property: token
+---
+apiVersion: kagent.dev/v1alpha2
+kind: RemoteMCPServer
+metadata:
+  name: mcp-gateway-log-search
+spec:
+  description: Every MCP tool this agent may use, through the MCP gateway (tool names are prefixed by server, e.g. vmetrics-fairy__query)
+  protocol: STREAMABLE_HTTP
+  url: https://mcp-agents.fairy.freckle.services/mcp
+  headersFrom:
+    - name: Authorization
+      valueFrom:
+        type: Secret
+        name: log-search-mcp-gateway
+        key: Authorization
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: log-search-atlantis-sa-token
+  annotations:
+    kubernetes.io/service-account.name: log-search-atlantis
+type: kubernetes.io/service-account-token
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: log-search-atlantis-mcp-gateway
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: SecretStore
+    name: agent-tokens
+  target:
+    name: log-search-atlantis-mcp-gateway
+    template:
+      data:
+        Authorization: "Bearer {{ .token }}"
+  data:
+    - secretKey: token
+      remoteRef:
+        key: log-search-atlantis-sa-token
+        property: token
+---
+apiVersion: kagent.dev/v1alpha2
+kind: RemoteMCPServer
+metadata:
+  name: mcp-gateway-log-search-atlantis
+spec:
+  description: Every MCP tool this agent may use, through the MCP gateway (tool names are prefixed by server, e.g. vmetrics-fairy__query)
+  protocol: STREAMABLE_HTTP
+  url: https://mcp-agents.fairy.freckle.services/mcp
+  headersFrom:
+    - name: Authorization
+      valueFrom:
+        type: Secret
+        name: log-search-atlantis-mcp-gateway
+        key: Authorization

@@ -11,6 +11,7 @@ resources:
   - ./kagent-crds.yaml
   - ./kagent.yaml
   - ./mcp-servers.yaml
+  - ./mcp-gateway-access.yaml
   - ./probe.yaml
   - ./log-search.yaml
   - ./cluster-triage.yaml

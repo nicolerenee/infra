@@ -1,0 +1,99 @@
+---
+# The agents' front door: the same eight servers, but callers are in-cluster
+# agents presenting their own ServiceAccount token. The issuer is this
+# cluster's token issuer, already published for workload identity federation,
+# so there are no shared secrets anywhere: the gateway verifies the token
+# against the cluster's signing key and authorizes on its subject. Each agent
+# may only call tools on the servers its job needs, and the Flux servers are
+# filtered to their read-only tools here regardless of what the servers
+# themselves allow (humans get the write tools on their own route).
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/aigateway.envoyproxy.io/mcproute_v1beta1.json
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: MCPRoute
+metadata:
+  name: agents
+spec:
+  parentRefs:
+    - name: mcp
+      kind: Gateway
+      group: gateway.networking.k8s.io
+  hostnames:
+    - mcp-agents.${CLUSTER_SUBDOMAIN}.freckle.services
+  path: /mcp
+  backendRefs:
+    - name: vlogs-fairy
+      kind: Backend
+      group: gateway.envoyproxy.io
+      path: /mcp
+    - name: vlogs-atlantis
+      kind: Backend
+      group: gateway.envoyproxy.io
+      path: /mcp
+    - name: vmetrics-fairy
+      kind: Backend
+      group: gateway.envoyproxy.io
+      path: /mcp
+    - name: vmetrics-atlantis
+      kind: Backend
+      group: gateway.envoyproxy.io
+      path: /mcp
+    - name: vtraces-fairy
+      kind: Backend
+      group: gateway.envoyproxy.io
+      path: /mcp
+    - name: vtraces-atlantis
+      kind: Backend
+      group: gateway.envoyproxy.io
+      path: /mcp
+    - name: flux-fairy
+      kind: Backend
+      group: gateway.envoyproxy.io
+      path: /mcp
+      toolSelector:
+        includeRegex:
+          - ^(get|trace|search|read|diff)_.*
+    - name: flux-atlantis
+      kind: Backend
+      group: gateway.envoyproxy.io
+      path: /mcp
+      toolSelector:
+        includeRegex:
+          - ^(get|trace|search|read|diff)_.*
+  securityPolicy:
+    oauth:
+      issuer: https://k8s-oidc.freckle.systems/${CLUSTER_NAME}
+      # The cluster publishes OIDC discovery, not RFC 8414 metadata, and its
+      # advertised jwks_uri is the apiserver's own address; point both at the
+      # public mirror instead.
+      authorizationServerMetadataUrl: https://k8s-oidc.freckle.systems/${CLUSTER_NAME}/.well-known/openid-configuration
+      jwks:
+        remoteJWKS:
+          uri: https://k8s-oidc.freckle.systems/${CLUSTER_NAME}/openid/v1/jwks
+      protectedResourceMetadata:
+        resource: https://mcp-agents.${CLUSTER_SUBDOMAIN}.freckle.services/mcp
+        resourceName: Freckle MCP gateway (agents)
+    authorization:
+      defaultAction: Deny
+      rules:
+        # Session plumbing (initialize, tools/list, ...) for any agent in the
+        # namespace; what each may actually call is decided below.
+        - action: Allow
+          cel: >-
+            request.auth.jwt.claims.sub.startsWith("system:serviceaccount:ai-agents:") &&
+            request.mcp.method != "tools/call"
+        - action: Allow
+          cel: >-
+            request.auth.jwt.claims.sub == "system:serviceaccount:ai-agents:cluster-triage" &&
+            request.mcp.backend in ["vmetrics-fairy", "flux-fairy"]
+        - action: Allow
+          cel: >-
+            request.auth.jwt.claims.sub == "system:serviceaccount:ai-agents:cluster-triage-atlantis" &&
+            request.mcp.backend in ["vmetrics-atlantis", "flux-atlantis"]
+        - action: Allow
+          cel: >-
+            request.auth.jwt.claims.sub == "system:serviceaccount:ai-agents:log-search" &&
+            request.mcp.backend == "vlogs-fairy"
+        - action: Allow
+          cel: >-
+            request.auth.jwt.claims.sub == "system:serviceaccount:ai-agents:log-search-atlantis" &&
+            request.mcp.backend == "vlogs-atlantis"

@@ -29,6 +29,8 @@ spec:
     substitute:
       AGENT_SUFFIX: ""
       MCP_SUFFIX: ""
+      # Backend prefix the MCP gateway puts on tool names (<server>-<cluster>__).
+      MCP_TARGET: fairy
       # Literal on purpose: a ${VAR} inside a substitute value is NOT expanded
       # by Flux, and kagent reads the leftover {CLUSTER_NAME} as a session-state
       # template ("state key does not exist") — the fairy digest failed on it.

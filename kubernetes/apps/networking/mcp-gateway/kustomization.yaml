@@ -6,3 +6,4 @@ resources:
   - ./gateway.yaml
   - ./backends.yaml
   - ./mcproute-humans.yaml
+  - ./mcproute-agents.yaml

@@ -32,4 +32,6 @@ spec:
     substitute:
       AGENT_SUFFIX: "-atlantis"
       MCP_SUFFIX: "-atlantis"
+      # Backend prefix the MCP gateway puts on tool names (<server>-<cluster>__).
+      MCP_TARGET: atlantis
       TRIAGE_CLUSTER: atlantis-k8s01
