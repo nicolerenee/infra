@@ -102,7 +102,7 @@ spec:
           # ~124 GiB through it). On unified-memory GB10 the cache competes with
           # the GPU reservation; instanttensor reads the files O_DIRECT anyway.
           - name: evict-page-cache
-            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:d33f2b78ef6b4f11447521a3e496a0711bbd2ac9bb3ff8802a27ab757de9637a
+            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:431593a0a7064bd41d9b2720ca5d00185540ce0fdf1e893adf85af9c07dc7175
             command:
               - python3
               - -c
@@ -129,7 +129,7 @@ spec:
             # eugr spark-vllm, 2026-10-13 build (post-v0.31 main + the Qwen3.8
             # patch series). Pinned here independently of minimax's digest so
             # that deployment stays on its known-good build.
-            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:d33f2b78ef6b4f11447521a3e496a0711bbd2ac9bb3ff8802a27ab757de9637a
+            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:431593a0a7064bd41d9b2720ca5d00185540ce0fdf1e893adf85af9c07dc7175
             command:
               - bash
               - -c
@@ -299,7 +299,7 @@ spec:
           # ~124 GiB through it). On unified-memory GB10 the cache competes with
           # the GPU reservation; instanttensor reads the files O_DIRECT anyway.
           - name: evict-page-cache
-            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:d33f2b78ef6b4f11447521a3e496a0711bbd2ac9bb3ff8802a27ab757de9637a
+            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:431593a0a7064bd41d9b2720ca5d00185540ce0fdf1e893adf85af9c07dc7175
             command:
               - python3
               - -c
@@ -324,7 +324,7 @@ spec:
         containers:
           - name: vllm
             # eugr spark-vllm (arm64) — same image as the leader. Digest-pinned.
-            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:d33f2b78ef6b4f11447521a3e496a0711bbd2ac9bb3ff8802a27ab757de9637a
+            image: mirror.gcr.io/eugr/spark-vllm:latest@sha256:431593a0a7064bd41d9b2720ca5d00185540ce0fdf1e893adf85af9c07dc7175
             command:
               - bash
               - -c
