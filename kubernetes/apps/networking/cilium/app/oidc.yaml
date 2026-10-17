@@ -21,7 +21,7 @@ spec:
     - extract:
         key: ${CLUSTER_NAME}-kube-system-hubble-oidc
 ---
-# Same shape as akvorado's: the OIDC filter does the login dance, the jwt
+# Standard internal-gateway shape: the OIDC filter does the login dance, the jwt
 # provider is what actually validates the ID-token cookie (EG's OIDC filter
 # does not — envoyproxy/gateway#5414). Targets the `hubble` route only; the
 # legacy tailnet route stays Tailscale-gated until it is removed.
