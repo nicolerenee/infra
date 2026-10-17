@@ -21,7 +21,7 @@ endpoint and carries ordered authorization rules keyed on the caller's token.
 
 ## Layout
 
-```
+```text
 Claude Code ──freckle.id token──▶ mcp.fairy.freckle.services/mcp ──┐
                                                                    │  Gateway `mcp`
 kagent agent ──SA token──▶ mcp-agents.fairy.freckle.services/mcp ──┤  10.189.250.21
