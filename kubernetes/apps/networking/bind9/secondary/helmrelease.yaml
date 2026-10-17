@@ -48,7 +48,7 @@ spec:
           app:
             image:
               repository: docker.io/internetsystemsconsortium/bind9
-              tag: "9.20"
+              tag: "9.21"
             command: ["/usr/sbin/named", "-g", "-c", "/config/named.conf"]
             securityContext:
               allowPrivilegeEscalation: false
