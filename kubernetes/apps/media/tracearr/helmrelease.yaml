@@ -53,7 +53,10 @@ spec:
               tag: 2.8.3@sha256:df06e1a22b7eda67929a3076c5fe4ad2e03df8f92324ab09c2f3b18137a82c83
             env:
               NODE_ENV: production
-              HOST: 0.0.0.0
+              # Dual-stack Service: Envoy hands requests to the pod's v6
+              # endpoint too, and 0.0.0.0 would refuse those (alternating
+              # 503s). `::` makes Node listen on both families.
+              HOST: "::"
               PORT: "3000"
               TZ: America/Chicago
               LOG_LEVEL: info
