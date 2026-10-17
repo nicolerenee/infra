@@ -65,4 +65,58 @@ spec:
         - op: replace
           path: /spec/values/controllers/sonarr/containers/app/image/tag
           value: 5.0.0.2668@sha256:64fc190929b50091a8d6c3d6b5f4a3df7d3b8f98d076735f5cb223f7d77b0cc3
+    # Sonarr v5 does OIDC natively, so the gateway SecurityPolicy the shared
+    # dir puts on the UI route is dropped here and Sonarr talks to freckle.id
+    # itself (callback /signin-oidc). v5 authorises exactly one identity
+    # (OIDCUSERIDENTIFIER, the pocket-id `sub`); the client creds and that id
+    # come from the tofu-minted fairy-k8s01-media-sonarr-oidc GSM secret.
+    # Target names are regexes: patches run before Flux substitution, when the
+    # shared resources are still called ${APP:=sonarr}-oidc.
+    - target:
+        kind: SecurityPolicy
+        name: .*-oidc
+      patch: |-
+        apiVersion: gateway.envoyproxy.io/v1alpha1
+        kind: SecurityPolicy
+        metadata:
+          name: placeholder
+        $patch: delete
+    - target:
+        kind: ExternalSecret
+        name: .*-oidc
+      patch: |-
+        - op: add
+          path: /spec/target/template/data/SONARR__AUTH__OIDCCLIENTID
+          value: "{{ .oidc_client_id }}"
+        - op: add
+          path: /spec/target/template/data/SONARR__AUTH__OIDCCLIENTSECRET
+          value: "{{ .oidc_client_secret }}"
+        - op: add
+          path: /spec/target/template/data/SONARR__AUTH__OIDCUSERIDENTIFIER
+          value: "{{ .oidc_user_identifier }}"
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: add
+          path: /spec/values/controllers/sonarr/containers/app/env/SONARR__AUTH__METHOD
+          value: Oidc
+        # Everything reaches the pod from the gateway, which is a private
+        # address; DisabledForLocalAddresses would let it all through.
+        - op: add
+          path: /spec/values/controllers/sonarr/containers/app/env/SONARR__AUTH__REQUIRED
+          value: Enabled
+        - op: add
+          path: /spec/values/controllers/sonarr/containers/app/env/SONARR__AUTH__OIDCAUTHORITY
+          value: https://freckle.id
+        # Sonarr only honours X-Forwarded-Proto/Host from listed networks;
+        # without this the OIDC redirect_uri is built as http://. Fairy pod
+        # CIDR (the envoy gateway pods).
+        - op: add
+          path: /spec/values/controllers/sonarr/containers/app/env/SONARR__SERVER__TRUSTEDNETWORKS
+          value: 10.230.0.0/16
+        - op: add
+          path: /spec/values/controllers/sonarr/containers/app/envFrom/-
+          value:
+            secretRef:
+              name: sonarr-oidc
 
