@@ -17,6 +17,10 @@ spec:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: media
             app.kubernetes.io/name: qui
+        # The tailnet gateway, for the OIDC-protected WebUI route.
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: gateway-system
+            gateway.envoyproxy.io/owning-gateway-name: tailnet
       toPorts:
         - ports:
             - port: http

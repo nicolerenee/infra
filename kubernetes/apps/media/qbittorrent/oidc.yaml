@@ -1,0 +1,50 @@
+---
+# OIDC client credentials for ${APP}, read from the GSM `<cluster>-media-<app>-oidc`
+# secret (tofu-minted in the private repo, one client per cluster + instance).
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/external-secrets.io/externalsecret_v1.json
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: ${APP}-oidc
+spec:
+  secretStoreRef:
+    kind: SecretStore
+    name: gcp-sm
+  target:
+    template:
+      data:
+        client-id: "{{ .oidc_client_id }}"
+        client-secret: "{{ .oidc_client_secret }}"
+  dataFrom:
+    - extract:
+        key: ${CLUSTER_NAME}-media-${APP}-oidc
+---
+# Forces all browser traffic to the WebUI HTTPRoute through Freckle ID. qui and
+# the arr apps reach the Service in-cluster and are unaffected; qBittorrent's
+# own auth-bypass subnet list still applies behind the gateway.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: ${APP}-oidc
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: ${APP}
+  oidc:
+    provider:
+      issuer: https://freckle.id
+    clientIDRef:
+      group: ""
+      kind: Secret
+      name: ${APP}-oidc
+    clientSecret:
+      group: ""
+      kind: Secret
+      name: ${APP}-oidc
+    redirectURL: https://${APP}.${CLUSTER_SUBDOMAIN}.freckle.media/oauth2/callback
+    logoutPath: /logout
+    scopes:
+      - openid
+      - email
+      - profile
