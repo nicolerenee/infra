@@ -1,0 +1,30 @@
+---
+# Not backed up on purpose (the `-cache`/`-db` siblings signal that):
+#   ${APP}-cache  poster/artwork cache, re-fetched from the media servers.
+#   ${APP}-db     TimescaleDB data. Tracearr writes its own pg_dump-style
+#                 backups into the volsync-backed ${APP} PVC (/data/backup),
+#                 which is the restore path; a crash-consistent block snapshot
+#                 of a live Postgres is not.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ${APP}-cache
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: ceph-block
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ${APP}-db
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: ceph-block
+  resources:
+    requests:
+      storage: 30Gi

@@ -7,6 +7,7 @@ components:
   - ../_shared/cluster-info
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./external-secrets.yaml
   - ./audiobookshelf.yaml
   - ./autobrr.yaml
   - ./bazarr.yaml
@@ -33,5 +34,6 @@ resources:
   - ./sonarr.yaml
   - ./sonarr-anime.yaml
   - ./tautulli.yaml
+  - ./tracearr.yaml
   - ./unpackerr.yaml
   - ./webhook.yaml

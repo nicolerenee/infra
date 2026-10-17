@@ -1,0 +1,320 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+# Tracearr: real-time session monitoring + sharing detection for Plex,
+# Jellyfin and Emby. One release, three controllers:
+#   tracearr   the app (singleton poller — never more than 1 replica)
+#   timescale  its own TimescaleDB. CNPG can't run the timescaledb /
+#              timescaledb_toolkit extensions Tracearr requires, so this is
+#              a plain single-instance Postgres on ceph-block; Tracearr's
+#              own DB backups land on the volsync-backed PVC.
+#   valkey     BullMQ queue. maxmemory-policy MUST stay noeviction or the
+#              job queue silently corrupts under memory pressure.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ${APP:=tracearr}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: default
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths: ["/spec/replicas"]
+  interval: 1h
+  values:
+    controllers:
+      tracearr:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        strategy: Recreate
+        pod:
+          securityContext:
+            # Image user tracearr:nodejs is 1001:1001.
+            runAsNonRoot: true
+            runAsUser: 1001
+            runAsGroup: 1001
+            fsGroup: 1001
+            fsGroupChangePolicy: OnRootMismatch
+            seccompProfile:
+              type: RuntimeDefault
+        containers:
+          app:
+            image:
+              repository: ghcr.io/connorgallopo/tracearr
+              tag: 2.8.3@sha256:df06e1a22b7eda67929a3076c5fe4ad2e03df8f92324ab09c2f3b18137a82c83
+            env:
+              NODE_ENV: production
+              HOST: 0.0.0.0
+              PORT: "3000"
+              TZ: America/Chicago
+              LOG_LEVEL: info
+              # One hop: the Envoy gateway. Gives Tracearr real client IPs
+              # for the geolocation map and honours x-forwarded-host.
+              TRUST_PROXY: "true"
+              CORS_ORIGIN: https://${APP:=tracearr}.${CLUSTER_SUBDOMAIN}.freckle.media
+              REDIS_URL: redis://${APP:=tracearr}-valkey:6379
+              # Freckle ID SSO. Login is link-only: the IdP email must match
+              # an existing Tracearr or synced media-server account.
+              OIDC_ISSUER_URL: https://freckle.id
+              OIDC_PROVIDER_NAME: Freckle ID
+            envFrom:
+              - secretRef:
+                  name: ${APP:=tracearr}-secrets
+            ports:
+              - containerPort: 3000
+                name: http
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: http
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *probes
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: http
+                  periodSeconds: 5
+                  failureThreshold: 60
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 1Gi
+
+      timescale:
+        type: statefulset
+        pod:
+          securityContext:
+            # timescaledb-ha runs as postgres (1000).
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            fsGroupChangePolicy: OnRootMismatch
+            seccompProfile:
+              type: RuntimeDefault
+        containers:
+          app:
+            image:
+              repository: timescale/timescaledb-ha
+              tag: pg18.6-ts2.30.2@sha256:75b1a432956ae6efc31551413ba51b6601ec0910dbad123a64617face989dc7c
+            # Upstream's settings (max_locks for many hypertable chunks,
+            # tuple-decompression cap, telemetry off, 150 connections for the
+            # app's self-sizing pool) plus memory sized for the 2Gi limit.
+            args:
+              - postgres
+              - -c
+              - timescaledb.license=timescale
+              - -c
+              - timescaledb.max_tuples_decompressed_per_dml_transaction=100000
+              - -c
+              - max_locks_per_transaction=4096
+              - -c
+              - timescaledb.telemetry_level=off
+              - -c
+              - max_connections=150
+              - -c
+              - shared_buffers=384MB
+              - -c
+              - effective_cache_size=1GB
+              - -c
+              - work_mem=16MB
+              - -c
+              - maintenance_work_mem=128MB
+              - -c
+              - random_page_cost=1.1
+            env:
+              TZ: America/Chicago
+              POSTGRES_DB: tracearr
+              POSTGRES_USER:
+                valueFrom:
+                  secretKeyRef:
+                    name: ${APP:=tracearr}-secrets
+                    key: POSTGRES_USER
+              POSTGRES_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: ${APP:=tracearr}-secrets
+                    key: POSTGRES_PASSWORD
+            ports:
+              - containerPort: 5432
+                name: postgres
+            probes:
+              liveness: &pgprobes
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: ["pg_isready", "-U", "tracearr", "-d", "tracearr"]
+                  initialDelaySeconds: 10
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *pgprobes
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 2Gi
+
+      valkey:
+        strategy: Recreate
+        pod:
+          securityContext:
+            # valkey image user is 999.
+            runAsNonRoot: true
+            runAsUser: 999
+            runAsGroup: 999
+            fsGroup: 999
+            seccompProfile:
+              type: RuntimeDefault
+        containers:
+          app:
+            image:
+              repository: docker.io/valkey/valkey
+              tag: 9.1.2-alpine@sha256:48332870af354a799964c0012ae1194a0bf2bf894eb508f945810596dc2d8d11
+            args:
+              - --maxmemory
+              - 256mb
+              - --maxmemory-policy
+              - noeviction
+              - --appendonly
+              - "yes"
+            ports:
+              - containerPort: 6379
+                name: redis
+            probes:
+              liveness: &vkprobes
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: ["valkey-cli", "ping"]
+                  periodSeconds: 10
+                  timeoutSeconds: 3
+                  failureThreshold: 3
+              readiness: *vkprobes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 20m
+                memory: 64Mi
+              limits:
+                memory: 384Mi
+
+    defaultPodOptions:
+      automountServiceAccountToken: false
+
+    service:
+      tracearr:
+        controller: tracearr
+        primary: true
+        ipFamilyPolicy: PreferDualStack
+        ipFamilies:
+          - IPv4
+          - IPv6
+        ports:
+          http:
+            port: 80
+            targetPort: 3000
+      timescale:
+        controller: timescale
+        ports:
+          postgres:
+            port: 5432
+      valkey:
+        controller: valkey
+        ports:
+          redis:
+            port: 6379
+
+    route:
+      app:
+        annotations:
+          gatus.home-operations.com/endpoint: |-
+            conditions: ["[STATUS] == 200"]
+        hostnames:
+          - "{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"
+        parentRefs:
+          - name: public
+            namespace: gateway-system
+        # Three Services in the release, so app-template can't infer the
+        # backend.
+        rules:
+          - backendRefs:
+              - identifier: tracearr
+                port: 80
+
+    persistence:
+      # Tracearr's own DB backups — the restore path, volsync-backed.
+      backup:
+        existingClaim: ${APP:=tracearr}${VOLSYNC_PVC_SUFFIX:=}
+        advancedMounts:
+          tracearr:
+            app:
+              - path: /data/backup
+      # Poster cache; re-fetched if lost.
+      cache:
+        existingClaim: ${APP:=tracearr}-cache
+        advancedMounts:
+          tracearr:
+            app:
+              - path: /data/tracearr/image-cache
+      tmp:
+        type: emptyDir
+        advancedMounts:
+          tracearr:
+            app:
+              - path: /tmp
+      db:
+        existingClaim: ${APP:=tracearr}-db
+        advancedMounts:
+          timescale:
+            app:
+              - path: /home/postgres/pgdata
+      # Postgres shared memory; the image's compose sets shm_size 512mb.
+      dshm:
+        type: emptyDir
+        medium: Memory
+        sizeLimit: 512Mi
+        advancedMounts:
+          timescale:
+            app:
+              - path: /dev/shm
+      queue:
+        type: emptyDir
+        advancedMounts:
+          valkey:
+            app:
+              - path: /data

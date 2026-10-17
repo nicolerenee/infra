@@ -1,0 +1,42 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+# The database and queue are private to the tracearr pod. Nothing else in
+# media (or anywhere) should talk to them; app-template labels each pod with
+# its controller name, which is what the selectors key on.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: ${APP}-timescale-ingress
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: ${APP}
+      app.kubernetes.io/controller: timescale
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: ${APP}
+            app.kubernetes.io/controller: ${APP}
+      toPorts:
+        - ports:
+            - port: postgres
+              protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: ${APP}-valkey-ingress
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: ${APP}
+      app.kubernetes.io/controller: valkey
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: ${APP}
+            app.kubernetes.io/controller: ${APP}
+      toPorts:
+        - ports:
+            - port: redis
+              protocol: TCP
