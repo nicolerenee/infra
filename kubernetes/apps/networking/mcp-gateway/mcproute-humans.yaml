@@ -7,8 +7,11 @@
 # pre-registered) logs in through pocket-id and comes back with an access
 # token audienced to this resource. Humans get every tool, including the
 # Flux write tools — the agents' route is the one that gets a read-only
-# subset. Authorization is by freckle.id group; anyone outside it gets
-# nothing even with a valid token.
+# subset. Authorization: the token must carry the `mcp:tools` permission the
+# user consented to AND belong to one of the listed freckle.id users (the
+# sysadmins); anyone else gets nothing even with a valid token. A group-based
+# rule will replace the user list once we have seen what claims pocket-id
+# puts in an API access token.
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/aigateway.envoyproxy.io/mcproute_v1beta1.json
 apiVersion: aigateway.envoyproxy.io/v1beta1
 kind: MCPRoute
@@ -73,5 +76,5 @@ spec:
       rules:
         - action: Allow
           cel: >-
-            "groups" in request.auth.jwt.claims &&
-            "sysadmins" in request.auth.jwt.claims.groups
+            "mcp:tools" in request.auth.jwt.scopes &&
+            request.auth.jwt.claims.sub in ${MCP_HUMAN_SUBJECTS}
