@@ -1,0 +1,85 @@
+---
+# One Backend per MCP server. MCPRoute cannot reference Services in other
+# namespaces, so each server is named here by its cluster-DNS name instead.
+# The `-atlantis` entries are Cluster Mesh global services: the name resolves
+# locally, the endpoints live on atlantis.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/gateway.envoyproxy.io/backend_v1alpha1.json
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: vlogs-fairy
+spec:
+  endpoints:
+    - fqdn:
+        hostname: mcp-victorialogs.observability.svc.cluster.local
+        port: 8080
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: vlogs-atlantis
+spec:
+  endpoints:
+    - fqdn:
+        hostname: mcp-victorialogs-atlantis.observability.svc.cluster.local
+        port: 8080
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: vmetrics-fairy
+spec:
+  endpoints:
+    - fqdn:
+        hostname: mcp-victoriametrics.observability.svc.cluster.local
+        port: 8080
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: vmetrics-atlantis
+spec:
+  endpoints:
+    - fqdn:
+        hostname: mcp-victoriametrics-atlantis.observability.svc.cluster.local
+        port: 8080
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: vtraces-fairy
+spec:
+  endpoints:
+    - fqdn:
+        hostname: mcp-victoriatraces.observability.svc.cluster.local
+        port: 8081
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: vtraces-atlantis
+spec:
+  endpoints:
+    - fqdn:
+        hostname: mcp-victoriatraces-atlantis.observability.svc.cluster.local
+        port: 8081
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: flux-fairy
+spec:
+  endpoints:
+    - fqdn:
+        hostname: flux-operator-mcp.flux-system.svc.cluster.local
+        port: 9090
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: flux-atlantis
+spec:
+  endpoints:
+    - fqdn:
+        hostname: flux-operator-mcp-atlantis.flux-system.svc.cluster.local
+        port: 9090
