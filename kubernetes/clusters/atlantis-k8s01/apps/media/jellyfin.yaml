@@ -17,6 +17,10 @@ spec:
     name: flux-system
     namespace: flux-system
   path: ./kubernetes/apps/media/jellyfin
+  # Backup flavour is a per-cluster choice: atlantis mirrors PVCs with the
+  # restic component, fairy uses rsync-tls to its own NAS.
+  components:
+    - ../../../components/volsync
   interval: 2m
   retryInterval: 1m
   timeout: 5m

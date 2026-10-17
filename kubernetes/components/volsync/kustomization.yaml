@@ -6,9 +6,11 @@
 # app-specific values.
 #
 # All apps share a single rest-server user (`volsync`) and one shared
-# password field (`volsync_password` on the 1P `volsync` item). Per-app
+# password field (`volsync_password` in the GSM `<cluster>-media-volsync`
+# secret, read through the namespace's gcp-sm SecretStore; this component
+# is only used by media apps today). Per-app
 # isolation comes from path nesting under /volsync/${APP}/. Adding a
-# new backup target requires no new htpasswd line, no new 1P field.
+# new backup target requires no new htpasswd line, no new secret field.
 #
 # Required substitutes (no defaults — must be set on the cluster
 # overlay Flux KS):

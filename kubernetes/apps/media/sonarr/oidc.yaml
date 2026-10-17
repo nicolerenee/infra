@@ -1,6 +1,7 @@
 ---
-# OIDC client credentials for ${APP}, pulled from the same 1P item as the
-# API key (oidc_client_id and oidc_client_secret are additional fields).
+# OIDC client credentials for ${APP}, read from the GSM `<cluster>-media-<app>-oidc`
+# secret (fields oidc_client_id / oidc_client_secret; the API key lives in the
+# sibling `<cluster>-media-<app>` secret).
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/external-secrets.io/externalsecret_v1.json
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
@@ -8,8 +9,8 @@ metadata:
   name: ${APP:=sonarr}-oidc
 spec:
   secretStoreRef:
-    kind: ClusterSecretStore
-    name: op-cluster-vault
+    kind: SecretStore
+    name: gcp-sm
   target:
     template:
       data:
@@ -17,7 +18,7 @@ spec:
         client-secret: "{{ .oidc_client_secret }}"
   dataFrom:
     - extract:
-        key: ${APP:=sonarr}
+        key: ${CLUSTER_NAME}-media-${APP:=sonarr}-oidc
 ---
 # Forces all browser traffic to the UI HTTPRoute through OIDC. Internal
 # cluster traffic to the Service (recyclarr, prowlarr, etc.) bypasses the

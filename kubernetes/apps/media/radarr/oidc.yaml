@@ -6,8 +6,8 @@ metadata:
   name: radarr-oidc
 spec:
   secretStoreRef:
-    kind: ClusterSecretStore
-    name: op-cluster-vault
+    kind: SecretStore
+    name: gcp-sm
   target:
     template:
       data:
@@ -15,7 +15,7 @@ spec:
         client-secret: "{{ .oidc_client_secret }}"
   dataFrom:
     - extract:
-        key: radarr
+        key: ${CLUSTER_NAME}-media-${APP:=radarr}-oidc
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
