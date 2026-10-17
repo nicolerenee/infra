@@ -101,7 +101,7 @@ data:
 ---
 # Pulls only the API keys / proxy URLs we already have. Add more
 # (jellyfin_api_key, audiobookshelf_api_key, jellyseerr_api_key) to the
-# homepage-media 1Password item later to enable widgets on those tiles.
+# atlantis-k8s01-media-homepage GSM secret later to enable widgets on those tiles.
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/external-secrets.io/externalsecret_v1.json
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
@@ -109,8 +109,8 @@ metadata:
   name: homepage-secrets
 spec:
   secretStoreRef:
-    kind: ClusterSecretStore
-    name: op-cluster-vault
+    kind: SecretStore
+    name: gcp-sm
   target:
     template:
       data:
@@ -121,10 +121,10 @@ spec:
         HOMEPAGE_VAR_JELLYFIN_API_KEY: '{{ index . "jellyfin-api-key" }}'
   dataFrom:
     - extract:
-        key: sabnzbd-atlantis-k8s01
+        key: atlantis-k8s01-media-sabnzbd
       rewrite:
         - regexp:
             source: "(.*)"
             target: "sabnzbd_$1"
     - extract:
-        key: homepage-media
+        key: atlantis-k8s01-media-homepage

@@ -1,5 +1,5 @@
 ---
-# OIDC client credentials for the media-side homepage. 1Password item
+# OIDC client credentials for the media-side homepage. GSM secret
 # `homepage-media` must have oidc_client_id and oidc_client_secret fields.
 # Register the client in pocket-id with redirect URI
 # https://atlantis.freckle.media/oauth2/callback before deploying.
@@ -10,8 +10,8 @@ metadata:
   name: homepage-oidc
 spec:
   secretStoreRef:
-    kind: ClusterSecretStore
-    name: op-cluster-vault
+    kind: SecretStore
+    name: gcp-sm
   target:
     template:
       data:
@@ -19,7 +19,7 @@ spec:
         client-secret: "{{ .oidc_client_secret }}"
   dataFrom:
     - extract:
-        key: homepage-media
+        key: atlantis-k8s01-media-homepage-oidc
 ---
 # Forces all browser traffic to atlantis.freckle.media through OIDC
 # against pocket-id. The homepage Pod's siteMonitor pings to in-cluster

@@ -1,5 +1,5 @@
 ---
-# OIDC client credentials for prowlarr — same 1P item as the API key
+# OIDC client credentials for prowlarr — GSM `<cluster>-media-prowlarr-oidc` secret
 # (oidc_client_id and oidc_client_secret are additional fields).
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/external-secrets.io/externalsecret_v1.json
 apiVersion: external-secrets.io/v1
@@ -8,8 +8,8 @@ metadata:
   name: prowlarr-oidc
 spec:
   secretStoreRef:
-    kind: ClusterSecretStore
-    name: op-cluster-vault
+    kind: SecretStore
+    name: gcp-sm
   target:
     template:
       data:
@@ -17,7 +17,7 @@ spec:
         client-secret: "{{ .oidc_client_secret }}"
   dataFrom:
     - extract:
-        key: prowlarr
+        key: ${CLUSTER_NAME}-media-${APP:=prowlarr}-oidc
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy

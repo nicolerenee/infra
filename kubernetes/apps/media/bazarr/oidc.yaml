@@ -1,5 +1,5 @@
 ---
-# OIDC client credentials for bazarr, pulled from the same 1P item
+# OIDC client credentials for bazarr, read from the GSM `<cluster>-media-bazarr-oidc` secret
 # that holds the rest of bazarr's secrets (oidc_client_id and
 # oidc_client_secret are additional fields on it).
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/external-secrets.io/externalsecret_v1.json
@@ -9,8 +9,8 @@ metadata:
   name: bazarr-oidc
 spec:
   secretStoreRef:
-    kind: ClusterSecretStore
-    name: op-cluster-vault
+    kind: SecretStore
+    name: gcp-sm
   target:
     template:
       data:
@@ -18,7 +18,7 @@ spec:
         client-secret: "{{ .oidc_client_secret }}"
   dataFrom:
     - extract:
-        key: bazarr
+        key: ${CLUSTER_NAME}-media-${APP:=bazarr}-oidc
 ---
 # Forces all browser traffic to bazarr-ui through OIDC against
 # pocket-id. Internal cluster traffic to the bazarr Service (sonarr,

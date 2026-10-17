@@ -16,6 +16,10 @@ spec:
       namespace: rook-ceph
   interval: 1h
   path: ./kubernetes/apps/media/seerr
+  # Backup flavour is a per-cluster choice: atlantis mirrors PVCs with the
+  # restic component, fairy uses rsync-tls to its own NAS.
+  components:
+    - ../../../components/volsync
   prune: true
   retryInterval: 2m
   sourceRef:
