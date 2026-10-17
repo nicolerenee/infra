@@ -1,0 +1,72 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app qbt-reel
+  namespace: &namespace media
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: external-secrets
+      namespace: external-secrets
+    - name: rook-ceph-cluster
+      namespace: rook-ceph
+    - name: volsync
+      namespace: volsync-system
+    - name: truenas-csi
+      namespace: truenas-csi
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/media/qbittorrent
+  components:
+    - ../../../components/volsync-rsync-tls
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: false
+  postBuild:
+    substitute:
+      APP: *app
+      # Fresh PVC (bare name) owned by the share's uid.
+      VOLSYNC_UID: "3000"
+      VOLSYNC_CAPACITY: 1Gi
+      VOLSYNC_SCHEDULE: "47 * * * *"
+      QBT_TRANSFER_PORT: "28373"
+      MEDIA_PVC: store01-vault01-media
+  patches:
+    - target:
+        kind: HelmRelease
+      patch: |-
+        # fairy's share root is /store01/vault01.
+        - op: replace
+          path: /spec/values/persistence/media/globalMounts
+          value:
+            - path: /store01/vault01/downloads/qbt-reel
+              subPath: downloads/qbt-reel
+        - op: add
+          path: /spec/values/persistence/media/globalMounts/-
+          value:
+            path: /store01/vault01/tv
+            subPath: tv
+            readOnly: true
+        - op: add
+          path: /spec/values/persistence/media/globalMounts/-
+          value:
+            path: /store01/vault01/movies
+            subPath: movies
+            readOnly: true
+        # Pinned LB address: the UDM DNATs the transfer port from the
+        # servers' static address to this IP (private repo, udm-nat).
+        - op: add
+          path: /spec/values/service/transfer-port/annotations
+          value:
+            lbipam.cilium.io/ips: 10.189.250.30

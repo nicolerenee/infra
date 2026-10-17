@@ -16,3 +16,11 @@ resources:
   - ./sabnzbd.yaml
   - ./recyclarr.yaml
   - ./webhook.yaml
+  - ./qbt-reel.yaml
+  - ./qbt-ink.yaml
+  - ./qui.yaml
+  - ./autobrr.yaml
+  - ./unpackerr.yaml
+  - ./flaresolverr.yaml
+  - ./mousehole.yaml
+  - ./sonarr-anime.yaml

@@ -1,0 +1,57 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app sonarr-anime
+  namespace: &namespace media
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: external-secrets
+      namespace: external-secrets
+    - name: rook-ceph-cluster
+      namespace: rook-ceph
+    - name: volsync
+      namespace: volsync-system
+    - name: truenas-csi
+      namespace: truenas-csi
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/media/sonarr
+  components:
+    - ../../../components/volsync-rsync-tls
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: false
+  postBuild:
+    substitute:
+      APP: *app
+      VOLSYNC_UID: "3000"
+      VOLSYNC_CAPACITY: 10Gi
+      VOLSYNC_SCHEDULE: "53 * * * *"
+      MEDIA_PVC: store01-vault01-media
+  patches:
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: replace
+          path: /spec/values/persistence/media/globalMounts
+          value:
+            - path: /store01/vault01
+    # Same v5 pin as the fairy sonarr pointer (fairy-only, hand-bumped).
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: replace
+          path: /spec/values/controllers/sonarr/containers/app/image/tag
+          value: 5.0.0.2668@sha256:64fc190929b50091a8d6c3d6b5f4a3df7d3b8f98d076735f5cb223f7d77b0cc3
