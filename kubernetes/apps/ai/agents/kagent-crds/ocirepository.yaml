@@ -13,5 +13,5 @@ spec:
     # Stable line. v1.0.0-alpha* ships ~daily and needs an external Postgres +
     # the "substrate" sandbox runtime; 0.10.x bundles its DB and is what the
     # agent CRDs below are written against.
-    tag: 0.10.1
+    tag: 0.10.3
   url: oci://ghcr.io/kagent-dev/kagent/helm/kagent-crds
