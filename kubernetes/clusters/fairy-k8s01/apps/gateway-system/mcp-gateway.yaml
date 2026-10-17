@@ -1,0 +1,33 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app mcp-gateway
+  namespace: &namespace gateway-system
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: gateway-configs
+      namespace: gateway-system
+    - name: envoy-ai-gateway
+      namespace: envoy-ai-gateway-system
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/networking/mcp-gateway
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true
+  postBuild:
+    substitute:
+      # MCP gateway address (internal LB pool; BGP-routed on site).
+      MCP_GW_IP: 10.189.250.21

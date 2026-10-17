@@ -1,0 +1,77 @@
+---
+# The human front door: every MCP server in both clusters behind one URL,
+# with tool names prefixed by server (`vmetrics-fairy__query`,
+# `flux-atlantis__reconcile_flux_kustomization`). Clients authenticate with
+# freckle.id: the gateway publishes OAuth protected-resource metadata, the
+# client (Claude Code presents a Client ID Metadata Document, so nothing is
+# pre-registered) logs in through pocket-id and comes back with an access
+# token audienced to this resource. Humans get every tool, including the
+# Flux write tools — the agents' route is the one that gets a read-only
+# subset. Authorization is by freckle.id group; anyone outside it gets
+# nothing even with a valid token.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/aigateway.envoyproxy.io/mcproute_v1beta1.json
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: MCPRoute
+metadata:
+  name: humans
+spec:
+  parentRefs:
+    - name: mcp
+      kind: Gateway
+      group: gateway.networking.k8s.io
+  hostnames:
+    - mcp.${CLUSTER_SUBDOMAIN}.freckle.services
+  path: /mcp
+  backendRefs:
+    - name: vlogs-fairy
+      kind: Backend
+      group: gateway.envoyproxy.io
+      path: /mcp
+    - name: vlogs-atlantis
+      kind: Backend
+      group: gateway.envoyproxy.io
+      path: /mcp
+    - name: vmetrics-fairy
+      kind: Backend
+      group: gateway.envoyproxy.io
+      path: /mcp
+    - name: vmetrics-atlantis
+      kind: Backend
+      group: gateway.envoyproxy.io
+      path: /mcp
+    - name: vtraces-fairy
+      kind: Backend
+      group: gateway.envoyproxy.io
+      path: /mcp
+    - name: vtraces-atlantis
+      kind: Backend
+      group: gateway.envoyproxy.io
+      path: /mcp
+    - name: flux-fairy
+      kind: Backend
+      group: gateway.envoyproxy.io
+      path: /mcp
+    - name: flux-atlantis
+      kind: Backend
+      group: gateway.envoyproxy.io
+      path: /mcp
+  securityPolicy:
+    oauth:
+      issuer: https://freckle.id
+      audiences:
+        - https://mcp.${CLUSTER_SUBDOMAIN}.freckle.services/mcp
+      jwks:
+        remoteJWKS:
+          uri: https://freckle.id/.well-known/jwks.json
+      protectedResourceMetadata:
+        resource: https://mcp.${CLUSTER_SUBDOMAIN}.freckle.services/mcp
+        resourceName: Freckle MCP gateway
+        scopesSupported:
+          - mcp:tools
+    authorization:
+      defaultAction: Deny
+      rules:
+        - action: Allow
+          cel: >-
+            "groups" in request.auth.jwt.claims &&
+            "sysadmins" in request.auth.jwt.claims.groups

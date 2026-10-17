@@ -22,6 +22,13 @@ spec:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: gateway-system
             gateway.envoyproxy.io/owning-gateway-name: tailnet
+        # The MCP gateway on fairy fronts this server for both clusters: named
+        # by cluster label so the rule also matches when the Envoy is a
+        # Cluster Mesh peer (atlantis instance of this dir).
+        - matchLabels:
+            k8s:io.cilium.k8s.policy.cluster: fairy-k8s01
+            k8s:io.kubernetes.pod.namespace: gateway-system
+            gateway.envoyproxy.io/owning-gateway-name: mcp
       toPorts:
         - ports:
             - port: "8080"
