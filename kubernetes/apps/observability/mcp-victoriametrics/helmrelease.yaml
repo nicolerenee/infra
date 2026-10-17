@@ -54,9 +54,12 @@ spec:
       hostnames:
         - mcp-victoriametrics.${CLUSTER_DOMAIN}
 
+    # The server loads the whole VictoriaMetrics documentation set into
+    # memory and sits at ~480Mi idle, so a 512Mi limit OOM-killed it on every
+    # burst (22 restarts on fairy, 7 on atlantis) — including mid tools/list.
     resources:
       requests:
         cpu: 10m
-        memory: 128Mi
-      limits:
         memory: 512Mi
+      limits:
+        memory: 1Gi
