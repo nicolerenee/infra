@@ -1,0 +1,39 @@
+---
+# The media library share on fairy-store01, as a static NFS PV. Pre-existing
+# (bound since the previous fairy media stack); re-declared here so git owns
+# it again. Apps mount it at /store01/vault01, which is where the existing
+# sonarr/radarr root folders point.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: media-store01-vault01-media
+spec:
+  accessModes: [ReadWriteMany]
+  capacity:
+    storage: 5Ti
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: store01-vault01-media
+    namespace: media
+  nfs:
+    path: /mnt/vault01/media
+    server: 10.189.3.8
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  volumeMode: Filesystem
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: store01-vault01-media
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes: [ReadWriteMany]
+  resources:
+    requests:
+      storage: 5Ti
+  storageClassName: ""
+  volumeMode: Filesystem
+  volumeName: media-store01-vault01-media
