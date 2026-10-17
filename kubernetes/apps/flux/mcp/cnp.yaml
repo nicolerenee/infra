@@ -1,5 +1,5 @@
 ---
-# Tightly-scoped ingress: only the tailnet envoy gateway pods (not all of
+# Tightly-scoped ingress: only the MCP gateway's envoy pods (not all of
 # gateway-system). The chart's bundled NetworkPolicy can only filter by
 # namespace, hence this replacement scoped by pod label too.
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
@@ -12,26 +12,11 @@ spec:
     matchLabels:
       app.kubernetes.io/name: flux-operator-mcp
   ingress:
-    # Agents in ai-agents (kagent) read Flux state through this server —
-    # the local ones, and fairy's over Cluster Mesh (policy-default-local-
-    # cluster is on, so a remote peer must be named by its cluster label).
+    # Only the MCP gateway on fairy, which fronts this server for both
+    # clusters: named by cluster label so the rule also matches when the Envoy
+    # is a Cluster Mesh peer (atlantis instance of this dir). The server now
+    # carries write tools, so this list is the whole security story.
     - fromEndpoints:
-        - matchLabels:
-            k8s:io.kubernetes.pod.namespace: ai-agents
-        - matchLabels:
-            k8s:io.cilium.k8s.policy.cluster: fairy-k8s01
-            k8s:io.kubernetes.pod.namespace: ai-agents
-      toPorts:
-        - ports:
-            - port: "9090"
-              protocol: TCP
-    - fromEndpoints:
-        - matchLabels:
-            k8s:io.kubernetes.pod.namespace: gateway-system
-            gateway.envoyproxy.io/owning-gateway-name: tailnet
-        # The MCP gateway on fairy fronts this server for both clusters: named
-        # by cluster label so the rule also matches when the Envoy is a
-        # Cluster Mesh peer (atlantis instance of this dir).
         - matchLabels:
             k8s:io.cilium.k8s.policy.cluster: fairy-k8s01
             k8s:io.kubernetes.pod.namespace: gateway-system

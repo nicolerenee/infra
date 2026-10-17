@@ -99,6 +99,14 @@ to public is a `parentRef` change; the hostname never moves.
   until it is empty) are split-horizon: Cloudflare serves the public view,
   BIND serves a superset internally. See [Internal DNS](internal-dns.md).
 
+### MCP servers
+
+MCP endpoints are `.services` names, but they never get a route of their own:
+all of them sit behind the [MCP gateway](mcp-gateway.md), which gives humans a
+freckle.id login and agents a ServiceAccount-token check, plus per-caller tool
+authorization. One name for humans (`mcp.<env>.freckle.services`), one for
+agents (`mcp-agents.<env>.freckle.services`).
+
 ## Reverse DNS
 
 PTRs come only from the `freckle.network` host map in the private repo

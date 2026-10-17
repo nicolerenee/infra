@@ -62,6 +62,7 @@ nav = [
     { "Cilium Cluster Mesh" = "networking/cluster-mesh.md" },
     { "Domains" = "networking/domains.md" },
     { "Internal DNS" = "networking/internal-dns.md" },
+    { "MCP Gateway" = "networking/mcp-gateway.md" },
   ]},
   { "Storage" = [
     { "Storage" = "storage/index.md" },

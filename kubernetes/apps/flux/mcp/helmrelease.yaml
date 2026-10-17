@@ -30,21 +30,19 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
-  # Read-only for now. Server has cluster-admin RBAC (chart default), so it
-  # can read everything — disabling state-modifying tools keeps mutations
-  # out of the agent's hands until we're ready to relax that.
+  # The server has cluster-admin RBAC (chart default) and now serves its
+  # write tools too: it is reachable only through the MCP gateway, whose
+  # human route exposes everything to a signed-in sysadmin and whose agents'
+  # route filters it down to the read-only tools.
   values:
-    readonly: true
+    readonly: false
     transport: http
     # Chart's NetworkPolicy can only filter by namespace; we want
-    # pod-label scoping (only the tailnet envoy gateway pods, not all of
+    # pod-label scoping (only the MCP gateway's envoy pods, not all of
     # gateway-system). See cnp.yaml in this dir for the replacement.
     networkPolicy:
       create: false
+    # No route of its own: clients reach this server only through the MCP
+    # gateway (kubernetes/apps/networking/mcp-gateway).
     httpRoute:
-      enabled: true
-      parentRefs:
-        - name: tailnet
-          namespace: gateway-system
-      hostnames:
-        - flux-mcp.${CLUSTER_SUBDOMAIN}.freckle.services
+      enabled: false

@@ -45,13 +45,10 @@ spec:
       type: ClusterIP
       port: 8080
 
+    # No route of its own: clients reach this server only through the MCP
+    # gateway (kubernetes/apps/networking/mcp-gateway).
     route:
-      enabled: true
-      parentRefs:
-        - name: tailnet
-          namespace: gateway-system
-      hostnames:
-        - mcp-victorialogs.${CLUSTER_DOMAIN}
+      enabled: false
 
     resources:
       requests:
