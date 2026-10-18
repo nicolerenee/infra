@@ -37,6 +37,11 @@ spec:
               tag: latest@sha256:903eaac224b02327b6d4ef6238c0b78950ae62037f6863a3cc01118cb305f747
             env:
               TZ: America/Chicago
+              # The image defaults its state to /var/lib/mousehole (root-owned,
+              # not persisted) and only falls back to /srv/mousehole when a
+              # legacy state file already lives there. Point it at the PVC
+              # explicitly so a fresh instance persists from day one.
+              MOUSEHOLE_STATE_DIR_PATH: /srv/mousehole
             ports:
               - name: http
                 containerPort: &port 5010
