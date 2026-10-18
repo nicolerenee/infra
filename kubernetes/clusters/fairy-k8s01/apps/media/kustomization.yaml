@@ -24,3 +24,5 @@ resources:
   - ./flaresolverr.yaml
   - ./mousehole.yaml
   - ./sonarr-anime.yaml
+  - ./jellyfin.yaml
+  - ./cnp-jellyfin-ingress.yaml
