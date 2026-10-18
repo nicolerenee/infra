@@ -27,3 +27,4 @@ resources:
   - ./jellyfin.yaml
   - ./cnp-jellyfin-ingress.yaml
   - ./tracearr.yaml
+  - ./seerr.yaml
