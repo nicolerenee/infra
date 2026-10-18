@@ -136,3 +136,9 @@ spec:
             subPath: ${BOOKS_SUBPATH:=Books}
       tmp:
         type: emptyDir
+      # Next.js writes its optimized-image cache under the app dir, which is
+      # read-only here; without this, cover rendering throws ENOENT.
+      next-cache:
+        type: emptyDir
+        globalMounts:
+          - path: /app/.next/standalone/applications/web/.next/cache
