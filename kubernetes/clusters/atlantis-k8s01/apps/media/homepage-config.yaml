@@ -21,9 +21,6 @@ data:
       Media Servers:
         style: row
         columns: 2
-      Other:
-        style: row
-        columns: 4
       Downloaders:
         style: row
         columns: 3
@@ -40,17 +37,6 @@ data:
             siteMonitor: http://audiobookshelf.media
             icon: audiobookshelf.png
             description: Audiobooks & podcasts
-
-    - Other:
-        - Jellyseerr:
-            href: https://requests.atlantis.freckle.media
-            siteMonitor: http://seerr.media
-            icon: jellyseerr.png
-            description: Request movies & TV
-            widget:
-              type: jellyseerr
-              url: http://seerr.media
-              key: "{{HOMEPAGE_VAR_JELLYSEERR_API_KEY}}"
 
     - Downloaders:
         - SABnzbd:
@@ -100,7 +86,6 @@ spec:
       data:
         HOMEPAGE_VAR_SABNZBD_API_KEY: "{{ .sabnzbd_api_key }}"
         HOMEPAGE_VAR_QBT_REEL_URL: '{{ index . "qbt-reel-proxy-url" }}'
-        HOMEPAGE_VAR_JELLYSEERR_API_KEY: '{{ index . "seer-api-key" }}'
   dataFrom:
     - extract:
         key: atlantis-k8s01-media-sabnzbd
