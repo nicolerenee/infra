@@ -46,6 +46,11 @@ spec:
               # endpoint got connection resets (alternating 503s). `::`
               # makes Node listen on both families.
               HOSTNAME: "::"
+              # whisper.cpp is NOT in the image: Storyteller downloads the
+              # binary + model under $HOME at first transcription. The image's
+              # /home/storyteller is read-only and owned by uid 1000, so point
+              # HOME at the data PVC (persists the download across restarts).
+              HOME: /data/home
               STORYTELLER_SECRET_KEY:
                 valueFrom:
                   secretKeyRef:
