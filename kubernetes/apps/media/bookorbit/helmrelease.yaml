@@ -44,7 +44,6 @@ spec:
               HOST: "::"
               TZ: America/Chicago
               APP_URL: https://${APP:=bookorbit}.${CLUSTER_SUBDOMAIN}.freckle.media
-              LIBRARY_BROWSE_ROOT: /books
               POSTGRES_HOST: pg-18a-rw.db.svc.cluster.local
               POSTGRES_PORT: "5432"
               POSTGRES_DB: bookorbit
