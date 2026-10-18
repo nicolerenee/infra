@@ -106,7 +106,8 @@ spec:
           - IPv6
         ports:
           app:
-            port: *port
+            port: &svcport 80
+            targetPort: *port
     route:
       ui:
         hostnames: ["{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"]
@@ -116,7 +117,7 @@ spec:
         rules:
           - backendRefs:
               - identifier: app
-                port: *port
+                port: *svcport
       api:
         hostnames: ["{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"]
         parentRefs:
@@ -132,7 +133,7 @@ spec:
                   value: /ping
             backendRefs:
               - identifier: app
-                port: *port
+                port: *svcport
     persistence:
       config:
         existingClaim: ${APP:=chaptarr}${VOLSYNC_PVC_SUFFIX:=}
