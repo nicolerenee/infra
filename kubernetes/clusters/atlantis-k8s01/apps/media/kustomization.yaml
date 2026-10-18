@@ -31,6 +31,5 @@ resources:
   - ./sonarr.yaml
   - ./sonarr-anime.yaml
   - ./tautulli.yaml
-  - ./tracearr.yaml
   - ./unpackerr.yaml
   - ./webhook.yaml
