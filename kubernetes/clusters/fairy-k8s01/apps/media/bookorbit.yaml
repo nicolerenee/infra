@@ -58,3 +58,8 @@ spec:
         - op: replace
           path: /spec/values/controllers/bookorbit/containers/app/env/APP_URL
           value: https://books.freckle.media
+        # Swagger UI at /api/docs (off by default upstream); behind the same
+        # JWT auth as the API itself.
+        - op: add
+          path: /spec/values/controllers/bookorbit/containers/app/env/SWAGGER_ENABLED
+          value: "true"
