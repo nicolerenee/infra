@@ -11,7 +11,6 @@ resources:
   - ./audiobookshelf.yaml
   - ./autobrr.yaml
   - ./bazarr.yaml
-  - ./cross-seed.yaml
   - ./emby.yaml
   - ./flaresolverr.yaml
   - ./homepage.yaml
