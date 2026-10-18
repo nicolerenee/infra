@@ -44,3 +44,17 @@ spec:
       MEDIA_PVC: store01-vault01-media
       # fairy's share: the Chaptarr-managed library lives at vault01/books.
       BOOKS_SUBPATH: books
+  patches:
+    # books.freckle.media is the canonical address. BookOrbit's web client
+    # builds its OIDC redirect from the browser origin and the server only
+    # accepts APP_URL's origin, so APP_URL must be the hostname people use;
+    # the cluster hostname stays as an alias (no OIDC there).
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: add
+          path: /spec/values/route/app/hostnames/0
+          value: books.freckle.media
+        - op: replace
+          path: /spec/values/controllers/bookorbit/containers/app/env/APP_URL
+          value: https://books.freckle.media
