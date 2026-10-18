@@ -65,6 +65,16 @@ spec:
           value: "true"
         # Manga/comics (CBZ/CBR, which Chaptarr refuses) live in their own
         # tree on the share, one folder per volume; read-only like /books.
+        # Graphic novels (kids' series like Cat Kid Comic Club / Dog Man) get
+        # their own library, separate from books and manga.
+        - op: add
+          path: /spec/values/persistence/graphic-novels
+          value:
+            existingClaim: store01-vault01-media
+            globalMounts:
+              - path: /graphic-novels
+                subPath: graphic-novels
+                readOnly: true
         - op: add
           path: /spec/values/persistence/manga
           value:
