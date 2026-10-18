@@ -63,3 +63,13 @@ spec:
         - op: add
           path: /spec/values/controllers/bookorbit/containers/app/env/SWAGGER_ENABLED
           value: "true"
+        # Manga/comics (CBZ/CBR, which Chaptarr refuses) live in their own
+        # tree on the share, one folder per volume; read-only like /books.
+        - op: add
+          path: /spec/values/persistence/manga
+          value:
+            existingClaim: store01-vault01-media
+            globalMounts:
+              - path: /manga
+                subPath: manga
+                readOnly: true
