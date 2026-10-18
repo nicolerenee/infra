@@ -1,12 +1,12 @@
-# Vendored from kubernetes-sigs/gateway-api @ v1.5.1
-# Source: https://github.com/kubernetes-sigs/gateway-api/blob/v1.5.1/config/crd/standard/gateway.networking.k8s.io_backendtlspolicies.yaml
+# Vendored from kubernetes-sigs/gateway-api @ v1.6.3
+# Source: https://github.com/kubernetes-sigs/gateway-api/blob/v1.6.3/config/crd/standard/gateway.networking.k8s.io_backendtlspolicies.yaml
 # To bump: bump TAG in scripts/vendor-gateway-api-crds.sh and re-run.
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes-sigs/gateway-api/pull/4530
-    gateway.networking.k8s.io/bundle-version: v1.5.1
+    gateway.networking.k8s.io/bundle-version: v1.6.3
     gateway.networking.k8s.io/channel: standard
   labels:
     gateway.networking.k8s.io/policy: Direct
@@ -117,12 +117,12 @@ spec:
 
                   Support Levels:
 
-                  * Extended: Kubernetes Service referenced by HTTPRoute backendRefs.
+                  * Extended: Kubernetes Service referenced by backendRefs used on a Route.
+                    - HTTPRoute, GRPCRoute, TLSRoute with termination
+                    - Filters that needs a backend of type Service, like Mirror and External Authorization
 
-                  * Implementation-Specific: Services not connected via HTTPRoute, and any
-                    other kind of backend. Implementations MAY use BackendTLSPolicy for:
+                  * Implementation-Specific: Implementations MAY use BackendTLSPolicy for:
                     - Services not referenced by any Route (e.g., infrastructure services)
-                    - Gateway feature backends (e.g., ExternalAuth, rate-limiting services)
                     - Service mesh workload-to-service communication
                     - Other resource types beyond Service
 
@@ -793,12 +793,12 @@ spec:
 
                   Support Levels:
 
-                  * Extended: Kubernetes Service referenced by HTTPRoute backendRefs.
+                  * Extended: Kubernetes Service referenced by backendRefs used on a Route.
+                    - HTTPRoute, GRPCRoute, TLSRoute with termination
+                    - Filters that needs a backend of type Service, like Mirror and External Authorization
 
-                  * Implementation-Specific: Services not connected via HTTPRoute, and any
-                    other kind of backend. Implementations MAY use BackendTLSPolicy for:
+                  * Implementation-Specific: Implementations MAY use BackendTLSPolicy for:
                     - Services not referenced by any Route (e.g., infrastructure services)
-                    - Gateway feature backends (e.g., ExternalAuth, rate-limiting services)
                     - Service mesh workload-to-service communication
                     - Other resource types beyond Service
 
@@ -1377,9 +1377,3 @@ spec:
     storage: false
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: null
-  storedVersions: null
