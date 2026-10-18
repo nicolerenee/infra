@@ -30,3 +30,4 @@ resources:
   - ./seerr.yaml
   - ./chaptarr.yaml
   - ./audiobookshelf.yaml
+  - ./bookorbit.yaml

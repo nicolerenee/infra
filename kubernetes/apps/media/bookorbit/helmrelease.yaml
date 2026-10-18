@@ -1,0 +1,139 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ${APP:=bookorbit}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: default
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths: ["/spec/replicas"]
+  interval: 1h
+  values:
+    controllers:
+      bookorbit:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            # Reading server for ebooks/audiobooks/comics (BookLore's
+            # successor): read-along EPUB3 playback, Kobo/KOReader sync,
+            # native iOS app, built-in requests. Needs PostgreSQL with
+            # pgvector (shared CNPG cluster). The entrypoint copes with a
+            # non-root uid (skips its chown/su-exec path), verified with a
+            # read-only rootfs. Library is mounted read-only: Chaptarr owns
+            # the files; BookOrbit only reads and keeps its state in /data.
+            image:
+              repository: ghcr.io/bookorbit/bookorbit
+              tag: 3.4.0@sha256:99539be044c94f10fa5fba616cb08e1b128deb4996c975d181a950818a8632e4
+            env:
+              NODE_ENV: production
+              PORT: &port 3000
+              HOST: "::"
+              TZ: America/Chicago
+              APP_URL: https://${APP:=bookorbit}.${CLUSTER_SUBDOMAIN}.freckle.media
+              LIBRARY_BROWSE_ROOT: /books
+              POSTGRES_HOST: pg-18a-rw.db.svc.cluster.local
+              POSTGRES_PORT: "5432"
+              POSTGRES_DB: bookorbit
+              NODE_MAX_OLD_SPACE_SIZE: "2048"
+            envFrom:
+              - secretRef:
+                  name: ${APP:=bookorbit}-secrets
+            ports:
+              - containerPort: *port
+                name: http
+            probes:
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/v1/health
+                    port: *port
+                  initialDelaySeconds: 0
+                  timeoutSeconds: 2
+                  periodSeconds: 5
+                  failureThreshold: 60
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/v1/health
+                    port: *port
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 2
+                  failureThreshold: 3
+              readiness: *probes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 3Gi
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: ${VOLSYNC_UID}
+        runAsGroup: ${VOLSYNC_GID:=${VOLSYNC_UID}}
+        fsGroup: ${VOLSYNC_FSGROUP:=${VOLSYNC_UID}}
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+    service:
+      app:
+        controller: bookorbit
+        ipFamilyPolicy: PreferDualStack
+        ipFamilies:
+          - IPv4
+          - IPv6
+        ports:
+          http:
+            port: &svcport 80
+            targetPort: *port
+    route:
+      app:
+        hostnames: ["{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"]
+        parentRefs:
+          - name: public
+            namespace: gateway-system
+        rules:
+          - backendRefs:
+              - identifier: app
+                port: *svcport
+    persistence:
+      data:
+        existingClaim: ${APP:=bookorbit}${VOLSYNC_PVC_SUFFIX:=}
+        globalMounts:
+          - path: /data
+            subPath: data
+      books:
+        existingClaim: ${MEDIA_PVC:=store01-media}
+        globalMounts:
+          - path: /books
+            subPath: ${BOOKS_SUBPATH:=Books}
+            readOnly: true
+      tmp:
+        type: emptyDir
