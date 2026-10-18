@@ -26,3 +26,4 @@ resources:
   - ./sonarr-anime.yaml
   - ./jellyfin.yaml
   - ./cnp-jellyfin-ingress.yaml
+  - ./tracearr.yaml
