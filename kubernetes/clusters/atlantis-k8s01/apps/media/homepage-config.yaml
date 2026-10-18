@@ -20,7 +20,7 @@ data:
     layout:
       Media Servers:
         style: row
-        columns: 3
+        columns: 2
       Other:
         style: row
         columns: 4
@@ -30,15 +30,6 @@ data:
 
   services.yaml: |
     - Media Servers:
-        - Jellyfin:
-            href: https://watch.freckle.media
-            siteMonitor: http://jellyfin.media
-            icon: jellyfin.png
-            description: Movies & TV
-            widget:
-              type: jellyfin
-              url: http://jellyfin.media
-              key: "{{HOMEPAGE_VAR_JELLYFIN_API_KEY}}"
         - Plex:
             href: https://plex.freckle.vision
             siteMonitor: http://plex.media
@@ -110,7 +101,6 @@ spec:
         HOMEPAGE_VAR_SABNZBD_API_KEY: "{{ .sabnzbd_api_key }}"
         HOMEPAGE_VAR_QBT_REEL_URL: '{{ index . "qbt-reel-proxy-url" }}'
         HOMEPAGE_VAR_JELLYSEERR_API_KEY: '{{ index . "seer-api-key" }}'
-        HOMEPAGE_VAR_JELLYFIN_API_KEY: '{{ index . "jellyfin-api-key" }}'
   dataFrom:
     - extract:
         key: atlantis-k8s01-media-sabnzbd

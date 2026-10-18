@@ -58,13 +58,8 @@ spec:
             globalMounts:
               - path: /store01/vault01
                 readOnly: true
-        # fairy's `public` Gateway comes from the private repo (pinned
-        # static-block address). watch.freckle.media stays on atlantis for now,
-        # so only the cluster hostname is attached here.
-        - op: replace
-          path: /spec/values/route/app/hostnames
-          value:
-            - "{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"
+        # Hostnames come from the shared dir (cluster name + watch.freckle.media):
+        # the atlantis instance is retired, fairy is THE Jellyfin now.
         - op: replace
           path: /spec/values/controllers/jellyfin/containers/app/env/JELLYFIN_PublishedServerUrl
           value: https://jellyfin.${CLUSTER_SUBDOMAIN}.freckle.media
