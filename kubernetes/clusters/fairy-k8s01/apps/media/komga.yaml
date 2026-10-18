@@ -55,4 +55,5 @@ spec:
           path: /spec/values/persistence/media/globalMounts
           value:
             - path: /store01/vault01
+              readOnly: true
 
