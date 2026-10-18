@@ -42,6 +42,10 @@ spec:
             env:
               TZ: America/Chicago
               FORCE_USER_SETTING: "1"
+              # Dual-stack Service: the image binds 0.0.0.0, so Envoy's v6
+              # endpoint got connection resets (alternating 503s). `::`
+              # makes Node listen on both families.
+              HOSTNAME: "::"
               STORYTELLER_SECRET_KEY:
                 valueFrom:
                   secretKeyRef:
