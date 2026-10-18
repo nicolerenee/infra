@@ -31,3 +31,4 @@ resources:
   - ./chaptarr.yaml
   - ./audiobookshelf.yaml
   - ./bookorbit.yaml
+  - ./storyteller.yaml
