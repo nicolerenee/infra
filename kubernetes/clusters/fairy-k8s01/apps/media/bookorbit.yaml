@@ -52,9 +52,25 @@ spec:
     - target:
         kind: HelmRelease
       patch: |-
+        - op: replace
+          path: /spec/values/route/app/hostnames
+          value:
+            - books.freckle.media
+        # The cluster hostname can't complete OIDC (origin mismatch), so it
+        # just redirects to the canonical one.
         - op: add
-          path: /spec/values/route/app/hostnames/0
-          value: books.freckle.media
+          path: /spec/values/route/alias
+          value:
+            hostnames: ["{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"]
+            parentRefs:
+              - name: public
+                namespace: gateway-system
+            rules:
+              - filters:
+                  - type: RequestRedirect
+                    requestRedirect:
+                      hostname: books.freckle.media
+                      statusCode: 301
         - op: replace
           path: /spec/values/controllers/bookorbit/containers/app/env/APP_URL
           value: https://books.freckle.media
