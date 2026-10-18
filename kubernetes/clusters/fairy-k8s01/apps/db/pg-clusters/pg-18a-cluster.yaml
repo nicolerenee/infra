@@ -50,6 +50,11 @@ spec:
         login: true
         passwordSecret:
           name: grafana-db-role
+      - name: bookorbit
+        ensure: present
+        login: true
+        passwordSecret:
+          name: bookorbit-db-role
 
   plugins:
     - name: barman-cloud.cloudnative-pg.io

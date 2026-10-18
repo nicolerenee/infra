@@ -1,0 +1,44 @@
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: bookorbit-db-role
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: SecretStore
+    name: gcp-sm
+  target:
+    name: bookorbit-db-role
+    creationPolicy: Owner
+    template:
+      engineVersion: v2
+      metadata:
+        labels:
+          cnpg.io/reload: "true"
+      data:
+        username: "{{ .username }}"
+        password: "{{ .password }}"
+  dataFrom:
+    - extract:
+        key: ${CLUSTER_NAME}-db-bookorbit-role
+---
+# BookOrbit installs its extensions itself at startup, but vector needs more
+# than the owner role has; pre-create all three here.
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: pg-18a-bookorbit
+spec:
+  name: bookorbit
+  owner: bookorbit
+  cluster:
+    name: pg-18a
+  ensure: present
+  extensions:
+    - name: vector
+      ensure: present
+    - name: uuid-ossp
+      ensure: present
+    - name: pg_trgm
+      ensure: present

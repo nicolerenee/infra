@@ -11,3 +11,4 @@ resources:
   - ./pg-18a-bucket-mirror.yaml
   - ./paperless-db.yaml
   - ./grafana-db.yaml
+  - ./bookorbit-db.yaml
