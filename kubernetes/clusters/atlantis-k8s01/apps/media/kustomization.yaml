@@ -25,7 +25,6 @@ resources:
   - ./radarr.yaml
   - ./recyclarr.yaml
   - ./sabnzbd.yaml
-  - ./seerr.yaml
   - ./sonarr.yaml
   - ./sonarr-anime.yaml
   - ./tautulli.yaml
