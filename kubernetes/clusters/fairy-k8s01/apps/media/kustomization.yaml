@@ -29,3 +29,5 @@ resources:
   - ./tracearr.yaml
   - ./seerr.yaml
   - ./chaptarr.yaml
+  - ./audiobookshelf.yaml
+  - ./komga.yaml
