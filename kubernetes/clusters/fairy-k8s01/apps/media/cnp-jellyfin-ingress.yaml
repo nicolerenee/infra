@@ -1,0 +1,20 @@
+---
+# Jellyfin on fairy: reachable from the public gateway (its route) and from
+# the media namespace (arrs, Tracearr-style pollers, qui). Mirrors the atlantis
+# policy minus the retired media-tools namespace.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: jellyfin-ingress
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: jellyfin
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: gateway-system
+            gateway.networking.k8s.io/gateway-name: public
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: media

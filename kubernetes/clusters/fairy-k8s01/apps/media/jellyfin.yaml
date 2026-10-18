@@ -1,0 +1,70 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app jellyfin
+  namespace: &namespace media
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: external-secrets
+      namespace: external-secrets
+    - name: rook-ceph-cluster
+      namespace: rook-ceph
+    - name: volsync
+      namespace: volsync-system
+    - name: truenas-csi
+      namespace: truenas-csi
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/media/jellyfin
+  components:
+    - ../../../components/volsync-rsync-tls
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: false
+  postBuild:
+    substitute:
+      APP: *app
+      # Fresh instance; uid 3000 like the rest of the fairy media stack.
+      VOLSYNC_UID: "3000"
+      VOLSYNC_CAPACITY: 100Gi
+      VOLSYNC_SCHEDULE: "37 * * * *"
+  patches:
+    - target:
+        kind: HelmRelease
+      patch: |-
+        # Jellyfin 12 on fairy only (fresh install, no migration to think about);
+        # atlantis stays on the shared dir's 10.11.x until it takes the major.
+        # Hand-pinned: Renovate doesn't see tags inside Flux patches.
+        - op: replace
+          path: /spec/values/controllers/jellyfin/containers/app/image/tag
+          value: 12.2@sha256:c3efa69a22f2691fc88d6bb035e87a8560e395a6047f062fb381c61c3185e8f5
+        # The share, read-only, at fairy's /store01/vault01 layout.
+        - op: replace
+          path: /spec/values/persistence/media
+          value:
+            existingClaim: store01-vault01-media
+            globalMounts:
+              - path: /store01/vault01
+                readOnly: true
+        # fairy's `public` Gateway comes from the private repo (pinned
+        # static-block address). watch.freckle.media stays on atlantis for now,
+        # so only the cluster hostname is attached here.
+        - op: replace
+          path: /spec/values/route/app/hostnames
+          value:
+            - "{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"
+        - op: replace
+          path: /spec/values/controllers/jellyfin/containers/app/env/JELLYFIN_PublishedServerUrl
+          value: https://jellyfin.${CLUSTER_SUBDOMAIN}.freckle.media
