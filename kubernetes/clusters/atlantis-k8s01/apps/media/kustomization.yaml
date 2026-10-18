@@ -16,8 +16,6 @@ resources:
   - ./homepage.yaml
   - ./homepage-config.yaml
   - ./homepage-oidc.yaml
-  - ./jellyfin.yaml
-  - ./cnp-jellyfin-ingress.yaml
   - ./plex.yaml
   - ./plextraktsync-nicole.yaml
   - ./promptbook.yaml
