@@ -78,13 +78,6 @@ data:
             widget:
               type: qbittorrent
               url: "{{HOMEPAGE_VAR_QBT_REEL_URL}}"
-        - qbt-ink:
-            href: https://qui.atlantis.freckle.media
-            icon: qbittorrent.png
-            description: Audiobooks & ebooks
-            widget:
-              type: qbittorrent
-              url: "{{HOMEPAGE_VAR_QBT_INK_URL}}"
 
   widgets.yaml: |
     - search:
@@ -116,7 +109,6 @@ spec:
       data:
         HOMEPAGE_VAR_SABNZBD_API_KEY: "{{ .sabnzbd_api_key }}"
         HOMEPAGE_VAR_QBT_REEL_URL: '{{ index . "qbt-reel-proxy-url" }}'
-        HOMEPAGE_VAR_QBT_INK_URL: '{{ index . "qbt-ink-proxy-url" }}'
         HOMEPAGE_VAR_JELLYSEERR_API_KEY: '{{ index . "seer-api-key" }}'
         HOMEPAGE_VAR_JELLYFIN_API_KEY: '{{ index . "jellyfin-api-key" }}'
   dataFrom:
