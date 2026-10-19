@@ -23,7 +23,6 @@ resources:
   - ./unpackerr.yaml
   - ./flaresolverr.yaml
   - ./mousehole.yaml
-  - ./sonarr-anime.yaml
   - ./jellyfin.yaml
   - ./cnp-jellyfin-ingress.yaml
   - ./tracearr.yaml

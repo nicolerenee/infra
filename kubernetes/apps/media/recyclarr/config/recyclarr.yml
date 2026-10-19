@@ -18,11 +18,17 @@ sonarr:
         daily: default
         anime: default
 
+    # Anime and regular TV share this instance. Quality sizes are per instance,
+    # so use TRaSH's anime table (same max, lower minimums): good anime encodes
+    # are small, and the TV profile's custom formats already reject junk.
     quality_definition:
-      type: series
+      type: anime
 
     quality_profiles:
       - trash_id: c4cadd6b35b95f62c3d47a408e53e2f7  # WEB-2160p (Combined)
+        reset_unmatched_scores:
+          enabled: true
+      - trash_id: 20e0fc959f1f1704bed501f23bdae76f  # [Anime] Remux-1080p
         reset_unmatched_scores:
           enabled: true
 
@@ -35,33 +41,6 @@ sonarr:
           - 06d66ab109d4d2eddb2794d21526d140  # Retags
         assign_scores_to:
           - trash_id: c4cadd6b35b95f62c3d47a408e53e2f7  # WEB-2160p (Combined)
-
-  sonarr-anime:
-    base_url: http://sonarr-anime
-    api_key: !env_var SONARR_ANIME_API_KEY
-    delete_old_custom_formats: true
-
-    media_management:
-      propers_and_repacks: do_not_prefer
-
-    # Same TRaSH naming as the main instance. The anime episode format (with the
-    # absolute number) only applies to series added with Series Type = Anime.
-    media_naming:
-      series: jellyfin-tvdb
-      season: default
-      episodes:
-        rename: true
-        standard: default
-        daily: default
-        anime: default
-
-    quality_definition:
-      type: anime
-
-    quality_profiles:
-      - trash_id: 20e0fc959f1f1704bed501f23bdae76f  # [Anime] Remux-1080p
-        reset_unmatched_scores:
-          enabled: true
 
 radarr:
   radarr:
