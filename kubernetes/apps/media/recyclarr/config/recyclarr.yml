@@ -36,6 +36,19 @@ sonarr:
         assign_scores_to:
           - trash_id: c4cadd6b35b95f62c3d47a408e53e2f7  # WEB-2160p (Combined)
 
+  sonarr-anime:
+    base_url: http://sonarr-anime
+    api_key: !env_var SONARR_ANIME_API_KEY
+    delete_old_custom_formats: true
+
+    quality_definition:
+      type: anime
+
+    quality_profiles:
+      - trash_id: 20e0fc959f1f1704bed501f23bdae76f  # [Anime] Remux-1080p
+        reset_unmatched_scores:
+          enabled: true
+
 radarr:
   radarr:
     base_url: http://radarr

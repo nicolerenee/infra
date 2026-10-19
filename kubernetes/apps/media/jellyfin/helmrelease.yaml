@@ -50,10 +50,12 @@ spec:
                     path: /health
                     port: http
                   initialDelaySeconds: 0
-                  timeoutSeconds: 1
+                  timeoutSeconds: 10
                   # 150s (5*30) to start before liveness/readiness kick in
                   periodSeconds: 5
                   failureThreshold: 30
+              # /health answers slowly while a big library scan holds the DB;
+              # a 1s timeout got the pod restarted mid-scan.
               liveness: &probes
                 enabled: true
                 custom: true
@@ -63,7 +65,7 @@ spec:
                     port: http
                   initialDelaySeconds: 0
                   periodSeconds: 10
-                  timeoutSeconds: 1
+                  timeoutSeconds: 10
                   failureThreshold: 3
               readiness: *probes
             securityContext:
