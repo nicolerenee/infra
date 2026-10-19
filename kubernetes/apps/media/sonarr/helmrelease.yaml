@@ -34,7 +34,10 @@ spec:
             env:
               SONARR__APP__INSTANCENAME: ${APP:=sonarr}
               SONARR__AUTH__METHOD: External
-              SONARR__AUTH__REQUIRED: DisabledForLocalAddresses
+              # Enabled (not DisabledForLocalAddresses) clears the "Allowed Hosts is not configured" health
+              # check without listing hostnames. With AUTH__METHOD External every request is already treated as
+              # authenticated (the gateway does auth), so this changes no behaviour; the API still needs its key.
+              SONARR__AUTH__REQUIRED: Enabled
               SONARR__LOG__DBENABLED: "False"
               SONARR__LOG__LEVEL: info
               SONARR__SERVER__PORT: &port 80
