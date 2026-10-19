@@ -18,8 +18,11 @@ sonarr:
         daily: default
         anime: default
 
+    # Anime and regular TV share this instance. Quality sizes are per instance,
+    # so use TRaSH's anime table (same max, lower minimums): good anime encodes
+    # are small, and the TV profile's custom formats already reject junk.
     quality_definition:
-      type: series
+      type: anime
 
     quality_profiles:
       - trash_id: c4cadd6b35b95f62c3d47a408e53e2f7  # WEB-2160p (Combined)
@@ -40,29 +43,6 @@ sonarr:
           - trash_id: c4cadd6b35b95f62c3d47a408e53e2f7  # WEB-2160p (Combined)
 
       - # Anime: neutralize trash defaults so these don't penalize/boost
-        trash_ids:
-          - 026d5aadd1a6b4e550b134cb6c72b3ca  # Uncensored
-          - b2550eb333d27b75833e25b8c2557b38  # 10bit
-          - 418f50b10f1907201b6cfdf881f467b7  # Anime Dual Audio
-        assign_scores_to:
-          - trash_id: 20e0fc959f1f1704bed501f23bdae76f  # [Anime] Remux-1080p
-            score: 0
-
-  sonarr-anime:
-    base_url: http://sonarr-anime
-    api_key: !env_var SONARR_ANIME_API_KEY
-    delete_old_custom_formats: true
-
-    quality_definition:
-      type: anime
-
-    quality_profiles:
-      - trash_id: 20e0fc959f1f1704bed501f23bdae76f  # [Anime] Remux-1080p
-        reset_unmatched_scores:
-          enabled: true
-
-    custom_formats:
-      - # Same neutral scores as the anime profile on the main instance
         trash_ids:
           - 026d5aadd1a6b4e550b134cb6c72b3ca  # Uncensored
           - b2550eb333d27b75833e25b8c2557b38  # 10bit

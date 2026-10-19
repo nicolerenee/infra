@@ -28,7 +28,6 @@ resources:
   - ./recyclarr.yaml
   - ./sabnzbd.yaml
   - ./sonarr.yaml
-  - ./sonarr-anime.yaml
   - ./tautulli.yaml
   - ./unpackerr.yaml
   - ./webhook.yaml
