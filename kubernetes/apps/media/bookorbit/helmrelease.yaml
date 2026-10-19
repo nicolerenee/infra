@@ -33,8 +33,9 @@ spec:
             # native iOS app, built-in requests. Needs PostgreSQL with
             # pgvector (shared CNPG cluster). The entrypoint copes with a
             # non-root uid (skips its chown/su-exec path), verified with a
-            # read-only rootfs. Library is mounted read-only: Chaptarr owns
-            # the files; BookOrbit only reads and keeps its state in /data.
+            # read-only rootfs. Library is mounted read-only: books are
+            # hardlinked in from seeding torrents; BookOrbit only reads and
+            # keeps its state in /data.
             image:
               repository: ghcr.io/bookorbit/bookorbit
               tag: 3.4.0@sha256:99539be044c94f10fa5fba616cb08e1b128deb4996c975d181a950818a8632e4
