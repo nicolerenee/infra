@@ -141,6 +141,22 @@ spec:
         size: 20Gi
         retain: true
         suffix: cache
+      # Trickplay (scrubbing previews) on its own volume: ~4 MB per video adds up
+      # to hundreds of GB on a full library and would fill the config PVC (Emby's
+      # equivalent hit 149 GB on atlantis). Regenerable, so it stays OUT of the
+      # config backups. Default: TrueNAS NFS on the site NAS's HDD pool (tiles are
+      # written once and read in small bursts; no block attach, quota is just a
+      # dataset quota). Jellyfin keeps trickplay under <data>/trickplay.
+      trickplay:
+        enabled: true
+        type: persistentVolumeClaim
+        storageClass: ${JELLYFIN_TRICKPLAY_STORAGE_CLASS:=truenas-nfs}
+        accessMode: ReadWriteOnce
+        size: ${JELLYFIN_TRICKPLAY_SIZE:=400Gi}
+        retain: true
+        suffix: trickplay
+        globalMounts:
+          - path: /config/data/trickplay
       tmp:
         type: emptyDir
         globalMounts:
