@@ -40,6 +40,6 @@ spec:
       VOLSYNC_CAPACITY: 100Gi
       VOLSYNC_SCHEDULE: "51 * * * *"
       MEDIA_PVC: store01-vault01-media
-      # fairy's share: the Chaptarr-managed library lives at vault01/books (RW:
+      # fairy's share: the book library lives at vault01/books (RW:
       # readalouds are written next to the source EPUB).
       BOOKS_SUBPATH: books

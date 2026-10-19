@@ -42,7 +42,7 @@ spec:
       VOLSYNC_CAPACITY: 20Gi
       VOLSYNC_SCHEDULE: "44 * * * *"
       MEDIA_PVC: store01-vault01-media
-      # fairy's share: the Chaptarr-managed library lives at vault01/books.
+      # fairy's share: the book library lives at vault01/books.
       BOOKS_SUBPATH: books
   patches:
     # books.freckle.media is the canonical address. BookOrbit's web client
@@ -79,7 +79,7 @@ spec:
         - op: add
           path: /spec/values/controllers/bookorbit/containers/app/env/SWAGGER_ENABLED
           value: "true"
-        # Manga/comics (CBZ/CBR, which Chaptarr refuses) live in their own
+        # Manga/comics (CBZ/CBR) live in their own
         # tree on the share, one folder per volume; read-only like /books.
         # Graphic novels (kids' series like Cat Kid Comic Club / Dog Man) get
         # their own library, separate from books and manga.
