@@ -58,8 +58,3 @@ spec:
             globalMounts:
               - path: /store01/vault01
                 readOnly: true
-        # Hostnames come from the shared dir (cluster name + watch.freckle.media):
-        # the atlantis instance is retired, fairy is THE Jellyfin now.
-        - op: replace
-          path: /spec/values/controllers/jellyfin/containers/app/env/JELLYFIN_PublishedServerUrl
-          value: https://jellyfin.${CLUSTER_SUBDOMAIN}.freckle.media
