@@ -1,0 +1,27 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+# Atlantis-only block StorageClasses (iSCSI zvols on store01's SSD pool).
+# Kept in its own Kustomization so a mistake here only breaks the classes.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app truenas-csi-block
+  namespace: &namespace truenas-csi
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: truenas-csi
+      namespace: truenas-csi
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/clusters/atlantis-k8s01/apps/truenas-csi/block
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true
+  force: true

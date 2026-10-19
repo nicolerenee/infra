@@ -1,0 +1,41 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+# TrueNAS CSI driver against atlantis-store01. The default pool is the HDD
+# pool `store01`, so the shared NFS classes (truenas-nfs, truenas-nfs-backup)
+# land there; the SSD block class in ./block pins pool ssdstore01 itself.
+# The API key comes from GSM (atlantis-k8s01-truenas-csi) via gcp-sm-cluster.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app truenas-csi
+  namespace: &namespace truenas-csi
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: external-secrets-apps
+      namespace: external-secrets
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/storage/truenas-csi
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true
+  # StorageClass parameters are immutable; force lets Flux delete+recreate the
+  # class when they change (bound PVs are unaffected).
+  force: true
+  postBuild:
+    substitute:
+      TRUENAS_API_URL: https://172.25.2.4
+      TRUENAS_NFS_SERVER: 172.25.2.4
+      TRUENAS_POOL: store01
+      # The atlantis nodes' range; matches the existing media export.
+      TRUENAS_NFS_CLIENT_NETWORKS: 172.26.3.0/28
