@@ -1,0 +1,13 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/snapshot.storage.k8s.io/volumesnapshotclass_v1.json
+# CSI snapshots of TrueNAS volumes (ZFS snapshots on the NAS). VolSync's
+# rsync-tls ReplicationSource takes one of these before every sync of a
+# TrueNAS-backed PVC (VOLSYNC_SNAPSHOT_CLASS=truenas-csi), so the copy is
+# crash-consistent. Delete: the ZFS snapshot goes when the VolumeSnapshot
+# does; long-term history comes from the NAS's own periodic snapshot tasks.
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: truenas-csi
+driver: csi.truenas.io
+deletionPolicy: Delete

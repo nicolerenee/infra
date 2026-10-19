@@ -9,3 +9,4 @@ components:
 resources:
   - ./external-secrets.yaml
   - ./onepassword-connect.yaml
+  - ./clustersecretstore-gcp.yaml

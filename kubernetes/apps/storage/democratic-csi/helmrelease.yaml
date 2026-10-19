@@ -43,19 +43,8 @@ spec:
             value: /usr/local/sbin/iscsiadm
         iscsiDirHostPath: /var/iscsi
         iscsiDirHostPathType: ""
-    storageClasses:
-      - name: truenas-iscsi
-        defaultClass: false
-        reclaimPolicy: Delete
-        volumeBindingMode: Immediate
-        allowVolumeExpansion: true
-        parameters:
-          fsType: ext4
-          detachedVolumesFromSnapshots: "false"
-        mountOptions: []
-        secrets:
-          provisioner-secret:
-          controller-publish-secret:
-          node-stage-secret:
-          node-publish-secret:
-          controller-expand-secret:
+    # No StorageClass: the `truenas-iscsi` name now belongs to the TrueNAS CSI
+    # driver (csi.truenas.io). This release only keeps serving the volumes it
+    # already provisioned (nas-garage) until they are migrated; bound PVs name
+    # their driver directly, so dropping the class doesn't touch them.
+    storageClasses: []
