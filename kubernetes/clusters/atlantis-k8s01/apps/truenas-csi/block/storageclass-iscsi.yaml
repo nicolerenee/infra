@@ -1,0 +1,25 @@
+---
+# iSCSI zvols on store01's SSD mirror pool, for latency-sensitive app state
+# (SQLite and friends). Benchmarked 2026-10-19 against ceph-block on atlantis:
+# fsync p50 3.6 ms vs 22 ms, SQLite FULL-sync commits 108/s vs 37/s, mixed 4k
+# reads 16.8k vs 1.2k IOPS (atlantis Ceph runs on consumer SSDs without
+# power-loss protection). Single NAS, no replication beyond ZFS mirrors.
+#
+# Zvols land at ssdstore01/kubernetes/block/<pv>. Snapshots: VolumeSnapshotClass
+# truenas-csi. This name used to belong to democratic-csi; its one remaining
+# volume (nas-garage) is still served by that driver.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: truenas-iscsi
+provisioner: csi.truenas.io
+parameters:
+  protocol: iscsi
+  pool: ssdstore01
+  datasetPath: kubernetes/block
+  compression: LZ4
+  # Thin zvols, like the democratic-csi ones (no full-size reservation).
+  sparse: "true"
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
