@@ -18,11 +18,10 @@ sonarr:
         daily: default
         anime: default
 
-    # Anime and regular TV share this instance. Quality sizes are per instance,
-    # so use TRaSH's anime table (same max, lower minimums): good anime encodes
-    # are small, and the TV profile's custom formats already reject junk.
+    # Sonarr v5 keeps quality sizes per profile; this applies to the TV profile.
+    # The anime profile sets its own below.
     quality_definition:
-      type: anime
+      type: series
 
     quality_profiles:
       - trash_id: c4cadd6b35b95f62c3d47a408e53e2f7  # WEB-2160p (Combined)
@@ -31,6 +30,9 @@ sonarr:
       - trash_id: 20e0fc959f1f1704bed501f23bdae76f  # [Anime] Remux-1080p
         reset_unmatched_scores:
           enabled: true
+        # Good anime encodes are small; TRaSH's anime sizes lower the minimums.
+        quality_definition:
+          type: anime
 
     custom_formats:
       - # Unwanted (regular profile)
