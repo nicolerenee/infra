@@ -48,10 +48,3 @@ spec:
           path: /spec/values/persistence/media/globalMounts
           value:
             - path: /store01/vault01
-    # Same v5 pin as the fairy sonarr pointer (fairy-only, hand-bumped).
-    - target:
-        kind: HelmRelease
-      patch: |-
-        - op: replace
-          path: /spec/values/controllers/sonarr/containers/app/image/tag
-          value: 5.0.0.2668@sha256:64fc190929b50091a8d6c3d6b5f4a3df7d3b8f98d076735f5cb223f7d77b0cc3

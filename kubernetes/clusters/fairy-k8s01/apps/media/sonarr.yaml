@@ -55,14 +55,4 @@ spec:
           path: /spec/values/persistence/media/globalMounts
           value:
             - path: /store01/vault01
-    # Sonarr v5 on fairy only — atlantis stays on the shared dir's 4.0.x
-    # until v5 has proven itself here (forward-only DB migration). Hand-pinned:
-    # Renovate doesn't see tags inside Flux patches, so bump this by hand or
-    # drop the patch once the shared dir moves to 5.x.
-    - target:
-        kind: HelmRelease
-      patch: |-
-        - op: replace
-          path: /spec/values/controllers/sonarr/containers/app/image/tag
-          value: 5.0.0.2668@sha256:64fc190929b50091a8d6c3d6b5f4a3df7d3b8f98d076735f5cb223f7d77b0cc3
 
