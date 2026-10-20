@@ -40,7 +40,9 @@ spec:
       VOLSYNC_UID: "3000"
       VOLSYNC_CAPACITY: 1Gi
       VOLSYNC_SCHEDULE: "47 * * * *"
-      QBT_TRANSFER_PORT: "28373"
+      # Inside the NodePort range: the transfer-port Service uses it as its
+      # nodePort too (patch below), for inbound IPv6 to the node address.
+      QBT_TRANSFER_PORT: "31863"
       MEDIA_PVC: store01-vault01-media
   patches:
     - target:
@@ -70,3 +72,10 @@ spec:
           path: /spec/values/service/transfer-port/annotations
           value:
             lbipam.cilium.io/ips: 10.189.250.30
+        # nodePort = transfer port: pod IPv6 egress leaves from the node's
+        # public IPv6, so peers dial <node IPv6>:<port>; the NodePort maps it
+        # to the pod (eTP Local, so only the pod's node answers). IPv4 still
+        # arrives via the LB IP above.
+        - op: add
+          path: /spec/values/service/transfer-port/ports/transfer-port/nodePort
+          value: 31863
