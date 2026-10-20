@@ -1,0 +1,49 @@
+# Cluster Mesh imports: selector-less, unshared global Services whose backends
+# come from atlantis-k8s01 (the Services of the same name there carry the
+# selectors). WatchState dials e.g. http://jellyfin-atlantis.media and Cilium
+# load-balances to the atlantis pods over the site-to-site tunnel.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plex-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+    service.cilium.io/shared: "false"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 32400
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: emby-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+    service.cilium.io/shared: "false"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8096
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyfin-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+    service.cilium.io/shared: "false"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8096
+      protocol: TCP

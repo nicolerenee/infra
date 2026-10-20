@@ -28,3 +28,14 @@ spec:
     - fromEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: media-tools
+    # WatchState on fairy, over Cluster Mesh (jellyfin-atlantis global Service):
+    # named by cluster label so only that one pod is admitted.
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.cilium.k8s.policy.cluster: fairy-k8s01
+            k8s:io.kubernetes.pod.namespace: media
+            app.kubernetes.io/name: watchstate
+      toPorts:
+        - ports:
+            - port: "8096"
+              protocol: TCP
