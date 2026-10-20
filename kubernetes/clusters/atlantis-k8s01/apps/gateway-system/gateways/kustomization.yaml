@@ -1,20 +1,9 @@
 ---
 # yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
-# Atlantis inherits the shared Component (public Gateway included) and only
-# adds its public:http redirect parent here.
+# Atlantis uses the shared Component as-is; its extra public listeners are
+# patched on in the Flux Kustomization (../gateways.yaml).
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: gateway-system
 components:
   - ../../../../../apps/networking/envoy-gateway/gateways
-patches:
-  # Add the public:http parent back onto the shared httpsredirect HR.
-  - target:
-      kind: HTTPRoute
-      name: httpsredirect
-    patch: |-
-      - op: add
-        path: /spec/parentRefs/-
-        value:
-          name: public
-          sectionName: http
