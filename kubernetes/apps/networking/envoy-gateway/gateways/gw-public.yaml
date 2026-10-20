@@ -3,14 +3,12 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  annotations: {}
   labels:
     gateway.freckle.systems/dns: cloudflare
   name: public
 spec:
   gatewayClassName: envoy
   infrastructure:
-    annotations: {}
     labels:
       ipam.freckle.systems/lb-pool: public
   listeners:
