@@ -1,0 +1,18 @@
+# Cluster Mesh imports: selector-less, unshared global Service whose backends
+# come from fairy-k8s01. Emby and Jellyfin here post WatchState webhooks to
+# http://watchstate-fairy.media:8080/v1/api/webhook.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: watchstate-fairy
+  annotations:
+    service.cilium.io/global: "true"
+    service.cilium.io/shared: "false"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP

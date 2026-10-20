@@ -1,0 +1,23 @@
+# Cluster Mesh exports: lets atlantis's Emby and Jellyfin post WatchState
+# webhooks to fairy. A copy of the local watchstate Service with a cluster
+# suffix, so the global merge only contains fairy's backends; the Service of the
+# same name on atlantis carries no selector and is not shared. watchstate has no
+# ingress CNP, and its API (incl. webhooks) requires the WatchState API key.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: watchstate-fairy
+  annotations:
+    service.cilium.io/global: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/controller: watchstate
+    app.kubernetes.io/instance: watchstate
+    app.kubernetes.io/name: watchstate
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP

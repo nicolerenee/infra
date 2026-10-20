@@ -27,6 +27,7 @@ resources:
   - ./jellyfin.yaml
   - ./cnp-jellyfin-ingress.yaml
   - ./media-mesh-import.yaml
+  - ./media-mesh-export.yaml
   - ./tracearr.yaml
   - ./seerr.yaml
   - ./audiobookshelf.yaml
