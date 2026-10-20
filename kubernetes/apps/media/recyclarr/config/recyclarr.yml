@@ -35,6 +35,14 @@ sonarr:
           type: anime
 
     custom_formats:
+      - # Prefer season packs: +10 makes a same-tier pack an upgrade over single
+        # episodes, so seasons get replaced by packs we can seed. Sonarr's
+        # season-pack upgrade threshold (80%) is set in Sonarr itself.
+        trash_ids:
+          - 3bc5f395426614e155e585a2f056cdf1  # Season Pack
+        assign_scores_to:
+          - trash_id: c4cadd6b35b95f62c3d47a408e53e2f7  # WEB-2160p (Combined)
+            score: 10
       - # Unwanted
         trash_ids:
           - 32b367365729d530ca1c124a0b180c64  # Bad Dual Groups
