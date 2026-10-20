@@ -42,10 +42,10 @@ spec:
               XDG_CONFIG_HOME: /tmp
               # Webhooks and the API need the WatchState API key.
               WS_SECURE_API_ENDPOINTS: "true"
-              # Pull watch state in hourly; pushing it back out stays off until
-              # the people/backends mapping has been reviewed.
+              # Import and export hourly. Which servers get written to is set per
+              # backend in WatchState (export is enabled only on the Jellyfins).
               WS_CRON_IMPORT: "true"
-              WS_CRON_EXPORT: "false"
+              WS_CRON_EXPORT: "true"
             ports:
               - name: http
                 containerPort: &port 8080
