@@ -1,0 +1,11 @@
+---
+# Take the UDM's router advertisements on the compute VLAN so every node gets
+# a SLAAC address from the VLAN's delegated /64 and an IPv6 default route.
+# Nodes forward (forwarding=1), and the kernel then ignores RAs unless
+# accept_ra=2. Cilium makes that address the node's primary IPv6 and
+# masquerades pod IPv6 egress to it. The home-LAN path stays address-free
+# (12-bridge-sysctls).
+apiVersion: v1alpha1
+kind: SysctlConfig
+params:
+  net.ipv6.conf.bond0.accept_ra: "2"
