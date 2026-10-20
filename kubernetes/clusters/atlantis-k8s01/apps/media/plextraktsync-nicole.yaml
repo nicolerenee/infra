@@ -35,3 +35,12 @@ spec:
       VOLSYNC_UID: "1000"
       VOLSYNC_CAPACITY: 2Gi
       VOLSYNC_SCHEDULE: "41 * * * *"
+  patches:
+    # PARKED (2026-10-20): retired with Plex; cron job suspended. Config PVC
+    # and its VolSync backups are kept; delete this patch to bring it back.
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: add
+          path: /spec/values/controllers/${APP}/cronjob/suspend
+          value: true
