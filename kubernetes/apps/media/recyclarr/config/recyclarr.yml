@@ -38,6 +38,10 @@ sonarr:
         # disabled and above WEB, so files we already have aren't treated as
         # upgradeable to WEB and re-downloaded. HDTV sits below WEB, so an HDTV
         # grab keeps upgrading until a WEB release shows up.
+        # The guide's 100 minimum only passes groups on its anime tier lists,
+        # which rejects most releases of older shows on our trackers. 0 still
+        # blocks everything the guide scores -10000 (LQ groups, raws, AV1).
+        min_format_score: 0
         upgrade:
           allowed: true
           until_quality: WEB 1080p
@@ -77,6 +81,14 @@ sonarr:
           - 06d66ab109d4d2eddb2794d21526d140  # Retags
         assign_scores_to:
           - trash_id: c4cadd6b35b95f62c3d47a408e53e2f7  # WEB-2160p (Combined)
+
+      - # Anime: prefer releases with an English dub. 1000 outweighs the gap
+        # between any two WEB tiers, so dual audio wins at the same quality.
+        trash_ids:
+          - 418f50b10f1907201b6cfdf881f467b7  # Anime Dual Audio
+        assign_scores_to:
+          - trash_id: 20e0fc959f1f1704bed501f23bdae76f  # [Anime] Remux-1080p
+            score: 1000
 
 radarr:
   radarr:
