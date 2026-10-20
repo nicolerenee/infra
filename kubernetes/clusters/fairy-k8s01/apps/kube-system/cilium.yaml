@@ -39,6 +39,16 @@ spec:
             # Kustomization, dependsOn cilium).
             bgpControlPlane:
               enabled: true
+            # NodePorts are served on the node's InternalIP by default, which on
+            # fairy is the compute-VLAN ULA (needed for native routing). Also
+            # serve them on the node's public IPv6 (SLAAC from the delegated
+            # prefix), where pod IPv6 egress is masqueraded and where peers dial
+            # the qbt transfer ports. 2000::/3 = any global unicast address.
+            nodePort:
+              addresses:
+                - 10.189.3.0/24
+                - fd2b:ec92:e233::/64
+                - 2000::/3
             # Cluster Mesh identity. Changing name/id re-allocates every
             # security identity (ID is encoded in them), so this is a
             # restart-everything change. atlantis-k8s01 is id 1.
