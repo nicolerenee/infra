@@ -139,6 +139,9 @@ spec:
                 value: mlx5
               - name: NCCL_NET_GDR_LEVEL
                 value: "2"
+              # DSCP 26 + ECT(0): lets r01-fsw01 ECN-mark RoCE instead of dropping it.
+              - name: NCCL_IB_TC
+                value: "106"
               # Force the Marlin/Triton path for the NVFP4 MoE kernels (matches
               # the spark-arena NVFP4 recipe + the qwen deploy). Without it, v0.24
               # can pick a DeepGEMM path that asserts on some FP8/FP4 checkpoints.
@@ -301,6 +304,8 @@ spec:
                 value: mlx5
               - name: NCCL_NET_GDR_LEVEL
                 value: "2"
+              - name: NCCL_IB_TC
+                value: "106"
               # Force the Marlin/Triton path for the NVFP4 MoE kernels (matches
               # the spark-arena NVFP4 recipe + the qwen deploy). Without it, v0.24
               # can pick a DeepGEMM path that asserts on some FP8/FP4 checkpoints.

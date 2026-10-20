@@ -177,6 +177,9 @@ spec:
                 value: mlx5
               - name: NCCL_NET_GDR_LEVEL
                 value: "2"
+              # DSCP 26 + ECT(0): lets r01-fsw01 ECN-mark RoCE instead of dropping it.
+              - name: NCCL_IB_TC
+                value: "106"
             ports:
               - containerPort: 8000
                 name: http
@@ -370,6 +373,8 @@ spec:
                 value: mlx5
               - name: NCCL_NET_GDR_LEVEL
                 value: "2"
+              - name: NCCL_IB_TC
+                value: "106"
             securityContext:
               capabilities:
                 add:
