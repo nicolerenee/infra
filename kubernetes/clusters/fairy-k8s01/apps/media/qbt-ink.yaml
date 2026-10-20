@@ -45,6 +45,18 @@ spec:
       QBT_TRANSFER_PORT: "31493"
       MEDIA_PVC: store01-vault01-media
   patches:
+    # qbt-ink's tracker whitelists specific qBittorrent versions and lags
+    # upstream. Pin the image tag here so qbt-ink stays on a cleared version
+    # while the shared HR (qbt-reel) tracks upstream; Renovate opens a
+    # separate "for qbt-ink" PR for this line (.renovate/infraPackages.json5).
+    # Bump it only after the tracker clears the new version.
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: replace
+          path: /spec/values/controllers/qbittorrent/containers/app/image/tag
+          # renovate: datasource=docker depName=ghcr.io/home-operations/qbittorrent
+          value: 5.2.4@sha256:9307627e03981d5473aa31175ea76ed56ea3752333ca49d601b6af45e281e7ba
     - target:
         kind: HelmRelease
       patch: |-
