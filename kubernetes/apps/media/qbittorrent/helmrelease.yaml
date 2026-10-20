@@ -40,6 +40,11 @@ spec:
                 containerPort: *port
               - name: transfer
                 containerPort: ${QBT_TRANSFER_PORT}
+                # Pod IPv6 egress is masqueraded to the node's public IPv6, so
+                # that is the address peers learn from trackers. The hostPort
+                # makes <node IP>:<port> reach the pod; without it inbound IPv6
+                # dead-ends at the node. IPv4 still comes in via the LB IP.
+                hostPort: ${QBT_TRANSFER_PORT}
                 protocol: TCP
             probes:
               liveness: &probes
