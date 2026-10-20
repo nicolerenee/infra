@@ -35,3 +35,14 @@ spec:
       VOLSYNC_UID: "1000"
       VOLSYNC_CAPACITY: 1Gi
       VOLSYNC_SCHEDULE: "31 * * * *"
+  patches:
+    # PARKED (2026-10-20): retired with Plex; scaled to zero, no routes. Config PVC
+    # and its VolSync backups are kept; delete this patch to bring it back.
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: add
+          path: /spec/values/controllers/tautulli/replicas
+          value: 0
+        - op: remove
+          path: /spec/values/route

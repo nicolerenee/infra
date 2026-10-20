@@ -27,11 +27,6 @@ data:
 
   services.yaml: |
     - Media Servers:
-        - Plex:
-            href: https://plex.freckle.vision
-            siteMonitor: http://plex.media
-            icon: plex.png
-            description: Backup — transcode fallback
         - Audiobookshelf:
             href: https://audiobookshelf.atlantis.freckle.services
             siteMonitor: http://audiobookshelf.media

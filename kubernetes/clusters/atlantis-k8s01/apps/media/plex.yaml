@@ -59,3 +59,13 @@ spec:
               - backendRefs:
                   - identifier: app
                     port: 80
+    # PARKED (2026-10-20): Jellyfin replaced Plex; scaled to zero, no routes. Config PVC
+    # and its VolSync backups are kept; delete this patch to bring it back.
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: replace
+          path: /spec/values/controllers/plex/replicas
+          value: 0
+        - op: remove
+          path: /spec/values/route
