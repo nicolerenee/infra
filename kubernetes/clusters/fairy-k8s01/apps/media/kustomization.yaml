@@ -19,6 +19,7 @@ resources:
   - ./qbt-reel.yaml
   - ./qbt-ink.yaml
   - ./qui.yaml
+  - ./watchstate.yaml
   - ./autobrr.yaml
   - ./unpackerr.yaml
   - ./flaresolverr.yaml
