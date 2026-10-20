@@ -1,0 +1,50 @@
+---
+# OIDC client credentials for ${APP}, read from the GSM `<cluster>-media-<app>-oidc`
+# secret (fields oidc_client_id / oidc_client_secret).
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/external-secrets.io/externalsecret_v1.json
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: ${APP:=watchstate}-oidc
+spec:
+  secretStoreRef:
+    kind: SecretStore
+    name: gcp-sm
+  target:
+    template:
+      data:
+        client-id: "{{ .oidc_client_id }}"
+        client-secret: "{{ .oidc_client_secret }}"
+  dataFrom:
+    - extract:
+        key: ${CLUSTER_NAME}-media-${APP:=watchstate}-oidc
+---
+# Browser traffic to the UI goes through Freckle ID first; WatchState's own login
+# still applies behind it. Media servers reach the webhook endpoint through the
+# in-cluster Service, which bypasses the gateway.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: ${APP:=watchstate}-oidc
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: ${APP:=watchstate}
+  oidc:
+    provider:
+      issuer: https://freckle.id
+    clientIDRef:
+      group: ""
+      kind: Secret
+      name: ${APP:=watchstate}-oidc
+    clientSecret:
+      group: ""
+      kind: Secret
+      name: ${APP:=watchstate}-oidc
+    redirectURL: https://${APP:=watchstate}.${CLUSTER_SUBDOMAIN}.freckle.media/oauth2/callback
+    logoutPath: /logout
+    scopes:
+      - openid
+      - email
+      - profile
