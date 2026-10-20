@@ -35,7 +35,9 @@ spec:
       VOLSYNC_UID: "943"
       VOLSYNC_CAPACITY: 1Gi
       VOLSYNC_SCHEDULE: "47 * * * *"
-      QBT_TRANSFER_PORT: "51847"
+      # Inside the NodePort range: the transfer-port Service uses it as its
+      # nodePort too (patch below), for inbound IPv6 to the node address.
+      QBT_TRANSFER_PORT: "32219"
   patches:
     # qbt-reel-only: read-only access to the TV and Movies libraries.
     # Main qbt deliberately doesn't get these — only reel needs them.
@@ -54,3 +56,9 @@ spec:
             path: /store01/Movies
             subPath: Movies
             readOnly: true
+        # nodePort = transfer port: peers dial <node IPv6>:<port> (pod IPv6
+        # egress leaves from the node's public IPv6); eTP Local, so only the
+        # pod's node answers. IPv4 still arrives via the LB IP (border1 DNAT).
+        - op: add
+          path: /spec/values/service/transfer-port/ports/transfer-port/nodePort
+          value: 32219
