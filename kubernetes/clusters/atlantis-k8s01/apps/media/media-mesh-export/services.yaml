@@ -1,0 +1,60 @@
+# Cluster Mesh exports: global Services that let fairy's WatchState reach this
+# cluster's media servers by identity. Copies of the local Services with a
+# cluster suffix, so the global merge only ever contains THIS cluster's
+# backends: the matching Services on fairy carry no selector and are not shared.
+# Who may connect is decided by each pod's CiliumNetworkPolicy (jellyfin admits
+# fairy's watchstate by cluster + pod labels; plex and emby have no ingress CNP).
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plex-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/controller: plex
+    app.kubernetes.io/instance: plex
+    app.kubernetes.io/name: plex
+  ports:
+    - name: http
+      port: 80
+      targetPort: 32400
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: emby-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/controller: emby
+    app.kubernetes.io/instance: emby
+    app.kubernetes.io/name: emby
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8096
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyfin-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/controller: jellyfin
+    app.kubernetes.io/instance: jellyfin
+    app.kubernetes.io/name: jellyfin
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8096
+      protocol: TCP

@@ -25,6 +25,7 @@ resources:
   - ./mousehole.yaml
   - ./jellyfin.yaml
   - ./cnp-jellyfin-ingress.yaml
+  - ./media-mesh-import.yaml
   - ./tracearr.yaml
   - ./seerr.yaml
   - ./audiobookshelf.yaml
