@@ -10,7 +10,9 @@ kind: CronJob
 metadata:
   name: qui-seeded-search
 spec:
-  schedule: "0 3 5,20 * *"
+  # Days of the month come from the pointer: the clusters run a week apart
+  # so they don't hit the same trackers (same accounts) at once.
+  schedule: "0 3 ${QUI_SEEDED_SEARCH_DAYS} * *"
   timeZone: America/Chicago
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 1

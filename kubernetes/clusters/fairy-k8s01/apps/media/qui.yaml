@@ -41,6 +41,7 @@ spec:
       VOLSYNC_SCHEDULE: "11 * * * *"
       # qui's id for this cluster's qbt-reel (the seeded-search CronJob).
       QUI_REEL_INSTANCE_ID: "1"
+      QUI_SEEDED_SEARCH_DAYS: "5,20"
       MEDIA_PVC: store01-vault01-media
   patches:
     - target:

@@ -37,3 +37,4 @@ spec:
       VOLSYNC_SCHEDULE: "11 * * * *"
       # qui's id for this cluster's qbt-reel (the seeded-search CronJob).
       QUI_REEL_INSTANCE_ID: "5"
+      QUI_SEEDED_SEARCH_DAYS: "12,27"
