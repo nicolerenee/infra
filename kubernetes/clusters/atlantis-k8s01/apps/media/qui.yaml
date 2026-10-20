@@ -35,3 +35,5 @@ spec:
       VOLSYNC_UID: "1000"
       VOLSYNC_CAPACITY: 1Gi
       VOLSYNC_SCHEDULE: "11 * * * *"
+      # qui's id for this cluster's qbt-reel (the seeded-search CronJob).
+      QUI_REEL_INSTANCE_ID: "5"

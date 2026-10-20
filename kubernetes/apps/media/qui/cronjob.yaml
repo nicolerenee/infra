@@ -1,0 +1,64 @@
+---
+# Searches the trackers for every torrent we seed, twice a month. RSS only
+# sees new uploads, so this is what finds an older copy of data we already
+# have, e.g. the upload a tracker kept when it removed ours as a duplicate.
+# qui can start these runs but not schedule them. A full pass takes a few
+# days at one search a minute; the 12 h cooldown skips recently searched
+# torrents. No indexerIds means every enabled torznab indexer.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: qui-seeded-search
+spec:
+  schedule: "0 3 5,20 * *"
+  timeZone: America/Chicago
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      ttlSecondsAfterFinished: 604800
+      template:
+        spec:
+          automountServiceAccountToken: false
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: start-run
+              image: mirror.gcr.io/curlimages/curl:8.22.0@sha256:58adaa4e8dca9c988bae2aba4ab3434a0bb2da16bbe3f92dec39ec7785166777
+              # $(QUI_API_KEY) is expanded by the kubelet from the env below.
+              args:
+                - -sS
+                - --fail-with-body
+                - -X
+                - POST
+                - -H
+                - "X-API-Key: $(QUI_API_KEY)"
+                - -H
+                - "Content-Type: application/json"
+                - -d
+                - '{"instanceId":${QUI_REEL_INSTANCE_ID},"categories":["library-seed","seed","tv-sonarr","radarr","games"],"intervalSeconds":60,"cooldownMinutes":720}'
+                - http://qui/api/cross-seed/search/run
+              env:
+                - name: QUI_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: qui-cron-secret
+                      key: QUI_API_KEY
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: [ALL]
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
+                limits:
+                  memory: 32Mi
