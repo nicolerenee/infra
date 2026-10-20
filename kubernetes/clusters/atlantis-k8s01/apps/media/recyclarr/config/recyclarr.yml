@@ -33,6 +33,32 @@ sonarr:
         # Good anime encodes are small; TRaSH's anime sizes lower the minimums.
         quality_definition:
           type: anime
+        # WEB-first like the TV profile: the guide ranks Blu-ray (often full
+        # remuxes, 5-7 GB an episode) on top. Blu-ray stays in the list but
+        # disabled and above WEB, so files we already have aren't treated as
+        # upgradeable to WEB and re-downloaded. HDTV sits below WEB, so an HDTV
+        # grab keeps upgrading until a WEB release shows up.
+        upgrade:
+          allowed: true
+          until_quality: WEB 1080p
+        qualities:
+          - name: Bluray 1080p
+            enabled: false
+            qualities: [Bluray-1080p Remux, Bluray-1080p]
+          - name: WEB 1080p
+            qualities: [WEBRip-1080p, WEBDL-1080p]
+          - name: HDTV-1080p
+          - name: Bluray-720p
+            enabled: false
+          - name: WEB 720p
+            qualities: [WEBRip-720p, WEBDL-720p]
+          - name: HDTV-720p
+          - name: Bluray-480p
+            enabled: false
+          - name: WEB 480p
+            qualities: [WEBRip-480p, WEBDL-480p]
+          - name: DVD
+          - name: SDTV
 
     custom_formats:
       - # Prefer season packs: +10 makes a same-tier pack an upgrade over single
