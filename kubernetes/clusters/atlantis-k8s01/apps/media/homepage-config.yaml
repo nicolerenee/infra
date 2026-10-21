@@ -18,21 +18,11 @@ data:
     disableUpdateCheck: true
     statusStyle: dot
     layout:
-      Media Servers:
-        style: row
-        columns: 2
       Downloaders:
         style: row
         columns: 3
 
   services.yaml: |
-    - Media Servers:
-        - Audiobookshelf:
-            href: https://audiobookshelf.atlantis.freckle.services
-            siteMonitor: http://audiobookshelf.media
-            icon: audiobookshelf.png
-            description: Audiobooks & podcasts
-
     - Downloaders:
         - SABnzbd:
             href: https://sabnzbd.atlantis.freckle.systems
@@ -65,7 +55,7 @@ data:
     []
 ---
 # Pulls only the API keys / proxy URLs we already have. Add more
-# (jellyfin_api_key, audiobookshelf_api_key, jellyseerr_api_key) to the
+# (jellyfin_api_key, jellyseerr_api_key) to the
 # atlantis-k8s01-media-homepage GSM secret later to enable widgets on those tiles.
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/external-secrets.io/externalsecret_v1.json
 apiVersion: external-secrets.io/v1
