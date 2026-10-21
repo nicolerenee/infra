@@ -25,10 +25,18 @@ spec:
 ---
 # Combined GPU + 2× RDMA NIC claim, used by the multi-node vLLM
 # LeaderWorkerSet for GPUDirect over ConnectX-7.
+# The Spark's CX7 hangs off two PCIe x4 roots (0000: and 0002:), and each
+# physical QSFP port shows up once per root. Only port 0 (function .0) is
+# cabled, so the 2 devices must be 0000:01:00.0 + 0002:01:00.0, the two halves
+# of the cabled port. Without the selector the allocator hands out .0 + .1 on
+# one root, i.e. one half of port 0 plus the dead port 1.
+# Template spec is immutable: force lets Flux recreate it on change.
 apiVersion: resource.k8s.io/v1
 kind: ResourceClaimTemplate
 metadata:
   name: gpu-rdma
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: enabled
 spec:
   spec:
     devices:
@@ -40,3 +48,6 @@ spec:
           exactly:
             deviceClassName: rdma.dra.net
             count: 2
+            selectors:
+              - cel:
+                  expression: device.attributes["dra.net"].pciAddress.endsWith(":01:00.0")
