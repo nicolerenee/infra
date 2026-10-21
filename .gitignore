@@ -6,3 +6,6 @@
 /**/talos/output/
 kubeconfig*
 talosconfig*
+
+# 1Password Environment mount (agent secrets; served by the desktop app, never commit)
+.env
