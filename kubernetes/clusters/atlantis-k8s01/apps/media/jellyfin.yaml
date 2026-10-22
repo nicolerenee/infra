@@ -40,7 +40,11 @@ spec:
       APP: *app
       VOLSYNC_UID: "3000"
       VOLSYNC_CAPACITY: 100Gi
-      VOLSYNC_SCHEDULE: "41 * * * *"
+      # Every 4h, not hourly: rsync walks ~130k metadata files to an HDD-backed
+      # NFS destination, and busy runs overran the hour and piled up missed
+      # schedules. Fewer runs also mean fewer iSCSI snapshot stage/unstage
+      # cycles. Play state is backed up separately by WatchState.
+      VOLSYNC_SCHEDULE: "41 */4 * * *"
       # Config/database on store01's SSD pool over iSCSI (see the class for
       # the benchmark); pre-sync snapshots via the TrueNAS snapshot class.
       VOLSYNC_STORAGE_CLASS: truenas-iscsi
