@@ -24,6 +24,11 @@ spec:
   values:
     controllers:
       storyteller:
+        # Parked: read-alongs are now built by per-book stalign Jobs (CTC
+        # aligner), which matched or beat Storyteller's whisper-based
+        # alignment in a fraction of the time. PVCs and data are kept so it
+        # can come back.
+        replicas: 0
         annotations:
           reloader.stakater.com/auto: "true"
         containers:
