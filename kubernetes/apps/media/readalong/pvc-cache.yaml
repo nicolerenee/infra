@@ -1,0 +1,16 @@
+---
+# Shared cache for the per-book read-along Jobs (created by a script, not
+# Flux): the aligner CLI, a static ffmpeg and the CTC models. RWX so every
+# Job mounts the same copy and a model is only ever downloaded once.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: readalong-cache
+spec:
+  storageClassName: ceph-filesystem
+  resources:
+    requests:
+      storage: 20Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany

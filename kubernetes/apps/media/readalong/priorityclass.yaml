@@ -1,0 +1,12 @@
+---
+# Batch work that should only use spare capacity. Below the default (0), so
+# any regular pod that needs the room preempts these; the Jobs retry and pick
+# up their cached work. Never preempts anything itself.
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: batch-low
+value: -100
+preemptionPolicy: Never
+globalDefault: false
+description: Preemptible batch work (read-along Jobs) that runs on spare capacity.
