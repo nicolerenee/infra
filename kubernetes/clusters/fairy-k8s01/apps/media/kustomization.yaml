@@ -32,3 +32,4 @@ resources:
   - ./seerr.yaml
   - ./bookorbit.yaml
   - ./storyteller.yaml
+  - ./readalong.yaml
