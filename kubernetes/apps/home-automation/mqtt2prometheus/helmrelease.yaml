@@ -39,7 +39,7 @@ spec:
           app:
             image:
               repository: ghcr.io/hikhvar/mqtt2prometheus
-              tag: v0.1.5
+              tag: v0.1.7
             # the image declares its binary as CMD, not ENTRYPOINT, so args alone
             # would replace it
             command:
