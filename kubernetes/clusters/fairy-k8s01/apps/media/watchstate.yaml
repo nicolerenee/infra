@@ -37,5 +37,7 @@ spec:
     substitute:
       APP: *app
       VOLSYNC_UID: "3000"
-      VOLSYNC_CAPACITY: 5Gi
+      # 5Gi filled up: WatchState's startup db:maintenance VACUUMs the SQLite
+      # DB, which needs free space about the size of the DB itself.
+      VOLSYNC_CAPACITY: 10Gi
       VOLSYNC_SCHEDULE: "27 * * * *"
