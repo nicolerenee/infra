@@ -73,6 +73,16 @@
       allowedVersions: '<13',
     },
     {
+      // ISC numbers BIND so that even minors (9.18, 9.20) are stable/ESV
+      // branches and odd minors (9.19, 9.21) are development branches. The
+      // image tags don't mark the difference, so without this Renovate offers
+      // every dev branch as an ordinary minor bump. Matches both "9.20" and
+      // "9.20.x" tags.
+      matchDatasources: ['docker'],
+      matchPackageNames: ['docker.io/internetsystemsconsortium/bind9'],
+      allowedVersions: '/^9\\.\\d*[02468](\\.|$)/',
+    },
+    {
       // When the kubernetes-sigs/gateway-api tag in
       // scripts/vendor-gateway-api-crds.sh is bumped, re-run the vendor
       // script to regenerate the CRD YAML files in the same PR. Requires
