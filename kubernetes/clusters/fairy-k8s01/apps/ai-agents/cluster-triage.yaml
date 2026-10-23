@@ -13,7 +13,7 @@ spec:
   dependsOn:
     - name: kagent
       namespace: ai-agents
-    - name: mcp-servers
+    - name: mcp-gateway-access
       namespace: ai-agents
     - name: log-search
       namespace: ai-agents
