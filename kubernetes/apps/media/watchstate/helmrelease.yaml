@@ -81,7 +81,9 @@ spec:
               requests:
                 cpu: 10m
               limits:
-                memory: 1Gi
+                # A full export to a new backend (~64k items per identity) hit
+                # the old 1Gi limit and was OOM-killed mid-run.
+                memory: 2Gi
     defaultPodOptions:
       automountServiceAccountToken: false
       securityContext:
