@@ -34,7 +34,7 @@ spec:
               # `latest` refuses to start unless MOUSEHOLE_AUTH_PASSWORD/TOKEN
               # (or MOUSEHOLE_INSECURE_ALLOW_NO_AUTH) is set. Wire auth before
               # moving this forward.
-              tag: latest@sha256:2fc02b12362581e60bfd6adba788bda9eda93f8f31ed089581eeabcee4518b0d
+              tag: latest@sha256:903eaac224b02327b6d4ef6238c0b78950ae62037f6863a3cc01118cb305f747
             env:
               TZ: America/Chicago
               # The image defaults its state to /var/lib/mousehole (root-owned,
