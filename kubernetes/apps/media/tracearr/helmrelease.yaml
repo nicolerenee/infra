@@ -124,7 +124,7 @@ spec:
           app:
             image:
               repository: timescale/timescaledb-ha
-              tag: pg18.6-ts2.30.2@sha256:75b1a432956ae6efc31551413ba51b6601ec0910dbad123a64617face989dc7c
+              tag: pg18.6-ts2.30.2@sha256:0b8a528ee896040750825e274e244496a80afbfa1ad9321181460fb089a40017
             # Upstream's settings (max_locks for many hypertable chunks,
             # tuple-decompression cap, telemetry off, 150 connections for the
             # app's self-sizing pool) plus memory sized for the 2Gi limit.
