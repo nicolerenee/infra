@@ -72,6 +72,12 @@ config:
   imageGCLowThresholdPercent: 20 # Default is 80%
   # Equivalent of `rotate-server-certificates` arg, for one less thing
   serverTLSBootstrap: true
+  # The default of 110 leaves no room to drain a cn node: the three amd64
+  # nodes run ~290 pods, so the other two must absorb ~70 more. When they
+  # couldn't, the drain evicted rook-ceph-operator, which then couldn't
+  # reschedule to relax the OSD PDB, and the upgrade deadlocked. Each node's
+  # pod CIDR is a /24, so 200 stays well inside the address space.
+  maxPods: 200
   clusterDNS:
     - 10.229.0.10
     - fd2b:ec92:e230:1::a
