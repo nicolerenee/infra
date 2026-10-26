@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: mariadb-operator-crds
-      version: 26.10.1
+      version: 26.10.2
       sourceRef:
         kind: HelmRepository
         name: mariadb-operator
