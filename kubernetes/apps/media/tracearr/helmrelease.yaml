@@ -127,7 +127,15 @@ spec:
               tag: pg18.6-ts2.30.2@sha256:0b8a528ee896040750825e274e244496a80afbfa1ad9321181460fb089a40017
             # Upstream's settings (max_locks for many hypertable chunks,
             # tuple-decompression cap, telemetry off, 150 connections for the
-            # app's self-sizing pool) plus memory sized for the 2Gi limit.
+            # app's self-sizing pool) plus memory sized for the container limit.
+            #
+            # Worker counts are pinned too: timescaledb-tune sized them at
+            # initdb from the node's CPU count (no CPU limit here), giving 10
+            # parallel workers per query and 10 autovacuum workers. Each one
+            # takes its own work_mem/maintenance_work_mem plus /dev/shm, so a
+            # single parallel query or vacuum burst blew past the memory limit
+            # in seconds and the whole container was OOM-killed (95 restarts on
+            # 2026-10-25). Flags given here override postgresql.conf.
             args:
               - postgres
               - -c
@@ -150,6 +158,16 @@ spec:
               - maintenance_work_mem=128MB
               - -c
               - random_page_cost=1.1
+              - -c
+              - max_worker_processes=16
+              - -c
+              - max_parallel_workers=4
+              - -c
+              - max_parallel_workers_per_gather=2
+              - -c
+              - autovacuum_max_workers=3
+              - -c
+              - timescaledb.max_background_workers=8
             env:
               TZ: America/Chicago
               POSTGRES_DB: tracearr
@@ -186,7 +204,7 @@ spec:
                 cpu: 100m
                 memory: 512Mi
               limits:
-                memory: 2Gi
+                memory: 3Gi
 
       valkey:
         strategy: Recreate
