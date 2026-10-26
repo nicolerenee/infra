@@ -33,5 +33,7 @@ spec:
     substitute:
       APP: *app
       VOLSYNC_UID: "1000"
-      VOLSYNC_CAPACITY: 1Gi
+      # 1Gi filled up: autobrr copies its SQLite DB to a backup file before
+      # every migration, so the volume needs room for a second copy.
+      VOLSYNC_CAPACITY: 5Gi
       VOLSYNC_SCHEDULE: "28 * * * *"
