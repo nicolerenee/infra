@@ -31,5 +31,6 @@ resources:
   - ./tracearr.yaml
   - ./seerr.yaml
   - ./bookorbit.yaml
+  - ./media-portal.yaml
   - ./storyteller.yaml
   - ./readalong.yaml
