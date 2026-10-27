@@ -10,6 +10,8 @@ panels:
     groups: &watchers [jellyfin_users, jellyfin_admins, media_users]
   tv:
     groups: *watchers
+  movies:
+    groups: *watchers
 sections:
   - name: Watch
     tiles:
