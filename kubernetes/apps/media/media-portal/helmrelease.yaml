@@ -32,7 +32,8 @@ spec:
         containers:
           app:
             # End-user landing page for freckle.media: Freckle ID sign-in,
-            # app tiles filtered by group, and help docs.
+            # app tiles filtered by group, help docs, and personal panels
+            # (continue watching, on TV) from Jellyfin and Sonarr.
             image:
               repository: ghcr.io/freckleapps/media-portal
               tag: 1.0.1@sha256:ecd5d37f3c640f3747f63206c0667f1e8365b14100232df08a29a374925c9f16
@@ -41,6 +42,10 @@ spec:
               OIDC_ISSUER: https://freckle.id
               CONFIG_PATH: /config/portal.yaml
               TZ: America/Chicago
+              # In-cluster, so the panels never go through the gateway.
+              SONARR_URL: http://sonarr.media.svc.cluster.local
+              JELLYFIN_URL: http://jellyfin.media.svc.cluster.local:8096
+              WATCH_URL: https://watch.freckle.media
             envFrom:
               - secretRef:
                   name: ${APP:=media-portal}-secrets

@@ -4,6 +4,12 @@
 # groups. Hiding a tile is convenience only: each app enforces its own groups
 # at sign-in, so keep `groups` in step with the app's pocket-id client.
 title: Freckle Media
+# Personal panels on the home page, for the same people who can see Jellyfin.
+panels:
+  continue_watching:
+    groups: &watchers [jellyfin_users, jellyfin_admins, media_users]
+  tv:
+    groups: *watchers
 sections:
   - name: Watch
     tiles:
