@@ -32,7 +32,8 @@ sections:
       - name: Books
         description: Ebooks, audiobooks and comics
         url: https://books.freckle.media
-        icon: https://books.freckle.media/apple-touch-icon-180x180.png
+        # Bundled in the app: BookOrbit sends CORP same-origin on its own icons.
+        icon: /static/icons/bookorbit.svg
         groups: [media_users]
   - name: Manage
     tiles:

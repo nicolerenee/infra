@@ -35,7 +35,7 @@ spec:
             # app tiles filtered by group, and help docs.
             image:
               repository: ghcr.io/freckleapps/media-portal
-              tag: 1.0.0@sha256:52edd70eecb948f477609d88515a28df5e0eec97f75ba2ae7ff8906441cb1199
+              tag: 1.0.1@sha256:ecd5d37f3c640f3747f63206c0667f1e8365b14100232df08a29a374925c9f16
             env:
               PUBLIC_URL: https://freckle.media
               OIDC_ISSUER: https://freckle.id
