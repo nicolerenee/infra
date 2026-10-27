@@ -36,7 +36,7 @@ spec:
             # (continue watching, on TV) from Jellyfin and Sonarr.
             image:
               repository: ghcr.io/freckleapps/media-portal
-              tag: 1.0.1@sha256:ecd5d37f3c640f3747f63206c0667f1e8365b14100232df08a29a374925c9f16
+              tag: 1.1.0@sha256:86ddf3f3d41f5cb3e32b9cddc3e3cc0eef9f855293e2f3bf21dc7976a46b98fa
             env:
               PUBLIC_URL: https://freckle.media
               OIDC_ISSUER: https://freckle.id
