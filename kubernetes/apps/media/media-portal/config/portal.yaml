@@ -12,6 +12,9 @@ panels:
     groups: *watchers
   movies:
     groups: *watchers
+  # Same people who can open Requests.
+  requests:
+    groups: [jellyfin_admins, media_requesters]
 sections:
   - name: Watch
     tiles:

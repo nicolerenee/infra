@@ -33,11 +33,11 @@ spec:
           app:
             # End-user landing page for freckle.media: Freckle ID sign-in,
             # app tiles filtered by group, help docs, and personal panels
-            # (continue watching, on TV, movies) from Jellyfin, Sonarr and
-            # Radarr.
+            # (continue watching, on TV, movies, requests) from Jellyfin,
+            # Sonarr, Radarr and Seerr.
             image:
               repository: ghcr.io/freckleapps/media-portal
-              tag: 1.2.0@sha256:7faff00bb824aa9f7a23c7f99d2f58b9baeb9eff235847eba3e3a70282ef2fe4
+              tag: 1.3.0@sha256:bda76e2c6cab40a53f4bdc1547bb969e57902de69991088dabc671a305364358
             env:
               PUBLIC_URL: https://freckle.media
               OIDC_ISSUER: https://freckle.id
@@ -46,6 +46,8 @@ spec:
               # In-cluster, so the panels never go through the gateway.
               SONARR_URL: http://sonarr.media.svc.cluster.local
               RADARR_URL: http://radarr.media.svc.cluster.local
+              SEERR_URL: http://seerr.media.svc.cluster.local
+              REQUESTS_URL: https://requests.fairy.freckle.media
               JELLYFIN_URL: http://jellyfin.media.svc.cluster.local:8096
               WATCH_URL: https://watch.freckle.media
             envFrom:
