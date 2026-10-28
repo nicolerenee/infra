@@ -46,6 +46,14 @@ spec:
               # backend in WatchState (export is enabled only on the Jellyfins).
               WS_CRON_IMPORT: "true"
               WS_CRON_EXPORT: "true"
+              # -i skips the date comparison. Items added to a server after
+              # they were watched elsewhere carry older play dates than the
+              # last export, so a plain export queues them for re-processing
+              # every hour and some are never applied. Safe while every
+              # play-state change reaches WatchState by webhook and the
+              # hourly import (:00) runs before the export (:30). Temporary
+              # for the atlantis-to-fairy migration; drop the flag after it.
+              WS_CRON_EXPORT_ARGS: "-v -i"
             ports:
               - name: http
                 containerPort: &port 8080
