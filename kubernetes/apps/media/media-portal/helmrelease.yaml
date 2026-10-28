@@ -37,7 +37,7 @@ spec:
             # Sonarr, Radarr and Seerr.
             image:
               repository: ghcr.io/freckleapps/media-portal
-              tag: 1.6.0@sha256:47dc4e630231f30cd01d23a74155d067c0eee7e70f110256dd5c1c9fe4d3e3fb
+              tag: 1.7.0@sha256:15d694a01bf9ce6fd46b6d6f0b635fbd9d9b003ca91df4bb394af8f7a938516e
             env:
               PUBLIC_URL: https://freckle.media
               OIDC_ISSUER: https://freckle.id
