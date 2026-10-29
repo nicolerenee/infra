@@ -68,18 +68,12 @@ spec:
             # setup (suexec). Tightened only at pod level (runAsNonRoot,
             # runAsUser: 3000, seccompProfile via defaultPodOptions).
             resources:
-              claims:
-                - name: gpu
               requests:
                 cpu: 500m
                 memory: 128Mi
               limits:
                 cpu: 4000m
                 memory: 12Gi
-    defaultPodOptions:
-      resourceClaims:
-        - name: gpu
-          resourceClaimTemplateName: scrypted
 
     service:
       app:
