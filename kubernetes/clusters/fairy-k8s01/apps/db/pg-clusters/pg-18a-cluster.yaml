@@ -55,6 +55,11 @@ spec:
         login: true
         passwordSecret:
           name: bookorbit-db-role
+      - name: accession
+        ensure: present
+        login: true
+        passwordSecret:
+          name: accession-db-role
 
   plugins:
     - name: barman-cloud.cloudnative-pg.io
