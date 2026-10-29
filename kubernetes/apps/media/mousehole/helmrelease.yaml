@@ -43,6 +43,11 @@ spec:
               # admits the tailnet gateway, so no request reaches the pod
               # without a Freckle ID login.
               MOUSEHOLE_INSECURE_ALLOW_NO_AUTH: "true"
+              # 0.5+ also checks Host and Origin and only trusts localhost by
+              # default. Behind the gateway the Host is the public name, and the
+              # browser's Origin is https while the app sees plain http.
+              MOUSEHOLE_ALLOWED_HOSTS: localhost,127.0.0.1,mousehole.${CLUSTER_SUBDOMAIN}.freckle.media
+              MOUSEHOLE_ALLOWED_ORIGINS: https://mousehole.${CLUSTER_SUBDOMAIN}.freckle.media
             ports:
               - name: http
                 containerPort: &port 5010
