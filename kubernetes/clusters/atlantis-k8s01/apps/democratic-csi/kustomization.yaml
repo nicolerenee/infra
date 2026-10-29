@@ -7,4 +7,5 @@ components:
   - ../_shared/cluster-info
 resources:
   - ./externalsecret.yaml
+  - ./pv-secrets.yaml
   - ./democratic-csi.yaml
