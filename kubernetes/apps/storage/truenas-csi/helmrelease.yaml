@@ -35,7 +35,7 @@ spec:
   # and isn't visible to the kubelet's hostPath check, so every node pod
   # sticks in ContainerCreating. The driver itself never reads it — iscsiadm
   # runs on the host via nsenter — so point the mount at a writable /var
-  # path instead (democratic-csi does the same on Talos).
+  # path instead.
   postRenderers:
     - kustomize:
         patches:

@@ -6,8 +6,7 @@
 # power-loss protection). Single NAS, no replication beyond ZFS mirrors.
 #
 # Zvols land at ssdstore01/kubernetes/block/<pv>. Snapshots: VolumeSnapshotClass
-# truenas-csi. This name used to belong to democratic-csi; its one remaining
-# volume (nas-garage) is still served by that driver.
+# truenas-csi.
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -18,7 +17,7 @@ parameters:
   pool: ssdstore01
   datasetPath: kubernetes/block
   compression: LZ4
-  # Thin zvols, like the democratic-csi ones (no full-size reservation).
+  # Thin zvols (no full-size reservation).
   sparse: "true"
 reclaimPolicy: Delete
 volumeBindingMode: Immediate
