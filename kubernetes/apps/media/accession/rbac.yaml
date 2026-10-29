@@ -1,0 +1,29 @@
+---
+# accession starts the per-book read-along Jobs itself (the same Jobs the
+# grab-books skill's readalong.py creates), so it needs Jobs in its own
+# namespace and nothing else.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ${APP:=accession}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ${APP:=accession}
+rules:
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["create", "get", "list", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ${APP:=accession}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ${APP:=accession}
+subjects:
+  - kind: ServiceAccount
+    name: ${APP:=accession}
