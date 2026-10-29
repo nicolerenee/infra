@@ -43,6 +43,15 @@ spec:
     # predictable (web Service becomes `nautobot-default`).
     fullnameOverride: nautobot
 
+    # Front door on the shared tailnet gateway. gateway.enabled stays off so
+    # the chart doesn't create a Gateway of its own.
+    route:
+      enabled: true
+      hostname: nautobot.${CLUSTER_DOMAIN}
+      parentRefs:
+        - name: tailnet
+          namespace: gateway-system
+
     # Bundled datastores off — we bring our own CNPG Postgres and Dragonfly.
     postgresql:
       enabled: false
