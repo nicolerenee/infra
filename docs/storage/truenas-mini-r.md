@@ -37,6 +37,6 @@ home network.
 
 ### Uses
 
-- Media libraries (Plex, Jellyfin) via NFS exports to Kubernetes
+- Media libraries (Jellyfin) via NFS exports to Kubernetes
 - Time Machine backups
 - SMB shares for general file storage

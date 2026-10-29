@@ -16,7 +16,7 @@ kept hosts on `freckle.systems`.
 | `freckle.network` | anything physical or infra: servers, BMCs, switches, routers, firewalls, APs, PDUs, UPSes, the NAS | **site** (`btx1`, `den1`) |
 | `freckle.tools` | anything a human opens: app UIs, ops UIs (Grafana, Hubble, Rook, Alertmanager, Flux), storage as a service alias | **environment** (`fairy`, `atlantis`) |
 | `freckle.services` | anything a machine talks to: Kubernetes API, OIDC issuer and JWKS, schema host, webhooks, MCP endpoints, S3, tunnel plumbing | environment |
-| `freckle.media` | the media stack (Jellyfin, Plex, *arr, downloaders) | environment |
+| `freckle.media` | the media stack (Jellyfin, *arr, downloaders) | environment |
 | `freckle.chat` | Matrix | — |
 | `freckle.id` | identity provider | — |
 | `freckle.family` | public-facing family things | — |
