@@ -32,7 +32,7 @@ spec:
             # FrankenPHP + an embedded Redis; everything lives under /config.
             image:
               repository: ghcr.io/arabcoders/watchstate
-              tag: v1.10.9@sha256:d9f7c240a87fb9bb0b00e7c6cc5af0c2edfc9065a248141cfba3ebbcd1a79d46
+              tag: v1.10.10@sha256:0840431951d60ab7b93a11d426a5db976dac179dd6bf08adb7a22833e1f36b21
             env:
               TZ: America/Chicago
               WS_TZ: America/Chicago
