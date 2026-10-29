@@ -5,6 +5,10 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: media
+  labels:
+    # Opt in to the cluster-wide GHCR pull secret for accession's private
+    # image. Only workloads that reference `ghcr-pull` use it.
+    freckle.systems/ghcr-pull: "true"
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
 ---
