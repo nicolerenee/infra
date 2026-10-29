@@ -1,22 +1,23 @@
 ---
+# Barman target: Ceph RGW via the OBC-provisioned bucket in bucket.yaml.
 apiVersion: barmancloud.cnpg.io/v1
 kind: ObjectStore
 metadata:
-  name: garage-store
+  name: ceph-store
 spec:
   configuration:
-    destinationPath: s3://cnpg-backups/
-    endpointURL: http://nas-garage.garage.svc.cluster.local:3900
+    destinationPath: s3://pg-17a-backups/
+    endpointURL: http://rook-ceph-rgw-ceph-objectstore.rook-ceph.svc:80
     s3Credentials:
       region:
         name: pg-17a-secrets
         key: s3-region
       accessKeyId:
-        name: pg-17a-secrets
-        key: s3-access-key-id
+        name: pg-17a-bucket
+        key: AWS_ACCESS_KEY_ID
       secretAccessKey:
-        name: pg-17a-secrets
-        key: s3-secret-access-key
+        name: pg-17a-bucket
+        key: AWS_SECRET_ACCESS_KEY
     wal:
       compression: bzip2
       maxParallel: 8
