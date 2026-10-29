@@ -83,6 +83,16 @@
       allowedVersions: '/^9\\.\\d*[02468](\\.|$)/',
     },
     {
+      // Connect chart 2.3.0 switched op-credentials from an env var holding
+      // base64-encoded JSON to a mounted file holding raw JSON. The secret is
+      // created out of band (bootstrap/setup-1password.sh) in the old format,
+      // so a plain bump would break Connect on both clusters. Lift this when
+      // the secret is re-created in the new format in the same change.
+      matchDatasources: ['docker'],
+      matchPackageNames: ['ghcr.io/1password/connect'],
+      allowedVersions: '<2.3.0',
+    },
+    {
       // When the kubernetes-sigs/gateway-api tag in
       // scripts/vendor-gateway-api-crds.sh is bumped, re-run the vendor
       // script to regenerate the CRD YAML files in the same PR. Requires
