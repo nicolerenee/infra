@@ -28,7 +28,7 @@ spec:
           reloader.stakater.com/auto: "true"
         containers:
           app:
-            # Syncs play state between Plex, Emby and the Jellyfin servers.
+            # Syncs play state between the Jellyfin servers.
             # FrankenPHP + an embedded Redis; everything lives under /config.
             image:
               repository: ghcr.io/arabcoders/watchstate

@@ -12,7 +12,7 @@ generation for chassis or thermal changes.
 ## Generation 3
 
 Generation 3 (2025) is a ground-up redesign driven by the need for Intel Arc
-iGPU support for hardware-accelerated H.265 and 4K transcoding (Plex/Jellyfin).
+iGPU support for hardware-accelerated H.265 and 4K transcoding (Jellyfin).
 These are the primary AMD64 workhorse nodes in the fairy-k8s01 cluster, running
 all non-inference workloads: home automation, media services, networking, auth,
 monitoring, and storage controllers.
@@ -43,7 +43,7 @@ mounting support — in Gen 3.0 the drives are just loose inside the chassis.
 
 **Motherboard**: The Supermicro X14SAZ-TLN4F was chosen for its combination of
 dual onboard Intel X550 10GBase-T, IPMI/BMC for remote management, and Intel
-Arc iGPU for hardware transcoding (Plex/Jellyfin).
+Arc iGPU for hardware transcoding (Jellyfin).
 
 **Ceph OSD connectivity**: The two U.2 drives connect via the JNVME1 MCIO
 connector (PCIe 4.0 x4+x4) using a breakout cable — no PCIe slot consumed. The
