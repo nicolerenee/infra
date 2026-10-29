@@ -32,10 +32,7 @@ kind: LeaderWorkerSet
 metadata:
   name: minimax-m27-nvfp4
 spec:
-  # Parked 2026-10-29 to free dgx04 + dgx06 for RoCE fabric tests (perftest
-  # needs the ConnectX-7 NICs, which dranet hands to one pod at a time).
-  # Restore to 1 afterwards (INFRA-131).
-  replicas: 0
+  replicas: 1
   leaderWorkerTemplate:
     size: 2
     restartPolicy: RecreateGroupOnPodRestart
@@ -93,6 +90,11 @@ spec:
               - --stats
               - 1m
               - --stats-one-line
+            resources:
+              requests:
+                memory: 1Gi
+              limits:
+                memory: 112Gi
             volumeMounts:
               - name: ceph-models
                 mountPath: /ceph-models
@@ -145,6 +147,12 @@ spec:
               # DSCP 26 + ECT(0): lets r01-fsw01 ECN-mark RoCE instead of dropping it.
               - name: NCCL_IB_TC
                 value: "106"
+              # RoCEv2. The fabric ports carry only IPv6 link-local GIDs (index 0
+              # = RoCEv1, 1 = RoCEv2), and NCCL's automatic choice skips link-local
+              # and stays on RoCEv1, which has no IP header for ECN. A 4-into-1
+              # perftest incast ran at 12 Gb/s on RoCEv1 vs 195 Gb/s on RoCEv2.
+              - name: NCCL_IB_GID_INDEX
+                value: "1"
               # Force the Marlin/Triton path for the NVFP4 MoE kernels (matches
               # the spark-arena NVFP4 recipe + the qwen deploy). Without it, v0.24
               # can pick a DeepGEMM path that asserts on some FP8/FP4 checkpoints.
@@ -187,6 +195,12 @@ spec:
             resources:
               claims:
                 - name: gpu-rdma
+              # Limits on every container give the pod a memory.max, which Talos's
+              # OOM controller never selects. GPU memory isn't charged here.
+              requests:
+                memory: 16Gi
+              limits:
+                memory: 112Gi
             volumeMounts:
               - name: local-models
                 mountPath: /models
@@ -262,6 +276,11 @@ spec:
               - --stats
               - 1m
               - --stats-one-line
+            resources:
+              requests:
+                memory: 1Gi
+              limits:
+                memory: 112Gi
             volumeMounts:
               - name: ceph-models
                 mountPath: /ceph-models
@@ -309,6 +328,12 @@ spec:
                 value: "2"
               - name: NCCL_IB_TC
                 value: "106"
+              # RoCEv2. The fabric ports carry only IPv6 link-local GIDs (index 0
+              # = RoCEv1, 1 = RoCEv2), and NCCL's automatic choice skips link-local
+              # and stays on RoCEv1, which has no IP header for ECN. A 4-into-1
+              # perftest incast ran at 12 Gb/s on RoCEv1 vs 195 Gb/s on RoCEv2.
+              - name: NCCL_IB_GID_INDEX
+                value: "1"
               # Force the Marlin/Triton path for the NVFP4 MoE kernels (matches
               # the spark-arena NVFP4 recipe + the qwen deploy). Without it, v0.24
               # can pick a DeepGEMM path that asserts on some FP8/FP4 checkpoints.
@@ -321,6 +346,12 @@ spec:
             resources:
               claims:
                 - name: gpu-rdma
+              # Limits on every container give the pod a memory.max, which Talos's
+              # OOM controller never selects. GPU memory isn't charged here.
+              requests:
+                memory: 16Gi
+              limits:
+                memory: 112Gi
             volumeMounts:
               - name: local-models
                 mountPath: /models
