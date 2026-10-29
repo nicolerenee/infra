@@ -30,10 +30,6 @@ spec:
           app:
             image:
               repository: tmmrtn/mousehole
-              # Pinned to the build atlantis has been running: v0.5.0 behind
-              # `latest` refuses to start unless MOUSEHOLE_AUTH_PASSWORD/TOKEN
-              # (or MOUSEHOLE_INSECURE_ALLOW_NO_AUTH) is set. Wire auth before
-              # moving this forward.
               tag: latest@sha256:2fc02b12362581e60bfd6adba788bda9eda93f8f31ed089581eeabcee4518b0d
             env:
               TZ: America/Chicago
@@ -42,6 +38,11 @@ spec:
               # legacy state file already lives there. Point it at the PVC
               # explicitly so a fresh instance persists from day one.
               MOUSEHOLE_STATE_DIR_PATH: /srv/mousehole
+              # 0.5+ won't start without its own password/token. Auth is the
+              # gateway's OIDC policy (oidc.yaml), and cnp-ingress.yaml only
+              # admits the tailnet gateway, so no request reaches the pod
+              # without a Freckle ID login.
+              MOUSEHOLE_INSECURE_ALLOW_NO_AUTH: "true"
             ports:
               - name: http
                 containerPort: &port 5010

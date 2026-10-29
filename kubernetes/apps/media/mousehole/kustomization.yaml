@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - helmrelease.yaml
   - cnp-ingress.yaml
+  - oidc.yaml
