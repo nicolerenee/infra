@@ -51,14 +51,6 @@ metadata:
   name: qwen38-flash-next
 spec:
   replicas: 2
-  # CANARY (2026-10-29): partition 1 = only group 1 rolls to the upstream
-  # image; group 0 keeps serving on eugr's build until the upstream image is
-  # verified and benchmarked. Drop the partition to roll group 0 too.
-  rolloutStrategy:
-    type: RollingUpdate
-    rollingUpdateConfiguration:
-      maxUnavailable: 1
-      partition: 1
   leaderWorkerTemplate:
     size: 2
     restartPolicy: RecreateGroupOnPodRestart
