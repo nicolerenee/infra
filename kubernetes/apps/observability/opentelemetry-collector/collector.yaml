@@ -30,7 +30,7 @@ spec:
     - key: nvidia.com/gpu
       operator: Exists
       effect: NoSchedule
-  image: otel/opentelemetry-collector-contrib:0.163.2
+  image: otel/opentelemetry-collector-contrib:0.164.0
   resources:
     requests:
       cpu: 50m
