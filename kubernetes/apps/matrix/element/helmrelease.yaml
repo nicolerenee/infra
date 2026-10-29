@@ -28,7 +28,7 @@ spec:
           app:
             image:
               repository: ghcr.io/element-hq/element-web
-              tag: v1.12.32@sha256:f8700633d4336258af7a05b53865a4f479e0d628cf2d9ca83d28b5939314d4ce
+              tag: v1.12.33@sha256:b0aa4b5a4fc1afaaff62e2dbd0c92d57e2b20724f3ccb2fef53aae949088c3d2
             env:
               # nginx-unprivileged base defaults this to 80 (which a non-root
               # user can't bind); pin it to the exposed 8080.
