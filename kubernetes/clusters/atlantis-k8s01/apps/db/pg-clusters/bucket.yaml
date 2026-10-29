@@ -1,0 +1,12 @@
+---
+# Rook OBC: provisions `pg-17a-backups` in Ceph RGW and creates a Secret +
+# ConfigMap named after this OBC. The Secret holds AWS_ACCESS_KEY_ID /
+# AWS_SECRET_ACCESS_KEY scoped to this bucket, which the barman ObjectStore
+# reads directly.
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: pg-17a-bucket
+spec:
+  bucketName: pg-17a-backups
+  storageClassName: ceph-bucket

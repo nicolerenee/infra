@@ -34,7 +34,7 @@ spec:
     - name: barman-cloud.cloudnative-pg.io
       isWALArchiver: true
       parameters:
-        barmanObjectName: garage-store
+        barmanObjectName: ceph-store
         # Note: serverName version needs to be incremented
         # when recovering from an existing cnpg cluster
         serverName: pg-17a-v1
@@ -50,7 +50,7 @@ spec:
   #     plugin:
   #       name: barman-cloud.cloudnative-pg.io
   #       parameters:
-  #         barmanObjectName: garage-store
+  #         barmanObjectName: ceph-store
   #         serverName: *previousCluster
 ---
 apiVersion: postgresql.cnpg.io/v1
