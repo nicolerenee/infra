@@ -14,7 +14,7 @@
 clusterName: atlantis-k8s01
 clusterEndpoint: https://172.26.3.16:6443
 # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
-kubernetesVersion: v1.37.1
+kubernetesVersion: v1.37.2
 # renovate: datasource=custom.talos-factory depName=siderolabs/talos
 talosVersion: v1.14.2
 platform: metal
