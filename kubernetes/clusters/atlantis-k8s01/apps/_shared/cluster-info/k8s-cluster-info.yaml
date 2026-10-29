@@ -15,4 +15,3 @@ data:
   # this once every consumer inlines the real domain (hedgehog's bundle is
   # the last one on atlantis; technitium references it on fairy).
   CLUSTER_SVCS_DOMAIN: "atlantis.freckle.services"
-  GARAGE_S3_REGION: "us-den1"
