@@ -12,4 +12,3 @@ resources:
   - ./paperless-db.yaml
   - ./grafana-db.yaml
   - ./bookorbit-db.yaml
-  - ./accession-db.yaml

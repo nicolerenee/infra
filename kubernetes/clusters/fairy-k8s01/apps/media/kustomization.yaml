@@ -30,7 +30,6 @@ resources:
   - ./media-mesh-export.yaml
   - ./tracearr.yaml
   - ./seerr.yaml
-  - ./accession.yaml
   - ./bookorbit.yaml
   - ./media-portal.yaml
   - ./storyteller.yaml
