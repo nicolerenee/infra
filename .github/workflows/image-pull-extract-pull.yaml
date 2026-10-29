@@ -179,5 +179,26 @@ jobs:
       - name: Install talosctl
         run: curl -fsSL https://talos.dev/install | sh
 
+      # Talos pulls the variant for the target node's platform, and NODE is the
+      # runner's own (amd64) node. The vLLM images (~10 GB) only run on the
+      # arm64 DGX Sparks, so pulling them here put a useless amd64 copy on a cn
+      # node and left the Sparks with nothing for spegel to share: every Spark
+      # in a group then pulled from upstream at once. Seed one Ready arm64 node
+      # instead; spegel spreads it from there. Everything else is small enough
+      # that the runner-node pull is fine. Clusters with no arm64 node fall
+      # back to the runner's node.
       - name: Pull Image
-        run: talosctl --nodes $NODE image pull ${{ matrix.image }}
+        env:
+          IMAGE: ${{ matrix.image }}
+        run: |
+          target="${NODE}"
+          if [[ "${IMAGE}" == *vllm* ]]; then
+            sa=/var/run/secrets/kubernetes.io/serviceaccount
+            arm=$(curl -fsS --cacert "${sa}/ca.crt" -H "Authorization: Bearer $(cat "${sa}/token")" \
+              "https://kubernetes.default.svc/api/v1/nodes?labelSelector=kubernetes.io/arch%3Darm64" \
+              | yq -p json '[.items[] | select(.status.conditions[] | select(.type == "Ready" and .status == "True"))
+                  | .status.addresses[] | select(.type == "InternalIP") | .address] | .[0] // ""')
+            [[ -n "${arm}" ]] && target="${arm}"
+          fi
+          echo "Pulling ${IMAGE} on ${target}"
+          talosctl --nodes "${target}" image pull "${IMAGE}"
