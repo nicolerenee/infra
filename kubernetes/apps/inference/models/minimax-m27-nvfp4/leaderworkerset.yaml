@@ -32,7 +32,10 @@ kind: LeaderWorkerSet
 metadata:
   name: minimax-m27-nvfp4
 spec:
-  replicas: 1
+  # Parked 2026-10-29 to free dgx04 + dgx06 for RoCE fabric tests (perftest
+  # needs the ConnectX-7 NICs, which dranet hands to one pod at a time).
+  # Restore to 1 afterwards (INFRA-131).
+  replicas: 0
   leaderWorkerTemplate:
     size: 2
     restartPolicy: RecreateGroupOnPodRestart
