@@ -55,4 +55,12 @@ spec:
           path: /spec/values/persistence/media/globalMounts
           value:
             - path: /store01/vault01
+    # Temporary: trial Radarr 7.0 on fairy (the smaller library, easy to
+    # rebuild) before the shared HR moves atlantis. Remove when #2760 merges.
+    - target:
+        kind: HelmRelease
+      patch: |-
+        - op: replace
+          path: /spec/values/controllers/radarr/containers/app/image/tag
+          value: 7.0.0.10815@sha256:c044b4df8e7b2546ef389481626a56fabe291575ff2d65481b1555432d6161ff
 
