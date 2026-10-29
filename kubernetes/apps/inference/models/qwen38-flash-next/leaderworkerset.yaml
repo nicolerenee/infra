@@ -26,12 +26,10 @@
 #     allocations aren't charged to the pod; its real working set is ~46 GB
 #     (mostly the Engram tables). The limit sits well above the rclone page
 #     cache the init container writes, which the kernel reclaims under it.
-#     Earlier note: GMU 0.80 (the forum write-up backed off to 0.78 on Ubuntu hosts that also
-#     run a desktop; Talos leaves ~12 GiB free per rank at 0.78 with compile
-#     off). The 650 MB-free hang seen on the first attempt was torch.compile,
-#     not the reservation. The second init container evicts the freshly
-#     rclone'd checkpoint from page cache — on unified-memory nodes those
-#     cached pages are not free for the GPU.
+#   - The 650 MB-free hang seen on the first attempt was torch.compile, not
+#     the reservation. The second init container evicts the freshly rclone'd
+#     checkpoint from page cache — on unified-memory nodes those cached pages
+#     are not free for the GPU.
 # Two independent serving groups (replicas: 2), each a leader+worker pair: the
 # headless -api Service lists every ready leader, so the gateway round-robins
 # requests across groups and one group can be bounced without an outage.
@@ -209,12 +207,6 @@ spec:
               # ECN field to mark. Same layout on every Spark (checked 2026-10-29).
               - name: NCCL_IB_GID_INDEX
                 value: "1"
-              # TEMPORARY (INFRA-131): confirm NCCL stays on NET/IB after the
-              # RoCEv2 switch, then drop these two.
-              - name: NCCL_DEBUG
-                value: INFO
-              - name: NCCL_DEBUG_SUBSYS
-                value: INIT,NET
             ports:
               - containerPort: 8000
                 name: http
@@ -431,12 +423,6 @@ spec:
               # ECN field to mark. Same layout on every Spark (checked 2026-10-29).
               - name: NCCL_IB_GID_INDEX
                 value: "1"
-              # TEMPORARY (INFRA-131): confirm NCCL stays on NET/IB after the
-              # RoCEv2 switch, then drop these two.
-              - name: NCCL_DEBUG
-                value: INFO
-              - name: NCCL_DEBUG_SUBSYS
-                value: INIT,NET
             securityContext:
               capabilities:
                 add:
