@@ -14,10 +14,18 @@
 #     With this it is Ready in ~7 min. data-mode encoder TP, bf16 SSM cache and
 #     explicit chunked prefill are the recipe's other launch flags.
 #   - vLLM's native multi-node launch over a LeaderWorkerSet, same as minimax.
-#   - GMU 0.75 since 2026-10-28. At 0.80 each Spark kept only ~8-11 GB free,
-#     about 7 GB at startup, because each worker also holds ~39 GB of shared
-#     memory outside the GPU reservation. Talos's OOM controller killed a
-#     group-1 rank twice. Other GB10 write-ups run Flash-Next at 0.75.
+#   - GMU 0.75 since 2026-10-28. At 0.80 each Spark kept only ~8-11 GB free
+#     (about 7 GB at startup) and Talos's OOM controller killed a group-1 rank
+#     twice. ~37 GiB of the budget is Engram's embedding tables, which vLLM
+#     keeps in pinned host memory (`cpu_offload`) and counts as non-torch
+#     memory; on unified memory that's the same pool, so offloading saves
+#     nothing. Other GB10 write-ups run Flash-Next at 0.75.
+#   - Every container has a memory limit, so the pod gets a pod-level
+#     memory.max. Talos's OOM controller never picks a cgroup with a limit, so a
+#     PSI pressure spike can't kill a rank; only a real kernel OOM could. GPU
+#     allocations aren't charged to the pod; its real working set is ~46 GB
+#     (mostly the Engram tables). The limit sits well above the rclone page
+#     cache the init container writes, which the kernel reclaims under it.
 #     Earlier note: GMU 0.80 (the forum write-up backed off to 0.78 on Ubuntu hosts that also
 #     run a desktop; Talos leaves ~12 GiB free per rank at 0.78 with compile
 #     off). The 650 MB-free hang seen on the first attempt was torch.compile,
@@ -96,6 +104,11 @@ spec:
               - --stats
               - 1m
               - --stats-one-line
+            resources:
+              requests:
+                memory: 1Gi
+              limits:
+                memory: 112Gi
             volumeMounts:
               - name: ceph-models
                 mountPath: /ceph-models
@@ -125,6 +138,11 @@ spec:
                         except OSError as e:
                             print("skip", p, e)
                 print("evicted page cache for", n, "files")
+            resources:
+              requests:
+                memory: 1Gi
+              limits:
+                memory: 112Gi
             volumeMounts:
               - name: local-models
                 mountPath: /models
@@ -184,16 +202,19 @@ spec:
               # DSCP 26 + ECT(0): lets r01-fsw01 ECN-mark RoCE instead of dropping it.
               - name: NCCL_IB_TC
                 value: "106"
-              # TEMPORARY (INFRA-214): every worker holds a ~32 GiB shared
-              # anonymous mapping from startup that nothing in vLLM's Python
-              # allocates. Log NCCL's and InstantTensor's allocations on the next
-              # start to name it, then drop these three.
+              # RoCEv2. The fabric ports carry no IP addresses, only IPv6
+              # link-local GIDs (index 0 = RoCEv1, 1 = RoCEv2). NCCL's automatic
+              # choice skips link-local GIDs and stays on index 0, RoCEv1, which
+              # has no IP header, so no DSCP for the switch to classify and no
+              # ECN field to mark. Same layout on every Spark (checked 2026-10-29).
+              - name: NCCL_IB_GID_INDEX
+                value: "1"
+              # TEMPORARY (INFRA-131): confirm NCCL stays on NET/IB after the
+              # RoCEv2 switch, then drop these two.
               - name: NCCL_DEBUG
                 value: INFO
               - name: NCCL_DEBUG_SUBSYS
-                value: INIT,NET,ALLOC
-              - name: INSTANTTENSOR_DEBUG
-                value: "1"
+                value: INIT,NET
             ports:
               - containerPort: 8000
                 name: http
@@ -231,6 +252,10 @@ spec:
             resources:
               claims:
                 - name: gpu-rdma
+              requests:
+                memory: 16Gi
+              limits:
+                memory: 112Gi
             volumeMounts:
               - name: local-models
                 mountPath: /models
@@ -306,6 +331,11 @@ spec:
               - --stats
               - 1m
               - --stats-one-line
+            resources:
+              requests:
+                memory: 1Gi
+              limits:
+                memory: 112Gi
             volumeMounts:
               - name: ceph-models
                 mountPath: /ceph-models
@@ -335,6 +365,11 @@ spec:
                         except OSError as e:
                             print("skip", p, e)
                 print("evicted page cache for", n, "files")
+            resources:
+              requests:
+                memory: 1Gi
+              limits:
+                memory: 112Gi
             volumeMounts:
               - name: local-models
                 mountPath: /models
@@ -389,16 +424,19 @@ spec:
                 value: "2"
               - name: NCCL_IB_TC
                 value: "106"
-              # TEMPORARY (INFRA-214): every worker holds a ~32 GiB shared
-              # anonymous mapping from startup that nothing in vLLM's Python
-              # allocates. Log NCCL's and InstantTensor's allocations on the next
-              # start to name it, then drop these three.
+              # RoCEv2. The fabric ports carry no IP addresses, only IPv6
+              # link-local GIDs (index 0 = RoCEv1, 1 = RoCEv2). NCCL's automatic
+              # choice skips link-local GIDs and stays on index 0, RoCEv1, which
+              # has no IP header, so no DSCP for the switch to classify and no
+              # ECN field to mark. Same layout on every Spark (checked 2026-10-29).
+              - name: NCCL_IB_GID_INDEX
+                value: "1"
+              # TEMPORARY (INFRA-131): confirm NCCL stays on NET/IB after the
+              # RoCEv2 switch, then drop these two.
               - name: NCCL_DEBUG
                 value: INFO
               - name: NCCL_DEBUG_SUBSYS
-                value: INIT,NET,ALLOC
-              - name: INSTANTTENSOR_DEBUG
-                value: "1"
+                value: INIT,NET
             securityContext:
               capabilities:
                 add:
@@ -406,6 +444,10 @@ spec:
             resources:
               claims:
                 - name: gpu-rdma
+              requests:
+                memory: 16Gi
+              limits:
+                memory: 112Gi
             volumeMounts:
               - name: local-models
                 mountPath: /models
