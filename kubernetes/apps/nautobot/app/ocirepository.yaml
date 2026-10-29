@@ -12,6 +12,6 @@ spec:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy
   ref:
-    tag: v3.1.2
-    digest: sha256:53e2ad93c89a25ae49dc6bc982b9790a016aab8c504114f694f0e36c001e3142
+    tag: v3.2.0
+    digest: sha256:90f65cd40b6355657c4b21eafcac61fb313baaf31044a2cff27862a070b29d8f
   url: oci://ghcr.io/nautobot/helm-charts/nautobot
