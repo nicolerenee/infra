@@ -1,0 +1,51 @@
+---
+# OIDC client credentials for mousehole — GSM `<cluster>-media-mousehole-oidc` secret
+# (oidc_client_id and oidc_client_secret are additional fields).
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/external-secrets.io/externalsecret_v1.json
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: mousehole-oidc
+spec:
+  secretStoreRef:
+    kind: SecretStore
+    name: gcp-sm
+  target:
+    template:
+      data:
+        client-id: "{{ .oidc_client_id }}"
+        client-secret: "{{ .oidc_client_secret }}"
+  dataFrom:
+    - extract:
+        key: ${CLUSTER_NAME}-media-${APP:=mousehole}-oidc
+---
+# Mousehole 0.5+ refuses to start without its own auth; this gateway policy is
+# the auth instead (the helmrelease sets MOUSEHOLE_INSECURE_ALLOW_NO_AUTH), and
+# cnp-ingress.yaml keeps every other path to the pod closed. Targets the single
+# HTTPRoute app-template names after the release.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: mousehole-oidc
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: mousehole
+  oidc:
+    provider:
+      issuer: https://freckle.id
+    clientIDRef:
+      group: ""
+      kind: Secret
+      name: mousehole-oidc
+    clientSecret:
+      group: ""
+      kind: Secret
+      name: mousehole-oidc
+    redirectURL: https://mousehole.${CLUSTER_SUBDOMAIN}.freckle.media/oauth2/callback
+    logoutPath: /logout
+    scopes:
+      - openid
+      - email
+      - profile
