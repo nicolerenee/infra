@@ -56,6 +56,9 @@ spec:
       nodeSelector:
         networks.freckle.systems/home-lan: present
       terminationGracePeriodSeconds: 180
+      # Node drains (Talos upgrades, reboots) move the VM to another
+      # home-lan node instead of shutting Windows down.
+      evictionStrategy: LiveMigrate
       networks:
         - name: lan
           multus:
