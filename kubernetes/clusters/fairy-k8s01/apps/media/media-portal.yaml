@@ -23,7 +23,9 @@ spec:
   interval: 2m
   retryInterval: 1m
   timeout: 5m
-  prune: true
+  # Moving to another repo: removing this pointer must leave the portal
+  # running for the new one to adopt, not delete it.
+  prune: false
   wait: false
   postBuild:
     substitute:
