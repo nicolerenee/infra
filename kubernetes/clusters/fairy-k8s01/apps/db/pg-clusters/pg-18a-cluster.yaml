@@ -60,6 +60,15 @@ spec:
         login: true
         passwordSecret:
           name: accession-db-role
+      # Read-only reporting role for bookorbit-stats: it owns nothing and
+      # gets column-level SELECT grants in BookOrbit's database from its own
+      # job (the private repo holds its secret and grants).
+      - name: bookorbit_stats
+        ensure: present
+        login: true
+        connectionLimit: 10
+        passwordSecret:
+          name: bookorbit-stats-db-role
 
   plugins:
     - name: barman-cloud.cloudnative-pg.io
