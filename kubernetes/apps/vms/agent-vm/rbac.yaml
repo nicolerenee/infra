@@ -1,0 +1,34 @@
+---
+# The agent VM's cluster identity. Cloud credentials come from exchanging a
+# token for this ServiceAccount through workload identity federation, so no
+# long-lived cloud key ever sits on the VM disk.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: agent-vm
+---
+# The token the kubelet projects into the launcher pod carries the API server
+# audience, which the federation provider rejects. The guest uses that token
+# to ask the TokenRequest API for a short-lived one with the provider's
+# audience. It may only mint tokens for itself.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: agent-vm-self-token
+rules:
+  - apiGroups: [""]
+    resources: [serviceaccounts/token]
+    verbs: [create]
+    resourceNames: [agent-vm]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: agent-vm-self-token
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: agent-vm-self-token
+subjects:
+  - kind: ServiceAccount
+    name: agent-vm
