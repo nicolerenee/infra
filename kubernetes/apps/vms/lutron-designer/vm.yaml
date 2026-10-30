@@ -24,18 +24,26 @@ spec:
   # boots before drivers are loaded.
   runStrategy: Always
   dataVolumeTemplates:
+    # Live migration needs every PVC on the VM to be ReadWriteMany, and RBD
+    # only offers RWX in Block mode. The original root disk
+    # (lutron-designer-root) was RWO, and a PVC's access mode can't change
+    # in place, so this is a CDI clone of it. The old PVC stays until the
+    # clone has proven itself; it is only a rollback copy now.
     - metadata:
-        name: lutron-designer-root
+        name: lutron-designer-root-rwx
       spec:
         storage:
-          accessModes: [ReadWriteOnce]
+          accessModes: [ReadWriteMany]
           storageClassName: ceph-block
           volumeMode: Block
           resources:
             requests:
               storage: 100Gi
         source:
-          blank: {}
+          pvc:
+            # The CRD requires a namespace here; this VM only lives in vms.
+            namespace: vms
+            name: lutron-designer-root
   template:
     metadata:
       labels:
@@ -158,7 +166,7 @@ spec:
       volumes:
         - name: root
           dataVolume:
-            name: lutron-designer-root
+            name: lutron-designer-root-rwx
         - name: win11-iso
           persistentVolumeClaim:
             claimName: iso-win11-25h2
