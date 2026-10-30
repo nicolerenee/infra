@@ -23,3 +23,16 @@ patches:
         path: /spec/customizeComponents
       - op: remove
         path: /spec/workloadUpdateStrategy
+  # ContainerPathVolumes lets a VM see files the platform projects into its
+  # virt-launcher pod (a ServiceAccount token, over virtiofs). Agent VMs use
+  # it to carry a cluster identity into the guest and exchange it for GCP
+  # credentials through workload identity federation, so no long-lived key
+  # sits on a VM disk. The gate is alpha in 1.9; drop this patch once it
+  # graduates.
+  - target:
+      kind: KubeVirt
+      name: kubevirt
+    patch: |
+      - op: add
+        path: /spec/configuration/developerConfiguration/featureGates/-
+        value: ContainerPathVolumes
