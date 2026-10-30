@@ -15,6 +15,10 @@ panels:
   # Same people who can open Requests.
   requests:
     groups: [jellyfin_admins, media_requesters]
+  # Book requests and reports go to accession, not Seerr, so they need no
+  # Seerr account; for now the same people as Requests.
+  book_requests:
+    groups: [jellyfin_admins, media_requesters]
 sections:
   - name: Watch
     tiles:
