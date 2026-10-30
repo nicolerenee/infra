@@ -101,9 +101,10 @@ spec:
             request.mcp.backend == "vlogs-atlantis"
         # The agent VM (dev-vms/agent-vm) runs interactive coding agents for
         # infra work, so it may use every server, with Flux still limited to
-        # the read-only tools above. It is here rather than on the human
-        # route because some agent CLIs can't log in to freckle.id: they only
-        # do dynamic client registration, which freckle.id doesn't offer.
+        # the read-only tools above. It uses this route rather than the human
+        # one because the VM is headless: a freckle.id login needs a browser
+        # redirect back to the VM and leaves a refresh token on its disk for
+        # every agent CLI, while its own ServiceAccount token needs neither.
         - action: Allow
           cel: >-
             request.auth.jwt.claims.sub == "system:serviceaccount:dev-vms:agent-vm"
