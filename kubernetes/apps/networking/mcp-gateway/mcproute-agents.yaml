@@ -99,12 +99,12 @@ spec:
           cel: >-
             request.auth.jwt.claims.sub == "system:serviceaccount:ai-agents:log-search-atlantis" &&
             request.mcp.backend == "vlogs-atlantis"
-        # The agent VM (dev-vms/agent-vm) runs interactive coding agents for
-        # infra work, so it may use every server, with Flux still limited to
-        # the read-only tools above. It uses this route rather than the human
-        # one because the VM is headless: a freckle.id login needs a browser
+        # The infra agent (infra-agents/infra-agent: the VM, later task pods)
+        # runs coding agents for infra work, so it may use every server, with
+        # Flux still limited to the read-only tools above. It uses this route
+        # rather than the human one because it is headless: a freckle.id login needs a browser
         # redirect back to the VM and leaves a refresh token on its disk for
         # every agent CLI, while its own ServiceAccount token needs neither.
         - action: Allow
           cel: >-
-            request.auth.jwt.claims.sub == "system:serviceaccount:dev-vms:agent-vm"
+            request.auth.jwt.claims.sub == "system:serviceaccount:infra-agents:infra-agent"
