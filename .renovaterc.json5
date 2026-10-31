@@ -25,6 +25,10 @@
   ],
   rebaseWhen: 'behind-base-branch',
   dependencyDashboardTitle: 'Renovate Dashboard 🤖',
+  // mise.toml: the kubectl, flux and kustomize that CI and agent sessions use.
+  mise: {
+    enabled: true,
+  },
   flux: {
     managerFilePatterns: [
       '/(^|/)apps/.+\\.ya?ml$/',
@@ -47,6 +51,24 @@
     ],
   },
   packageRules: [
+    {
+      matchManagers: ['mise'],
+      semanticCommitScope: 'toolchain',
+      commitMessageTopic: '{{depName}}',
+    },
+    {
+      matchManagers: ['mise'],
+      matchDepNames: ['kubectl', 'flux2'],
+      prBodyNotes: [
+        'Pinned to what the clusters run: merge with the cluster upgrade, not ahead of it.',
+      ],
+    },
+    {
+      // kustomize tags its CLI releases kustomize/vX.Y.Z.
+      matchManagers: ['mise'],
+      matchDepNames: ['aqua:kubernetes-sigs/kustomize'],
+      extractVersion: '^kustomize/v(?<version>.+)$',
+    },
     {
       // Jellyfin publishes a two-segment tag (12.0) while we are pinned to a
       // three-segment one (10.11.11). Renovate's default `docker` versioning
