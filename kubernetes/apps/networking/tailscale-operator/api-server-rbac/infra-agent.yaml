@@ -1,0 +1,113 @@
+---
+# Identity for the infra agents (the agent VM, tagged tag:infra-agent on the
+# tailnet). The API-server proxy runs in auth mode and impersonates the
+# tailnet identity; the ACL grant for that tag maps it to the Kubernetes
+# group below. The group gets cluster-admin, like the person it works for,
+# because RBAC can't express "everything except Secrets" (a wildcard always
+# includes them). The guardrails are the admission policies that follow:
+# they deny the writes an agent must never make on its own, and an agent
+# can't lift them because the policy covers its own API group.
+#
+# What it cannot stop: reading Secrets. Reads never reach admission.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: infra-agents-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: infra-agents
+---
+# Writes that change who can do what, or remove whole namespaces, stay
+# with a person. Covers RBAC, CRDs, admission policies and webhooks (so the
+# agent can't remove this policy), the Tailscale proxies that mint its own
+# identity, and Namespace deletion.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: infra-agent-no-privilege-changes
+spec:
+  failurePolicy: Fail
+  matchConditions:
+    - name: infra-agent
+      expression: "'infra-agents' in request.userInfo.groups"
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["rbac.authorization.k8s.io"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE", "DELETE"]
+        resources: ["*"]
+      - apiGroups: ["apiextensions.k8s.io"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE", "DELETE"]
+        resources: ["customresourcedefinitions"]
+      - apiGroups: ["admissionregistration.k8s.io"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE", "DELETE"]
+        resources: ["*"]
+      - apiGroups: ["tailscale.com"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE", "DELETE"]
+        resources: ["proxygroups"]
+      - apiGroups: [""]
+        apiVersions: ["*"]
+        operations: ["DELETE"]
+        resources: ["namespaces"]
+  validations:
+    - expression: "false"
+      message: "infra agents may not change RBAC, CRDs, admission policies, API-server proxies or delete namespaces; this needs Nicole"
+      reason: Forbidden
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: infra-agent-no-privilege-changes
+spec:
+  policyName: infra-agent-no-privilege-changes
+  validationActions: ["Deny", "Audit"]
+---
+# Secrets that hold the platform's own credentials (Flux's git access, the
+# Tailscale operator's OAuth client, cluster secrets, ESO and cert-manager
+# state) are not the agent's to change. Other namespaces' Secrets are fair
+# game: ESO re-syncs them from Secret Manager anyway.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: infra-agent-no-platform-secret-writes
+spec:
+  failurePolicy: Fail
+  matchConditions:
+    - name: infra-agent
+      expression: "'infra-agents' in request.userInfo.groups"
+  matchConstraints:
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+            - flux-system
+            - tailscale
+            - external-secrets
+            - kube-system
+            - cert-manager
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE", "DELETE"]
+        resources: ["secrets"]
+  validations:
+    - expression: "false"
+      message: "infra agents may not change Secrets in platform namespaces; this needs Nicole"
+      reason: Forbidden
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: infra-agent-no-platform-secret-writes
+spec:
+  policyName: infra-agent-no-platform-secret-writes
+  validationActions: ["Deny", "Audit"]
