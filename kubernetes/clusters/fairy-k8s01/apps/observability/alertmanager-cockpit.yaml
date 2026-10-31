@@ -1,0 +1,35 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+# Alertmanager -> cockpit receiver (see the app dir). Fairy only: cockpit
+# runs here. Lives in the observability tree because the VM operator only
+# merges VMAlertmanagerConfigs it can see in this namespace.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app alertmanager-cockpit
+  namespace: &namespace observability
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  # The VMAlertmanager (and the CRD) come from the k8s-stack release.
+  # cockpit itself is deployed from the private repo; its Kustomization
+  # waits for the HelmRelease, so the receiver only appears once cockpit
+  # is up, rather than failing sends (and paging about it) before then.
+  dependsOn:
+    - name: vm-k8s-stack
+    - name: cockpit
+      namespace: agent-platform
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/observability/alertmanager-cockpit
+  interval: 1h
+  retryInterval: 2m
+  timeout: 5m
+  prune: true
+  wait: true

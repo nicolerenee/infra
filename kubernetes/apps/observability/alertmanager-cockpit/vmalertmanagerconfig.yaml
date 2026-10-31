@@ -1,0 +1,36 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/operator.victoriametrics.com/vmalertmanagerconfig_v1beta1.json
+# Alertmanager -> cockpit: every warning and critical alert also opens (or
+# updates) an `alert` item in cockpit's inbox, one per fingerprint, for the
+# agents to triage; resolves close it, so send_resolved must stay on.
+# `continue: true` keeps the Discord page and the triage bridge.
+#
+# The URL is the public webhook name, not the cluster-local Service: cockpit
+# answers /webhooks/ only on that host (a guard against a route wider than it
+# should be), so a Service hostname gets a 404. Switch to the Service once
+# the app lets cluster-local hosts through.
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAlertmanagerConfig
+metadata:
+  name: cockpit
+spec:
+  route:
+    receiver: cockpit
+    matchers:
+      - severity=~"warning|critical"
+    continue: true
+    group_by: ["alertname"]
+    group_wait: 30s
+    group_interval: 5m
+    # cockpit ignores repeats of an alert it already holds; this only bounds
+    # how stale an item can get if a notification was lost.
+    repeat_interval: 12h
+  receivers:
+    - name: cockpit
+      webhook_configs:
+        - url: https://cockpit.${CLUSTER_SUBDOMAIN}.freckle.services/webhooks/alertmanager
+          send_resolved: true
+          http_config:
+            bearer_token_secret:
+              name: cockpit-webhook
+              key: token
