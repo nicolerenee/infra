@@ -56,9 +56,10 @@ spec:
               # cockpit publishes, nicole (the phone) reads. alt-nicole is the
               # admin and needs no entries.
               NTFY_AUTH_ACCESS: nicole:cockpit:ro,cockpit:cockpit:wo
-              # No upstream-base-url: nothing leaves the cluster, not even
-              # the poll requests ntfy.sh would relay to Apple for instant
-              # iOS delivery.
+              # Instant iOS push: APNs only takes pushes relayed via ntfy.sh. It
+              # gets the message id and a topic hash, never the content; the app
+              # fetches the message from here. Token (ntfy-auth) avoids rate limits.
+              NTFY_UPSTREAM_BASE_URL: https://ntfy.sh
             envFrom:
               - secretRef:
                   name: ntfy-auth
