@@ -1,0 +1,9 @@
+# What working in this repo needs. CI reads it through jdx/mise-action, and
+# agent sessions pick it up inside this checkout and its worktrees.
+[tools]
+# Pinned to what the clusters run, so CLI and server agree: bump these with
+# the clusters (the FluxInstance and the kubelet version), not ahead of them.
+kubectl = "1.37.1"
+flux2 = "2.10.0"
+# aqua backend by full name, which Renovate can look up.
+"aqua:kubernetes-sigs/kustomize" = "5.8.3"
