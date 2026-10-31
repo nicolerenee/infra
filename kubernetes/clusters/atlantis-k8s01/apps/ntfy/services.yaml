@@ -1,0 +1,18 @@
+# Cluster Mesh import: selector-less, unshared global Service whose backends
+# come from fairy-k8s01's ntfy. Gatus's cockpit watch publishes to
+# http://ntfy-fairy.ntfy.svc.cluster.local.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ntfy-fairy
+  annotations:
+    service.cilium.io/global: "true"
+    service.cilium.io/shared: "false"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP

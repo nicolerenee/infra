@@ -1,0 +1,23 @@
+---
+# Cluster Mesh export: lets Gatus on atlantis push to ntfy when cockpit itself
+# stops answering (C-212), without a tailnet path from atlantis's pods. A copy
+# of the ntfy Service with a cluster suffix, so the global merge only contains
+# fairy's backends; atlantis's Service of the same name has no selector and
+# is not shared. Publishing still needs a token: ntfy denies everything else.
+apiVersion: v1
+kind: Service
+metadata:
+  name: ntfy-fairy
+  annotations:
+    service.cilium.io/global: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/controller: ntfy
+    app.kubernetes.io/instance: ntfy
+    app.kubernetes.io/name: ntfy
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
