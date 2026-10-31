@@ -1,4 +1,8 @@
 ---
+# Tailscale funnel to the notification-controller. GitHub no longer uses it:
+# its push hooks go to the Cloudflare tunnel route (httproute.yaml). Kept for
+# the generic-hmac image Receivers whose external callers still POST here
+# (janet-manifests-image-receiver, hedgehog-image-receiver).
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
