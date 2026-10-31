@@ -1,31 +1,177 @@
 ---
 # Identity for the infra agents (the agent VM, tagged tag:infra-agent on the
 # tailnet). The API-server proxy runs in auth mode and impersonates the
-# tailnet identity; the ACL grant for that tag maps it to the Kubernetes
-# group below. The group gets cluster-admin, like the person it works for,
-# because RBAC can't express "everything except Secrets" (a wildcard always
-# includes them). The guardrails are the admission policies that follow:
-# they deny the writes an agent must never make on its own, and an agent
-# can't lift them because the policy covers its own API group.
+# tailnet identity; the ACL grant for that tag maps it to the group
+# infra-agents, bound below.
 #
-# What it cannot stop: reading Secrets. Reads never reach admission.
+# The role is "everything the person it works for can do, except change who
+# can do what". It is written out rather than a wildcard because RBAC can't
+# express "all but": it reads everything, writes every API group the
+# clusters serve except the ones that grant power, and in the core group
+# lists the resources so that minting ServiceAccount tokens and
+# impersonating are left out. Write verbs never include impersonate, bind or
+# escalate. Kubernetes exempts admission-policy objects from admission, so
+# RBAC, not a policy, is what keeps the agent away from the guardrails.
+#
+# Left out on purpose (writes): rbac.authorization.k8s.io,
+# admissionregistration.k8s.io, apiextensions.k8s.io, apiregistration.k8s.io,
+# certificates.k8s.io (CSR approval), flowcontrol.apiserver.k8s.io,
+# storagemigration.k8s.io, talos.dev (mints Talos access), and in the core
+# group serviceaccounts/token, users and groups.
+#
+# To refresh the group list after a new operator lands:
+#   kubectl get --raw /apis | jq -r '.groups[].name' | sort
+# on each cluster, union the lists, drop the groups above. A group that
+# exists on only one cluster is harmless on the other.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: infra-agent
+rules:
+  # Read everything, Secrets included (ESO syncs them from Secret Manager,
+  # which the agent's cloud identity can't read outside its own prefix).
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: [get, list, watch]
+  - nonResourceURLs: ["*"]
+    verbs: [get]
+  # Core group, written out so serviceaccounts/token, users and groups stay
+  # out. Namespace deletion and Secret writes in platform namespaces are
+  # denied by the admission policies below.
+  - apiGroups: [""]
+    resources:
+      - configmaps
+      - endpoints
+      - events
+      - limitranges
+      - namespaces
+      - namespaces/finalize
+      - namespaces/status
+      - nodes
+      - nodes/status
+      - persistentvolumeclaims
+      - persistentvolumeclaims/status
+      - persistentvolumes
+      - persistentvolumes/status
+      - pods
+      - pods/attach
+      - pods/binding
+      - pods/ephemeralcontainers
+      - pods/eviction
+      - pods/exec
+      - pods/log
+      - pods/portforward
+      - pods/status
+      - podtemplates
+      - replicationcontrollers
+      - replicationcontrollers/scale
+      - replicationcontrollers/status
+      - resourcequotas
+      - resourcequotas/status
+      - secrets
+      - serviceaccounts
+      - services
+      - services/proxy
+      - services/status
+    verbs: [create, update, patch, delete, deletecollection]
+  # Every other API group the clusters serve, minus the ones that grant
+  # power (listed in the header).
+  - apiGroups:
+      - acme.cert-manager.io
+      - actions.github.com
+      - aigateway.envoyproxy.io
+      - apps
+      - autoscaling
+      - backup.kubevirt.io
+      - barmancloud.cnpg.io
+      - batch
+      - cdi.kubevirt.io
+      - ceph.rook.io
+      - cert-manager.io
+      - cilium.io
+      - clone.kubevirt.io
+      - coordination.k8s.io
+      - csi.ceph.io
+      - deviceplugin.intel.com
+      - disaggregatedset.x-k8s.io
+      - discovery.k8s.io
+      - dragonflydb.io
+      - events.k8s.io
+      - export.kubevirt.io
+      - external-secrets.io
+      - externaldns.k8s.io
+      - fluxcd.controlplane.io
+      - forklift.cdi.kubevirt.io
+      - fpga.intel.com
+      - gateway.envoyproxy.io
+      - gateway.networking.k8s.io
+      - gateway.networking.x-k8s.io
+      - generators.external-secrets.io
+      - grafana.integreatly.org
+      - groupsnapshot.storage.k8s.io
+      - helm.toolkit.fluxcd.io
+      - image.toolkit.fluxcd.io
+      - instancetype.kubevirt.io
+      - k8s.cni.cncf.io
+      - k8s.mariadb.com
+      - kagent.dev
+      - kubevirt-manager.io
+      - kubevirt.io
+      - kustomize.toolkit.fluxcd.io
+      - leaderworkerset.x-k8s.io
+      - metallb.io
+      - migrations.kubevirt.io
+      - monitoring.coreos.com
+      - monitoring.giantswarm.io
+      - networking.k8s.io
+      - nfd.k8s-sigs.io
+      - node.k8s.io
+      - notification.toolkit.fluxcd.io
+      - nvidia.com
+      - objectbucket.io
+      - observability.giantswarm.io
+      - onepassword.com
+      - opentelemetry.io
+      - operator.victoriametrics.com
+      - plugin.kubevirt.io
+      - policy
+      - pool.kubevirt.io
+      - postgresql.cnpg.io
+      - resource.k8s.io
+      - resource.nvidia.com
+      - scheduling.k8s.io
+      - snapshot.kubevirt.io
+      - snapshot.storage.k8s.io
+      - source.toolkit.fluxcd.io
+      - storage.k8s.io
+      - subresources.kubevirt.io
+      - subresources.template.kubevirt.io
+      - tailscale.com
+      - template.kubevirt.io
+      - tuppr.home-operations.com
+      - upgrade.cattle.io
+      - upload.cdi.kubevirt.io
+      - volsync.backube
+    resources: ["*"]
+    verbs: [create, update, patch, delete, deletecollection]
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: infra-agents-admin
+  name: infra-agents
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cluster-admin
+  name: infra-agent
 subjects:
   - apiGroup: rbac.authorization.k8s.io
     kind: Group
     name: infra-agents
 ---
-# Writes that change who can do what, or remove whole namespaces, stay
-# with a person. Covers RBAC, CRDs, admission policies and webhooks (so the
-# agent can't remove this policy), the Tailscale proxies that mint its own
-# identity, and Namespace deletion.
+# Admission guardrails for what RBAC can't say: the agent may write
+# tailscale.com objects, but not the ProxyGroups that mint its own identity,
+# and it may write namespaces, but not delete them. RBAC and CRD changes are
+# already impossible for it; they stay here as a second fence.
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicy
 metadata:
@@ -45,10 +191,6 @@ spec:
         apiVersions: ["*"]
         operations: ["CREATE", "UPDATE", "DELETE"]
         resources: ["customresourcedefinitions"]
-      - apiGroups: ["admissionregistration.k8s.io"]
-        apiVersions: ["*"]
-        operations: ["CREATE", "UPDATE", "DELETE"]
-        resources: ["*"]
       - apiGroups: ["tailscale.com"]
         apiVersions: ["*"]
         operations: ["CREATE", "UPDATE", "DELETE"]
@@ -59,7 +201,7 @@ spec:
         resources: ["namespaces"]
   validations:
     - expression: "false"
-      message: "infra agents may not change RBAC, CRDs, admission policies, API-server proxies or delete namespaces; this needs Nicole"
+      message: "infra agents may not change RBAC or CRDs, touch the API-server proxies, or delete namespaces; this needs Nicole"
       reason: Forbidden
 ---
 apiVersion: admissionregistration.k8s.io/v1
