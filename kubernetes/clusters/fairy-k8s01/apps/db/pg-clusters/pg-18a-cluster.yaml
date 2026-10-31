@@ -69,6 +69,11 @@ spec:
         connectionLimit: 10
         passwordSecret:
           name: bookorbit-stats-db-role
+      - name: cockpit
+        ensure: present
+        login: true
+        passwordSecret:
+          name: cockpit-db-role
 
   plugins:
     - name: barman-cloud.cloudnative-pg.io

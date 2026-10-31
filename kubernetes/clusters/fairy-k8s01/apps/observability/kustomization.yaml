@@ -19,6 +19,7 @@ resources:
   - ./silence-operator.yaml
   - ./silences.yaml
   - ./agent-alert-bridge.yaml
+  - ./alertmanager-cockpit.yaml
   - ./victoria-logs.yaml
   - ./victoria-traces.yaml
   - ./vm-operator-crds.yaml
