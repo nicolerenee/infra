@@ -1,8 +1,9 @@
 ---
 # Identity for the infra agents (the agent VM, tagged tag:infra-agent on the
 # tailnet). The API-server proxy runs in auth mode and impersonates the
-# tailnet identity; the ACL grant for that tag maps it to the group
-# infra-agents, bound below.
+# tailnet identity. A tagged node arrives as user <node>.<tailnet> in group
+# tag:infra-agent, so that group is bound below; infra-agents stays bound
+# for an ACL grant that maps the tag explicitly, should one be added.
 #
 # The role is "everything the person it works for can do, except change who
 # can do what". It is written out rather than a wildcard because RBAC can't
@@ -166,6 +167,9 @@ roleRef:
 subjects:
   - apiGroup: rbac.authorization.k8s.io
     kind: Group
+    name: tag:infra-agent
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
     name: infra-agents
 ---
 # Admission guardrails for what RBAC can't say: the agent may write
@@ -180,7 +184,7 @@ spec:
   failurePolicy: Fail
   matchConditions:
     - name: infra-agent
-      expression: "'infra-agents' in request.userInfo.groups"
+      expression: "'tag:infra-agent' in request.userInfo.groups || 'infra-agents' in request.userInfo.groups"
   matchConstraints:
     resourceRules:
       - apiGroups: ["rbac.authorization.k8s.io"]
@@ -224,7 +228,7 @@ spec:
   failurePolicy: Fail
   matchConditions:
     - name: infra-agent
-      expression: "'infra-agents' in request.userInfo.groups"
+      expression: "'tag:infra-agent' in request.userInfo.groups || 'infra-agents' in request.userInfo.groups"
   matchConstraints:
     namespaceSelector:
       matchExpressions:
