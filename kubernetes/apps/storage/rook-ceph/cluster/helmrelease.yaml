@@ -41,6 +41,49 @@ spec:
   dependsOn:
     - name: rook-ceph-operator
       namespace: rook-ceph
+  # A Talos upgrade reboots one node at a time: its OSDs and mon drop out and
+  # PGs go degraded/undersized for 5-10 min, then recover. Hold the Ceph
+  # alerts that every reboot trips for 30m (same reasoning as the node rules
+  # in the k8s-stack values), so only a stuck host pages. Each `test` pins the
+  # rule name at that index: if a chart bump reorders the rules the render
+  # fails loudly instead of patching the wrong alert.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: PrometheusRule
+              name: prometheus-ceph-rules
+            patch: |
+              - op: test
+                path: /spec/groups/0/rules/1/alert
+                value: CephHealthWarning
+              - op: replace
+                path: /spec/groups/0/rules/1/for
+                value: 30m
+              - op: test
+                path: /spec/groups/1/rules/1/alert
+                value: CephMonDown
+              - op: replace
+                path: /spec/groups/1/rules/1/for
+                value: 30m
+              - op: test
+                path: /spec/groups/2/rules/1/alert
+                value: CephOSDHostDown
+              - op: replace
+                path: /spec/groups/2/rules/1/for
+                value: 30m
+              - op: test
+                path: /spec/groups/2/rules/2/alert
+                value: CephOSDDown
+              - op: replace
+                path: /spec/groups/2/rules/2/for
+                value: 30m
+              - op: test
+                path: /spec/groups/5/rules/1/alert
+                value: CephPGsUnclean
+              - op: replace
+                path: /spec/groups/5/rules/1/for
+                value: 30m
   values:
     monitoring:
       enabled: true

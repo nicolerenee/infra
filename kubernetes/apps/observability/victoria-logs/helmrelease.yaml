@@ -95,6 +95,19 @@ spec:
             inputs:
               - k8s
             source: |
+              # vlogs skips any bulk line over -insert.maxLineSizeBytes
+              # (256 KiB) and logs a warning per skip, which kept TooManyLogs
+              # firing (the MCP servers log multi-MB responses; ceph-mgr has a
+              # >256 KiB line). Keep the head of an oversized line instead of
+              # losing all of it; 32K chars stays under the limit even after
+              # JSON escaping and the kubernetes metadata.
+              if is_string(.message) {
+                msg = string!(.message)
+                if strlen(msg) > 32768 {
+                  .message = truncate(msg, 32768)
+                  .log_truncated = true
+                }
+              }
               .log = parse_json(.message) ?? .message
               del(.message)
               # KubeVirt stamps hundreds of node labels (cpu-feature/cpu-model/

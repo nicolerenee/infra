@@ -55,6 +55,26 @@ defaultRules:
               kube_pod_container_info{namespace="inference", container="vllm"}
               * on (namespace, pod) group_left (node) kube_pod_info{job="kube-state-metrics"}
             )
+    # Duration is the discriminator for node-level alerts: a Talos upgrade or
+    # reboot takes a node (and its kubelet, exporters and scrape targets) away
+    # for 5-10 min, a stuck node stays away for hours. 30m rides out a slow
+    # drain+reboot without hiding a real outage. Ceph's equivalents are in the
+    # rook-ceph-cluster HelmRelease.
+    KubeNodeNotReady:
+      spec:
+        for: 30m
+    KubeNodeUnreachable:
+      spec:
+        for: 30m
+    KubeletInstanceUnreachable:
+      spec:
+        for: 30m
+    TargetDown:
+      spec:
+        for: 30m
+    TooManyScrapeErrors:
+      spec:
+        for: 30m
 
 defaultDashboards:
   enabled: true
@@ -98,10 +118,18 @@ alertmanager:
       group_interval: 5m
       repeat_interval: 12h
       routes:
-        # default route
+        # Same Discord channel, tiered by how often an unresolved alert is
+        # re-posted: critical keeps the 12h reminder, a warning is posted once
+        # and then only every 3 days (cockpit still holds an item for it), so
+        # a long-running warning stops burying the channel.
         - receiver: discord-infra-alerts
           matchers:
-            - severity=~"warning|critical"
+            - severity="critical"
+          continue: true
+        - receiver: discord-infra-alerts
+          matchers:
+            - severity="warning"
+          repeat_interval: 72h
           continue: true
 
     inhibit_rules:
