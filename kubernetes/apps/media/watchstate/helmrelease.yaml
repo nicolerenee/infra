@@ -54,6 +54,10 @@ spec:
               # hourly import (:00) runs before the export (:30). Temporary
               # for the atlantis-to-fairy migration; drop the flag after it.
               WS_CRON_EXPORT_ARGS: "-v -i"
+              # The verbose exports write a large task.*.jsonl every day (one
+              # backfill day reached 1.1 GB and filled the PVC). The built-in
+              # pruner deletes logs after 7 days by default; keep 3.
+              WS_LOGS_PRUNE_AFTER: "3"
             ports:
               - name: http
                 containerPort: &port 8080
@@ -89,7 +93,9 @@ spec:
               requests:
                 cpu: 10m
               limits:
-                memory: 1Gi
+                # Idles near 170Mi, but long tasks climb steadily and hit 1Gi
+                # twice on 2026-10-30.
+                memory: 2Gi
     defaultPodOptions:
       automountServiceAccountToken: false
       securityContext:
