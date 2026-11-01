@@ -1,0 +1,19 @@
+---
+# Container runs for the agent platform: one Job per run, started by the
+# cockpit's conductor. Its policies and Kustomization live in the private
+# repo; the namespace is created here, like agent-platform's and ai-mcp's,
+# because the private root Kustomization targets flux-system and would
+# rename a Namespace declared there. Pod Security "restricted" is enforced:
+# run pods are non-root, read-only, with every capability dropped.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agent-runs
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/warn: restricted
+    # Opt in to the cluster-wide GHCR pull secret, for the private runner
+    # image. Only workloads that reference `ghcr-pull` use it.
+    freckle.systems/ghcr-pull: "true"
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled

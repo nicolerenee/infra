@@ -38,3 +38,6 @@ spec:
     - apiVersion: image.toolkit.fluxcd.io/v1
       kind: ImageRepository
       name: web-mcp
+    - apiVersion: image.toolkit.fluxcd.io/v1
+      kind: ImageRepository
+      name: runner
