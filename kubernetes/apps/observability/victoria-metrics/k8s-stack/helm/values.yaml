@@ -75,6 +75,28 @@ defaultRules:
     TooManyScrapeErrors:
       spec:
         for: 30m
+    # A failed Job lingers until its TTL (recyclarr keeps one for 24h), so the
+    # stock rule kept alerting long after the CronJob had recovered. Skip a
+    # failed CronJob-owned Job once its CronJob has succeeded since that Job
+    # started; plain Jobs and CronJobs still failing alert as before.
+    # MetricsQL's label_copy rather than label_replace: this file goes through
+    # Flux postBuild substitution, which would eat a "$1".
+    KubeJobFailed:
+      spec:
+        expr: |-
+          kube_job_failed{job="kube-state-metrics",namespace=~".*"} > 0
+          unless on (cluster, namespace, job_name)
+            (
+              max by (cluster, namespace, job_name, owner_name) (
+                kube_job_status_start_time{job="kube-state-metrics"}
+                * on (cluster, namespace, job_name) group_left (owner_name)
+                  kube_job_owner{job="kube-state-metrics",owner_kind="CronJob"}
+              )
+              < on (cluster, namespace, owner_name) group_left ()
+                max by (cluster, namespace, owner_name) (
+                  label_copy(kube_cronjob_status_last_successful_time{job="kube-state-metrics"}, "cronjob", "owner_name")
+                )
+            )
 
 defaultDashboards:
   enabled: true
