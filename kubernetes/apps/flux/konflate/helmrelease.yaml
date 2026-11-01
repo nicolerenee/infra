@@ -54,3 +54,13 @@ spec:
     # We route with Gateway API, not Ingress — see httproute.yaml.
     ingress:
       enabled: false
+    # The chart default (1Gi limit) is too small for this repo: a render cycle
+    # peaks just over 1Gi on both clusters (atlantis OOM-looped from
+    # 2026-10-31 03:55Z, fairy restarted 16 times) and idles around 600Mi.
+    # GOMEMLIMIT follows the limit (90%), so the GC gets the headroom too.
+    resources:
+      requests:
+        cpu: 50m
+        memory: 768Mi
+      limits:
+        memory: 2Gi
