@@ -16,10 +16,11 @@ resources:
   - ./prometheus-operator-crds.yaml
   - ./silence-operator.yaml
   - ./silences.yaml
+  - ./alertmanager-cockpit.yaml
+  - ./gatus-cockpit-watch.yaml
   - ./victoria-logs.yaml
   - ./victoria-traces.yaml
   - ./vm-operator-crds.yaml
-  - ./vm-secrets.yaml
   - ./vm-k8s-stack.yaml
   - ./mcp-victorialogs.yaml
   - ./mcp-victoriametrics.yaml

@@ -1,14 +1,15 @@
 ---
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/operator.victoriametrics.com/vmalertmanagerconfig_v1beta1.json
-# Alertmanager -> cockpit: every warning and critical alert also opens (or
-# updates) an `alert` item in cockpit's inbox, one per fingerprint, for the
-# agents to triage; resolves close it, so send_resolved must stay on.
-# `continue: true` keeps the Discord page and the triage bridge.
+# Alertmanager -> cockpit, on both clusters: every warning and critical alert
+# opens (or updates) an `alert` item in cockpit's inbox, one per cluster and
+# fingerprint, for the agents to triage; resolves close it, so send_resolved
+# must stay on. Cockpit is the only receiver; it decides what reaches
+# Nicole's phone. `continue: true` keeps fairy's critical-alert triage bridge.
 #
-# The URL is the public webhook name, not the cluster-local Service: cockpit
-# answers /webhooks/ only on that host (a guard against a route wider than it
-# should be), so a Service hostname gets a 404. Switch to the Service once
-# the app lets cluster-local hosts through.
+# The URL is cockpit's public webhook host on fairy for both clusters: it is
+# the only way in from atlantis, and on fairy it means the Watchdog below also
+# proves the tunnel GitHub's hooks use. Our alerts carry no `cluster` label,
+# so `?cluster=` names the sender; it scopes the item's title and identity.
 apiVersion: operator.victoriametrics.com/v1beta1
 kind: VMAlertmanagerConfig
 metadata:
@@ -28,8 +29,37 @@ spec:
   receivers:
     - name: cockpit
       webhook_configs:
-        - url: https://cockpit.${CLUSTER_SUBDOMAIN}.freckle.services/webhooks/alertmanager
+        - url: https://cockpit.fairy.freckle.services/webhooks/alertmanager?cluster=${CLUSTER_NAME}
           send_resolved: true
+          http_config:
+            bearer_token_secret:
+              name: cockpit-webhook
+              key: token
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/operator.victoriametrics.com/vmalertmanagerconfig_v1beta1.json
+# The one path that checks the others: the always-firing Watchdog alert,
+# re-sent every 5 minutes, is this cluster's heartbeat in cockpit (never an
+# item). If cockpit hears none for 15 minutes it pushes to Nicole: this
+# cluster's Alertmanager, the tunnel or cockpit's receiver is down. Cockpit
+# itself being down is Gatus's job on atlantis (gatus-cockpit-watch).
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAlertmanagerConfig
+metadata:
+  name: cockpit-watchdog
+spec:
+  route:
+    receiver: cockpit-watchdog
+    matchers:
+      - alertname="Watchdog"
+    group_by: ["alertname"]
+    group_wait: 10s
+    group_interval: 1m
+    repeat_interval: 5m
+  receivers:
+    - name: cockpit-watchdog
+      webhook_configs:
+        - url: https://cockpit.fairy.freckle.services/webhooks/alertmanager?cluster=${CLUSTER_NAME}
+          send_resolved: false
           http_config:
             bearer_token_secret:
               name: cockpit-webhook

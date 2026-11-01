@@ -1,0 +1,27 @@
+---
+# Merged into Gatus's config (every file in its config dir is read). The one
+# alert that can't go through cockpit: cockpit itself not answering. Checked
+# through the public webhook host, the same path every Alertmanager uses, and
+# pushed straight to ntfy on fairy over Cluster Mesh.
+alerting:
+  ntfy:
+    url: http://ntfy-fairy.ntfy.svc.cluster.local
+    topic: cockpit
+    token: $${NTFY_TOKEN}
+    priority: 4
+    default-alert:
+      failure-threshold: 5
+      success-threshold: 2
+      send-on-resolved: true
+endpoints:
+  - name: cockpit
+    group: external
+    url: https://cockpit.fairy.freckle.services/readyz
+    interval: 1m
+    client:
+      dns-resolver: tcp://1.1.1.1:53
+    conditions:
+      - "[STATUS] == 200"
+    alerts:
+      - type: ntfy
+        description: cockpit isn't answering, so alerts reach neither the agents nor you

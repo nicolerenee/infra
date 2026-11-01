@@ -14,8 +14,30 @@ spec:
   dependsOn:
     - name: rook-ceph-cluster
       namespace: rook-ceph
+    - name: gatus-cockpit-watch
   targetNamespace: *namespace
   path: ./kubernetes/apps/observability/gatus
+  # The cockpit watch (gatus-cockpit-watch.yaml): one more file in Gatus's
+  # config dir, and the ntfy token it reads as NTFY_TOKEN.
+  patches:
+    - target:
+        kind: HelmRelease
+        name: gatus
+      patch: |-
+        - op: add
+          path: /spec/values/persistence/cockpit-watch
+          value:
+            type: configMap
+            name: gatus-cockpit-watch
+            globalMounts:
+              - path: /config/cockpit-watch.yaml
+                subPath: cockpit-watch.yaml
+                readOnly: true
+        - op: add
+          path: /spec/values/controllers/gatus/containers/app/envFrom
+          value:
+            - secretRef:
+                name: gatus-ntfy
   prune: true
   sourceRef:
     kind: GitRepository

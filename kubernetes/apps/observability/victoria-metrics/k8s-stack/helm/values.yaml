@@ -111,26 +111,17 @@ vmalert:
 
 alertmanager:
   config:
+    # Every warning and critical alert goes to cockpit, the only receiver
+    # (the cockpit VMAlertmanagerConfigs, merged in below the root): agents
+    # triage there and cockpit decides what reaches Nicole's phone. No
+    # Discord (C-212). What matches nothing, info alerts included, stops
+    # here.
     route:
       receiver: "blackhole"
       group_by: ["alertgroup", "job"]
       group_wait: 30s
       group_interval: 5m
       repeat_interval: 12h
-      routes:
-        # Same Discord channel, tiered by how often an unresolved alert is
-        # re-posted: critical keeps the 12h reminder, a warning is posted once
-        # and then only every 3 days (cockpit still holds an item for it), so
-        # a long-running warning stops burying the channel.
-        - receiver: discord-infra-alerts
-          matchers:
-            - severity="critical"
-          continue: true
-        - receiver: discord-infra-alerts
-          matchers:
-            - severity="warning"
-          repeat_interval: 72h
-          continue: true
 
     inhibit_rules:
       - target_matchers:
@@ -159,12 +150,6 @@ alertmanager:
 
     receivers:
       - name: blackhole
-      - name: discord-infra-alerts
-        discord_configs:
-          - send_resolved: true
-            webhook_url: "${SECRET_DISCORD_INFRA_ALERTS_WEBHOOK}"
-            title: '{{ template "discord.default.title" . }}'
-            username: "AlertManager - ${CLUSTER_NAME}"
   enabled: true
   spec:
     externalURL: "https://alertmanager.${CLUSTER_DOMAIN}"

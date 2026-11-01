@@ -54,8 +54,9 @@ spec:
               NTFY_ENABLE_LOGIN: "true"
               NTFY_ENABLE_SIGNUP: "false"
               # cockpit publishes, nicole (the phone) reads. alt-nicole is the
-              # admin and needs no entries.
-              NTFY_AUTH_ACCESS: nicole:cockpit:ro,cockpit:cockpit:wo
+              # admin and needs no entries. gatus (atlantis) publishes only
+              # when cockpit itself is down.
+              NTFY_AUTH_ACCESS: nicole:cockpit:ro,cockpit:cockpit:wo,gatus:cockpit:wo
               # Instant iOS push: APNs only takes pushes relayed via ntfy.sh. It
               # gets the message id and a topic hash, never the content; the app
               # fetches the message from here. Token (ntfy-auth) avoids rate limits.
