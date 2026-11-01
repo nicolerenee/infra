@@ -68,13 +68,18 @@ A service that spans environments, or is not tied to one, drops the label:
 | Host, extra interface | `<iface>.<host>.<site>.freckle.network` | `e1-48.spine1.den1.freckle.network` |
 | Human-facing app | `<app>.<env>.freckle.tools` | `grafana.fairy.freckle.tools` |
 | Storage as a service | `<role>.<env>.freckle.tools` → CNAME to the host | `fs.fairy.freckle.tools` → `store01.btx1.freckle.network` |
-| Machine endpoint | `<name>.<env>.freckle.services` | `api.fairy.freckle.services` (Kubernetes API) |
+| Machine endpoint | `<name>.<env>.freckle.services` | `konflate.fairy.freckle.services` |
+| Kubernetes API | `api.<cluster>.freckle.services` | `api.fairy-k8s01.freckle.services` |
 | Environment-less machine endpoint | `<name>.freckle.services` | `k8s-oidc.freckle.services`, `fairy-cf-tun-gw.freckle.services` |
 | Function zone app | `<app>.<env>.<zone>` | `sonarr.fairy.freckle.media` |
 
 Hosts and services are different things: a NAS is a host on `.network`; the
 share people mount is a service alias on `.tools`. Replace the NAS and only
 the alias moves.
+
+The Kubernetes API is labelled by cluster, not environment. An environment's
+`.services` names may one day be served by more than one cluster, but an API
+name must always mean exactly one cluster: `api.fairy-k8s01`, not `api.fairy`.
 
 ## Exposure
 
@@ -121,7 +126,7 @@ LoadBalancer addresses get no PTRs.
    and the old `*.den1.freckle.systems` names retired; device-held aliases
    created (`fs.fairy.freckle.tools`) with a transition CNAME from the old
    name until clients are re-pointed.
-3. Machine endpoints: the three API names → `api.<env>.freckle.services`;
+3. Machine endpoints: the three API names → `api.<cluster>.freckle.services`;
    OIDC issuer, JWKS and schemas → `.services`. The OIDC issuer is trusted by
    the WIF pool, so the old name stays until the pool is re-bootstrapped.
 4. Human-facing apps move during the internal gateway migration, one route

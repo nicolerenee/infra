@@ -1,0 +1,10 @@
+---
+# Pin the cluster endpoint name to the control-plane VIP on every node. The
+# name only exists in internal DNS, which the cluster itself serves (the BIND
+# secondaries the nodes resolve through), so a cold start must not need DNS to
+# find the API.
+apiVersion: v1alpha1
+kind: StaticHostConfig
+name: 172.26.3.16
+hostnames:
+  - api.atlantis-k8s01.freckle.services
