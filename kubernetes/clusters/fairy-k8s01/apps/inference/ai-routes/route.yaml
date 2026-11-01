@@ -109,3 +109,75 @@ spec:
           modelNameOverride: qwen3.8-flash-next
       timeouts:
         request: 1800s
+    # Qwen3-Embedding-8B: OpenAI /v1/embeddings. Clients should send
+    # `dimensions` (canonical 1024; see the agent-context decision).
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: Qwen/Qwen3-Embedding-8B
+      backendRefs:
+        - name: local-qwen3-embedding
+          modelNameOverride: qwen3-embedding-8b
+      timeouts:
+        request: 300s
+    # Qwen3-Reranker-4B: the gateway's Cohere endpoint, POST /cohere/v2/rerank
+    # (EAG has no OpenAI-style rerank). The Cohere v2 backend schema forwards it
+    # to vLLM's /v2/rerank.
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: Qwen/Qwen3-Reranker-4B
+      backendRefs:
+        - name: local-qwen3-reranker
+          modelNameOverride: qwen3-reranker-4b
+      timeouts:
+        request: 300s
+---
+# Qwen3 retrieval models (C-349): two vLLM servers in one pod, one port each on
+# the headless qwen3-retrieval-api Service.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: qwen3-embedding
+spec:
+  endpoints:
+    - fqdn:
+        hostname: qwen3-retrieval-api.inference.svc.cluster.local
+        port: 8000
+---
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: AIServiceBackend
+metadata:
+  name: local-qwen3-embedding
+spec:
+  schema:
+    name: OpenAI
+  backendRef:
+    group: gateway.envoyproxy.io
+    kind: Backend
+    name: qwen3-embedding
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: qwen3-reranker
+spec:
+  endpoints:
+    - fqdn:
+        hostname: qwen3-retrieval-api.inference.svc.cluster.local
+        port: 8001
+---
+apiVersion: aigateway.envoyproxy.io/v1beta1
+kind: AIServiceBackend
+metadata:
+  name: local-qwen3-reranker
+spec:
+  schema:
+    name: Cohere
+    version: v2
+  backendRef:
+    group: gateway.envoyproxy.io
+    kind: Backend
+    name: qwen3-reranker

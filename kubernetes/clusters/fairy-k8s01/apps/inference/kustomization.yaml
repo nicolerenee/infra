@@ -15,6 +15,7 @@ resources:
   - ./minimax-m27-nvfp4.yaml
   - ./models-pvc.yaml
   - ./qwen38-flash-next.yaml
+  - ./qwen3-retrieval.yaml
   - ./resource-claims.yaml
   # vllm-gpt-oss-2node disabled — torn down to free DGX GPUs for the Qwen
   # HA pair. Files kept under kubernetes/apps/inference/models/vllm-gpt-oss-2node*;

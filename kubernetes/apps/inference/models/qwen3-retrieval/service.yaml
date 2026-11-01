@@ -1,0 +1,20 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/v1/service_v1.json
+# API endpoint for the AI gateway. Headless, like the other model Services, so
+# Envoy's STRICT_DNS cluster sees the pod address directly. One port per vLLM
+# server; the gateway has one Backend per port.
+apiVersion: v1
+kind: Service
+metadata:
+  name: qwen3-retrieval-api
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: qwen3-retrieval
+  ports:
+    - name: embed
+      port: 8000
+      targetPort: embed
+    - name: rerank
+      port: 8001
+      targetPort: rerank
