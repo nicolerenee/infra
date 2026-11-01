@@ -117,6 +117,9 @@ spec:
           transfer-port-utp:
             port: ${QBT_TRANSFER_PORT}
             protocol: UDP
+            # Same as the TCP nodePort (pinned per cluster): IPv6 peers dial
+            # <node IPv6>:<transfer port> directly, for uTP as well as TCP.
+            nodePort: ${QBT_TRANSFER_PORT}
     route:
       # WebUI for humans, behind the OIDC SecurityPolicy in oidc.yaml. qui
       # talks to the Service directly and never passes through this.
