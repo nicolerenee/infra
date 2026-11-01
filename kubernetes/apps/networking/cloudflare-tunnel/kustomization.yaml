@@ -5,6 +5,7 @@ kind: Kustomization
 resources:
   - externalsecret.yaml
   - helmrelease.yaml
+  - pdb.yaml
 configMapGenerator:
   - name: cloudflare-tunnel-configmap
     files:
