@@ -1,5 +1,4 @@
 ---
-# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/batch/job_v1.json
 # Stages the qwen3-retrieval checkpoints onto the shared CephFS `models` PVC,
 # the same thing `task inference:download-model` does by hand, but declared so
 # the serving KS can dependsOn it. Both revisions are pinned to HF commits: the

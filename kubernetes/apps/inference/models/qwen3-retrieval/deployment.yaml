@@ -1,5 +1,4 @@
 ---
-# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/apps/deployment_v1.json
 # Retrieval models for agent memory and doc search, both on ONE Spark:
 #   - embed:  Qwen/Qwen3-Embedding-8B (4096-d, Matryoshka 32..4096), :8000,
 #             OpenAI /v1/embeddings

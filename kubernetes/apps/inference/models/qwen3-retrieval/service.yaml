@@ -1,5 +1,4 @@
 ---
-# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/v1/service_v1.json
 # API endpoint for the AI gateway. Headless, like the other model Services, so
 # Envoy's STRICT_DNS cluster sees the pod address directly. One port per vLLM
 # server; the gateway has one Backend per port.
