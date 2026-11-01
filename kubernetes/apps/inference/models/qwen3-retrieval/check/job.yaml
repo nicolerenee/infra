@@ -1,0 +1,37 @@
+---
+# Verify + benchmark for qwen3-retrieval, run once through the ai gateway the
+# way a client would (C-349): a /v1/embeddings call must return 1024-d unit
+# vectors that rank a relevant passage above an irrelevant one, and
+# /cohere/v2/rerank must put the relevant document first. Then embeddings/s at
+# typical chunk sizes and rerank latency for 50 candidates. Read the markdown
+# report from the Job's log. The force annotation recreates the Job (a rerun)
+# whenever the script changes.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: qwen3-retrieval-check
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: enabled
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: check
+          image: mirror.gcr.io/python:3.14.0-slim
+          command: ["python3", "-u", "/check/check.py"]
+          resources:
+            requests:
+              cpu: 500m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+          volumeMounts:
+            - name: check
+              mountPath: /check
+              readOnly: true
+      volumes:
+        - name: check
+          configMap:
+            name: qwen3-retrieval-check
