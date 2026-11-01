@@ -1,0 +1,13 @@
+---
+# Keep one of the two connectors up while a node drains (Talos upgrades,
+# descheduler), so public routes through the tunnel never drop to zero.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cloudflare-tunnel
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/controller: cloudflare-tunnel
+      app.kubernetes.io/instance: cloudflare-tunnel
