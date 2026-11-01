@@ -63,6 +63,7 @@ nav = [
     { "Domains" = "networking/domains.md" },
     { "Internal DNS" = "networking/internal-dns.md" },
     { "MCP Gateway" = "networking/mcp-gateway.md" },
+    { "Kubernetes API: freckle.id sign-in" = "networking/kubernetes-oidc.md" },
   ]},
   { "Storage" = [
     { "Storage" = "storage/index.md" },
