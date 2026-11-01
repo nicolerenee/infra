@@ -6,4 +6,4 @@ apiVersion: v1alpha1
 kind: StaticHostConfig
 name: 10.189.3.15
 hostnames:
-  - api.fairy.freckle.services
+  - api.fairy-k8s01.freckle.services

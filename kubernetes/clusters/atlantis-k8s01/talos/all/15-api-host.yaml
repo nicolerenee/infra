@@ -7,4 +7,4 @@ apiVersion: v1alpha1
 kind: StaticHostConfig
 name: 172.26.3.16
 hostnames:
-  - api.atlantis.freckle.services
+  - api.atlantis-k8s01.freckle.services

@@ -1,8 +1,8 @@
 ---
 apiVersion: v1alpha1
 kind: KubeAPIServerConfig
-# The endpoint name (api.fairy.freckle.services, the control-plane VIP) is added
-# by Talos automatically; keep the old freckle.systems names valid while
+# The endpoint name (api.fairy-k8s01.freckle.services, the control-plane VIP) is
+# added by Talos automatically; keep the old freckle.systems names valid while
 # kubeconfigs still use them.
 certExtraSANs:
   - fairy-k8s01-api.freckle.systems

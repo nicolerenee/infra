@@ -1,7 +1,7 @@
 ---
 apiVersion: v1alpha1
 kind: KubeAPIServerConfig
-# The endpoint name (api.atlantis.freckle.services) is added by Talos
+# The endpoint name (api.atlantis-k8s01.freckle.services) is added by Talos
 # automatically; keep the VIP address, the endpoint before it, valid while
 # kubeconfigs still use it.
 certExtraSANs:
