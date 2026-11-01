@@ -16,16 +16,20 @@ alerting:
 endpoints:
   - name: cockpit
     group: external
-    # The public host only routes /webhooks/, so /readyz gets envoy's 404.
-    # A GET on the POST-only alertmanager webhook is answered 405 by cockpit
-    # itself (envoy gives 404 with no route, 503 with no backend), which proves
-    # the whole Cloudflare -> tunnel -> envoy -> cockpit path without auth.
+    # The public host only routes /webhooks/, so /readyz gets envoy's 404, and
+    # a GET there falls through to cockpit's UI catch-all (200 from anything).
+    # An unauthenticated POST is rejected by cockpit's bearer check with its own
+    # 401 body before any work is done (envoy gives 404 with no route, 503 with
+    # no backend), which proves the whole Cloudflare -> tunnel -> envoy ->
+    # cockpit path without holding the secret.
     url: https://cockpit.fairy.freckle.services/webhooks/alertmanager
+    method: POST
     interval: 1m
     client:
       dns-resolver: tcp://1.1.1.1:53
     conditions:
-      - "[STATUS] == 405"
+      - "[STATUS] == 401"
+      - "[BODY].error == bad or missing secret"
     alerts:
       - type: ntfy
         description: cockpit isn't answering, so alerts reach neither the agents nor you
