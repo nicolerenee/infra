@@ -1,6 +1,11 @@
 ---
 apiVersion: v1alpha1
 kind: KubeAPIServerConfig
+# The endpoint name (api.atlantis.freckle.services) is added by Talos
+# automatically; keep the VIP address, the endpoint before it, valid while
+# kubeconfigs still use it.
+certExtraSANs:
+  - 172.26.3.16
 extraArgs:
   # SA token issuer is decoupled from the cluster's API endpoint
   # so external validators (GCP WIF) can fetch the OIDC discovery

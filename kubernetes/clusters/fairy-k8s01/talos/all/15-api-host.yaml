@@ -1,0 +1,9 @@
+---
+# Pin the cluster endpoint name to the control-plane VIP on every node. The
+# name only exists in internal DNS, which the cluster itself serves (BIND
+# secondary behind the UDM), so a cold start must not need DNS to find the API.
+apiVersion: v1alpha1
+kind: StaticHostConfig
+name: 10.189.3.15
+hostnames:
+  - api.fairy.freckle.services
