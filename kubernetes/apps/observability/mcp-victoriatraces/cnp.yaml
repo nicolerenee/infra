@@ -18,6 +18,16 @@ spec:
             k8s:io.cilium.k8s.policy.cluster: fairy-k8s01
             k8s:io.kubernetes.pod.namespace: gateway-system
             gateway.envoyproxy.io/owning-gateway-name: mcp
+        # Container runs' read-only proxies (ToolHive MCPRemoteProxy in ai-mcp
+        # on fairy, C-333): only the two proxies for this server, by name.
+        - matchLabels:
+            k8s:io.cilium.k8s.policy.cluster: fairy-k8s01
+            k8s:io.kubernetes.pod.namespace: ai-mcp
+            app: mcpremoteproxy
+          matchExpressions:
+            - key: toolhive-name
+              operator: In
+              values: [vtraces-fairy, vtraces-atlantis]
       toPorts:
         - ports:
             - port: "8081"
