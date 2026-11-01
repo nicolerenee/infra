@@ -1,5 +1,5 @@
 ---
-# MCP servers for agents, fronted by ToolHive (toolhive-system). Its apps and
+# MCP servers for agents, fronted by agentgateway (agentgateway-system). Its apps and
 # Kustomization live in the private repo; the namespace is created here, like
 # agent-platform's, because the private root Kustomization targets flux-system
 # and would rename a Namespace declared there.
