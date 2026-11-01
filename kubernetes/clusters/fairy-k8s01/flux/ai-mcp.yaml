@@ -1,0 +1,15 @@
+---
+# MCP servers for agents, fronted by ToolHive (toolhive-system). Its apps and
+# Kustomization live in the private repo; the namespace is created here, like
+# agent-platform's, because the private root Kustomization targets flux-system
+# and would rename a Namespace declared there.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-mcp
+  labels:
+    # Opt in to the cluster-wide GHCR pull secret, for private freckleapps
+    # images. Only workloads that reference `ghcr-pull` use it.
+    freckle.systems/ghcr-pull: "true"
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
