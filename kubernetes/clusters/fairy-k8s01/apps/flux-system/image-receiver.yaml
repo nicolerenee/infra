@@ -1,0 +1,37 @@
+---
+# Push-trigger for fairy's private image scans: without it a release waits up
+# to the 10m ImageRepository interval before the image automation sees the new
+# tag. The three ImageRepositories live in the private repo's fairy flux-system;
+# the Receiver only names them, so it sits here beside the shared token.
+#
+# Called by a freckleapps org webhook on registry_package events. Tofu owns
+# that hook and derives this Receiver's /hook/ path from flux-receiver-token
+# (freckleapps/tofu platform/flux-receiver.tf), so a rename here needs the same
+# rename there. The github type checks GitHub's HMAC signature with the token.
+#
+# The org hook fires for every package published in freckleapps, and each
+# delivery rescans all three. A tag list per image is cheap, and a payload
+# filter would trip on the ping delivery, so no resourceFilter.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/notification.toolkit.fluxcd.io/receiver_v1.json
+apiVersion: notification.toolkit.fluxcd.io/v1
+kind: Receiver
+metadata:
+  name: github-receiver-images
+  namespace: flux-system
+spec:
+  type: github
+  events:
+    - "ping"
+    - "registry_package"
+  secretRef:
+    name: flux-receiver-token
+  resources:
+    - apiVersion: image.toolkit.fluxcd.io/v1
+      kind: ImageRepository
+      name: accession
+    - apiVersion: image.toolkit.fluxcd.io/v1
+      kind: ImageRepository
+      name: media-portal
+    - apiVersion: image.toolkit.fluxcd.io/v1
+      kind: ImageRepository
+      name: cockpit
