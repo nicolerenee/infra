@@ -1,0 +1,17 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/source.toolkit.fluxcd.io/ocirepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: toolhive-operator-crds
+spec:
+  interval: 5m
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
+  ref:
+    # Pre-1.0 and fast-moving (a release every few days, v1beta1 CRDs). Bump
+    # deliberately together with toolhive-operator (Renovate groups them), after
+    # reading the release notes; never automerge.
+    tag: 0.59.0
+  url: oci://ghcr.io/stacklok/toolhive/toolhive-operator-crds
