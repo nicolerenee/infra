@@ -91,6 +91,11 @@ defaultDatasources:
 
 vmagent:
   spec:
+    # Every series, and so every alert, names its cluster: the default rules
+    # aggregate and describe by `cluster` ("on cluster {{ $labels.cluster }}"),
+    # and the inhibit rules below match on it.
+    externalLabels:
+      cluster: "${CLUSTER_NAME}"
     extraArgs:
       # Fairy's compute03 kube-apiserver (the etcd leader) returns ~20MB of /metrics,
       # exceeding the 16MB default. Other apiservers stay under 8MB.
