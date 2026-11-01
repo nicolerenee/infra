@@ -31,3 +31,5 @@ spec:
         - ports:
             - port: transfer
               protocol: TCP
+            - port: transfer-utp
+              protocol: UDP
