@@ -2,6 +2,17 @@
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
   packageRules: [
     {
+      // Pre-1.0 and fast-moving: the CRDs and the operator must move together,
+      // and each bump is read and merged deliberately (no automerge rule).
+      description: "ToolHive Group",
+      groupName: "ToolHive",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["/stacklok/toolhive/"],
+      group: {
+        commitMessageTopic: "{{{groupName}}}",
+      },
+    },
+    {
       description: "Actions Runner Controller Group",
       groupName: "Actions Runner Controller",
       matchDatasources: ["docker"],

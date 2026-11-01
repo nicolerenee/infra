@@ -1,0 +1,22 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
+# ToolHive's CRDs (toolhive.stacklok.dev): MCPServer, MCPRemoteProxy, MCPGroup,
+# VirtualMCPServer, MCPOIDCConfig, MCPAuthzConfig and friends. kagent also has
+# a kind MCPServer (kagent.dev), so use the full name with kubectl:
+# `kubectl get mcpservers.toolhive.stacklok.dev`.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: toolhive-operator-crds
+spec:
+  interval: 10m
+  chartRef:
+    kind: OCIRepository
+    name: toolhive-operator-crds
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3

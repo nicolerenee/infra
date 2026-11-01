@@ -1,0 +1,11 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: toolhive-system
+components:
+  - ../_shared/cluster-info
+  - ../../../../components/flux-post-build-variables
+resources:
+  - ./toolhive-operator-crds.yaml
+  - ./toolhive-operator.yaml
