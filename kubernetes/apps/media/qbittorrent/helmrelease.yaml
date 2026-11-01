@@ -41,6 +41,10 @@ spec:
               - name: transfer
                 containerPort: ${QBT_TRANSFER_PORT}
                 protocol: TCP
+              # uTP: BitTorrent's UDP transport on the same port.
+              - name: transfer-utp
+                containerPort: ${QBT_TRANSFER_PORT}
+                protocol: UDP
             probes:
               liveness: &probes
                 enabled: true
@@ -107,6 +111,12 @@ spec:
           transfer-port:
             port: ${QBT_TRANSFER_PORT}
             protocol: TCP
+          # uTP. Without it, inbound UDP the UDM forwards to the LB IP has no
+          # service on the node, goes back out the default route to the UDM,
+          # and loops until TTL (hubble TTL_EXCEEDED, UDP); peers also lose uTP.
+          transfer-port-utp:
+            port: ${QBT_TRANSFER_PORT}
+            protocol: UDP
     route:
       # WebUI for humans, behind the OIDC SecurityPolicy in oidc.yaml. qui
       # talks to the Service directly and never passes through this.
