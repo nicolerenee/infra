@@ -1,0 +1,15 @@
+---
+# Not backed up on purpose (the `-cache` suffix signals that): the
+# TRaSH-Guides and config-templates clones, re-fetched from GitHub. It
+# persists so a run without internet syncs from the last good clone
+# instead of failing on an empty /config.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ${APP}-cache
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: ceph-block
+  resources:
+    requests:
+      storage: 1Gi

@@ -66,12 +66,13 @@ spec:
         seccompProfile:
           type: RuntimeDefault
     persistence:
-      # No PVC. recyclarr's /config is just a writable scratch dir for
-      # trash-guides clones and a small settings.json — both regenerated
-      # on every run. emptyDir is sufficient and keeps the app off
-      # volsync's backup boundary (per the bare-name convention).
+      # /config holds the trash-guides and config-templates clones (plus
+      # logs). It persists so that when GitHub is unreachable recyclarr
+      # syncs from the last good clone instead of failing on an empty dir.
+      # It's a re-fetchable cache, so `-cache` keeps it off volsync's
+      # backup boundary.
       config:
-        type: emptyDir
+        existingClaim: ${APP:=recyclarr}-cache
       config-file:
         type: configMap
         name: recyclarr-configmap
