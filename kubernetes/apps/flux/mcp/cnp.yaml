@@ -31,6 +31,14 @@ spec:
             - key: toolhive-name
               operator: In
               values: [flux-fairy, flux-atlantis]
+        # The agents' agentgateway proxy (Gateway agent-mcp in ai-mcp on
+        # fairy) that replaces the ToolHive proxies. One proxy fronts every
+        # agent MCP server; the cockpit decides per call (ExtMcp) and Flux
+        # tools are also limited to reads in the gateway's own policy.
+        - matchLabels:
+            k8s:io.cilium.k8s.policy.cluster: fairy-k8s01
+            k8s:io.kubernetes.pod.namespace: ai-mcp
+            gateway.networking.k8s.io/gateway-name: agent-mcp
       toPorts:
         - ports:
             - port: http
