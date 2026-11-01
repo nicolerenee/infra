@@ -106,6 +106,12 @@ spec:
         ports:
           transfer-port:
             port: ${QBT_TRANSFER_PORT}
+            # nodePort = transfer port: pod IPv6 egress leaves from the node's
+            # public IPv6, so peers dial <node IPv6>:<port> and the NodePort
+            # maps it to the pod (eTP Local, so only the pod's node answers).
+            # IPv4 still arrives via the LB IP. QBT_TRANSFER_PORT must sit
+            # inside the NodePort range for this.
+            nodePort: ${QBT_TRANSFER_PORT}
             protocol: TCP
     route:
       # WebUI for humans, behind the OIDC SecurityPolicy in oidc.yaml. qui
