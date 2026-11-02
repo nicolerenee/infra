@@ -74,6 +74,16 @@ spec:
         login: true
         passwordSecret:
           name: cockpit-db-role
+      # lore's memory store. Its row-level security only holds for a role
+      # that is neither a superuser nor BYPASSRLS (lore refuses to start
+      # otherwise). The secret and the Database CR are in the private repo.
+      - name: lore
+        ensure: present
+        login: true
+        superuser: false
+        bypassrls: false
+        passwordSecret:
+          name: lore-db-role
 
   plugins:
     - name: barman-cloud.cloudnative-pg.io
