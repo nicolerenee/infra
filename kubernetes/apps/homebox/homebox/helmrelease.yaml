@@ -104,7 +104,7 @@ spec:
             namespace: gateway-system
         rules:
           - backendRefs:
-              - name: app
+              - identifier: app
                 port: 80
 
     persistence:

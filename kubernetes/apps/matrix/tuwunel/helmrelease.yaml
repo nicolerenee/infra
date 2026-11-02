@@ -112,7 +112,11 @@ spec:
             targetPort: 8080
     route:
       matrix:
-        annotations: {}
+        # The route only matches /_matrix, /_tuwunel and the OIDC discovery
+        # doc, so the bare host is envoy's 404.
+        annotations:
+          gatus.home-operations.com/endpoint: |-
+            path: /_matrix/client/versions
         labels: {}
         hostnames:
           - "matrix.freckle.chat"
