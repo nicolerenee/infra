@@ -41,6 +41,16 @@ spec:
     mcp:
       mode: http
 
+    # At INFO the server logs every MCP request twice: "MCP request received"
+    # with the arguments, then "MCP request succeeded" with the arguments and
+    # the full result (a tools/list line is ~20 KB). Every query an agent runs
+    # was being copied back into VictoriaLogs. WARN drops both lines; failures
+    # are still logged at ERROR. The MCP gateway's access log keeps the
+    # caller/method/tool audit.
+    env:
+      - name: MCP_LOG_LEVEL
+        value: warn
+
     service:
       type: ClusterIP
       port: 8080
