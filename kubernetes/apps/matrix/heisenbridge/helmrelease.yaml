@@ -43,6 +43,11 @@ spec:
 
     route:
       app:
+        # The route only carries HMAC-signed media URLs, so heisenbridge has
+        # no public path that answers 2xx, and the bare host is envoy's 404.
+        # tuwunel-matrix's endpoint already probes matrix.freckle.chat.
+        annotations:
+          gatus.home-operations.com/enabled: "false"
         hostnames: ["matrix.freckle.chat"]
         parentRefs:
           - name: public
