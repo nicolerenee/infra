@@ -46,6 +46,19 @@ spec:
         apiKey: unused
         config:
           baseUrl: http://ai-gateway.inference.svc.cluster.local/v1
+          # Flash-Next as an instruct model: thinking off, the model card's
+          # instruct sampling, no presence penalty. Measured on the agents'
+          # own prompts and tools (2026-11-01): log-search went from ~30 s to
+          # ~4 s per turn with equal or better tool choice, and solved a short
+          # agent loop 3/3 instead of 2/3. Thinking on with sampling left at
+          # the defaults (temperature 1.0) sometimes never stopped calling
+          # tools. Presence penalty 1.5 emptied long lists in other tests.
+          # top_k 20 and min_p 0 come from the model's own defaults.
+          reasoningEffort: none
+          temperature: "0.7"
+          topP: "0.8"
+          presencePenalty: "0"
+          maxTokens: 4096
     database:
       postgres:
         bundled:
