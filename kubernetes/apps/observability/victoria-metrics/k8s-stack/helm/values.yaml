@@ -80,6 +80,15 @@ defaultRules:
     TooManyScrapeErrors:
       spec:
         for: 30m
+    # vmagent logs one warning per failed scrape (lib/promscrape/scrapework.go).
+    # A replaced pod's old IP fails one scrape before service discovery drops
+    # it, so a few rollouts were enough to fire this with no real problem.
+    # Failed scrapes already alert through TooManyScrapeErrors above; drop them
+    # here. Otherwise this is the chart 0.97.1 expression and for: unchanged.
+    TooManyLogs:
+      spec:
+        expr: |-
+          sum(increase(vm_log_messages_total{level="warn", location!~".*/lib/promscrape/scrapework.go:.*"}[5m])) without(app_version,location,is_printed) > 0
 
 defaultDashboards:
   enabled: true
