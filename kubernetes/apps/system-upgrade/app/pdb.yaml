@@ -1,5 +1,4 @@
 ---
-# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/policy/poddisruptionbudget_v1.json
 # The chart has no PDB value. Keep one tuppr controller up while it drains
 # nodes for Talos/Kubernetes upgrades, so the upgrade it is driving never
 # loses its last controller to its own drain.

@@ -1,5 +1,4 @@
 ---
-# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/policy/poddisruptionbudget_v1.json
 # The chart has no PDB value. Keep one of the two operators up through node
 # drains, so CNPG can still fail over and reconcile clusters while a node
 # with an operator pod is drained. On fairy this shares namespace db with the

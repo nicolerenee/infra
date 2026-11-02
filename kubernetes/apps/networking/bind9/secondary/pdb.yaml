@@ -1,5 +1,4 @@
 ---
-# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/policy/poddisruptionbudget_v1.json
 # Keep one of the two secondaries answering while a node drains (Talos
 # upgrades, descheduler), so the secondary DNS address never goes dark.
 apiVersion: policy/v1
