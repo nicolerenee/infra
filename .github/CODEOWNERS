@@ -1,2 +1,6 @@
 # Ref: https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners
-* @nicolerenee
+# Only .github/ (workflows, labels, the Renovate action digests): those are
+# the PRs Nicole reviews. Everything else, Renovate's PRs included, is the
+# infra agent's to handle through the cockpit (C-194); a `*` owner here asked
+# for her review on every PR.
+/.github/ @nicolerenee
