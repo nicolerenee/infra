@@ -14,7 +14,7 @@
 set -euo pipefail
 
 # renovate: datasource=github-releases depName=kubernetes-sigs/gateway-api
-TAG=v1.6.3
+TAG=v1.7.0
 
 REPO=kubernetes-sigs/gateway-api
 UPSTREAM_PATH=config/crd/standard

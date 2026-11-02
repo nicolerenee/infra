@@ -30,7 +30,7 @@ spec:
           app:
             image:
               repository: ghcr.io/autobrr/qui
-              tag: v1.33.1@sha256:c83ce0370ab372c931ccb3f0ddd0eb1bc850026ce9eafc13ce94443f6f2a2cd3
+              tag: v1.35.0@sha256:a5b2f5faf6388cce257137c88e4b189458fd799cf9119ed476c980e5a69341b2
             env:
               QUI__HOST: 0.0.0.0
               QUI__PORT: &port 80
@@ -69,8 +69,9 @@ spec:
             resources:
               requests:
                 cpu: 10m
-              limits:
                 memory: 512Mi
+              limits:
+                memory: 1Gi
     defaultPodOptions:
       automountServiceAccountToken: false
       securityContext:

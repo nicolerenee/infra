@@ -1,8 +1,5 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
-  reviewers: [
-    '@nicolerenee',
-  ],
   extends: [
     'config:recommended',
     'docker:enableMajor',
@@ -20,11 +17,15 @@
     // Defines the custom.talos-factory datasource, which lists the Talos
     // versions the Image Factory can actually build. Must come before
     // infraPackages so our per-cluster commit rules still take precedence.
-    'github>home-operations/renovate-presets//apps/talosFactory.json5#8.1.0',
+    'github>home-operations/renovate-presets//apps/talosFactory.json5#10.0.1',
     'github>nicolerenee/infra//.renovate/infraPackages.json5',
   ],
   rebaseWhen: 'behind-base-branch',
   dependencyDashboardTitle: 'Renovate Dashboard 🤖',
+  // mise.toml: the kubectl, flux and kustomize that CI and agent sessions use.
+  mise: {
+    enabled: true,
+  },
   flux: {
     managerFilePatterns: [
       '/(^|/)apps/.+\\.ya?ml$/',
@@ -47,6 +48,32 @@
     ],
   },
   packageRules: [
+    {
+      // Renovate PRs are the infra agent's to handle (cockpit C-194), so
+      // nobody is requested by default. The one exception is GitHub Actions
+      // updates under .github/, which need Nicole's review anyway: ask her
+      // directly, so she hears about those PRs and no others.
+      matchFileNames: ['.github/**'],
+      reviewers: ['nicolerenee'],
+    },
+    {
+      matchManagers: ['mise'],
+      semanticCommitScope: 'toolchain',
+      commitMessageTopic: '{{depName}}',
+    },
+    {
+      matchManagers: ['mise'],
+      matchDepNames: ['kubectl', 'flux2'],
+      prBodyNotes: [
+        'Pinned to what the clusters run: merge with the cluster upgrade, not ahead of it.',
+      ],
+    },
+    {
+      // kustomize tags its CLI releases kustomize/vX.Y.Z.
+      matchManagers: ['mise'],
+      matchDepNames: ['aqua:kubernetes-sigs/kustomize'],
+      extractVersion: '^kustomize/v(?<version>.+)$',
+    },
     {
       // Jellyfin publishes a two-segment tag (12.0) while we are pinned to a
       // three-segment one (10.11.11). Renovate's default `docker` versioning

@@ -1,4 +1,4 @@
-# Cluster Mesh exports: lets atlantis's Emby and Jellyfin post WatchState
+# Cluster Mesh exports: lets atlantis's Jellyfin post WatchState
 # webhooks to fairy. A copy of the local watchstate Service with a cluster
 # suffix, so the global merge only contains fairy's backends; the Service of the
 # same name on atlantis carries no selector and is not shared. watchstate has no

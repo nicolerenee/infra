@@ -22,6 +22,9 @@ spec:
     controllers:
       element:
         type: deployment
+        # Stateless static client with no volume to hand over, so roll it
+        # instead of app-template's default Recreate and keep freckle.chat up.
+        strategy: RollingUpdate
         annotations:
           reloader.stakater.com/auto: "true"
         containers:

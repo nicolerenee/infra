@@ -28,11 +28,11 @@ spec:
           reloader.stakater.com/auto: "true"
         containers:
           app:
-            # Syncs play state between Plex, Emby and the Jellyfin servers.
+            # Syncs play state between the Jellyfin servers.
             # FrankenPHP + an embedded Redis; everything lives under /config.
             image:
               repository: ghcr.io/arabcoders/watchstate
-              tag: v1.10.10@sha256:0840431951d60ab7b93a11d426a5db976dac179dd6bf08adb7a22833e1f36b21
+              tag: v1.10.11@sha256:2433ee5fb699390d1b2f551d6f6735f5733586459510bd907addc610e247d519
             env:
               TZ: America/Chicago
               WS_TZ: America/Chicago
@@ -54,6 +54,10 @@ spec:
               # hourly import (:00) runs before the export (:30). Temporary
               # for the atlantis-to-fairy migration; drop the flag after it.
               WS_CRON_EXPORT_ARGS: "-v -i"
+              # The verbose exports write a large task.*.jsonl every day (one
+              # backfill day reached 1.1 GB and filled the PVC). The built-in
+              # pruner deletes logs after 7 days by default; keep 3.
+              WS_LOGS_PRUNE_AFTER: "3"
             ports:
               - name: http
                 containerPort: &port 8080
@@ -89,7 +93,9 @@ spec:
               requests:
                 cpu: 10m
               limits:
-                memory: 1Gi
+                # Idles near 170Mi, but long tasks climb steadily and hit 1Gi
+                # twice on 2026-10-30.
+                memory: 2Gi
     defaultPodOptions:
       automountServiceAccountToken: false
       securityContext:

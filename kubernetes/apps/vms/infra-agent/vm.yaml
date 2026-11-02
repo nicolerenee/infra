@@ -1,0 +1,108 @@
+---
+# Linux VM that runs the infra agent's interactive sessions, so they don't
+# depend on a laptop being awake. It carries the infra-agent ServiceAccount
+# into the guest (see rbac.yaml), exchanges it for cloud credentials, and
+# fetches everything else it needs from Secret Manager at run time,
+# including the tailnet auth key that enrols it as tag:infra-agent. Guest
+# setup beyond the bare user and mounts lives in the private repo
+# (infra-agent/setup.sh).
+#
+# Access before the guest joins the tailnet:
+#   virtctl ssh infra-agent@vm/infra-agent -n infra-agents
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: infra-agent
+spec:
+  runStrategy: Always
+  dataVolumeTemplates:
+    # Live migration needs every PVC to be ReadWriteMany, and RBD only offers
+    # that in Block mode. The image is pinned to a dated build so a rebuild
+    # gets the same base; CDI imports it once and the guest updates itself.
+    - metadata:
+        name: infra-agent-root
+      spec:
+        storage:
+          accessModes: [ReadWriteMany]
+          storageClassName: ceph-block
+          volumeMode: Block
+          resources:
+            requests:
+              storage: 100Gi
+        source:
+          http:
+            url: https://cloud.debian.org/images/cloud/trixie/20261026-2643/debian-13-genericcloud-amd64-20261026-2643.qcow2
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: infra-agent
+    spec:
+      # Node drains move the VM rather than stopping the sessions on it.
+      evictionStrategy: LiveMigrate
+      terminationGracePeriodSeconds: 120
+      domain:
+        ioThreadsPolicy: auto
+        cpu:
+          cores: 6
+          sockets: 1
+          threads: 1
+          model: host-model
+        memory:
+          guest: 16Gi
+        devices:
+          rng: {}
+          disks:
+            - name: root
+              # writeback plus a dedicated I/O thread avoids the libceph CRC
+              # errors seen with qemu's default O_DIRECT path, and was tested
+              # to live-migrate cleanly on RWX Block.
+              cache: writeback
+              dedicatedIOThread: true
+              disk:
+                bus: virtio
+              bootOrder: 1
+            - name: cloudinit
+              disk:
+                bus: virtio
+          filesystems:
+            # The ServiceAccount token, live over virtiofs. After a live
+            # migration the guest sees the new launcher pod's token, so the
+            # identity follows the VM.
+            - name: k8s-sa
+              virtiofs: {}
+          interfaces:
+            - name: default
+              masquerade: {}
+              # Without an explicit MAC, a pod-network interface fails to
+              # boot on this cluster (libvirt: unable to parse mac address '').
+              macAddress: "02:00:00:a6:e0:02"
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: root
+          dataVolume:
+            name: infra-agent-root
+        - name: k8s-sa
+          serviceAccount:
+            serviceAccountName: infra-agent
+        - name: cloudinit
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              hostname: infra-agent
+              users:
+                - name: infra-agent
+                  groups: [sudo]
+                  shell: /bin/bash
+                  sudo: "ALL=(ALL) NOPASSWD:ALL"
+                  lock_passwd: true
+                  ssh_authorized_keys:
+                    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFD4z8itlUCie6fNvJXHPQrUUOnH42LJOjtK+NrJTqLM
+              ssh_pwauth: false
+              package_update: true
+              packages: [qemu-guest-agent, git, curl, jq, python3, tmux]
+              mounts:
+                - [k8s-sa, /var/lib/k8s-sa, virtiofs, "ro,nofail", "0", "0"]
+              runcmd:
+                - [systemctl, enable, --now, qemu-guest-agent]

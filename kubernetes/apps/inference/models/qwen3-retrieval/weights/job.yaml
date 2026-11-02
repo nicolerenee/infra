@@ -1,0 +1,61 @@
+---
+# Stages the qwen3-retrieval checkpoints onto the shared CephFS `models` PVC,
+# the same thing `task inference:download-model` does by hand, but declared so
+# the serving KS can dependsOn it. Both revisions are pinned to HF commits: the
+# embedding model is a one-time choice (changing its weights means re-embedding
+# every stored vector), so a silent upstream push must never reach it. Bumping
+# a revision here needs the same sha in deployment.yaml (`--revision`), and for
+# the embedding model a re-embed plan first.
+#
+# `hf download` skips files already in the cache, so a re-run is cheap. No ttl:
+# the completed Job stays as the KS's health signal. The force annotation lets
+# Flux recreate it when the spec changes (a Job's pod template is immutable).
+# The models are ungated, so the HF token is optional (it only lifts anonymous
+# rate limits). Egress is unrestricted here: no CNP selects this pod.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: qwen3-retrieval-weights
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: enabled
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: download
+          image: mirror.gcr.io/python:3.15.2-slim
+          command:
+            - bash
+            - -c
+            - |
+              set -euo pipefail
+              pip install -q 'huggingface_hub[hf_transfer]'
+              export HF_HUB_ENABLE_HF_TRANSFER=1
+              hf download Qwen/Qwen3-Embedding-8B \
+                --revision 1d8ad4ca9b3dd8059ad90a75d4983776a23d44af \
+                --cache-dir /models/hub
+              hf download Qwen/Qwen3-Reranker-4B \
+                --revision 22e683669bc0f0bd69640a1354a6d0aebcfeede5 \
+                --cache-dir /models/hub
+          env:
+            - name: HF_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: huggingface
+                  key: HF_TOKEN
+                  optional: true
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              memory: 4Gi
+          volumeMounts:
+            - name: models
+              mountPath: /models
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: models

@@ -1,0 +1,259 @@
+---
+# Identity for the infra agents (the agent VM, tagged tag:infra-agent on the
+# tailnet). The API-server proxy runs in auth mode and impersonates the
+# tailnet identity. A tagged node arrives as user <node>.<tailnet> in group
+# tag:infra-agent, so that group is bound below; infra-agents stays bound
+# for an ACL grant that maps the tag explicitly, should one be added.
+#
+# The role is "everything the person it works for can do, except change who
+# can do what". It is written out rather than a wildcard because RBAC can't
+# express "all but": it reads everything, writes every API group the
+# clusters serve except the ones that grant power, and in the core group
+# lists the resources so that minting ServiceAccount tokens and
+# impersonating are left out. Write verbs never include impersonate, bind or
+# escalate. Kubernetes exempts admission-policy objects from admission, so
+# RBAC, not a policy, is what keeps the agent away from the guardrails.
+#
+# Left out on purpose (writes): rbac.authorization.k8s.io,
+# admissionregistration.k8s.io, apiextensions.k8s.io, apiregistration.k8s.io,
+# certificates.k8s.io (CSR approval), flowcontrol.apiserver.k8s.io,
+# storagemigration.k8s.io, talos.dev (mints Talos access), and in the core
+# group serviceaccounts/token, users and groups.
+#
+# To refresh the group list after a new operator lands:
+#   kubectl get --raw /apis | jq -r '.groups[].name' | sort
+# on each cluster, union the lists, drop the groups above. A group that
+# exists on only one cluster is harmless on the other.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: infra-agent
+rules:
+  # Read everything, Secrets included (ESO syncs them from Secret Manager,
+  # which the agent's cloud identity can't read outside its own prefix).
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: [get, list, watch]
+  - nonResourceURLs: ["*"]
+    verbs: [get]
+  # Core group, written out so serviceaccounts/token, users and groups stay
+  # out. Namespace deletion and Secret writes in platform namespaces are
+  # denied by the admission policies below.
+  - apiGroups: [""]
+    resources:
+      - configmaps
+      - endpoints
+      - events
+      - limitranges
+      - namespaces
+      - namespaces/finalize
+      - namespaces/status
+      - nodes
+      - nodes/status
+      - persistentvolumeclaims
+      - persistentvolumeclaims/status
+      - persistentvolumes
+      - persistentvolumes/status
+      - pods
+      - pods/attach
+      - pods/binding
+      - pods/ephemeralcontainers
+      - pods/eviction
+      - pods/exec
+      - pods/log
+      - pods/portforward
+      - pods/status
+      - podtemplates
+      - replicationcontrollers
+      - replicationcontrollers/scale
+      - replicationcontrollers/status
+      - resourcequotas
+      - resourcequotas/status
+      - secrets
+      - serviceaccounts
+      - services
+      - services/proxy
+      - services/status
+    verbs: [create, update, patch, delete, deletecollection]
+  # Every other API group the clusters serve, minus the ones that grant
+  # power (listed in the header).
+  - apiGroups:
+      - acme.cert-manager.io
+      - actions.github.com
+      - aigateway.envoyproxy.io
+      - apps
+      - autoscaling
+      - backup.kubevirt.io
+      - barmancloud.cnpg.io
+      - batch
+      - cdi.kubevirt.io
+      - ceph.rook.io
+      - cert-manager.io
+      - cilium.io
+      - clone.kubevirt.io
+      - coordination.k8s.io
+      - csi.ceph.io
+      - deviceplugin.intel.com
+      - disaggregatedset.x-k8s.io
+      - discovery.k8s.io
+      - dragonflydb.io
+      - events.k8s.io
+      - export.kubevirt.io
+      - external-secrets.io
+      - externaldns.k8s.io
+      - fluxcd.controlplane.io
+      - forklift.cdi.kubevirt.io
+      - fpga.intel.com
+      - gateway.envoyproxy.io
+      - gateway.networking.k8s.io
+      - gateway.networking.x-k8s.io
+      - generators.external-secrets.io
+      - grafana.integreatly.org
+      - groupsnapshot.storage.k8s.io
+      - helm.toolkit.fluxcd.io
+      - image.toolkit.fluxcd.io
+      - instancetype.kubevirt.io
+      - k8s.cni.cncf.io
+      - k8s.mariadb.com
+      - kagent.dev
+      - kubevirt-manager.io
+      - kubevirt.io
+      - kustomize.toolkit.fluxcd.io
+      - leaderworkerset.x-k8s.io
+      - metallb.io
+      - migrations.kubevirt.io
+      - monitoring.coreos.com
+      - monitoring.giantswarm.io
+      - networking.k8s.io
+      - nfd.k8s-sigs.io
+      - node.k8s.io
+      - notification.toolkit.fluxcd.io
+      - nvidia.com
+      - objectbucket.io
+      - observability.giantswarm.io
+      - onepassword.com
+      - opentelemetry.io
+      - operator.victoriametrics.com
+      - plugin.kubevirt.io
+      - policy
+      - pool.kubevirt.io
+      - postgresql.cnpg.io
+      - resource.k8s.io
+      - resource.nvidia.com
+      - scheduling.k8s.io
+      - snapshot.kubevirt.io
+      - snapshot.storage.k8s.io
+      - source.toolkit.fluxcd.io
+      - storage.k8s.io
+      - subresources.kubevirt.io
+      - subresources.template.kubevirt.io
+      - tailscale.com
+      - template.kubevirt.io
+      - tuppr.home-operations.com
+      - upgrade.cattle.io
+      - upload.cdi.kubevirt.io
+      - volsync.backube
+    resources: ["*"]
+    verbs: [create, update, patch, delete, deletecollection]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: infra-agents
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: infra-agent
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: tag:infra-agent
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: infra-agents
+---
+# Admission guardrails for what RBAC can't say: the agent may write
+# tailscale.com objects, but not the ProxyGroups that mint its own identity,
+# and it may write namespaces, but not delete them. RBAC and CRD changes are
+# already impossible for it; they stay here as a second fence.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: infra-agent-no-privilege-changes
+spec:
+  failurePolicy: Fail
+  matchConditions:
+    - name: infra-agent
+      expression: "'tag:infra-agent' in request.userInfo.groups || 'infra-agents' in request.userInfo.groups"
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["rbac.authorization.k8s.io"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE", "DELETE"]
+        resources: ["*"]
+      - apiGroups: ["apiextensions.k8s.io"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE", "DELETE"]
+        resources: ["customresourcedefinitions"]
+      - apiGroups: ["tailscale.com"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE", "DELETE"]
+        resources: ["proxygroups"]
+      - apiGroups: [""]
+        apiVersions: ["*"]
+        operations: ["DELETE"]
+        resources: ["namespaces"]
+  validations:
+    - expression: "false"
+      message: "infra agents may not change RBAC or CRDs, touch the API-server proxies, or delete namespaces; this needs Nicole"
+      reason: Forbidden
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: infra-agent-no-privilege-changes
+spec:
+  policyName: infra-agent-no-privilege-changes
+  validationActions: ["Deny", "Audit"]
+---
+# Secrets that hold the platform's own credentials (Flux's git access, the
+# Tailscale operator's OAuth client, cluster secrets, ESO and cert-manager
+# state) are not the agent's to change. Other namespaces' Secrets are fair
+# game: ESO re-syncs them from Secret Manager anyway.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: infra-agent-no-platform-secret-writes
+spec:
+  failurePolicy: Fail
+  matchConditions:
+    - name: infra-agent
+      expression: "'tag:infra-agent' in request.userInfo.groups || 'infra-agents' in request.userInfo.groups"
+  matchConstraints:
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+            - flux-system
+            - tailscale
+            - external-secrets
+            - kube-system
+            - cert-manager
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE", "DELETE"]
+        resources: ["secrets"]
+  validations:
+    - expression: "false"
+      message: "infra agents may not change Secrets in platform namespaces; this needs Nicole"
+      reason: Forbidden
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: infra-agent-no-platform-secret-writes
+spec:
+  policyName: infra-agent-no-platform-secret-writes
+  validationActions: ["Deny", "Audit"]

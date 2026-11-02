@@ -43,11 +43,31 @@ spec:
     # predictable (web Service becomes `nautobot-default`).
     fullnameOverride: nautobot
 
+    # Front door on the shared tailnet gateway. gateway.enabled stays off so
+    # the chart doesn't create a Gateway of its own.
+    route:
+      enabled: true
+      hostname: nautobot.${CLUSTER_DOMAIN}
+      parentRefs:
+        - name: tailnet
+          namespace: gateway-system
+
     # Bundled datastores off — we bring our own CNPG Postgres and Dragonfly.
     postgresql:
       enabled: false
     redis:
       enabled: false
+
+    # PDB for the default Celery worker (2 replicas by chart default), so a
+    # drain never takes both. Set on workers.default rather than celery so
+    # beat (1 replica) doesn't get one; the chart forces beat's off anyway.
+    # minAvailable: 1 is the chart default, the same as maxUnavailable: 1 at
+    # two replicas (setting maxUnavailable would render both fields, because
+    # the chart's merge can't blank minAvailable).
+    workers:
+      default:
+        pdb:
+          create: true
 
     nautobot:
       # Chart 3.1.2's appVersion pins the image to 3.0 — override to the latest
@@ -55,7 +75,7 @@ spec:
       image:
         registry: ghcr.io
         repository: nautobot/nautobot
-        tag: "3.2.7@sha256:69de812d5b63fb1c66366759426a631a1f68e82e47957de0234469d1bcf89d66"
+        tag: "3.2.8@sha256:7818c7a0d0a9ca3eeb5af4e379f432653dceabcd9ccf654dea4458b547a6f6f9"
 
       # Single web replica for a homelab DCIM; Celery worker + beat run as
       # their own deployments (chart defaults). Uploaded media (device-type

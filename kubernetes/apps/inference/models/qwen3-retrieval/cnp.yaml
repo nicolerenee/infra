@@ -1,0 +1,48 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+# Same posture as the other models: ingress only from the AI gateway and the
+# metrics scraper, egress DNS only (weights are pre-staged; CephFS is a kernel
+# mount, not pod egress). Single pod, so no sibling-rank rules.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: qwen3-retrieval
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: qwen3-retrieval
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            gateway.envoyproxy.io/owning-gateway-name: ai
+            gateway.envoyproxy.io/owning-gateway-namespace: inference
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+            - port: "8001"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/name: vmagent
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+            - port: "8001"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: TCP
+            - port: "53"
+              protocol: UDP
+          rules:
+            dns:
+              - matchPattern: "*"

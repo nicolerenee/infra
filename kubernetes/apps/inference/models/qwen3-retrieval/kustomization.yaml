@@ -1,0 +1,18 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./cnp.yaml
+  - ./deployment.yaml
+  - ./service.yaml
+  - ./vmservicescrape.yaml
+configMapGenerator:
+  # vLLM's examples/pooling/score/template/qwen3_reranker.jinja (v0.32.0),
+  # vendored so it doesn't depend on the image's examples dir. It rebuilds the
+  # official Qwen3-Reranker prompt (system judge line, <Instruct>/<Query>/
+  # <Document>, empty think block); without it scores are off. Callers can set
+  # a task instruction per request with the rerank `instruction` field.
+  - name: qwen3-retrieval-templates
+    files:
+      - reranker.jinja=reranker-template.jinja

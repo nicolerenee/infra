@@ -15,3 +15,4 @@ resources:
   - ./flux-mcp.yaml
   - ./infra-private-externalsecret.yaml
   - ./infra-private.yaml
+  - ./image-receiver.yaml

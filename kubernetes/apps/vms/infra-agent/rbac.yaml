@@ -1,0 +1,37 @@
+---
+# The infra agent's cluster identity. Cloud credentials come from exchanging
+# a token for this ServiceAccount through workload identity federation, so
+# no long-lived cloud key ever sits on a disk. Cluster rights come from the
+# tailnet tag (group infra-agents on the API-server proxies), not from this
+# account: it carries no RoleBindings beyond the one below.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: infra-agent
+---
+# The token the kubelet projects into the launcher pod carries the API
+# server audience, which the federation provider rejects. The guest uses
+# that token to ask the TokenRequest API for short-lived ones with the
+# provider's and the MCP gateway's audiences. It may only mint tokens for
+# itself.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: infra-agent-self-token
+rules:
+  - apiGroups: [""]
+    resources: [serviceaccounts/token]
+    verbs: [create]
+    resourceNames: [infra-agent]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: infra-agent-self-token
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: infra-agent-self-token
+subjects:
+  - kind: ServiceAccount
+    name: infra-agent

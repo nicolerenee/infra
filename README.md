@@ -95,8 +95,7 @@ kubernetes/
 
 ### Media & Entertainment
 
-- **Emby/Jellyfin**: Media streaming servers
-- **Plex**: Media streaming server
+- **Jellyfin**: Media streaming servers
 - **Sonarr/Radarr/Lidarr**: Media acquisition and management
 - **Bazarr**: Subtitle management
 - **SABnzbd**: Usenet downloader

@@ -28,13 +28,18 @@ vmsingle:
       resources:
         requests:
           storage: 100Gi
+    # Steady working set is ~2.0-2.4Gi on both clusters (~1.2M series/day on
+    # fairy); the per-day index pushes it to ~3Gi before a restart, so 3Gi
+    # left no headroom (process RSS peaked at 2.84Gi on fairy, C-310).
+    # VictoriaMetrics sizes its caches as a share of the limit
+    # (-memory.allowedPercent=60), so the extra 1Gi is mostly headroom.
     resources:
       requests:
         cpu: 150m
-        memory: 1Gi
+        memory: 2Gi
       limits:
         cpu: 1200m
-        memory: 3Gi
+        memory: 4Gi
 
 defaultRules:
   rules:
@@ -55,6 +60,35 @@ defaultRules:
               kube_pod_container_info{namespace="inference", container="vllm"}
               * on (namespace, pod) group_left (node) kube_pod_info{job="kube-state-metrics"}
             )
+    # Duration is the discriminator for node-level alerts: a Talos upgrade or
+    # reboot takes a node (and its kubelet, exporters and scrape targets) away
+    # for 5-10 min, a stuck node stays away for hours. 30m rides out a slow
+    # drain+reboot without hiding a real outage. Ceph's equivalents are in the
+    # rook-ceph-cluster HelmRelease.
+    KubeNodeNotReady:
+      spec:
+        for: 30m
+    KubeNodeUnreachable:
+      spec:
+        for: 30m
+    KubeletInstanceUnreachable:
+      spec:
+        for: 30m
+    TargetDown:
+      spec:
+        for: 30m
+    TooManyScrapeErrors:
+      spec:
+        for: 30m
+    # vmagent logs one warning per failed scrape (lib/promscrape/scrapework.go).
+    # A replaced pod's old IP fails one scrape before service discovery drops
+    # it, so a few rollouts were enough to fire this with no real problem.
+    # Failed scrapes already alert through TooManyScrapeErrors above; drop them
+    # here. Otherwise this is the chart 0.97.1 expression and for: unchanged.
+    TooManyLogs:
+      spec:
+        expr: |-
+          sum(increase(vm_log_messages_total{level="warn", location!~".*/lib/promscrape/scrapework.go:.*"}[5m])) without(app_version,location,is_printed) > 0
 
 defaultDashboards:
   enabled: true
@@ -71,6 +105,11 @@ defaultDatasources:
 
 vmagent:
   spec:
+    # Every series, and so every alert, names its cluster: the default rules
+    # aggregate and describe by `cluster` ("on cluster {{ $labels.cluster }}"),
+    # and the inhibit rules below match on it.
+    externalLabels:
+      cluster: "${CLUSTER_NAME}"
     extraArgs:
       # Fairy's compute03 kube-apiserver (the etcd leader) returns ~20MB of /metrics,
       # exceeding the 16MB default. Other apiservers stay under 8MB.
@@ -91,18 +130,17 @@ vmalert:
 
 alertmanager:
   config:
+    # Every warning and critical alert goes to cockpit, the only receiver
+    # (the cockpit VMAlertmanagerConfigs, merged in below the root): agents
+    # triage there and cockpit decides what reaches Nicole's phone. No
+    # Discord (C-212). What matches nothing, info alerts included, stops
+    # here.
     route:
       receiver: "blackhole"
       group_by: ["alertgroup", "job"]
       group_wait: 30s
       group_interval: 5m
       repeat_interval: 12h
-      routes:
-        # default route
-        - receiver: discord-infra-alerts
-          matchers:
-            - severity=~"warning|critical"
-          continue: true
 
     inhibit_rules:
       - target_matchers:
@@ -131,12 +169,6 @@ alertmanager:
 
     receivers:
       - name: blackhole
-      - name: discord-infra-alerts
-        discord_configs:
-          - send_resolved: true
-            webhook_url: "${SECRET_DISCORD_INFRA_ALERTS_WEBHOOK}"
-            title: '{{ template "discord.default.title" . }}'
-            username: "AlertManager - ${CLUSTER_NAME}"
   enabled: true
   spec:
     externalURL: "https://alertmanager.${CLUSTER_DOMAIN}"
@@ -210,8 +242,11 @@ kubelet:
         # vmsingle's 40-label limit (~56 labels) and the rows get rejected.
         # extensions_talos_dev_* is kept by request — useful for tracking which
         # talos extension version is on each node.
+        # tuppr_home_operations_com_* is set only while tuppr upgrades a node;
+        # flipping it on and off rewrites every container series on that node
+        # (vmsingle churn, C-310).
         - action: labeldrop
-          regex: (.*_node_kubevirt_io_.*|kubevirt_io_.*|nvidia_com_.*|plan_upgrade_cattle_io_.*|beta_kubernetes_io_.*|intel_feature_node_kubernetes_io_.*|feature_node_kubernetes_io_.*)
+          regex: (.*_node_kubevirt_io_.*|kubevirt_io_.*|nvidia_com_.*|plan_upgrade_cattle_io_.*|beta_kubernetes_io_.*|intel_feature_node_kubernetes_io_.*|feature_node_kubernetes_io_.*|tuppr_home_operations_com_.*)
         - sourceLabels: [__metrics_path__]
           targetLabel: metrics_path
         - targetLabel: job

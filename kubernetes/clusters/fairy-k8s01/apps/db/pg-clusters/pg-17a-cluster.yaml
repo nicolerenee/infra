@@ -62,3 +62,23 @@ spec:
   #     barmanObjectStore:
   #       <<: *barmanObjectStore
   #       serverName: *previousCluster
+---
+# Stopgap until mealie and windmill move to pg-18a: WAL archiving alone has
+# nothing to replay onto, so without a base backup pg-17a is not restorable.
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: pg-17a-backup
+spec:
+  # CNPG schedule is a 6-field cron, SECONDS-FIRST (sec min hour dom mon dow).
+  # A 5-field "0 0 * * *" is read as every-hour and silently produces 24x the
+  # base backups. This is every 6h (00/06/12/18:00).
+  schedule: "0 0 */6 * * *"
+  # Take one now rather than leaving the cluster unrestorable until the next slot.
+  immediate: true
+  backupOwnerReference: self
+  cluster:
+    name: pg-17a
+  target: prefer-standby
+  # pg-17a still uses the in-tree barmanObjectStore, not the barman-cloud plugin.
+  method: barmanObjectStore

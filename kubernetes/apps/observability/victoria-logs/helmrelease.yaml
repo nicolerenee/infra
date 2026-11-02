@@ -10,7 +10,7 @@ spec:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy
   ref:
-    tag: 0.13.10
+    tag: 0.13.11
   url: oci://ghcr.io/victoriametrics/helm-charts/victoria-logs-single
 ---
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
@@ -46,20 +46,28 @@ spec:
           - ReadWriteOnce
         size: 50Gi
 
-      resources: {}
-      # limits:
-      #   cpu: 500m
-      #   memory: 512Mi
-      # requests:
-      #   cpu: 500m
-      #   memory: 512Mi
+      # Week to 2026-11-02: ~1.5Gi steady and 4.1Gi peak on fairy, 2.3Gi peak
+      # on atlantis. VictoriaLogs sizes its caches from the cgroup limit.
+      resources:
+        requests:
+          cpu: 100m
+          memory: 1536Mi
+        limits:
+          memory: 6Gi
 
       vmServiceScrape:
         enabled: true
 
     vector:
       enabled: true
-      resources: {}
+      # Mostly 60-560Mi per node, but single fairy pods peaked at 2-4.4Gi in
+      # the week to 2026-11-02, so the limit is a runaway cap, not a size.
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          memory: 6Gi
       # The three DGX Spark nodes are tainted nvidia.com/gpu:NoSchedule, and
       # without this the DaemonSet reports desired: 3 — it only ever targets the
       # amd64 nodes. Every GPU workload (the vLLM model servers) was therefore
@@ -95,6 +103,19 @@ spec:
             inputs:
               - k8s
             source: |
+              # vlogs skips any bulk line over -insert.maxLineSizeBytes
+              # (256 KiB) and logs a warning per skip, which kept TooManyLogs
+              # firing (the MCP servers log multi-MB responses; ceph-mgr has a
+              # >256 KiB line). Keep the head of an oversized line instead of
+              # losing all of it; 32K chars stays under the limit even after
+              # JSON escaping and the kubernetes metadata.
+              if is_string(.message) {
+                msg = string!(.message)
+                if strlen(msg) > 32768 {
+                  .message = truncate(msg, 32768)
+                  .log_truncated = true
+                }
+              }
               .log = parse_json(.message) ?? .message
               del(.message)
               # KubeVirt stamps hundreds of node labels (cpu-feature/cpu-model/

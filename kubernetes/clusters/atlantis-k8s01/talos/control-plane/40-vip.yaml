@@ -1,6 +1,8 @@
 ---
 # Shared control-plane VIP (the clusterEndpoint) floats between the CP nodes
-# on their bond.
+# on their bond. api.atlantis-k8s01.freckle.services is the name for it
+# (internal DNS in the private tofu; pinned on the nodes in
+# all/15-api-host.yaml).
 apiVersion: v1alpha1
 kind: Layer2VIPConfig
 name: 172.26.3.16

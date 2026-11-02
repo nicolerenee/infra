@@ -10,7 +10,6 @@ resources:
   - ./external-secrets.yaml
   - ./autobrr.yaml
   - ./bazarr.yaml
-  - ./emby.yaml
   - ./flaresolverr.yaml
   - ./homepage.yaml
   - ./homepage-config.yaml
@@ -19,8 +18,6 @@ resources:
   - ./cnp-jellyfin-ingress.yaml
   - ./media-mesh-export.yaml
   - ./media-mesh-import.yaml
-  - ./plex.yaml
-  - ./plextraktsync-nicole.yaml
   - ./promptbook.yaml
   - ./prowlarr.yaml
   - ./qbt-reel.yaml
@@ -29,6 +26,5 @@ resources:
   - ./recyclarr.yaml
   - ./sabnzbd.yaml
   - ./sonarr.yaml
-  - ./tautulli.yaml
   - ./unpackerr.yaml
   - ./webhook.yaml

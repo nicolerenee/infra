@@ -55,6 +55,23 @@ spec:
                         hostPath:
                           path: /var/iscsi
                           type: DirectoryOrCreate
+          # The single controller replica is what attaches every TrueNAS
+          # volume. The chart gives it no priority class, so after a node
+          # drain on full nodes it queues behind ordinary app pods, and nothing
+          # backed by TrueNAS can start until it schedules. Cluster-critical
+          # lets it preempt its way back in.
+          - target:
+              kind: Deployment
+              name: truenas-csi-controller
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: truenas-csi-controller
+              spec:
+                template:
+                  spec:
+                    priorityClassName: system-cluster-critical
   values:
     truenas:
       url: ${TRUENAS_API_URL}

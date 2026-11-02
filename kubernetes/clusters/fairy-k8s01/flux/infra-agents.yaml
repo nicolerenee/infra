@@ -1,0 +1,38 @@
+---
+# The infra agents: the agent VM today, task pods later. Their own namespace
+# because KubeVirt lets any VM run as any ServiceAccount in its namespace,
+# and because the agent identity's cloud grants are scoped by namespace
+# prefix. Kept apart from ai-agents, whose kagent agents are deliberately
+# low-privilege. Privileged PSA for the virt-launcher pods.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: infra-agents
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app infra-agents-apps
+  namespace: &namespace infra-agents
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/clusters/fairy-k8s01/apps/infra-agents
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: false

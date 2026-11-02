@@ -55,8 +55,11 @@ spec:
                   periodSeconds: 5
                   failureThreshold: 30
               # /health answers slowly while a big library scan holds the DB;
-              # a 1s timeout got the pod restarted mid-scan.
-              liveness: &probes
+              # a 1s timeout got the pod restarted mid-scan. It also stalls for
+              # 15-40s while a metadata refresh waits on ffprobe of a broken
+              # file, so readiness drops out after 30s but liveness only kills
+              # after ~100s of silence: a busy Jellyfin isn't a dead one.
+              readiness:
                 enabled: true
                 custom: true
                 spec:
@@ -67,7 +70,17 @@ spec:
                   periodSeconds: 10
                   timeoutSeconds: 10
                   failureThreshold: 3
-              readiness: *probes
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: http
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 10
+                  failureThreshold: 10
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true

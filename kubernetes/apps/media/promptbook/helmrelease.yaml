@@ -95,6 +95,11 @@ spec:
             targetPort: *targetPort
     route:
       app:
+        # Nothing listens on 8080 until the binary is started by hand, so
+        # gatus's auto endpoint would sit at envoy's 503. Drop this when
+        # promptbook ships a real image.
+        annotations:
+          gatus.home-operations.com/enabled: "false"
         hostnames: ["{{ .Release.Name }}.${CLUSTER_SUBDOMAIN}.freckle.media"]
         parentRefs:
           - name: tailnet

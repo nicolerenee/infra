@@ -21,6 +21,10 @@ spec:
               cpu: 100m
             limits:
               memory: 1Gi
+      # Keep one of the two proxies serving while a node drains (Talos
+      # upgrades, descheduler) so the gateway never drops to zero.
+      envoyPDB:
+        maxUnavailable: 1
       envoyService:
         externalTrafficPolicy: Local
   shutdown:

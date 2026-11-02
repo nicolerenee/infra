@@ -23,3 +23,13 @@ endpoints:
       dns-resolver: tcp://1.1.1.1:53
     conditions:
       - "[STATUS] == 404"
+  # GitHub's push hooks arrive here (Cloudflare tunnel); only /hook/ is routed,
+  # so / answering 404 means the route, gateway and tunnel are all up.
+  - name: flux-webhook-tunnel
+    group: external
+    url: https://flux-webhook.${CLUSTER_SUBDOMAIN}.freckle.services/
+    interval: 1m
+    client:
+      dns-resolver: tcp://1.1.1.1:53
+    conditions:
+      - "[STATUS] == 404"

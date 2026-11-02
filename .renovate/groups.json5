@@ -2,6 +2,18 @@
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
   packageRules: [
     {
+      // agentgateway (agents' MCP front door): its CRDs (v1alpha1) and the
+      // controller must move together; each bump is read and merged
+      // deliberately (no automerge rule).
+      description: "agentgateway Group",
+      groupName: "agentgateway",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["/agentgateway/"],
+      group: {
+        commitMessageTopic: "{{{groupName}}}",
+      },
+    },
+    {
       description: "Actions Runner Controller Group",
       groupName: "Actions Runner Controller",
       matchDatasources: ["docker"],

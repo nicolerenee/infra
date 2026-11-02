@@ -73,6 +73,10 @@ spec:
 
     route:
       webhooks:
+        # Hookshot answers 404 at /; every listener serves /ready.
+        annotations:
+          gatus.home-operations.com/endpoint: |-
+            path: /ready
         hostnames:
           - "hookshot.freckle.chat"
         parentRefs:

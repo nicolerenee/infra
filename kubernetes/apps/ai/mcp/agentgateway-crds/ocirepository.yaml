@@ -1,0 +1,16 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/source.toolkit.fluxcd.io/ocirepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: agentgateway-crds
+spec:
+  interval: 5m
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
+  ref:
+    # Its CRDs are v1alpha1. Bump together with agentgateway (Renovate groups
+    # them) after reading the release notes; never automerge.
+    tag: v1.7.0
+  url: oci://cr.agentgateway.dev/charts/agentgateway-crds

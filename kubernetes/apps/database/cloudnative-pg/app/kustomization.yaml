@@ -6,4 +6,5 @@ resources:
   - ./externalsecret.yaml
   - ./helmrelease.yaml
   - ./ocirepository.yaml
+  - ./pdb.yaml
   - ./prometheusrule.yaml

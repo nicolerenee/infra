@@ -35,8 +35,11 @@ jobs:
       - name: Install yq for YAML processing
         uses: mikefarah/yq@504fc38780cc46be8444ea1b72fb55919fc0bfb0 # v4.54.1
 
+      # kubectl from mise.toml, the version the clusters run.
       - name: Setup kubectl
-        uses: azure/setup-kubectl@bda439f5f36b99b262ebdcd3613869bddb064c8e # v5.2.0
+        uses: jdx/mise-action@6612f0ef07ed2a736cd1e00a94a065522dd41195 # v5.2.5
+        with:
+          install_args: kubectl
 
       - name: Check App-Level Kustomizations
         run: |

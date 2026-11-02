@@ -1,0 +1,11 @@
+---
+# Keep one of the two readers up through node drains and Talos upgrades.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: jina-reader
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: jina-reader

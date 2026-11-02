@@ -1,0 +1,40 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/external-secrets.io/externalsecret_v1.json
+# Password for the CNPG managed `cockpit` role on pg-18a. Same tofu-generated
+# value cockpit's own namespace reads for its DATABASE_URL.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: cockpit-db-role
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: SecretStore
+    name: gcp-sm
+  target:
+    name: cockpit-db-role
+    creationPolicy: Owner
+    template:
+      engineVersion: v2
+      metadata:
+        labels:
+          cnpg.io/reload: "true"
+      data:
+        username: "{{ .username }}"
+        password: "{{ .password }}"
+  dataFrom:
+    - extract:
+        key: ${CLUSTER_NAME}-db-cockpit-role
+---
+# Declarative database owned by the managed role; cockpit applies its own
+# embedded migrations on start.
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: pg-18a-cockpit
+spec:
+  name: cockpit
+  owner: cockpit
+  cluster:
+    name: pg-18a
+  ensure: present

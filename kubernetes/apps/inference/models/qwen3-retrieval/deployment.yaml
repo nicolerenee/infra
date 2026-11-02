@@ -1,0 +1,265 @@
+---
+# Retrieval models for agent memory and doc search, both on ONE Spark:
+#   - embed:  Qwen/Qwen3-Embedding-8B (4096-d, Matryoshka 32..4096), :8000,
+#             OpenAI /v1/embeddings
+#   - rerank: Qwen/Qwen3-Reranker-4B (cross-encoder), :8001, Cohere /v2/rerank
+#             and vLLM /score
+# Model choice and the canonical dimension are recorded in agent-context
+# (docs/decisions/2026-11-01-embedding-model.md). Swapping the embedding model
+# or its weights means re-embedding everything; the reranker is stateless and
+# can be swapped freely.
+#
+# Two vLLM servers in one pod sharing one GPU claim (a Spark has one GPU, and
+# only one Spark is free). Single-node, so none of the NCCL/RDMA items of the
+# gpu-inference checklist apply: plain `gpu` claim, no IPC_LOCK.
+# Unified memory: --gpu-memory-utilization is a fraction of the whole ~120 GiB
+# pool, so the two budgets add up (0.30 + 0.20 = 0.50), leaving ~60 GiB for the
+# OS, page cache and kubelet. The weights are ~16 GB + ~8 GB in bf16; the rest
+# of each budget is activations and KV cache for batched prefill.
+# The reranker starts only once the embedder is healthy. vLLM measures its
+# non-torch memory as the change in device usage during its own startup; on a
+# shared GPU a sibling loading at the same time would be counted against it.
+#
+# Pooling models don't generate, so there's no torch.compile/cudagraph tuning
+# to worry about. Weights: staged from CephFS to node-local NVMe and loaded
+# with instanttensor, per the checklist. Both pinned to the HF commits that
+# weights/job.yaml downloads; --tokenizer-revision too, because offline mode
+# can't resolve `main` (hf download --revision <sha> writes no refs/main).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qwen3-retrieval
+spec:
+  replicas: 1
+  # One GPU: the old pod must release the claim before the new one can start.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: qwen3-retrieval
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: qwen3-retrieval
+    spec:
+      runtimeClassName: nvidia
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+      resourceClaims:
+        - name: gpu
+          resourceClaimTemplateName: gpu
+      initContainers:
+        # Cache both checkpoints from CephFS to node-local NVMe (~24 GB).
+        # --copy-links dereferences the HF-cache symlinks so the local snapshot
+        # is self-contained; blobs/ is skipped (the deref'd snapshot already
+        # holds the data). hostPath persists, so restarts re-sync incrementally.
+        - name: cache-models
+          image: mirror.gcr.io/rclone/rclone:1.75.2@sha256:2687085f718d3c628f7fdfb77c52a1d344332aed543110bb88088f2c70d43eb5
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              for m in models--Qwen--Qwen3-Embedding-8B models--Qwen--Qwen3-Reranker-4B; do
+                rclone sync "/ceph-models/hub/$m/" "/models/hub/$m/" \
+                  --copy-links --exclude 'blobs/**' \
+                  --transfers 8 --checkers 16 \
+                  --stats 1m --stats-one-line
+              done
+          resources:
+            requests:
+              memory: 1Gi
+            limits:
+              memory: 64Gi
+          volumeMounts:
+            - name: ceph-models
+              mountPath: /ceph-models
+              readOnly: true
+            - name: local-models
+              mountPath: /models
+        # Evict the just-copied checkpoints from host page cache: on
+        # unified-memory GB10 cached pages are not free for the GPU.
+        - name: evict-page-cache
+          image: mirror.gcr.io/vllm/vllm-openai:v0.32.0@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34
+          command:
+            - python3
+            - -c
+            - |
+              import os
+              n = 0
+              for root in ("/models/hub/models--Qwen--Qwen3-Embedding-8B",
+                           "/models/hub/models--Qwen--Qwen3-Reranker-4B"):
+                  for d, _, files in os.walk(root):
+                      for f in files:
+                          p = os.path.join(d, f)
+                          try:
+                              fd = os.open(p, os.O_RDONLY)
+                              os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
+                              os.close(fd); n += 1
+                          except OSError as e:
+                              print("skip", p, e)
+              print("evicted page cache for", n, "files")
+          resources:
+            requests:
+              memory: 1Gi
+            limits:
+              memory: 64Gi
+          volumeMounts:
+            - name: local-models
+              mountPath: /models
+      containers:
+        - name: embed
+          image: mirror.gcr.io/vllm/vllm-openai:v0.32.0@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34
+          # The checkpoint declares Qwen3ForCausalLM, so the pooling runner and
+          # embed conversion are explicit (last-token pooling + L2 norm come
+          # from its Sentence Transformers config). is_matryoshka lets clients
+          # pass `dimensions` (the model is MRL-trained; vLLM refuses
+          # `dimensions` unless the config says so).
+          command:
+            - bash
+            - -c
+            - |
+              exec vllm serve Qwen/Qwen3-Embedding-8B \
+                --revision 1d8ad4ca9b3dd8059ad90a75d4983776a23d44af \
+                --tokenizer-revision 1d8ad4ca9b3dd8059ad90a75d4983776a23d44af \
+                --served-model-name Qwen/Qwen3-Embedding-8B qwen3-embedding-8b \
+                --runner pooling \
+                --convert embed \
+                --hf-overrides '{"is_matryoshka": true}' \
+                --gpu-memory-utilization 0.30 \
+                --max-model-len 8192 \
+                --max-num-batched-tokens 16384 \
+                --load-format instanttensor \
+                --host 0.0.0.0 \
+                --port 8000
+          env: &env
+            - name: HF_HOME
+              value: /models
+            # Weights pre-staged; never reach HF at serve time (egress is
+            # locked, see cnp.yaml).
+            - name: HF_HUB_OFFLINE
+              value: "1"
+            - name: DO_NOT_TRACK
+              value: "1"
+            - name: PYTORCH_CUDA_ALLOC_CONF
+              value: expandable_segments:True
+          ports:
+            - containerPort: 8000
+              name: embed
+          startupProbe:
+            httpGet:
+              path: /health
+              port: embed
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 180
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: embed
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: embed
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            claims:
+              - name: gpu
+            requests:
+              memory: 8Gi
+            limits:
+              memory: 48Gi
+          volumeMounts: &mounts
+            - name: local-models
+              mountPath: /models
+            - name: shm
+              mountPath: /dev/shm
+            - name: templates
+              mountPath: /templates
+              readOnly: true
+        - name: rerank
+          image: mirror.gcr.io/vllm/vllm-openai:v0.32.0@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34
+          # The official checkpoint is a causal LM that answers "yes"/"no"; the
+          # overrides turn it into a 1-label classifier scored from those two
+          # tokens (vLLM's documented recipe for Qwen3-Reranker), and the
+          # template rebuilds its prompt format.
+          command:
+            - bash
+            - -c
+            - |
+              echo "waiting for the embed server before loading"
+              until python3 -c 'import urllib.request as u; u.urlopen("http://127.0.0.1:8000/health", timeout=2)' 2>/dev/null; do
+                sleep 5
+              done
+              exec vllm serve Qwen/Qwen3-Reranker-4B \
+                --revision 22e683669bc0f0bd69640a1354a6d0aebcfeede5 \
+                --tokenizer-revision 22e683669bc0f0bd69640a1354a6d0aebcfeede5 \
+                --served-model-name Qwen/Qwen3-Reranker-4B qwen3-reranker-4b \
+                --runner pooling \
+                --hf-overrides '{"architectures": ["Qwen3ForSequenceClassification"], "classifier_from_token": ["no", "yes"], "is_original_qwen3_reranker": true}' \
+                --chat-template /templates/reranker.jinja \
+                --gpu-memory-utilization 0.20 \
+                --max-model-len 8192 \
+                --max-num-batched-tokens 16384 \
+                --load-format instanttensor \
+                --host 0.0.0.0 \
+                --port 8001
+          env: *env
+          ports:
+            - containerPort: 8001
+              name: rerank
+          # Its clock includes waiting for the embedder, hence twice as long.
+          startupProbe:
+            httpGet:
+              path: /health
+              port: rerank
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 360
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: rerank
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: rerank
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            claims:
+              - name: gpu
+            requests:
+              memory: 8Gi
+            limits:
+              memory: 48Gi
+          volumeMounts: *mounts
+      volumes:
+        - name: ceph-models
+          persistentVolumeClaim:
+            claimName: models
+            readOnly: true
+        - name: local-models
+          hostPath:
+            path: /var/local/inference-models
+            type: DirectoryOrCreate
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 4Gi
+        - name: templates
+          configMap:
+            name: qwen3-retrieval-templates

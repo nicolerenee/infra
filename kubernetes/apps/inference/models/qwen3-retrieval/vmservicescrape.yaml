@@ -1,0 +1,35 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: qwen3-retrieval
+spec:
+  # One endpoint per vLLM server. vllm:cache_config_info carries 40+ labels,
+  # above vmsingle's per-series label limit; it is a config dump, not a signal.
+  endpoints:
+    - interval: 30s
+      port: embed
+      path: /metrics
+      metricRelabelConfigs:
+        - sourceLabels: [__name__]
+          regex: "vllm:cache_config_info"
+          action: drop
+      relabelConfigs:
+        - targetLabel: vllm_deployment
+          replacement: qwen3-embedding-8b
+    - interval: 30s
+      port: rerank
+      path: /metrics
+      metricRelabelConfigs:
+        - sourceLabels: [__name__]
+          regex: "vllm:cache_config_info"
+          action: drop
+      relabelConfigs:
+        - targetLabel: vllm_deployment
+          replacement: qwen3-reranker-4b
+  namespaceSelector:
+    matchNames:
+      - inference
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: qwen3-retrieval

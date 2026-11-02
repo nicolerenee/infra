@@ -43,6 +43,13 @@ spec:
         accessModes:
           - ReadWriteOnce
         size: 10Gi
+      # Week to 2026-11-02: 242Mi peak on atlantis, 83Mi on fairy.
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          memory: 1Gi
       vmServiceScrape:
         enabled: true
 

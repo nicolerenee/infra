@@ -55,6 +55,44 @@ spec:
         login: true
         passwordSecret:
           name: bookorbit-db-role
+      - name: accession
+        ensure: present
+        login: true
+        passwordSecret:
+          name: accession-db-role
+      # Read-only reporting role for bookorbit-stats: it owns nothing and
+      # gets column-level SELECT grants in BookOrbit's database from its own
+      # job (the private repo holds its secret and grants).
+      - name: bookorbit_stats
+        ensure: present
+        login: true
+        connectionLimit: 10
+        passwordSecret:
+          name: bookorbit-stats-db-role
+      - name: cockpit
+        ensure: present
+        login: true
+        passwordSecret:
+          name: cockpit-db-role
+      # lore's memory store. Its row-level security only holds for a role
+      # that is neither a superuser nor BYPASSRLS (lore refuses to start
+      # otherwise). The secret and the Database CR are in the private repo.
+      - name: lore
+        ensure: present
+        login: true
+        superuser: false
+        bypassrls: false
+        passwordSecret:
+          name: lore-db-role
+      # switchboard, the people's MCP hub (freckleapps/switchboard, C-357):
+      # users, per-user backend enablement and the calls audit. The secret
+      # and the Database CR are in the private repo (apps/db/switchboard).
+      - name: switchboard
+        ensure: present
+        login: true
+        superuser: false
+        passwordSecret:
+          name: switchboard-db-role
 
   plugins:
     - name: barman-cloud.cloudnative-pg.io

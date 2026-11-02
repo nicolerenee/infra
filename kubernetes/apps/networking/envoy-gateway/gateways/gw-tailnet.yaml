@@ -41,3 +41,8 @@ spec:
             name: cluster-svcs-tls
           - kind: Secret
             name: cluster-systems-tls
+          # For the few human UIs kept off every LAN-reachable gateway
+          # (cockpit on fairy); without it a .freckle.tools name here gets
+          # another zone's certificate.
+          - kind: Secret
+            name: cluster-tools-tls

@@ -16,3 +16,23 @@ spec:
     - apiVersion: source.toolkit.fluxcd.io/v1
       kind: GitRepository
       name: flux-system
+---
+# Push-trigger for the private freckleapps/infra source (GitRepository
+# infra-private, defined per cluster in kubernetes/clusters/*/apps/flux-system/).
+# Same token as github-receiver; the different name gives it its own /hook/ path.
+apiVersion: notification.toolkit.fluxcd.io/v1
+kind: Receiver
+metadata:
+  name: github-receiver-private
+  namespace: flux-system
+spec:
+  type: github
+  events:
+    - "ping"
+    - "push"
+  secretRef:
+    name: flux-receiver-token
+  resources:
+    - apiVersion: source.toolkit.fluxcd.io/v1
+      kind: GitRepository
+      name: infra-private

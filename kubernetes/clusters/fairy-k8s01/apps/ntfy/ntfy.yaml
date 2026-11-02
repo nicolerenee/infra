@@ -1,0 +1,29 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app ntfy
+  namespace: &namespace ntfy
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  dependsOn:
+    - name: external-secrets
+      namespace: external-secrets
+    - name: rook-ceph-cluster
+      namespace: rook-ceph
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/ntfy
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true

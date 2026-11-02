@@ -2,7 +2,7 @@
 # Alertmanager -> Windmill: every CRITICAL alert group is also POSTed to the
 # f/agents/alert_triage flow, which has the read-only cluster-triage agent
 # investigate and posts the evidence to #infra-agents. `continue: true` keeps
-# the normal Discord page; this only adds context. Merged into the operator-
+# the cockpit item; this only adds context. Merged into the operator-
 # managed config as a VMAlertmanagerConfig, so it lives beside the agents
 # rather than in the shared k8s-stack values. Requires
 # `disableNamespaceMatcher: true` on the VMAlertmanager, or the operator
@@ -18,7 +18,7 @@ spec:
       - severity="critical"
     continue: true
     group_by: ["alertname"]
-    # Let a transient settle before spending a model run; the page already went.
+    # Let a transient settle before spending a model run; cockpit already has it.
     group_wait: 2m
     group_interval: 10m
     repeat_interval: 24h
