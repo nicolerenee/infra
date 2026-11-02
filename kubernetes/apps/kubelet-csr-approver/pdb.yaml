@@ -1,0 +1,14 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/policy/poddisruptionbudget_v1.json
+# The chart has no PDB value. Keep one approver up through node drains, so
+# a rebooting node's kubelet serving CSR still gets approved.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: kubelet-csr-approver
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: kubelet-csr-approver
+      app.kubernetes.io/name: kubelet-csr-approver

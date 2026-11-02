@@ -1,0 +1,12 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/policy/poddisruptionbudget_v1.json
+# Keep one of the two readers up through node drains and Talos upgrades.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: jina-reader
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: jina-reader

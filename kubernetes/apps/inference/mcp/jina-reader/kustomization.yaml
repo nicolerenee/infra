@@ -6,3 +6,4 @@ resources:
   - ./reader-deployment.yaml
   - ./reader-service.yaml
   - ./reader-cnp.yaml
+  - ./reader-pdb.yaml

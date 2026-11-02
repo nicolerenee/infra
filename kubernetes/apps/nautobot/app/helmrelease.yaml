@@ -58,6 +58,17 @@ spec:
     redis:
       enabled: false
 
+    # PDB for the default Celery worker (2 replicas by chart default), so a
+    # drain never takes both. Set on workers.default rather than celery so
+    # beat (1 replica) doesn't get one; the chart forces beat's off anyway.
+    # minAvailable: 1 is the chart default, the same as maxUnavailable: 1 at
+    # two replicas (setting maxUnavailable would render both fields, because
+    # the chart's merge can't blank minAvailable).
+    workers:
+      default:
+        pdb:
+          create: true
+
     nautobot:
       # Chart 3.1.2's appVersion pins the image to 3.0 — override to the latest
       # Nautobot 3.1.8, pulled from GHCR and pinned by digest.

@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: kube-system
 resources:
   - ./helmrelease.yaml
+  - ./pdb.yaml
 configMapGenerator:
   - name: kubelet-csr-approver-values
     files:
