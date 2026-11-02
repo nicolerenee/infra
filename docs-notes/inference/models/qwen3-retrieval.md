@@ -58,7 +58,7 @@ From the one-shot `qwen3-retrieval-check` Job (script
 `kubernetes/apps/inference/models/qwen3-retrieval/check/check.py` at a6a4e45,
 removed afterwards; it's in git history). Run 2026-11-02 00:56Z:
 
-```
+```text
 - embeddings (dimensions=1024): dims=[1024, 1024, 1024], norms=[1.0, 1.0, 1.0]
 - cosine(query, relevant)=0.6685, cosine(query, irrelevant)=0.1453
 - native dimension without `dimensions`: 4096
