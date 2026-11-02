@@ -163,6 +163,18 @@ alertmanager:
     # `namespace="<config's namespace>"` into each merged route and nothing
     # outside that namespace ever matches.
     disableNamespaceMatcher: true
+    # Keep silences and the notification log on a PVC (C-378). On the default
+    # emptyDir every pod restart (a chart bump, a node drain) wiped them, and
+    # silence-operator only re-pushes its Silence CRs on its ~10h resync, so
+    # permanently silenced alerts reached cockpit in between.
+    storage:
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
 
 kubeControllerManager:
   enabled: true
