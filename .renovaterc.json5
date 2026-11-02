@@ -1,8 +1,5 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
-  reviewers: [
-    '@nicolerenee',
-  ],
   extends: [
     'config:recommended',
     'docker:enableMajor',
@@ -51,6 +48,14 @@
     ],
   },
   packageRules: [
+    {
+      // Renovate PRs are the infra agent's to handle (cockpit C-194), so
+      // nobody is requested by default. The one exception is GitHub Actions
+      // updates under .github/, which need Nicole's review anyway: ask her
+      // directly, so she hears about those PRs and no others.
+      matchFileNames: ['.github/**'],
+      reviewers: ['nicolerenee'],
+    },
     {
       matchManagers: ['mise'],
       semanticCommitScope: 'toolchain',
