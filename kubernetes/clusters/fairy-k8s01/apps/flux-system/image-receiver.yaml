@@ -41,3 +41,6 @@ spec:
     - apiVersion: image.toolkit.fluxcd.io/v1
       kind: ImageRepository
       name: runner
+    - apiVersion: image.toolkit.fluxcd.io/v1
+      kind: ImageRepository
+      name: lore
