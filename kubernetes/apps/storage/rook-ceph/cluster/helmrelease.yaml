@@ -84,6 +84,22 @@ spec:
               - op: replace
                 path: /spec/groups/5/rules/1/for
                 value: 30m
+              # The chart's node-network rules have no `for:`, so one 1m-rate
+              # burst of drops fired them (C-242/249/270/317/353/355 on
+              # atlantis, C-307 on fairy). 5m still catches sustained drops.
+              # `add`, not `replace`: the key is missing upstream.
+              - op: test
+                path: /spec/groups/6/rules/1/alert
+                value: CephNodeNetworkPacketDrops
+              - op: add
+                path: /spec/groups/6/rules/1/for
+                value: 5m
+              - op: test
+                path: /spec/groups/6/rules/2/alert
+                value: CephNodeNetworkPacketErrors
+              - op: add
+                path: /spec/groups/6/rules/2/for
+                value: 5m
   values:
     monitoring:
       enabled: true
