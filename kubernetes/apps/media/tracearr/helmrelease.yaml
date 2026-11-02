@@ -207,7 +207,9 @@ spec:
                 memory: 3Gi
 
       valkey:
-        strategy: Recreate
+        # No volume, so the queue doesn't survive a restart either way: roll
+        # rather than leave tracearr without valkey while the new pod starts.
+        strategy: RollingUpdate
         pod:
           securityContext:
             # valkey image user is 999.

@@ -24,6 +24,8 @@ spec:
   values:
     controllers:
       mcp-victoriatraces:
+        # Stateless MCP server: roll instead of app-template's default Recreate.
+        strategy: RollingUpdate
         containers:
           app:
             image:
@@ -61,7 +63,9 @@ spec:
                 cpu: 10m
                 memory: 128Mi
               limits:
-                memory: 512Mi
+                # Large trace queries peaked at 511Mi on atlantis and were
+                # OOMKilled at 512Mi on fairy.
+                memory: 1Gi
 
     service:
       app:

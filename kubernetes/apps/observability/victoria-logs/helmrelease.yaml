@@ -46,20 +46,28 @@ spec:
           - ReadWriteOnce
         size: 50Gi
 
-      resources: {}
-      # limits:
-      #   cpu: 500m
-      #   memory: 512Mi
-      # requests:
-      #   cpu: 500m
-      #   memory: 512Mi
+      # Week to 2026-11-02: ~1.5Gi steady and 4.1Gi peak on fairy, 2.3Gi peak
+      # on atlantis. VictoriaLogs sizes its caches from the cgroup limit.
+      resources:
+        requests:
+          cpu: 100m
+          memory: 1536Mi
+        limits:
+          memory: 6Gi
 
       vmServiceScrape:
         enabled: true
 
     vector:
       enabled: true
-      resources: {}
+      # Mostly 60-560Mi per node, but single fairy pods peaked at 2-4.4Gi in
+      # the week to 2026-11-02, so the limit is a runaway cap, not a size.
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          memory: 6Gi
       # The three DGX Spark nodes are tainted nvidia.com/gpu:NoSchedule, and
       # without this the DaemonSet reports desired: 3 — it only ever targets the
       # amd64 nodes. Every GPU workload (the vLLM model servers) was therefore
