@@ -1,0 +1,14 @@
+---
+# The chart has no PDB value. Keep one tuppr controller up while it drains
+# nodes for Talos/Kubernetes upgrades, so the upgrade it is driving never
+# loses its last controller to its own drain.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: tuppr
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: tuppr
+      app.kubernetes.io/name: tuppr

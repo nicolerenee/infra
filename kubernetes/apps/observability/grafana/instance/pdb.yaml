@@ -1,0 +1,13 @@
+---
+# Only matters on fairy, where the Kustomization patches Grafana to two
+# replicas; with atlantis' single replica, maxUnavailable: 1 never blocks a
+# drain.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: grafana
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: grafana

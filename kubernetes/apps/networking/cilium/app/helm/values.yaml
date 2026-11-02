@@ -35,6 +35,18 @@ operator:
     serviceMonitor:
       enabled: true
   rollOutPods: true
+  # Keep one of the two operators up through node drains (chart default
+  # maxUnavailable: 1). Adding a PDB doesn't touch the pod template.
+  podDisruptionBudget:
+    enabled: true
+
+# Same for the two clustermesh-apiservers. The apiserver itself (enabled,
+# replicas, TLS) is set per cluster in the cilium Kustomization patches, and
+# Flux deep-merges those over these values.
+clustermesh:
+  apiserver:
+    podDisruptionBudget:
+      enabled: true
 
 dashboards:
   enabled: true

@@ -7,3 +7,4 @@ resources:
   - externalsecret.yaml
   - grafana.yaml
   - httproute.yaml
+  - pdb.yaml

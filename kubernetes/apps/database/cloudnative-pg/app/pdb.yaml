@@ -1,0 +1,15 @@
+---
+# The chart has no PDB value. Keep one of the two operators up through node
+# drains, so CNPG can still fail over and reconcile clusters while a node
+# with an operator pod is drained. On fairy this shares namespace db with the
+# Postgres pods; the selector matches only the operator.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cloudnative-pg
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: cloudnative-pg
+      app.kubernetes.io/name: cloudnative-pg

@@ -91,3 +91,10 @@ spec:
       enabled: true
     leaderElection:
       enabled: true
+    # Keep one of the two replicas up through node drains. minAvailable is
+    # blanked so only maxUnavailable renders (the chart defaults to
+    # minAvailable: 1).
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: ""
+      maxUnavailable: 1
