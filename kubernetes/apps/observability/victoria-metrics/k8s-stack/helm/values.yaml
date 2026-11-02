@@ -28,13 +28,18 @@ vmsingle:
       resources:
         requests:
           storage: 100Gi
+    # Steady working set is ~2.0-2.4Gi on both clusters (~1.2M series/day on
+    # fairy); the per-day index pushes it to ~3Gi before a restart, so 3Gi
+    # left no headroom (process RSS peaked at 2.84Gi on fairy, C-310).
+    # VictoriaMetrics sizes its caches as a share of the limit
+    # (-memory.allowedPercent=60), so the extra 1Gi is mostly headroom.
     resources:
       requests:
         cpu: 150m
-        memory: 1Gi
+        memory: 2Gi
       limits:
         cpu: 1200m
-        memory: 3Gi
+        memory: 4Gi
 
 defaultRules:
   rules:
@@ -228,8 +233,11 @@ kubelet:
         # vmsingle's 40-label limit (~56 labels) and the rows get rejected.
         # extensions_talos_dev_* is kept by request — useful for tracking which
         # talos extension version is on each node.
+        # tuppr_home_operations_com_* is set only while tuppr upgrades a node;
+        # flipping it on and off rewrites every container series on that node
+        # (vmsingle churn, C-310).
         - action: labeldrop
-          regex: (.*_node_kubevirt_io_.*|kubevirt_io_.*|nvidia_com_.*|plan_upgrade_cattle_io_.*|beta_kubernetes_io_.*|intel_feature_node_kubernetes_io_.*|feature_node_kubernetes_io_.*)
+          regex: (.*_node_kubevirt_io_.*|kubevirt_io_.*|nvidia_com_.*|plan_upgrade_cattle_io_.*|beta_kubernetes_io_.*|intel_feature_node_kubernetes_io_.*|feature_node_kubernetes_io_.*|tuppr_home_operations_com_.*)
         - sourceLabels: [__metrics_path__]
           targetLabel: metrics_path
         - targetLabel: job
