@@ -20,7 +20,12 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /home/nonroot
-          resources: {}
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
       volumes:
         - name: data
           persistentVolumeClaim:

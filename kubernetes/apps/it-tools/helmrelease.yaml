@@ -22,6 +22,9 @@ spec:
   values:
     controllers:
       it-tools:
+        # Static web app with no volume: roll instead of app-template's
+        # default Recreate.
+        strategy: RollingUpdate
         annotations:
           reloader.stakater.com/auto: "true"
 

@@ -48,6 +48,14 @@ spec:
                   httpGet:
                     path: /health
                     port: 1411
+            # Sign-in for everything: a request keeps it schedulable under
+            # pressure. 59Mi peak in the week to 2026-11-02.
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64Mi
+              limits:
+                memory: 256Mi
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true

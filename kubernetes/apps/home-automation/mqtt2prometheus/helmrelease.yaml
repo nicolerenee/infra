@@ -34,6 +34,9 @@ spec:
       mqtt2prometheus:
         annotations:
           reloader.stakater.com/auto: "true"
+        # Stays Recreate although stateless: two pods would connect with the
+        # same fixed client_id below and keep taking the MQTT session from
+        # each other during a rollout.
         strategy: Recreate
         containers:
           app:
