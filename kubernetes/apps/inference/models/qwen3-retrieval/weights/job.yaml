@@ -25,7 +25,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: download
-          image: mirror.gcr.io/python:3.14.0-slim
+          image: mirror.gcr.io/python:3.15.2-slim
           command:
             - bash
             - -c
