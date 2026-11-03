@@ -6,4 +6,6 @@ resources:
   - ./cnp.yaml
   - ./leaderworkerset.yaml
   - ./service.yaml
-  - ./vmservicescrape.yaml
+  # Parked (replicas 0, C-350): no pods to scrape, so the scrape stays off
+  # until revive (C-468). Re-add this line when replicas goes back to 1.
+  # - ./vmservicescrape.yaml
