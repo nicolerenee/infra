@@ -38,7 +38,7 @@ spec:
               - method: 'GET|HEAD'
                 path: '/(go|npm|pypi)/.*'
               - method: 'GET|HEAD'
-                path: '/generic/(github|github-api|github-raw|mise-versions|golang|nodejs|kubernetes)/.*'
+                path: '/generic/(github|github-api|github-raw|mise-versions|golang|nodejs|kubernetes|sigstore-tuf)/.*'
               - method: POST
                 path: '/npm/-/npm/v1/security/(audits|advisories/bulk|audits/quick)'
   egress:

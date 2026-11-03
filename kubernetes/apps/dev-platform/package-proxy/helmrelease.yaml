@@ -62,6 +62,7 @@ spec:
             mise-versions: https://mise-versions.jdx.dev
             golang: https://dl.google.com/go
             nodejs: https://nodejs.org
+            sigstore-tuf: https://tuf-repo-cdn.sigstore.dev
             kubernetes: https://dl.k8s.io
           generic_artifacts:
             kubernetes:
