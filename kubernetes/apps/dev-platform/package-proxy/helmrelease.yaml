@@ -95,7 +95,7 @@ spec:
             name: package-proxy-bucket
             key: BUCKET_PORT
       - name: PROXY_STORAGE_URL
-        value: s3://$(BUCKET_NAME)?endpoint=http://$(BUCKET_HOST):$(BUCKET_PORT)&disableSSL=true&s3ForcePathStyle=true
+        value: s3://$(BUCKET_NAME)?endpoint=http://$(BUCKET_HOST):$(BUCKET_PORT)&disable_https=true&use_path_style=true
     podSecurityContext:
       runAsNonRoot: true
       runAsUser: 1000
