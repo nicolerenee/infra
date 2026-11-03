@@ -21,3 +21,8 @@ params:
   net.ipv6.conf.br-homelan.accept_ra: "0"
   net.ipv6.conf.br-homelan.autoconf: "0"
   net.ipv6.conf.br-homelan.addr_gen_mode: "3"
+  # The DMZ must not make the host an IPv6 endpoint. Mode 1 suppresses
+  # link-local generation; autoconf=0 separately suppresses SLAAC.
+  net.ipv6.conf.bond0/1100.accept_ra: "0"
+  net.ipv6.conf.bond0/1100.autoconf: "0"
+  net.ipv6.conf.bond0/1100.addr_gen_mode: "1"

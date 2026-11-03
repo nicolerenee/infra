@@ -32,11 +32,13 @@ spec:
             - port: '8080'
               protocol: TCP
           # Expose only package downloads and npm audit. No cache mutation,
-          # hosted uploads, generic upstreams or unauthenticated admin APIs.
+          # hosted uploads or unauthenticated admin APIs.
           rules:
             http:
               - method: 'GET|HEAD'
                 path: '/(go|npm|pypi)/.*'
+              - method: 'GET|HEAD'
+                path: '/generic/(github|github-api|github-raw|mise-versions|golang|nodejs|kubernetes|sigstore-tuf)/.*'
               - method: POST
                 path: '/npm/-/npm/v1/security/(audits|advisories/bulk|audits/quick)'
   egress:
@@ -68,14 +70,10 @@ spec:
         - ports:
             - port: '5432'
               protocol: TCP
-    - toFQDNs:
-        - matchName: proxy.golang.org
-        # Large Go archives redirect to this object-storage host.
-        - matchName: storage.googleapis.com
-        - matchName: sum.golang.org
-        - matchName: registry.npmjs.org
-        - matchName: pypi.org
-        - matchName: files.pythonhosted.org
+    # Resolve release/CDN redirects at the proxy, without a dependency DNS list.
+    # The proxy rejects private/link-local upstreams and redirects by default.
+    - toEntities:
+        - world
       toPorts:
         - ports:
             - port: '443'

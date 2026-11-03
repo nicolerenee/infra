@@ -3,6 +3,7 @@ apiVersion: v1alpha1
 kind: KubeNodeConfig
 labels:
   networks.freckle.systems/home-lan: present
+  networks.freckle.systems/dmz-qbt: present
   topology.freckle.systems/rack: r01
   # Which PDU (and therefore UPS) feeds this node: topf.yaml data.powerFeed,
   # pdu01 (ups01, odd-numbered devices) or pdu02 (ups02, even). Multi-node
