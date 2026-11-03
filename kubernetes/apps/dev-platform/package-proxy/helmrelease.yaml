@@ -63,6 +63,9 @@ spec:
             golang: https://dl.google.com/go
             nodejs: https://nodejs.org
             kubernetes: https://dl.k8s.io
+          generic_artifacts:
+            kubernetes:
+              - 'release/(?P<version>v[0-9][^/]+)/bin/(?P<name>[^/]+/[^/]+)/(?P<file>[^/]+)' 
         cache_metadata: true
         metadata_ttl: 1h
         cooldown:
