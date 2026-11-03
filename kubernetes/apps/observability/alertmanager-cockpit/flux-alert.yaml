@@ -280,6 +280,12 @@ spec:
       namespace: observability
     - kind: Kustomization
       name: "*"
+      namespace: open-webui
+    - kind: HelmRelease
+      name: "*"
+      namespace: open-webui
+    - kind: Kustomization
+      name: "*"
       namespace: paperless
     - kind: HelmRelease
       name: "*"
