@@ -1,0 +1,334 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/notification.toolkit.fluxcd.io/alert_v1.json
+# Every Kustomization and HelmRelease event goes to cockpit. eventSeverity is
+# info on purpose: cockpit needs the success events to close an item, and it
+# drops successes for objects that have no open item.
+#
+# An Alert can't select all namespaces, so each one is listed. The list is
+# shared by both clusters (a namespace a cluster doesn't have never matches):
+# add a namespace here when a new app gets its own. Namespaces that only
+# freckleapps/infra creates get their Alert from that repo.
+apiVersion: notification.toolkit.fluxcd.io/v1
+kind: Alert
+metadata:
+  name: cockpit-flux
+spec:
+  providerRef:
+    name: cockpit-flux
+  eventSeverity: info
+  # cockpit names the item's cluster from this.
+  eventMetadata:
+    cluster: ${CLUSTER_NAME}
+  eventSources:
+    - kind: Kustomization
+      name: "*"
+      namespace: actions-runner-system
+    - kind: HelmRelease
+      name: "*"
+      namespace: actions-runner-system
+    - kind: Kustomization
+      name: "*"
+      namespace: agent-platform
+    - kind: HelmRelease
+      name: "*"
+      namespace: agent-platform
+    - kind: Kustomization
+      name: "*"
+      namespace: agent-runs
+    - kind: HelmRelease
+      name: "*"
+      namespace: agent-runs
+    - kind: Kustomization
+      name: "*"
+      namespace: agentgateway-system
+    - kind: HelmRelease
+      name: "*"
+      namespace: agentgateway-system
+    - kind: Kustomization
+      name: "*"
+      namespace: ai-agents
+    - kind: HelmRelease
+      name: "*"
+      namespace: ai-agents
+    - kind: Kustomization
+      name: "*"
+      namespace: ai-mcp
+    - kind: HelmRelease
+      name: "*"
+      namespace: ai-mcp
+    - kind: Kustomization
+      name: "*"
+      namespace: cert-manager
+    - kind: HelmRelease
+      name: "*"
+      namespace: cert-manager
+    - kind: Kustomization
+      name: "*"
+      namespace: chat
+    - kind: HelmRelease
+      name: "*"
+      namespace: chat
+    - kind: Kustomization
+      name: "*"
+      namespace: cloudflared
+    - kind: HelmRelease
+      name: "*"
+      namespace: cloudflared
+    - kind: Kustomization
+      name: "*"
+      namespace: cnpg-system
+    - kind: HelmRelease
+      name: "*"
+      namespace: cnpg-system
+    - kind: Kustomization
+      name: "*"
+      namespace: db
+    - kind: HelmRelease
+      name: "*"
+      namespace: db
+    - kind: Kustomization
+      name: "*"
+      namespace: default
+    - kind: HelmRelease
+      name: "*"
+      namespace: default
+    - kind: Kustomization
+      name: "*"
+      namespace: dns
+    - kind: HelmRelease
+      name: "*"
+      namespace: dns
+    - kind: Kustomization
+      name: "*"
+      namespace: envoy-ai-gateway-system
+    - kind: HelmRelease
+      name: "*"
+      namespace: envoy-ai-gateway-system
+    - kind: Kustomization
+      name: "*"
+      namespace: envoy-gateway-system
+    - kind: HelmRelease
+      name: "*"
+      namespace: envoy-gateway-system
+    - kind: Kustomization
+      name: "*"
+      namespace: external-dns
+    - kind: HelmRelease
+      name: "*"
+      namespace: external-dns
+    - kind: Kustomization
+      name: "*"
+      namespace: external-secrets
+    - kind: HelmRelease
+      name: "*"
+      namespace: external-secrets
+    - kind: Kustomization
+      name: "*"
+      namespace: flux-system
+    - kind: HelmRelease
+      name: "*"
+      namespace: flux-system
+    - kind: Kustomization
+      name: "*"
+      namespace: freckle-id
+    - kind: HelmRelease
+      name: "*"
+      namespace: freckle-id
+    - kind: Kustomization
+      name: "*"
+      namespace: gateway-system
+    - kind: HelmRelease
+      name: "*"
+      namespace: gateway-system
+    - kind: Kustomization
+      name: "*"
+      namespace: golink
+    - kind: HelmRelease
+      name: "*"
+      namespace: golink
+    - kind: Kustomization
+      name: "*"
+      namespace: gpu-operator
+    - kind: HelmRelease
+      name: "*"
+      namespace: gpu-operator
+    - kind: Kustomization
+      name: "*"
+      namespace: harvest
+    - kind: HelmRelease
+      name: "*"
+      namespace: harvest
+    - kind: Kustomization
+      name: "*"
+      namespace: hedgehog
+    - kind: HelmRelease
+      name: "*"
+      namespace: hedgehog
+    - kind: Kustomization
+      name: "*"
+      namespace: home-automation
+    - kind: HelmRelease
+      name: "*"
+      namespace: home-automation
+    - kind: Kustomization
+      name: "*"
+      namespace: homebox
+    - kind: HelmRelease
+      name: "*"
+      namespace: homebox
+    - kind: Kustomization
+      name: "*"
+      namespace: inference
+    - kind: HelmRelease
+      name: "*"
+      namespace: inference
+    - kind: Kustomization
+      name: "*"
+      namespace: infra-agents
+    - kind: HelmRelease
+      name: "*"
+      namespace: infra-agents
+    - kind: Kustomization
+      name: "*"
+      namespace: it-tools
+    - kind: HelmRelease
+      name: "*"
+      namespace: it-tools
+    - kind: Kustomization
+      name: "*"
+      namespace: janet
+    - kind: HelmRelease
+      name: "*"
+      namespace: janet
+    - kind: Kustomization
+      name: "*"
+      namespace: janet-mcp
+    - kind: HelmRelease
+      name: "*"
+      namespace: janet-mcp
+    - kind: Kustomization
+      name: "*"
+      namespace: konflate
+    - kind: HelmRelease
+      name: "*"
+      namespace: konflate
+    - kind: Kustomization
+      name: "*"
+      namespace: kube-system
+    - kind: HelmRelease
+      name: "*"
+      namespace: kube-system
+    - kind: Kustomization
+      name: "*"
+      namespace: kubevirt
+    - kind: HelmRelease
+      name: "*"
+      namespace: kubevirt
+    - kind: Kustomization
+      name: "*"
+      namespace: lore
+    - kind: HelmRelease
+      name: "*"
+      namespace: lore
+    - kind: Kustomization
+      name: "*"
+      namespace: matrix
+    - kind: HelmRelease
+      name: "*"
+      namespace: matrix
+    - kind: Kustomization
+      name: "*"
+      namespace: mealie
+    - kind: HelmRelease
+      name: "*"
+      namespace: mealie
+    - kind: Kustomization
+      name: "*"
+      namespace: media
+    - kind: HelmRelease
+      name: "*"
+      namespace: media
+    - kind: Kustomization
+      name: "*"
+      namespace: minecraft
+    - kind: HelmRelease
+      name: "*"
+      namespace: minecraft
+    - kind: Kustomization
+      name: "*"
+      namespace: nautobot
+    - kind: HelmRelease
+      name: "*"
+      namespace: nautobot
+    - kind: Kustomization
+      name: "*"
+      namespace: networking
+    - kind: HelmRelease
+      name: "*"
+      namespace: networking
+    - kind: Kustomization
+      name: "*"
+      namespace: ntfy
+    - kind: HelmRelease
+      name: "*"
+      namespace: ntfy
+    - kind: Kustomization
+      name: "*"
+      namespace: observability
+    - kind: HelmRelease
+      name: "*"
+      namespace: observability
+    - kind: Kustomization
+      name: "*"
+      namespace: paperless
+    - kind: HelmRelease
+      name: "*"
+      namespace: paperless
+    - kind: Kustomization
+      name: "*"
+      namespace: rook-ceph
+    - kind: HelmRelease
+      name: "*"
+      namespace: rook-ceph
+    - kind: Kustomization
+      name: "*"
+      namespace: spegel
+    - kind: HelmRelease
+      name: "*"
+      namespace: spegel
+    - kind: Kustomization
+      name: "*"
+      namespace: system-upgrade
+    - kind: HelmRelease
+      name: "*"
+      namespace: system-upgrade
+    - kind: Kustomization
+      name: "*"
+      namespace: tailscale
+    - kind: HelmRelease
+      name: "*"
+      namespace: tailscale
+    - kind: Kustomization
+      name: "*"
+      namespace: truenas-csi
+    - kind: HelmRelease
+      name: "*"
+      namespace: truenas-csi
+    - kind: Kustomization
+      name: "*"
+      namespace: vms
+    - kind: HelmRelease
+      name: "*"
+      namespace: vms
+    - kind: Kustomization
+      name: "*"
+      namespace: volsync-system
+    - kind: HelmRelease
+      name: "*"
+      namespace: volsync-system
+    - kind: Kustomization
+      name: "*"
+      namespace: windmill
+    - kind: HelmRelease
+      name: "*"
+      namespace: windmill

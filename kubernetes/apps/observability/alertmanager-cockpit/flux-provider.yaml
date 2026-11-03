@@ -1,0 +1,16 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/notification.toolkit.fluxcd.io/provider_v1.json
+# Flux -> cockpit, on both clusters: notification-controller posts the
+# Alert's events to cockpit's generic Flux webhook. A failing Kustomization
+# or HelmRelease opens one `flux` item per cluster and object; its next
+# successful reconcile closes it. The bearer is the `headers` key that the
+# ExternalSecret templates from the same token Alertmanager uses.
+apiVersion: notification.toolkit.fluxcd.io/v1
+kind: Provider
+metadata:
+  name: cockpit-flux
+spec:
+  type: generic
+  address: https://cockpit.fairy.freckle.services/webhooks/flux
+  secretRef:
+    name: cockpit-webhook
