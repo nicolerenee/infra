@@ -23,6 +23,10 @@ spec:
             k8s:io.kubernetes.pod.namespace: actions-runner-system
             app.kubernetes.io/component: runner
             actions-ephemeral-runner: 'True'
+        # Job-container pods are created separately from the runner pod.
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: actions-runner-system
+            dev-platform.freckle.tools/package-proxy-client: 'true'
       toPorts:
         - ports:
             - port: '8080'
