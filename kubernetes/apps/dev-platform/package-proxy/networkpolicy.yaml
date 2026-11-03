@@ -66,6 +66,8 @@ spec:
               protocol: TCP
     - toFQDNs:
         - matchName: proxy.golang.org
+        # Large Go archives redirect to this object-storage host.
+        - matchName: storage.googleapis.com
         - matchName: sum.golang.org
         - matchName: registry.npmjs.org
         - matchName: pypi.org
