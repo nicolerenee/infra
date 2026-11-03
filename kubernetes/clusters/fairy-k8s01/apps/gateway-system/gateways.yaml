@@ -30,3 +30,13 @@ spec:
     substitute:
       # Internal gateway address (internal LB pool; BGP-routed on site).
       INTERNAL_GW_IP: 10.189.250.20
+  patches:
+    # Keep the public listener on the address matched by the site's WAN rules.
+    - target:
+        kind: Gateway
+        name: public
+      patch: |-
+        - op: add
+          path: /spec/infrastructure/annotations
+          value:
+            lbipam.cilium.io/ips: ${SITE_FAIRY_PUBLIC_V4_GATEWAY}
