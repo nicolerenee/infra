@@ -1,0 +1,16 @@
+---
+# Cluster Mesh routes this name only to the Atlantis ops-mcp instance.
+apiVersion: v1
+kind: Service
+metadata:
+  name: ops-mcp-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+    service.cilium.io/shared: "false"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP

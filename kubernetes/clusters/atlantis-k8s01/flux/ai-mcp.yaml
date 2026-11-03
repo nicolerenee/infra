@@ -1,0 +1,37 @@
+---
+# MCP servers for agents, fronted by agentgateway (agentgateway-system). Its apps and
+# Kustomization live in the private repo; the namespace is created here, like
+# agent-platform's, because the private root Kustomization targets flux-system
+# and would rename a Namespace declared there.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-mcp
+  labels:
+    # Opt in to the cluster-wide GHCR pull secret, for private freckleapps
+    # images. Only workloads that reference `ghcr-pull` use it.
+    freckle.systems/ghcr-pull: "true"
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app mcp-mesh-export
+  namespace: &namespace ai-mcp
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/clusters/atlantis-k8s01/apps/ai-mcp
+  interval: 1h
+  retryInterval: 2m
+  timeout: 5m
+  prune: true
+  wait: true
