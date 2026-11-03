@@ -1,0 +1,110 @@
+---
+# Keep an off-cluster copy without propagating retention deletes or replacing
+# existing objects. NAS snapshot retention and any later cleanup are separate.
+# After rebuilding, copy this PVC's contents back to the backup bucket and
+# recover CNPG from serverName janet-db-v1.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: janet-db-bucket-mirror
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: truenas-nfs-backup
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: janet-db-bucket-mirror
+spec:
+  schedule: "*/15 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 840
+      template:
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: rclone
+              image: rclone/rclone:1.75.2
+              command: [/bin/sh, -ec]
+              args:
+                - |
+                  rclone copy "rgw:$BUCKET_NAME" /mirror \
+                    --immutable --fast-list --transfers=8 \
+                    --stats-one-line --stats=0 --log-level=INFO
+                  # Inspect filenames on the mounted destination, never backup contents.
+                  rclone lsf /mirror --recursive --files-only > /tmp/mirror-files
+                  awk '
+                    /\/base\// { base++; if (base <= 3) print "NAS base: " $0 }
+                    /\/wals\// { wal++; if (wal <= 3) print "NAS WAL: " $0 }
+                    END {
+                      printf "NAS inventory: base=%d WAL=%d files\n", base, wal
+                      if (base == 0 || wal == 0) exit 1
+                    }
+                  ' /tmp/mirror-files
+              env:
+                - name: RCLONE_CONFIG_RGW_TYPE
+                  value: s3
+                - name: RCLONE_CONFIG_RGW_PROVIDER
+                  value: Ceph
+                - name: RCLONE_CONFIG_RGW_ENDPOINT
+                  value: http://rook-ceph-rgw-ceph-objectstore.rook-ceph.svc:80
+                - name: RCLONE_CONFIG_RGW_REGION
+                  value: us-east-1
+                - name: RCLONE_CONFIG_RGW_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: janet-db-bucket
+                      key: AWS_ACCESS_KEY_ID
+                - name: RCLONE_CONFIG_RGW_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: janet-db-bucket
+                      key: AWS_SECRET_ACCESS_KEY
+                - name: BUCKET_NAME
+                  valueFrom:
+                    configMapKeyRef:
+                      name: janet-db-bucket
+                      key: BUCKET_NAME
+                # rclone writes its config under $HOME; the root fs is read-only.
+                - name: RCLONE_CONFIG
+                  value: /tmp/rclone.conf
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: [ALL]
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  memory: 512Mi
+              volumeMounts:
+                - name: mirror
+                  mountPath: /mirror
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: mirror
+              persistentVolumeClaim:
+                claimName: janet-db-bucket-mirror
+            - name: tmp
+              emptyDir: {}
