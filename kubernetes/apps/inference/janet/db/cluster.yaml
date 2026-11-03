@@ -1,9 +1,9 @@
 ---
 # Dedicated Postgres for the Janet brain. CNPG "standard" image bundles
 # pgvector (for the planned memory/embeddings layer), PGAudit, locales, JIT.
-# Backups are NOT configured yet — fairy lacks the barman-cloud CNPG plugin
-# hedgehog uses (no objectstores.barmancloud.cnpg.io CRD); add either the
-# plugin or an in-tree barmanObjectStore (ceph-bucket exists) as a follow-up.
+# Backups go through the barman-cloud plugin into a Ceph RGW bucket
+# (bucket.yaml, objectstore.yaml), same shape as fairy db/pg-18a: continuous
+# WAL archiving plus a 6-hourly base backup (ScheduledBackup below).
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -43,3 +43,42 @@ spec:
         login: true
         passwordSecret:
           name: janet-app-db-role
+
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: janet-db-ceph-store
+        # Bump the version suffix when recovering from a prior cluster.
+        serverName: janet-db-v1
+
+  # When recovering from a prior cluster, uncomment and set source/serverName
+  # to the previous cluster's serverName.
+  # bootstrap:
+  #   recovery:
+  #     source: &previousCluster janet-db-v0
+  # externalClusters:
+  #   - name: *previousCluster
+  #     plugin:
+  #       name: barman-cloud.cloudnative-pg.io
+  #       parameters:
+  #         barmanObjectName: janet-db-ceph-store
+  #         serverName: *previousCluster
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: janet-db-backup
+spec:
+  # CNPG schedule is a 6-field cron, SECONDS-FIRST (sec min hour dom mon dow).
+  # A 5-field "0 0 * * *" is read as every-hour and silently produces 24x the
+  # base backups. This is every 6h (00/06/12/18:00); PITR granularity comes from
+  # WAL archiving, so base-backup cadence only trades restore speed vs. storage.
+  schedule: "0 0 */6 * * *"
+  backupOwnerReference: self
+  cluster:
+    name: janet-db
+  target: prefer-standby
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
