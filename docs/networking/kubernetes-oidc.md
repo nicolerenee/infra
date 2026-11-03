@@ -220,7 +220,7 @@ contexts:
    applies it one control-plane node at a time with topf, checking
    `kubectl get --raw /readyz` with the admin context and the API server log
    after each node. Then `kubectl --context fairy-freckle-id auth whoami`
-   shows `freckle-id:<user>` with `freckle-id:k8s-admins`, and a token from
-   the fairy client is rejected by atlantis once atlantis is done.
+   shows `freckle-id:<user>` with `freckle-id:k8s-admins`.
 5. **atlantis**: the same patch with `kubernetes-atlantis`, applied the same
-   way, then the same `auth whoami` check.
+   way, then the same `auth whoami` check. A fairy token sent to atlantis's
+   API server gets a 401.
