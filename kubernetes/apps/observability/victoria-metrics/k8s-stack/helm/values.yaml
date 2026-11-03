@@ -168,6 +168,9 @@ vmagent:
 vmalert:
   enabled: true
   spec:
+    # Rules using vector() or aggregating away cluster bypass vmagent's label.
+    externalLabels:
+      cluster: "${CLUSTER_NAME}"
     extraArgs:
       external.url: "https://vmalert.${CLUSTER_DOMAIN}"
 
