@@ -35,10 +35,10 @@ spec:
   # moved to Flash-Next), so it runs no pods and its two Sparks go back to the
   # pool. Weights stay staged on the shared `models` PVC (and in the nodes'
   # /var/local/inference-models cache); the Service and CNP stay deployed. The
-  # VMServiceScrape is left out of kustomization.yaml while parked (C-468: a
-  # scrape with no pods fires ScrapePoolHasNoTargets). To revive: set replicas
-  # back to 1, re-add ./vmservicescrape.yaml to kustomization.yaml, and restore
-  # its rule in the local-models AIGatewayRoute
+  # VMServiceScrape is removed while parked (C-468: a scrape with no pods fires
+  # ScrapePoolHasNoTargets). To revive: set replicas back to 1, restore
+  # vmservicescrape.yaml (see kustomization.yaml) and its resources entry, and
+  # restore its rule in the local-models AIGatewayRoute
   # (clusters/fairy-k8s01/apps/inference/ai-routes).
   replicas: 0
   leaderWorkerTemplate:
