@@ -21,6 +21,12 @@ spec:
     cluster: ${CLUSTER_NAME}
   eventSources:
     - kind: Kustomization
+      name: '*'
+      namespace: dev-platform
+    - kind: HelmRelease
+      name: '*'
+      namespace: dev-platform
+    - kind: Kustomization
       name: "*"
       namespace: actions-runner-system
     - kind: HelmRelease

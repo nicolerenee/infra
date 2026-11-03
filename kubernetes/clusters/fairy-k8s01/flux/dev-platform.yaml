@@ -1,0 +1,30 @@
+---
+# yaml-language-server: $schema=https://kubernetesjsonschema.dev/v1.37.0/namespace-v1.json
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev-platform
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/warn: restricted
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: dev-platform-apps
+  namespace: dev-platform
+spec:
+  targetNamespace: dev-platform
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/clusters/fairy-k8s01/apps/dev-platform
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: false
