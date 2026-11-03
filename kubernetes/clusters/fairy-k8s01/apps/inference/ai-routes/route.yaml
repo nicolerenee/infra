@@ -22,7 +22,8 @@
 # BackendTrafficPolicy can only target a Gateway/Route — a Gateway-scoped policy
 # would also hit the shared Anthropic backend. Revisit if backend-scoped traffic
 # policy lands.)
-# MiniMax-M2.7 (NVFP4), served by the 2-node vLLM LeaderWorkerSet. Only the
+# MiniMax-M2.7 (NVFP4), served by the 2-node vLLM LeaderWorkerSet. PARKED
+# (C-350): no route rule uses this backend; it's kept for revival. Only the
 # leader exposes the OpenAI API, so the minimax-m27-nvfp4-api Service selects the
 # leader pod only — this Backend resolves that single ready A record (no
 # per-request LB to do; it's one serving replica across two tensor-parallel
@@ -86,19 +87,11 @@ spec:
   # surfaces in the gateway's GET /v1/models) and the override rewrites it to the
   # short id each deploy passes as --served-model-name.
   rules:
-    # MiniMax-M2.7 (NVFP4). Clients send model=nvidia/MiniMax-M2.7-NVFP4 (the
-    # canonical served name, also what surfaces in GET /v1/models); the override
-    # sends the shorter semantic id, also in the deploy's --served-model-name.
-    - matches:
-        - headers:
-            - type: Exact
-              name: x-ai-eg-model
-              value: nvidia/MiniMax-M2.7-NVFP4
-      backendRefs:
-        - name: local-minimax-m27-nvfp4
-          modelNameOverride: minimax-m2.7
-      timeouts:
-        request: 1800s
+    # MiniMax-M2.7 is parked (C-350, replicas 0), so it has no rule here: a
+    # request for model=nvidia/MiniMax-M2.7-NVFP4 gets a clean 404 instead of
+    # hanging on a backend with no pods. To revive, add back a rule matching
+    # x-ai-eg-model nvidia/MiniMax-M2.7-NVFP4 -> backendRef
+    # local-minimax-m27-nvfp4, modelNameOverride minimax-m2.7, request 1800s.
     - matches:
         - headers:
             - type: Exact
