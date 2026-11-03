@@ -14,12 +14,17 @@ spec:
   dependsOn:
     - name: rook-ceph-cluster
       namespace: rook-ceph
+    - name: volsync
+      namespace: volsync-system
+    - name: truenas-csi
+      namespace: truenas-csi
   interval: 1h
   path: ./kubernetes/apps/media/prowlarr
-  # Backup flavour is a per-cluster choice: atlantis mirrors PVCs with the
-  # restic component, fairy uses rsync-tls to its own NAS.
+  # rsync-tls backups like fairy: the PVC mirrors into its own dataset under
+  # store01/kubernetes/backups/atlantis-k8s01, history is ZFS snapshots.
+  # First atlantis app moved off restic (C-38).
   components:
-    - ../../../components/volsync
+    - ../../../components/volsync-rsync-tls
   prune: true
   retryInterval: 2m
   sourceRef:
@@ -35,3 +40,18 @@ spec:
       VOLSYNC_UID: "1000"
       VOLSYNC_CAPACITY: 1Gi
       VOLSYNC_SCHEDULE: "6 * * * *"
+  patches:
+    # The live PVC was created by the restic component, which restores from a
+    # bootstrap ReplicationDestination via dataSourceRef. The rsync-tls PVC has
+    # none, and PVC spec is immutable, so dropping it would fail the apply.
+    # Keep it as it is on the bound PVC; it does nothing after binding.
+    - patch: |-
+        apiVersion: v1
+        kind: PersistentVolumeClaim
+        metadata:
+          name: ${APP}${VOLSYNC_PVC_SUFFIX:=}
+        spec:
+          dataSourceRef:
+            apiGroup: volsync.backube
+            kind: ReplicationDestination
+            name: ${APP}${VOLSYNC_PVC_SUFFIX:=}-bootstrap
