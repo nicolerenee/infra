@@ -82,7 +82,9 @@ spec:
               tag: v0.8.0@sha256:f3d3d3c85e95e752a2af50c46cebeaeee22d94493d7d7c898e2ab9d232b366d7
             args:
               - --bind.stats-url=http://127.0.0.1:8053/
-              - --bind.stats-groups=server,view,tasks
+              # No tasks group: BIND 9.20 has no task manager, so
+              # /json/v1/tasks is a 404 that fails the whole scrape.
+              - --bind.stats-groups=server,view
               - --web.listen-address=:9119
             securityContext: *sc
             probes:
