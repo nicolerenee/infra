@@ -121,6 +121,8 @@ spec:
               # clusters/fairy-k8s01/talos/control-plane/40-network.yaml.tpl.
               vlanBypass:
                 - 500
+                # L2-only DMZ parent is not discovered from host addresses.
+                - 1100
             loadBalancer:
               algorithm: maglev
             bpfClockProbe: true
