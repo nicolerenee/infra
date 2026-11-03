@@ -43,6 +43,69 @@ vmsingle:
 
 defaultRules:
   rules:
+    # These expressions discard cluster or synthesize a series with absent()/vector().
+    # Label only their alerts: vmalert externalLabels also rewrites historical
+    # recording results and can collapse distinct series onto the same labelset.
+    Watchdog:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    InfoInhibitor:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    AlertmanagerClusterFailedToSendAlerts:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    AlertmanagerConfigInconsistent:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    AlertmanagerClusterCrashlooping:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    TooHighGoroutineSchedulingLatency:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    PersistentQueueRunsOutOfSpaceIn12Hours:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    PersistentQueueRunsOutOfSpaceIn4Hours:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    DiskRunsOutOfSpace:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    TooHighChurnRate:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    TooHighChurnRate24h:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    TooHighSlowInsertsRate:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    KubeAPIDown:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    KubeControllerManagerDown:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    KubeSchedulerDown:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
     # A node that is serving a model is *supposed* to sit near full memory —
     # vLLM pins most of a DGX Spark's unified memory up front — so skip the
     # alert on nodes that currently run a vllm container. Node identity comes
@@ -121,6 +184,8 @@ defaultRules:
     # unchanged; the namespace matcher is dropped, the grouping keeps it.
     AlertmanagerClusterDown:
       spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
         expr: |-
           (
             count by (namespace, service) (
