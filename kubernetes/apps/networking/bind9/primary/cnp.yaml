@@ -19,6 +19,17 @@ spec:
               protocol: UDP
             - port: "5353"
               protocol: TCP
+    # vmagent scraping bind-exporter.
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/component: monitoring
+            app.kubernetes.io/name: vmagent
+            app.kubernetes.io/instance: vm
+            k8s:io.kubernetes.pod.namespace: observability
+      toPorts:
+        - ports:
+            - port: "9119"
+              protocol: TCP
   egress:
     - toCIDR:
         - ${DNS_SECONDARY_FAIRY_IP}/32
