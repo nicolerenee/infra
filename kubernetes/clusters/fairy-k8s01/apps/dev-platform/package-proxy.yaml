@@ -8,6 +8,11 @@ metadata:
   labels:
     infra.freckle.systems/post-build-variables: enabled
 spec:
+  dependsOn:
+    - name: external-secrets
+      namespace: external-secrets
+    - name: cloudnative-pg-clusters
+      namespace: db
   targetNamespace: dev-platform
   sourceRef:
     kind: GitRepository
