@@ -14,7 +14,12 @@ kind: VirtualMachine
 metadata:
   name: infra-agent
 spec:
-  runStrategy: Always
+  # Retired 2026-11 (C-339): agent work runs as one container Job per run
+  # (the cockpit conductor, agent-runs namespace). The VM is parked, not
+  # deleted: its disk, ServiceAccount and these objects stay so it can come
+  # back. To run it again, set this to Always (or
+  # `virtctl start infra-agent -n infra-agents` for a one-off).
+  runStrategy: Halted
   dataVolumeTemplates:
     # Live migration needs every PVC to be ReadWriteMany, and RBD only offers
     # that in Block mode. The image is pinned to a dated build so a rebuild
