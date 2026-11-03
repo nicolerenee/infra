@@ -51,11 +51,6 @@ metadata:
   name: qwen38-flash-next
 spec:
   replicas: 2
-  # Keep group 0 serving the previous version until the canary passes.
-  rolloutStrategy:
-    type: RollingUpdate
-    rollingUpdateConfiguration:
-      partition: 1
   leaderWorkerTemplate:
     size: 2
     restartPolicy: RecreateGroupOnPodRestart

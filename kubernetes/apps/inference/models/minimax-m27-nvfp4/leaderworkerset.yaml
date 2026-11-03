@@ -118,6 +118,7 @@ spec:
               - bash
               - -c
               - |
+                python3 -c 'import importlib.metadata as m; print("inference-versions vllm=%s instanttensor=%s" % (m.version("vllm"), m.version("instanttensor")))' || true
                 vllm serve nvidia/MiniMax-M2.7-NVFP4 \
                   --served-model-name nvidia/MiniMax-M2.7-NVFP4 minimax-m2.7 \
                   --trust-remote-code \
@@ -302,6 +303,7 @@ spec:
               - bash
               - -c
               - |
+                python3 -c 'import importlib.metadata as m; print("inference-versions vllm=%s instanttensor=%s" % (m.version("vllm"), m.version("instanttensor")))' || true
                 vllm serve nvidia/MiniMax-M2.7-NVFP4 \
                   --served-model-name nvidia/MiniMax-M2.7-NVFP4 minimax-m2.7 \
                   --trust-remote-code \

@@ -121,6 +121,7 @@ spec:
             - bash
             - -c
             - |
+              python3 -c 'import importlib.metadata as m; print("inference-versions vllm=%s instanttensor=%s" % (m.version("vllm"), m.version("instanttensor")))' || true
               exec vllm serve Qwen/Qwen3-Embedding-8B \
                 --revision 1d8ad4ca9b3dd8059ad90a75d4983776a23d44af \
                 --tokenizer-revision 1d8ad4ca9b3dd8059ad90a75d4983776a23d44af \
@@ -199,6 +200,7 @@ spec:
               until python3 -c 'import urllib.request as u; u.urlopen("http://127.0.0.1:8000/health", timeout=2)' 2>/dev/null; do
                 sleep 5
               done
+              python3 -c 'import importlib.metadata as m; print("inference-versions vllm=%s instanttensor=%s" % (m.version("vllm"), m.version("instanttensor")))' || true
               exec vllm serve Qwen/Qwen3-Reranker-4B \
                 --revision 22e683669bc0f0bd69640a1354a6d0aebcfeede5 \
                 --tokenizer-revision 22e683669bc0f0bd69640a1354a6d0aebcfeede5 \
