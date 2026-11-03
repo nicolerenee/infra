@@ -48,3 +48,11 @@ links:
 stp:
   enabled: false
 mtu: 1500
+---
+# L2-only parent for the DMZ macvlan; host addressing stays disabled.
+apiVersion: v1alpha1
+kind: VLANConfig
+name: bond0.1100
+vlanID: 1100
+parent: bond0
+mtu: 1500

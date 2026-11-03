@@ -13,3 +13,4 @@ resources:
   - ./grafana-db.yaml
   - ./bookorbit-db.yaml
   - ./cockpit-db.yaml
+  - ./package-proxy-db.yaml

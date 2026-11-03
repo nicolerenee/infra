@@ -1,0 +1,18 @@
+---
+# Cluster Mesh import: selector-less, unshared global Service whose backends
+# come from atlantis-k8s01's Nautobot web pods. nautobot-mcp in ai-mcp
+# (freckleapps/infra, C-433) calls http://nautobot-atlantis.nautobot.svc.cluster.local.
+apiVersion: v1
+kind: Service
+metadata:
+  name: nautobot-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+    service.cilium.io/shared: "false"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP

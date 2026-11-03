@@ -1,0 +1,35 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../infra
+  - ./client-config.yaml
+  - ./hook-template.yaml
+patches:
+  - target:
+      kind: HelmRelease
+      name: infra-runner
+    patch: |-
+      - op: add
+        path: /spec/values/template/spec/containers/0/envFrom
+        value:
+          - configMapRef:
+              name: package-proxy-client
+      - op: add
+        path: /spec/values/template/spec/containers/0/env/-
+        value:
+          name: ACTIONS_RUNNER_CONTAINER_HOOK_TEMPLATE
+          value: /etc/runner-hooks/template.yaml
+      - op: add
+        path: /spec/values/template/spec/containers/0/volumeMounts/-
+        value:
+          name: package-proxy-hook
+          mountPath: /etc/runner-hooks
+          readOnly: true
+      - op: add
+        path: /spec/values/template/spec/volumes/-
+        value:
+          name: package-proxy-hook
+          configMap:
+            name: package-proxy-hook

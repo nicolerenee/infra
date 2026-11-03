@@ -103,6 +103,13 @@ spec:
         passwordSecret:
           name: openwebui-db-role
 
+      - name: package_proxy
+        ensure: present
+        login: true
+        connectionLimit: 40
+        passwordSecret:
+          name: package-proxy-db-role
+
   plugins:
     - name: barman-cloud.cloudnative-pg.io
       isWALArchiver: true
