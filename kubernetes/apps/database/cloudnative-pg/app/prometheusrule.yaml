@@ -1,0 +1,65 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cnpg-backup-rules
+spec:
+  groups:
+    - name: cnpg-backup.rules
+      rules:
+        # Plugin-based clusters report backups only through the barman-cloud
+        # sidecar's metrics; CNPG's own cnpg_collector_*_backup_timestamp stays 0
+        # for them. Every instance reports the same value, so aggregate per
+        # cluster (job = <namespace>/<cluster>).
+
+        # The newest backup attempt failed. It stays true until the next
+        # scheduled run succeeds, so a single failure is enough to alert.
+        - alert: CNPGBackupFailed
+          expr: |-
+            max by (namespace, job) (barman_cloud_cloudnative_pg_io_last_failed_backup_timestamp)
+              > max by (namespace, job) (barman_cloud_cloudnative_pg_io_last_available_backup_timestamp)
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: >-
+              {{ $labels.job }}: the most recent base backup failed
+
+        # No backup succeeded in two 6-hourly schedule windows, failed or not.
+        # Catches backups that stopped being attempted at all. Raise the
+        # threshold if a cluster moves to a slower schedule.
+        - alert: CNPGBackupTooOld
+          expr: |-
+            time() - max by (namespace, job) (barman_cloud_cloudnative_pg_io_last_available_backup_timestamp)
+              > 13 * 3600
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: >-
+              {{ $labels.job }}: last successful base backup is
+              {{ $value | humanizeDuration }} old
+
+        # WAL archiving's latest attempt failed (primary only). Base backups
+        # can't fill a PITR gap, and unarchived WAL piles up on the data
+        # volume. 30m rides out an object store moving during a node reboot.
+        - alert: CNPGWALArchivingFailing
+          expr: &archiving |-
+            max by (namespace, job) (cnpg_pg_stat_archiver_last_failed_time)
+              > max by (namespace, job) (cnpg_pg_stat_archiver_last_archived_time)
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: >-
+              {{ $labels.job }}: WAL archiving is failing
+
+        - alert: CNPGWALArchivingFailing
+          expr: *archiving
+          for: 2h
+          labels:
+            severity: critical
+          annotations:
+            summary: >-
+              {{ $labels.job }}: WAL archiving has been failing for over 2h
