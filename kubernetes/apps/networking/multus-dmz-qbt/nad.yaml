@@ -1,0 +1,74 @@
+---
+# More-specific public routes preserve eth0 for cluster traffic. IPv6 uses
+# the router's link-local gateway so a delegated-prefix change needs no edit.
+# The attachment supplies a static IPv4 address and a stable MAC for SLAAC.
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: multus-dmz-qbt
+spec:
+  config: |
+    {
+      "cniVersion": "0.3.1",
+      "name": "multus-dmz-qbt",
+      "plugins": [
+        {
+          "type": "macvlan",
+          "master": "bond0.1100",
+          "mode": "bridge",
+          "mtu": 1500,
+          "capabilities": {
+            "mac": true,
+            "ips": true
+          },
+          "ipam": {
+            "type": "static",
+            "routes": [
+              {
+                "dst": "0.0.0.0/5",
+                "gw": "${QBT_DMZ_IPV4_GATEWAY}"
+              },
+              {
+                "dst": "8.0.0.0/7",
+                "gw": "${QBT_DMZ_IPV4_GATEWAY}"
+              },
+              {
+                "dst": "11.0.0.0/8",
+                "gw": "${QBT_DMZ_IPV4_GATEWAY}"
+              },
+              {
+                "dst": "12.0.0.0/6",
+                "gw": "${QBT_DMZ_IPV4_GATEWAY}"
+              },
+              {
+                "dst": "16.0.0.0/4",
+                "gw": "${QBT_DMZ_IPV4_GATEWAY}"
+              },
+              {
+                "dst": "32.0.0.0/3",
+                "gw": "${QBT_DMZ_IPV4_GATEWAY}"
+              },
+              {
+                "dst": "64.0.0.0/2",
+                "gw": "${QBT_DMZ_IPV4_GATEWAY}"
+              },
+              {
+                "dst": "128.0.0.0/1",
+                "gw": "${QBT_DMZ_IPV4_GATEWAY}"
+              },
+              {
+                "dst": "2000::/3",
+                "gw": "${QBT_DMZ_IPV6_GATEWAY}"
+              }
+            ]
+          }
+        },
+        {
+          "type": "tuning",
+          "sysctl": {
+            "net.ipv6.conf.IFNAME.accept_ra_defrtr": "0",
+            "net.ipv6.conf.IFNAME.use_tempaddr": "0"
+          }
+        }
+      ]
+    }
