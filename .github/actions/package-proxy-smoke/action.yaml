@@ -1,0 +1,21 @@
+---
+name: Package proxy smoke
+description: Check inherited ARC package settings with fresh client caches
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+      with:
+        go-version: 1.27.3
+        cache: false
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: '24'
+    - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      with:
+        python-version: '3.12'
+    - name: Build and install through inherited package defaults
+      shell: bash
+      env:
+        PACKAGE_SMOKE_SCRIPT: ${{ github.action_path }}/smoke.sh
+      run: bash "$PACKAGE_SMOKE_SCRIPT"

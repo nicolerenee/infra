@@ -1,0 +1,40 @@
+---
+name: Package Proxy Smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/package-proxy-smoke.yaml
+      - .github/actions/package-proxy-smoke/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: package-proxy-smoke
+  cancel-in-progress: false
+
+jobs:
+  host:
+    name: Package Proxy - Host
+    runs-on: fairy-k8s01-infra-runner
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/package-proxy-smoke
+
+  container:
+    name: Package Proxy - Kubernetes Container
+    runs-on: fairy-k8s01-infra-runner
+    timeout-minutes: 15
+    container:
+      image: ghcr.io/home-operations/actions-runner:2.338.2@sha256:2dd7caa094a425c041539447cb0e6ae63cda10b5242773764683b695b8fa5613
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/package-proxy-smoke

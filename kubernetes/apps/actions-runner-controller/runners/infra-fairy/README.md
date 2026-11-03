@@ -21,3 +21,10 @@ container: inspect the effective client settings, use empty client caches for
 Go modules plus sumdb, npm ci and pip install, and correlate requests with
 package-proxy logs. Revert the fairy Flux path and the job-pod ingress selector
 to roll back; no cache data needs deleting.
+
+The `Package Proxy Smoke` workflow runs on changes to its workflow or composite
+action on main, and can also be dispatched manually. It checks inherited defaults
+and exercises public Go with sumdb, npm ci and pip in separate host and Kubernetes
+container jobs with fresh client caches. It uses no repository secrets. Correlate
+its UTC start/end markers with proxy access logs; a green job alone does not prove
+replica failover. Toolchain setup downloads are outside the package smoke check.
