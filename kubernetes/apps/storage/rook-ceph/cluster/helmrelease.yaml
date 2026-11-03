@@ -88,18 +88,52 @@ spec:
               # burst of drops fired them (C-242/249/270/317/353/355 on
               # atlantis, C-307 on fairy). 5m still catches sustained drops.
               # `add`, not `replace`: the key is missing upstream.
+              #
+              # They also match every node_network_* series in VM, including
+              # node-exporters outside the cluster: atlantis scrapes the den1
+              # border router (role=edge) and the NAS (role=storage) under the
+              # same job="node-exporter", so the router's harmless rx_dropped
+              # paged as a Ceph alert (C-354). Each expr is replaced with the
+              # chart's own, scoped to the Kubernetes nodes' node-exporter:
+              # only the k8s-stack DaemonSet's series carry this `service`.
               - op: test
                 path: /spec/groups/6/rules/1/alert
                 value: CephNodeNetworkPacketDrops
               - op: add
                 path: /spec/groups/6/rules/1/for
                 value: 5m
+              - op: replace
+                path: /spec/groups/6/rules/1/expr
+                value: |
+                  (
+                    rate(node_network_receive_drop_total{device!="lo",service="vm-k8s-stack-prometheus-node-exporter"}[1m]) +
+                    rate(node_network_transmit_drop_total{device!="lo",service="vm-k8s-stack-prometheus-node-exporter"}[1m])
+                  ) / (
+                    rate(node_network_receive_packets_total{device!="lo",service="vm-k8s-stack-prometheus-node-exporter"}[1m]) +
+                    rate(node_network_transmit_packets_total{device!="lo",service="vm-k8s-stack-prometheus-node-exporter"}[1m])
+                  ) >= 0.005 and (
+                    rate(node_network_receive_drop_total{device!="lo",service="vm-k8s-stack-prometheus-node-exporter"}[1m]) +
+                    rate(node_network_transmit_drop_total{device!="lo",service="vm-k8s-stack-prometheus-node-exporter"}[1m])
+                  ) >= 10
               - op: test
                 path: /spec/groups/6/rules/2/alert
                 value: CephNodeNetworkPacketErrors
               - op: add
                 path: /spec/groups/6/rules/2/for
                 value: 5m
+              - op: replace
+                path: /spec/groups/6/rules/2/expr
+                value: |
+                  (
+                    rate(node_network_receive_errs_total{device!="lo",service="vm-k8s-stack-prometheus-node-exporter"}[1m]) +
+                    rate(node_network_transmit_errs_total{device!="lo",service="vm-k8s-stack-prometheus-node-exporter"}[1m])
+                  ) / (
+                    rate(node_network_receive_packets_total{device!="lo",service="vm-k8s-stack-prometheus-node-exporter"}[1m]) +
+                    rate(node_network_transmit_packets_total{device!="lo",service="vm-k8s-stack-prometheus-node-exporter"}[1m])
+                  ) >= 0.0001 or (
+                    rate(node_network_receive_errs_total{device!="lo",service="vm-k8s-stack-prometheus-node-exporter"}[1m]) +
+                    rate(node_network_transmit_errs_total{device!="lo",service="vm-k8s-stack-prometheus-node-exporter"}[1m])
+                  ) >= 10
   values:
     monitoring:
       enabled: true

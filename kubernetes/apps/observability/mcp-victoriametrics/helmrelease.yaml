@@ -41,6 +41,16 @@ spec:
 
     mcp:
       mode: http
+      # mcp-go in this image answers the client's reply to a heartbeat ping
+      # with a bare 200 (no Content-Type), which agentgateway rejects as a
+      # 500 "failed to send message" every 30 s per session (C-469); the
+      # gateway keeps its own streams alive, so no heartbeat.
+      heartbeatInterval: 0s
+      # resources/list returns the whole documentation set, past
+      # agentgateway's response buffer limit (a 500 on every session start);
+      # the documentation tool still serves it.
+      disable:
+        resources: true
 
     # At INFO the server logs every MCP request twice: "MCP request received"
     # with the arguments, then "MCP request succeeded" with the arguments and

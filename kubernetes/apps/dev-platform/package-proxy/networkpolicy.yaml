@@ -1,0 +1,82 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: package-proxy
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/instance: package-proxy
+      app.kubernetes.io/name: proxy
+  enableDefaultDeny:
+    ingress: true
+    egress: true
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: agent-runs
+          matchExpressions:
+            - key: cockpit.freckle.dev/run-id
+              operator: Exists
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: actions-runner-system
+            app.kubernetes.io/component: runner
+            actions-ephemeral-runner: 'True'
+        # Job-container pods are created separately from the runner pod.
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: actions-runner-system
+            dev-platform.freckle.tools/package-proxy-client: 'true'
+      toPorts:
+        - ports:
+            - port: '8080'
+              protocol: TCP
+          # Expose only package downloads and npm audit. No cache mutation,
+          # hosted uploads, generic upstreams or unauthenticated admin APIs.
+          rules:
+            http:
+              - method: 'GET|HEAD'
+                path: '/(go|npm|pypi)/.*'
+              - method: POST
+                path: '/npm/-/npm/v1/security/(audits|advisories/bulk|audits/quick)'
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: '53'
+              protocol: ANY
+          rules:
+            dns:
+              - matchPattern: '*'
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: rook-ceph
+            app: rook-ceph-rgw
+            rook_object_store: ceph-objectstore
+      toPorts:
+        - ports:
+            - port: '8080'
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: db
+            cnpg.io/cluster: pg-18a
+      toPorts:
+        - ports:
+            - port: '5432'
+              protocol: TCP
+    - toFQDNs:
+        - matchName: proxy.golang.org
+        # Large Go archives redirect to this object-storage host.
+        - matchName: storage.googleapis.com
+        - matchName: sum.golang.org
+        - matchName: registry.npmjs.org
+        - matchName: pypi.org
+        - matchName: files.pythonhosted.org
+      toPorts:
+        - ports:
+            - port: '443'
+              protocol: TCP

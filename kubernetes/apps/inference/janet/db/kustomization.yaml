@@ -5,5 +5,8 @@ kind: Kustomization
 resources:
   - ./externalsecret.yaml
   - ./app-role-externalsecret.yaml
+  - ./bucket.yaml
+  - ./bucket-mirror.yaml
+  - ./objectstore.yaml
   - ./cluster.yaml
   - ./database.yaml

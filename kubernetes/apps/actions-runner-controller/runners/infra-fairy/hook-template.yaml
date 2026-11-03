@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: package-proxy-hook
+data:
+  template.yaml: |
+    metadata:
+      labels:
+        dev-platform.freckle.tools/package-proxy-client: "true"
+    spec:
+      containers:
+        - name: "$job"
+          envFrom:
+            - configMapRef:
+                name: package-proxy-client

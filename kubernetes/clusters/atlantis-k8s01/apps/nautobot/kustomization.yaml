@@ -11,3 +11,5 @@ resources:
   - ./db.yaml
   - ./queue.yaml
   - ./app.yaml
+  # fairy's nautobot-mcp reaches the API through this (C-433).
+  - ./mesh-export.yaml

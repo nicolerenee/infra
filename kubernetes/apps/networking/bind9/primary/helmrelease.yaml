@@ -73,6 +73,33 @@ spec:
                 memory: 64Mi
               limits:
                 memory: 256Mi
+          # Turns named's loopback statistics channel into Prometheus metrics
+          # on 9119. No probes: a failing exporter must never take the pod out
+          # of the DNS Service.
+          exporter:
+            image:
+              repository: docker.io/prometheuscommunity/bind-exporter
+              tag: v0.8.0@sha256:f3d3d3c85e95e752a2af50c46cebeaeee22d94493d7d7c898e2ab9d232b366d7
+            args:
+              - --bind.stats-url=http://127.0.0.1:8053/
+              # No tasks group: BIND 9.20 has no task manager, so
+              # /json/v1/tasks is a 404 that fails the whole scrape.
+              - --bind.stats-groups=server,view
+              - --web.listen-address=:9119
+            securityContext: *sc
+            probes:
+              liveness:
+                enabled: false
+              readiness:
+                enabled: false
+              startup:
+                enabled: false
+            resources:
+              requests:
+                cpu: 5m
+                memory: 16Mi
+              limits:
+                memory: 64Mi
 
     service:
       app:
@@ -92,6 +119,25 @@ spec:
             port: 53
             targetPort: 5353
             protocol: TCP
+      # Metrics on their own ClusterIP Service, so 9119 is never on the DNS
+      # LoadBalancer address.
+      metrics:
+        controller: bind9-primary
+        ports:
+          metrics:
+            port: 9119
+            protocol: TCP
+
+    serviceMonitor:
+      app:
+        service:
+          identifier: metrics
+        endpoints:
+          - port: metrics
+            scheme: http
+            path: /metrics
+            interval: 1m
+            scrapeTimeout: 10s
 
     persistence:
       config:
@@ -111,9 +157,12 @@ spec:
       secrets:
         type: secret
         name: bind9-primary-tsig
-        globalMounts:
-          - path: /secrets
-            readOnly: true
+        # named only: the exporter never sees the TSIG keys.
+        advancedMounts:
+          bind9-primary:
+            app:
+              - path: /secrets
+                readOnly: true
       data:
         type: persistentVolumeClaim
         storageClass: ceph-block

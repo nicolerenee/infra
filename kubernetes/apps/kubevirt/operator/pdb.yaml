@@ -1,0 +1,13 @@
+---
+# Not vendored: KubeVirt ships PDBs for virt-api, virt-controller and
+# virt-exportproxy, but none for the operator. Keep one of its two replicas up
+# through node drains.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: virt-operator
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      kubevirt.io: virt-operator
