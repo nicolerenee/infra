@@ -10,6 +10,7 @@ components:
 resources:
   - ./external-secrets.yaml
   - ./cilium.yaml
+  - ./coredns-pdb.yaml
   - ./bgp.yaml
   - ./descheduler.yaml
   - ./dranet.yaml
