@@ -156,6 +156,7 @@ costs at most one mirror interval of WAL.
 |---|---|
 | plugin | `kubernetes/apps/database/cloudnative-pg/barman-plugin/`, pointer `clusters/fairy-k8s01/apps/db/barman-plugin.yaml` |
 | pg-18a cluster, ObjectStore, ScheduledBackup, mirror | `clusters/fairy-k8s01/apps/db/pg-clusters/pg-18a-*.yaml` |
+| janet/janet-db cluster, ObjectStore, ScheduledBackup (no NAS mirror yet) | `apps/inference/janet/db/` |
 
 Base backups run every 6 hours (the ScheduledBackup cron is six fields,
 seconds first); point-in-time granularity comes from WAL archiving. Bucket
