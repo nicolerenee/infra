@@ -21,6 +21,7 @@ spec:
               > max by (namespace, job) (barman_cloud_cloudnative_pg_io_last_available_backup_timestamp)
           for: 5m
           labels:
+            cluster: "${CLUSTER_NAME}"
             severity: warning
           annotations:
             summary: >-
@@ -35,6 +36,7 @@ spec:
               > 13 * 3600
           for: 30m
           labels:
+            cluster: "${CLUSTER_NAME}"
             severity: warning
           annotations:
             summary: >-
@@ -50,6 +52,7 @@ spec:
               > max by (namespace, job) (cnpg_pg_stat_archiver_last_archived_time)
           for: 30m
           labels:
+            cluster: "${CLUSTER_NAME}"
             severity: warning
           annotations:
             summary: >-
@@ -59,6 +62,7 @@ spec:
           expr: *archiving
           for: 2h
           labels:
+            cluster: "${CLUSTER_NAME}"
             severity: critical
           annotations:
             summary: >-
