@@ -1,0 +1,27 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app multus-dmz-qbt
+  namespace: &namespace networking
+  labels:
+    infra.freckle.systems/post-build-variables: enabled
+spec:
+  # C-147: enable after the router network exists and both gateway variables
+  # are supplied through the private post-build configuration.
+  suspend: true
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/networking/multus-dmz-qbt
+  interval: 2m
+  retryInterval: 1m
+  timeout: 5m
+  prune: true
+  wait: true

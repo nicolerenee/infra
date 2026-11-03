@@ -7,3 +7,4 @@ resources:
   - ./helmrelease.yaml
   - ./ocirepository.yaml
   - ./pdb.yaml
+  - ./prometheusrule.yaml

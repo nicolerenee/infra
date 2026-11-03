@@ -1,0 +1,26 @@
+---
+# Cluster Mesh export: lets fairy's nautobot-mcp (freckleapps/infra
+# kubernetes/apps/ai-mcp/nautobot-mcp, C-433) reach Nautobot's API by
+# identity, without a tailnet path from fairy's pods. A copy of the
+# nautobot-default Service with a cluster suffix, so the global merge only
+# contains atlantis's backends; fairy's Service of the same name has no
+# selector and is not shared. Plain HTTP on the web pod's 8080, as the
+# in-cluster callers use (SECURE_SSL_REDIRECT is off); the API still needs a
+# token, and nautobot-mcp's token's user permissions bound what it can do.
+apiVersion: v1
+kind: Service
+metadata:
+  name: nautobot-atlantis
+  annotations:
+    service.cilium.io/global: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/component: nautobot-default
+    app.kubernetes.io/instance: nautobot
+    app.kubernetes.io/name: nautobot
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP

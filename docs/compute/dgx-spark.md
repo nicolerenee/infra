@@ -85,7 +85,7 @@ Multi-node inference deployments (the LeaderWorkerSets) carry a preferred
 feed. A single UPS or PDU event then takes the whole model down or not at all,
 rather than leaving one rank alive and the set wedged. It is preferred, not
 required, so an odd number of free Sparks still schedules. Copy the affinity
-block from `kubernetes/apps/inference/models/minimax-m27-nvfp4/` into any new
+block from `kubernetes/apps/inference/models/qwen38-flash-next/` into any new
 multi-node deployment.
 
 ## Network Interfaces

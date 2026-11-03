@@ -17,6 +17,8 @@ spec:
       namespace: external-secrets
     - name: cloudnative-pg
       namespace: db
+    - name: barman-cloud-plugin
+      namespace: db
   sourceRef:
     kind: GitRepository
     name: flux-system

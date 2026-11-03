@@ -111,6 +111,27 @@ defaultRules:
       spec:
         expr: |-
           sum(increase(vm_log_messages_total{level="warn", location!~".*/lib/promscrape/scrapework.go:.*"}[5m])) without(app_version,location,is_printed) > 0
+    # The chart divides "instances mostly down over the last 5m" by an
+    # *instant* count of instances. When a rollout kills a pod after a single
+    # up=0 scrape, that dead series stays in the numerator for 5m but has
+    # already left the denominator, so a healthy restart reads as 1/1 (or 1/2
+    # with 2 replicas) and fires critical (C-379, C-394). Count the
+    # denominator over the same 5m window. A real outage of half or more of
+    # the instances still fires. Otherwise the chart 0.97.1 rule, for:
+    # unchanged; the namespace matcher is dropped, the grouping keeps it.
+    AlertmanagerClusterDown:
+      spec:
+        expr: |-
+          (
+            count by (namespace, service) (
+              avg_over_time(up{job=~"vmalertmanager-.*", container="alertmanager"}[5m]) < 0.5
+            )
+          /
+            count by (namespace, service) (
+              avg_over_time(up{job=~"vmalertmanager-.*", container="alertmanager"}[5m])
+            )
+          )
+          >= 0.5
 
 defaultDashboards:
   enabled: true
@@ -256,14 +277,23 @@ kubelet:
           regex: (rest_client_request_duration_seconds_bucket|rest_client_request_duration_seconds_sum|rest_client_request_duration_seconds_count)
         - action: labeldrop
           regex: ".*_node_kubevirt_io_.*"
+        # extensions_talos_dev_* (which talos extension version is on each
+        # node) is kept only on kubelet_node_name, one series per node. On
+        # every other series a Talos upgrade changes it and rewrites all of
+        # that node's container series (vmsingle churn, C-310/C-401).
+        # Query: kubelet_node_name{extensions_talos_dev_<ext>!=""}, or join
+        # on node.
+        - action: labeldrop
+          if: '{__name__!="kubelet_node_name"}'
+          regex: extensions_talos_dev_.*
       relabelConfigs:
         - action: labelmap
           regex: __meta_kubernetes_node_label_(.+)
         # Drop high-cardinality node labels copied onto every kubelet/cadvisor
         # series. Without this, DGX nodes push kubernetes_feature_enabled past
         # vmsingle's 40-label limit (~56 labels) and the rows get rejected.
-        # extensions_talos_dev_* is kept by request — useful for tracking which
-        # talos extension version is on each node.
+        # extensions_talos_dev_* is mapped here but kept only on
+        # kubelet_node_name (see metricRelabelConfigs above).
         # tuppr_home_operations_com_* is set only while tuppr upgrades a node;
         # flipping it on and off rewrites every container series on that node
         # (vmsingle churn, C-310).

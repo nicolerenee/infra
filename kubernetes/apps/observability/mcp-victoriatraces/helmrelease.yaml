@@ -35,6 +35,11 @@ spec:
               VT_INSTANCE_ENTRYPOINT: http://victoria-traces-server:10428
               MCP_SERVER_MODE: http
               MCP_LISTEN_ADDR: :8081
+              # mcp-go v0.43 answers the client's reply to a heartbeat ping with a
+              # bare 200 (no Content-Type), which agentgateway rejects as a 500
+              # "failed to send message" every 30 s per session (C-469). 0s turns
+              # the heartbeat (default 30s) off.
+              MCP_HEARTBEAT_INTERVAL: 0s
             probes:
               liveness:
                 enabled: true

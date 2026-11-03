@@ -41,6 +41,18 @@ spec:
         - ports:
             - port: "8000"
               protocol: TCP
+    # inference-mcp (ai-mcp, freckleapps/infra; C-452): agents' read-only
+    # model_status / model_probe, straight to a group's leader so a canary
+    # group can be checked alone (the gateway round-robins). /version,
+    # /v1/models and one short capped request per call.
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: ai-mcp
+            app: inference-mcp
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
   egress:
     # Sibling rank (leader<->worker) — distributed bootstrap on the pod network.
     - toEndpoints:

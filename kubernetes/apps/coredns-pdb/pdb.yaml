@@ -1,0 +1,13 @@
+---
+# Talos deploys CoreDNS (kube-system/coredns, 2 replicas) and creates no PDB
+# for it. It doesn't manage PDBs either, so this one is ours. Keep one DNS
+# replica up while a node drains.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: coredns
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      k8s-app: kube-dns

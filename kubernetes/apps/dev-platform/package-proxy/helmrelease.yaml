@@ -1,0 +1,124 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/source.toolkit.fluxcd.io/ocirepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: package-proxy
+spec:
+  interval: 1h
+  url: oci://ghcr.io/git-pkgs/charts/proxy
+  ref:
+    tag: 0.11.0
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: package-proxy
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: package-proxy
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    fullnameOverride: package-proxy
+    replicaCount: 2
+    deploymentStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 0
+        maxSurge: 1
+    image:
+      repository: ghcr.io/git-pkgs/proxy
+      tag: v0.11.0@sha256:0899346c9ca7a79e14b4d23f91a43ab40aadb8e6d3b4fb78eeca14dd7a5abefe
+    persistence:
+      enabled: false
+    tmpDir:
+      sizeLimit: 1Gi
+    config:
+      data:
+        listen: ':8080'
+        base_url: http://package-proxy.dev-platform.svc.cluster.local:8080
+        database:
+          driver: postgres
+        storage:
+          max_size: 100GB
+          direct_serve: false
+        cache_metadata: true
+        metadata_ttl: 1h
+        cooldown:
+          default: '0'
+          ecosystems:
+            npm: 3d
+            pypi: 3d
+            go: '0'
+        log:
+          level: info
+          format: json
+        access_log:
+          path: /dev/stdout
+    extraEnvFrom:
+      - secretRef:
+          name: package-proxy-db
+      - secretRef:
+          name: package-proxy-bucket
+    extraEnv:
+      - name: HOME
+        value: /tmp
+      - name: AWS_REGION
+        value: us-east-1
+      - name: AWS_EC2_METADATA_DISABLED
+        value: 'true'
+      - name: BUCKET_NAME
+        valueFrom:
+          configMapKeyRef:
+            name: package-proxy-bucket
+            key: BUCKET_NAME
+      - name: BUCKET_HOST
+        valueFrom:
+          configMapKeyRef:
+            name: package-proxy-bucket
+            key: BUCKET_HOST
+      - name: BUCKET_PORT
+        valueFrom:
+          configMapKeyRef:
+            name: package-proxy-bucket
+            key: BUCKET_PORT
+      - name: PROXY_STORAGE_URL
+        value: s3://$(BUCKET_NAME)?endpoint=http://$(BUCKET_HOST):$(BUCKET_PORT)&disable_https=true&use_path_style=true
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/instance: package-proxy

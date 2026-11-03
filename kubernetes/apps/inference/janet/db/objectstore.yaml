@@ -1,0 +1,28 @@
+---
+# Barman target: Ceph RGW via the OBC bucket (bucket.yaml). Region comes from
+# janet-db-secrets (static "us-east-1": Ceph doesn't enforce regions, but the
+# AWS SDK needs one to sign requests).
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: janet-db-ceph-store
+spec:
+  configuration:
+    destinationPath: s3://janet-db-backups/
+    endpointURL: http://rook-ceph-rgw-ceph-objectstore.rook-ceph.svc:80
+    s3Credentials:
+      region:
+        name: janet-db-secrets
+        key: s3-region
+      accessKeyId:
+        name: janet-db-bucket
+        key: AWS_ACCESS_KEY_ID
+      secretAccessKey:
+        name: janet-db-bucket
+        key: AWS_SECRET_ACCESS_KEY
+    wal:
+      compression: bzip2
+      maxParallel: 8
+    data:
+      compression: bzip2
+  retentionPolicy: "30d"

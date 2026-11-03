@@ -42,6 +42,12 @@ data:
       version none;
     };
 
+    # Statistics for the bind-exporter sidecar. Loopback only: nothing outside
+    # the pod can reach it, and the exporter shares the pod's network.
+    statistics-channels {
+      inet 127.0.0.1 port 8053 allow { 127.0.0.1; };
+    };
+
     logging {
       channel stderr { stderr; severity info; print-time yes; print-category yes; };
       category default { stderr; };

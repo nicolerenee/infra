@@ -6,4 +6,6 @@ resources:
   - ./cnp.yaml
   - ./leaderworkerset.yaml
   - ./service.yaml
-  - ./vmservicescrape.yaml
+  # Parked (replicas 0, C-350): no pods to scrape, so its VMServiceScrape is
+  # removed (C-468). On revive, restore it and list it here:
+  #   git show aa1f53b:kubernetes/apps/inference/models/minimax-m27-nvfp4/vmservicescrape.yaml

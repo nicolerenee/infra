@@ -10,6 +10,7 @@ resources:
   - ./external-secrets.yaml
   - ./cilium-cidrgroups.yaml
   - ./cilium.yaml
+  - ./coredns-pdb.yaml
   - ./descheduler.yaml
   - ./generic-device-plugin.yaml
   - ./intel-gpu-exporter.yaml
