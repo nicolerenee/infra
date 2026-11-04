@@ -20,6 +20,17 @@ spec:
   # Keep the working restic backup until the root-owned stub can migrate safely.
   components:
     - ../../../components/volsync
+  # The application PVC is already populated; retire its failed bootstrap restore.
+  patches:
+    - target:
+        group: volsync.backube
+        kind: ReplicationDestination
+      patch: |-
+        apiVersion: volsync.backube/v1alpha1
+        kind: ReplicationDestination
+        metadata:
+          name: unused
+        $patch: delete
   prune: true
   retryInterval: 2m
   sourceRef:
