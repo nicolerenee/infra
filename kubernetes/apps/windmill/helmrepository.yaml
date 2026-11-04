@@ -4,5 +4,6 @@ kind: HelmRepository
 metadata:
   name: windmill
 spec:
-  interval: 24h
+  # Keep the index fresh enough for Renovate's chart updates.
+  interval: 1h
   url: https://windmill-labs.github.io/windmill-helm-charts/
