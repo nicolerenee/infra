@@ -42,3 +42,27 @@ spec:
           annotations:
             summary: >-
               VolSync missed a scheduled backup for {{ $labels.obj_namespace }}/{{ $labels.obj_name }}
+
+        # FailedMount messages are not exported as metrics. Catch the mover's
+        # wait directly, then use events to distinguish an iSCSI lock from other
+        # mount failures. Keep the pod identity so recovery clears the alert.
+        - alert: VolsyncMoverContainerCreating
+          expr: |-
+            max by (cluster, namespace, pod) (
+              kube_pod_container_status_waiting_reason{
+                pod=~"volsync-.*", reason="ContainerCreating"
+              }
+            ) == 1
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: >-
+              VolSync mover {{ $labels.namespace }}/{{ $labels.pod }} cannot start
+            description: >-
+              The mover has remained in ContainerCreating for over 30 minutes.
+              Inspect its FailedMount events. If they report "failed to create
+              the iSCSI node record" with "context deadline exceeded", inspect
+              the assigned node for a stale open-iscsi DB lock using the storage
+              runbook. Other mount or container setup failures also trigger this
+              alert; the waiting state alone does not prove a stale lock.
