@@ -14,15 +14,12 @@ spec:
   dependsOn:
     - name: rook-ceph-cluster
       namespace: rook-ceph
-    - name: volsync
-      namespace: volsync-system
-    - name: truenas-csi
-      namespace: truenas-csi
   interval: 1h
   path: ./kubernetes/apps/media/promptbook
-  # Mirror backups with rsync-tls after the Prowlarr restore check (C-38).
+  # UID 0 makes the restricted rsync daemon attempt setgid without capability.
+  # Keep the working restic backup until the root-owned stub can migrate safely.
   components:
-    - ../../../components/volsync-rsync-tls
+    - ../../../components/volsync
   prune: true
   retryInterval: 2m
   sourceRef:
@@ -43,18 +40,3 @@ spec:
       VOLSYNC_RUN_AS_NON_ROOT: "false"
       VOLSYNC_CAPACITY: 5Gi
       VOLSYNC_SCHEDULE: "27 * * * *"
-  patches:
-    # The live PVC was created by the restic component, which restores from a
-    # bootstrap ReplicationDestination via dataSourceRef. The rsync-tls PVC has
-    # none, and PVC spec is immutable, so dropping it would fail the apply.
-    # Keep it as it is on the bound PVC; it does nothing after binding.
-    - patch: |-
-        apiVersion: v1
-        kind: PersistentVolumeClaim
-        metadata:
-          name: ${APP}${VOLSYNC_PVC_SUFFIX:=}
-        spec:
-          dataSourceRef:
-            apiGroup: volsync.backube
-            kind: ReplicationDestination
-            name: ${APP}${VOLSYNC_PVC_SUFFIX:=}-bootstrap
