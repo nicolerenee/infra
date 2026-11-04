@@ -10,8 +10,6 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   targetNamespace: *namespace
-  dependsOn:
-    - name: site-public-ips
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -22,7 +20,3 @@ spec:
   timeout: 5m
   prune: true
   wait: true
-  postBuild:
-    substituteFrom:
-      - kind: Secret
-        name: site-public-ips
