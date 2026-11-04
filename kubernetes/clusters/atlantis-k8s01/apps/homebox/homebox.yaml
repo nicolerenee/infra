@@ -5,14 +5,24 @@ kind: Kustomization
 metadata:
   name: &app homebox
   namespace: &namespace homebox
-  labels:
-    infra.freckle.systems/post-build-variables: enabled
 spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
   targetNamespace: *namespace
   path: ./kubernetes/apps/homebox/homebox
+  # Include the private source reference without publishing its identifier.
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: k8s-cluster-info
+      - kind: Secret
+        name: k8s-cluster-secrets
+      - kind: Secret
+        name: namespace-post-build-secrets
+        optional: true
+      - kind: ConfigMap
+        name: homebox-secret-source
   prune: true
   sourceRef:
     kind: GitRepository
