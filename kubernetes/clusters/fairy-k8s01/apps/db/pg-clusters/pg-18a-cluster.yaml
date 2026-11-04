@@ -40,6 +40,17 @@ spec:
   # in <tenant>-db.yaml in this directory.
   managed:
     roles:
+      - name: mealie
+        ensure: present
+        login: true
+        inherit: true
+        superuser: false
+        bypassrls: false
+        createdb: false
+        createrole: false
+        replication: false
+        passwordSecret:
+          name: mealie-db-role
       - name: paperless
         ensure: present
         login: true
