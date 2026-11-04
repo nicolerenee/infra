@@ -93,6 +93,15 @@ spec:
         superuser: false
         passwordSecret:
           name: switchboard-db-role
+      # Open WebUI, the household's web chat (C-117): users, chats and its
+      # pgvector document index. The secret and the Database CR are in the
+      # private repo (apps/db/open-webui).
+      - name: openwebui
+        ensure: present
+        login: true
+        superuser: false
+        passwordSecret:
+          name: openwebui-db-role
 
       - name: package_proxy
         ensure: present

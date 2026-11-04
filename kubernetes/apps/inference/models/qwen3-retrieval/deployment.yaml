@@ -82,7 +82,7 @@ spec:
         # Evict the just-copied checkpoints from host page cache: on
         # unified-memory GB10 cached pages are not free for the GPU.
         - name: evict-page-cache
-          image: mirror.gcr.io/vllm/vllm-openai:v0.32.0@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34
+          image: mirror.gcr.io/vllm/vllm-openai:v0.33.0@sha256:d825baf9ce4b1b6bfc5ecc7b79880c7e6748c65a72d697ce3d47607aafa84c6e
           command:
             - python3
             - -c
@@ -111,7 +111,7 @@ spec:
               mountPath: /models
       containers:
         - name: embed
-          image: mirror.gcr.io/vllm/vllm-openai:v0.32.0@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34
+          image: mirror.gcr.io/vllm/vllm-openai:v0.33.0@sha256:d825baf9ce4b1b6bfc5ecc7b79880c7e6748c65a72d697ce3d47607aafa84c6e
           # The checkpoint declares Qwen3ForCausalLM, so the pooling runner and
           # embed conversion are explicit (last-token pooling + L2 norm come
           # from its Sentence Transformers config). is_matryoshka lets clients
@@ -121,6 +121,7 @@ spec:
             - bash
             - -c
             - |
+              python3 -c 'import importlib.metadata as m; print("inference-versions vllm=%s instanttensor=%s" % (m.version("vllm"), m.version("instanttensor")))' || true
               exec vllm serve Qwen/Qwen3-Embedding-8B \
                 --revision 1d8ad4ca9b3dd8059ad90a75d4983776a23d44af \
                 --tokenizer-revision 1d8ad4ca9b3dd8059ad90a75d4983776a23d44af \
@@ -186,7 +187,7 @@ spec:
               mountPath: /templates
               readOnly: true
         - name: rerank
-          image: mirror.gcr.io/vllm/vllm-openai:v0.32.0@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34
+          image: mirror.gcr.io/vllm/vllm-openai:v0.33.0@sha256:d825baf9ce4b1b6bfc5ecc7b79880c7e6748c65a72d697ce3d47607aafa84c6e
           # The official checkpoint is a causal LM that answers "yes"/"no"; the
           # overrides turn it into a 1-label classifier scored from those two
           # tokens (vLLM's documented recipe for Qwen3-Reranker), and the
@@ -199,6 +200,7 @@ spec:
               until python3 -c 'import urllib.request as u; u.urlopen("http://127.0.0.1:8000/health", timeout=2)' 2>/dev/null; do
                 sleep 5
               done
+              python3 -c 'import importlib.metadata as m; print("inference-versions vllm=%s instanttensor=%s" % (m.version("vllm"), m.version("instanttensor")))' || true
               exec vllm serve Qwen/Qwen3-Reranker-4B \
                 --revision 22e683669bc0f0bd69640a1354a6d0aebcfeede5 \
                 --tokenizer-revision 22e683669bc0f0bd69640a1354a6d0aebcfeede5 \
