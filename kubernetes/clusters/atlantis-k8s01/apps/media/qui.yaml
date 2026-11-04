@@ -56,3 +56,14 @@ spec:
             apiGroup: volsync.backube
             kind: ReplicationDestination
             name: ${APP}${VOLSYNC_PVC_SUFFIX:=}-bootstrap
+    # The first file mirror exceeds the live PVC's size on the backup filesystem.
+    # Leave headroom for allocation overhead and later syncs without resizing live data.
+    - patch: |-
+        apiVersion: v1
+        kind: PersistentVolumeClaim
+        metadata:
+          name: ${APP}${VOLSYNC_PVC_SUFFIX:=}-backup
+        spec:
+          resources:
+            requests:
+              storage: 4Gi
