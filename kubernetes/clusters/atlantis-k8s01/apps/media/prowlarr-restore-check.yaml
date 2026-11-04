@@ -14,7 +14,7 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: prowlarr-restore-check-c38
+  name: prowlarr-restore-check-c38-v2
 spec:
   backoffLimit: 2
   activeDeadlineSeconds: 600
@@ -70,7 +70,7 @@ spec:
                   return result
 
               before = inventory(source)
-              assert 'prowlarr.db' in before, 'Backup database missing'
+              assert 'config/prowlarr.db' in before, 'Backup database missing'
               for name in before:
                   destination = target / name
                   destination.parent.mkdir(parents=True, exist_ok=True)
