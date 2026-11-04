@@ -1,0 +1,33 @@
+name: Public leak backstop
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, reopened, synchronize, edited, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: write
+
+# Serialize edits as well as pushes; an older run must not publish after a newer one.
+concurrency:
+  group: public-leak-backstop-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    name: Public leak backstop runner
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # pull_request_target supplies trusted base code, never the PR merge/head.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Scan objects and current PR metadata
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          NEVER_LEAK_PATTERNS: ${{ secrets.NEVER_LEAK_PATTERNS }}
+        run: python3 .github/leakcheck/check.py
