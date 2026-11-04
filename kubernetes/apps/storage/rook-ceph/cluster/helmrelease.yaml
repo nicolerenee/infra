@@ -138,6 +138,27 @@ spec:
     monitoring:
       enabled: true
       createPrometheusRules: true
+      # These alerts aggregate away cluster or synthesize an absent() result.
+      # Rule-name overrides preserve the chart's labels, expressions and recordings.
+      prometheusRuleOverrides:
+        PrometheusJobMissing:
+          labels:
+            cluster: "${CLUSTER_NAME}"
+        PrometheusJobExporterMissing:
+          labels:
+            cluster: "${CLUSTER_NAME}"
+        NVMeoFMultipleNamespacesOfRBDImage:
+          labels:
+            cluster: "${CLUSTER_NAME}"
+        NVMeoFZeroListenerSubsystem:
+          labels:
+            cluster: "${CLUSTER_NAME}"
+        NVMeoFHighReadLatency:
+          labels:
+            cluster: "${CLUSTER_NAME}"
+        NVMeoFHighWriteLatency:
+          labels:
+            cluster: "${CLUSTER_NAME}"
     toolbox:
       enabled: true
     # Ceph dashboard on the internal gateway (docs/networking/domains.md). The

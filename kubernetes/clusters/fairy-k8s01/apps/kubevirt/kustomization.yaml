@@ -7,3 +7,5 @@ resources:
   - ./kubevirt-cr.yaml
   - ./cdi-operator.yaml
   - ./cdi-cr.yaml
+components:
+  - ../../../../components/flux-post-build-variables
