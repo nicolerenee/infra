@@ -11,6 +11,10 @@ spec:
     namespace: default
   interval: 1h
   values:
+    defaultPodOptions:
+      annotations:
+        # Reload the verified GSM credentials even though their rendered bytes match.
+        kubectl.kubernetes.io/restartedAt: "2026-11-04T08:38:00Z"
     controllers:
       tuwunel:
         type: statefulset
