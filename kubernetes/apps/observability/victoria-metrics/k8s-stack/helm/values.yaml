@@ -143,6 +143,31 @@ defaultRules:
     TooManyScrapeErrors:
       spec:
         for: 30m
+    # rsyncTLS destinations immediately start a listener for the next source
+    # connection, so their age includes idle time between scheduled backups.
+    # Require both the mover name and destination controller owner; source Jobs
+    # retain the 12h limit. KubeJobFailed, VolsyncVolumeOutOfSync and
+    # VolsyncMissedSchedule independently cover failures and missed backups.
+    KubeJobNotCompleted:
+      spec:
+        expr: |-
+          (
+            time() - max by (namespace, job_name, cluster) (
+              kube_job_status_start_time{job="kube-state-metrics",namespace=~".*"}
+              and (kube_job_status_active{job="kube-state-metrics",namespace=~".*"} > 0)
+            )
+          ) > 43200
+          unless on (namespace, job_name, cluster)
+            max by (namespace, job_name, cluster) (
+              kube_job_labels{job="kube-state-metrics",label_excluded_from_alerts="true",namespace=~".*"} == 1
+            )
+          unless on (namespace, job_name, cluster)
+            max by (namespace, job_name, cluster) (
+              kube_job_owner{
+                job="kube-state-metrics",job_name=~"volsync-rsync-tls-dst-.*",
+                owner_kind="ReplicationDestination",owner_is_controller="true"
+              } == 1
+            )
     # A failed Job lingers until its TTL (recyclarr keeps one for 24h), so the
     # stock rule kept alerting long after the CronJob had recovered. Skip a
     # failed CronJob-owned Job once its CronJob has succeeded since that Job
