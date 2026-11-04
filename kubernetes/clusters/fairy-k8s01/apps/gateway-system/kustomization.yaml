@@ -9,3 +9,15 @@ components:
 resources:
   - ./gateways.yaml
   - ./mcp-gateway.yaml
+patches:
+  # A required private source prevents reconciling a pin without its address.
+  - target:
+      kind: Kustomization
+      name: gateway-configs
+    patch: |-
+      - op: add
+        path: /spec/postBuild/substituteFrom/-
+        value:
+          kind: ConfigMap
+          name: site-public-values
+          optional: false

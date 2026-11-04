@@ -6,3 +6,4 @@ kind: Kustomization
 resources:
   - helmrelease.yaml
   - externalsecret.yaml
+  - service-public.yaml
