@@ -8,3 +8,4 @@ resources:
   - ./cdi-cr.yaml
   # Ours, not upstream: claim property sets for CSI classes CDI can't infer.
   - ./storageprofiles.yaml
+  - ./monitoring.yaml

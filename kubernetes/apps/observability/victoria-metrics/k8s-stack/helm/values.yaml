@@ -233,6 +233,15 @@ vmagent:
 vmalert:
   enabled: true
   spec:
+    # CDI generates rules outside its component customization path. Use the native
+    # cdi-cluster-rules VMRule instead, with identical recordings and labelled alerts.
+    # Explicitly retain all namespaces when adding a rule selector.
+    ruleNamespaceSelector: {}
+    ruleSelector:
+      matchExpressions:
+        - key: prometheus.cdi.kubevirt.io
+          operator: NotIn
+          values: ["true"]
     extraArgs:
       external.url: "https://vmalert.${CLUSTER_DOMAIN}"
 
