@@ -20,7 +20,6 @@ resources:
   - ./media-mesh-import.yaml
   - ./promptbook.yaml
   - ./prowlarr.yaml
-  - ./prowlarr-restore-check.yaml
   - ./qbt-reel.yaml
   - ./qui.yaml
   - ./radarr.yaml
