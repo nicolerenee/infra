@@ -48,9 +48,7 @@ spec:
           bootloader:
             efi:
               secureBoot: true
-              # No persistent EFI/TPM: guest reboots during setup keep the
-              # VMI, and the template must not carry state bound to this VM.
-              persistent: false
+              persistent: true
         features:
           acpi: {}
           apic: {}
@@ -85,7 +83,12 @@ spec:
           # No network: Windows can't pull updates or Store app upgrades
           # mid-build, which are the usual reasons sysprep /generalize fails.
           autoattachPodInterface: false
-          tpm: {}
+          tpm:
+            # Persistent is what gets the tpm-crb model; a non-persistent
+            # TPM is tpm-tis, and Windows 11 hangs on its first boot from
+            # disk with every vCPU busy (seen 2026-11-04). Nothing in the
+            # template is sealed to this TPM: BitLocker is blocked.
+            persistent: true
           rng: {}
           disks:
             - name: root

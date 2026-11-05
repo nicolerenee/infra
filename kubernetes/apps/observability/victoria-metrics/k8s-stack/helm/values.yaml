@@ -206,6 +206,42 @@ defaultRules:
                   label_copy(kube_cronjob_status_last_successful_time{job="kube-state-metrics"}, "cronjob", "owner_name")
                 )
             )
+    # LWS leaders deliberately retain old groups below the canary partition.
+    # Suppress only a settled canary with every leader ready and enough updated
+    # groups; missing partition telemetry fails open to the stock alert. Worker
+    # StatefulSets and ordinary StatefulSets keep the upstream behavior.
+    KubeStatefulSetUpdateNotRolledOut:
+      spec:
+        expr: |-
+          (
+            (
+              max by (namespace, statefulset, job, cluster) (
+                kube_statefulset_status_current_revision{job="kube-state-metrics"}
+                unless kube_statefulset_status_update_revision{job="kube-state-metrics"}
+              )
+              * on (namespace, statefulset, job, cluster)
+                (kube_statefulset_replicas{job="kube-state-metrics"} != kube_statefulset_status_replicas_updated{job="kube-state-metrics"})
+            )
+            and on (namespace, statefulset, job, cluster)
+              (changes(kube_statefulset_status_replicas_updated{job="kube-state-metrics"}[5m]) == 0)
+          )
+          unless on (namespace, statefulset, job, cluster)
+          (
+            (kube_statefulset_status_replicas_ready{job="kube-state-metrics"} == kube_statefulset_replicas{job="kube-state-metrics"})
+            and on (namespace, statefulset, job, cluster)
+            (
+              kube_statefulset_status_replicas_updated{job="kube-state-metrics"}
+              >= on (namespace, statefulset, job, cluster)
+                clamp_min(
+                  kube_statefulset_replicas{job="kube-state-metrics"}
+                  - on (namespace, statefulset, job, cluster)
+                    kube_leaderworkerset_rollout_partition{job="kube-state-metrics"},
+                  0
+                )
+            )
+            and on (namespace, statefulset, job, cluster)
+              (kube_leaderworkerset_rollout_partition{job="kube-state-metrics"} > 0)
+          )
     # vmagent logs one warning per failed scrape (lib/promscrape/scrapework.go).
     # A replaced pod's old IP fails one scrape before service discovery drops
     # it, so a few rollouts were enough to fire this with no real problem.
