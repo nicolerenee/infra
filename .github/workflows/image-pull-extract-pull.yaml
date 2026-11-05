@@ -35,6 +35,14 @@ jobs:
         with:
           ref: ${{ matrix.branch == 'default' && github.event.repository.default_branch || '' }}
 
+      # Use the workflow revision's helper on both comparison legs. The base
+      # checkout may predate the helper; it remains the manifest input.
+      - name: Checkout CI Tools
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: .image-pull-tools
+          sparse-checkout: scripts
+
       # flate, not flux-local: the latter is deprecated and sunsetted, and it
       # broke here anyway — it followed the infra-private GitRepository it
       # cannot fetch, resolved that Kustomization's path against THIS checkout,
@@ -82,6 +90,14 @@ jobs:
       # Kustomization are NOT enumerated, so they are not pre-pulled. The
       # render gate keeps its full value; the pre-pull is best-effort. The
       # summary below reports the shortfall rather than hiding it.
+      # External-source ./ paths must not expose the other cluster during
+      # discovery. The generated root package contains this cluster's entry
+      # resources; application rendering and source authentication stay intact.
+      - name: Scope Discovery Root
+        env:
+          CLUSTER: ${{ inputs.cluster }}
+        run: python3 .image-pull-tools/scripts/prepare-image-pull-root.py "${CLUSTER}"
+
       - name: Gather Images
         run: |
           # Fetching schemas and charts can fail transiently. Retry the complete
