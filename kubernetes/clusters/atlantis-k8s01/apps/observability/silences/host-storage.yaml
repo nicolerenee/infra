@@ -1,6 +1,7 @@
 ---
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/observability.giantswarm.io/silence_v1alpha2.json
-# /var is a RO mount with talos so ignore any alerts for it running out of space
+# Retain the existing /var forecast suppression; Talos /var is writable.
+# Threshold-based low-space alerts remain active independently of this Silence.
 apiVersion: observability.giantswarm.io/v1alpha2
 kind: Silence
 metadata:

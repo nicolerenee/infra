@@ -84,6 +84,23 @@ spec:
               - op: replace
                 path: /spec/groups/5/rules/1/for
                 value: 30m
+              # A replacement exporter has a new pod label and can extrapolate
+              # days of growth from minutes of samples. Require 90% of the
+              # 48h window, excluding gaps over 60s (normal scrapes are 20s).
+              # Match every series label before adding nodename: an older pod
+              # on the same instance must not supply the replacement's history.
+              # Threshold-based low-space alerts remain independent of history.
+              - op: test
+                path: /spec/groups/6/rules/4/alert
+                value: CephNodeDiskspaceWarning
+              - op: replace
+                path: /spec/groups/6/rules/4/expr
+                value: |
+                  (
+                    predict_linear(node_filesystem_free_bytes{device=~"/.*"}[2d], 3600 * 24 * 5)
+                    and
+                    (duration_over_time(node_filesystem_free_bytes{device=~"/.*"}[2d], 60) >= 2 * 24 * 3600 * 0.9)
+                  ) * on(cluster, instance) group_left(nodename) node_uname_info < 0
               # The chart's node-network rules have no `for:`, so one 1m-rate
               # burst of drops fired them (C-242/249/270/317/353/355 on
               # atlantis, C-307 on fairy). 5m still catches sustained drops.
