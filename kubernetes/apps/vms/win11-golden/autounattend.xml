@@ -46,8 +46,9 @@
         <Disk wcm:action="add">
           <DiskID>0</DiskID>
           <WillWipeDisk>true</WillWipeDisk>
-          <!-- No recovery partition: Windows sits last on the disk, so a
-               clone with a bigger disk can extend C: in place. -->
+          <!-- Setup adds its own Recovery partition after C: regardless;
+               the auditUser pass removes it so C: ends the disk and a clone
+               with a bigger disk can extend it in place. -->
           <CreatePartitions>
             <CreatePartition wcm:action="add">
               <Order>1</Order>
@@ -142,8 +143,23 @@
         <!-- All virtio drivers (network, balloon, serial, ...) plus the
              QEMU guest agent, so clones come up with networking and report
              their IP to KubeVirt. -->
+        <!-- Move Windows RE into C:, drop the Recovery partition Setup put
+             after C:, and grow C: over it, so C: is the disk's last
+             partition and clones can extend it. -->
         <RunSynchronousCommand wcm:action="add">
           <Order>1</Order>
+          <Path>reagentc.exe /disable</Path>
+        </RunSynchronousCommand>
+        <RunSynchronousCommand wcm:action="add">
+          <Order>2</Order>
+          <Path>powershell -NoProfile -Command "Get-Partition -DiskNumber 0 | ? Type -eq Recovery | Remove-Partition -Confirm:0; Resize-Partition -DriveLetter C -Size (Get-PartitionSupportedSize -DriveLetter C).SizeMax"</Path>
+        </RunSynchronousCommand>
+        <RunSynchronousCommand wcm:action="add">
+          <Order>3</Order>
+          <Path>reagentc.exe /enable</Path>
+        </RunSynchronousCommand>
+        <RunSynchronousCommand wcm:action="add">
+          <Order>4</Order>
           <Path>cmd.exe /c "for %d in (D E F G H I) do if exist %d:\virtio-win-guest-tools.exe start /wait %d:\virtio-win-guest-tools.exe /install /quiet /norestart"</Path>
         </RunSynchronousCommand>
         <!-- Windows caches this answer file as Panther\unattend.xml, and that
@@ -155,7 +171,7 @@
              deletes the cache and generalizes. Kept terse: Path is capped
              at 259 characters, and a longer one invalidates the pass. -->
         <RunSynchronousCommand wcm:action="add">
-          <Order>2</Order>
+          <Order>5</Order>
           <Path>cmd /c start "" cmd /c "ping -n 31 127.1&gt;nul&amp;taskkill /f /im sysprep.exe&amp;del /f /q %WINDIR%\Panther\unattend*.xml&amp;%WINDIR%\System32\Sysprep\sysprep.exe /generalize /oobe /shutdown /quiet"</Path>
         </RunSynchronousCommand>
       </RunSynchronous>
