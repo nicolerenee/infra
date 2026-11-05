@@ -1,0 +1,9 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+# Kept out of cr/: scripts/vendor-kubevirt.sh regenerates cr/kustomization.yaml,
+# and the MigrationPolicy CRD only exists once the operator has reconciled the
+# KubeVirt CR, so this needs its own Flux Kustomization ordered after it.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./vms-autoconverge.yaml

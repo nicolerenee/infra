@@ -1,0 +1,17 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/migrations.kubevirt.io/migrationpolicy_v1alpha1.json
+# Busy VMs (a game left running) can dirty memory as fast as the link copies
+# it: netherite's drain migration ran 20 minutes at ~9 Gbps dirty rate against
+# a ~9 Gbps link and never converged, so node drains timed out. Auto-converge
+# throttles the guest's vCPUs until the copy catches up; the guest just runs
+# slower for the final seconds. Post-copy stays off: a network hiccup during
+# post-copy loses the VM.
+apiVersion: migrations.kubevirt.io/v1alpha1
+kind: MigrationPolicy
+metadata:
+  name: vms-autoconverge
+spec:
+  allowAutoConverge: true
+  selectors:
+    namespaceSelector:
+      kubernetes.io/metadata.name: vms

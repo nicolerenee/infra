@@ -5,6 +5,7 @@ kind: Kustomization
 resources:
   - ./kubevirt-operator.yaml
   - ./kubevirt-cr.yaml
+  - ./kubevirt-migration-policies.yaml
   - ./cdi-operator.yaml
   - ./cdi-cr.yaml
 components:
