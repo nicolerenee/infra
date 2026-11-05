@@ -1,0 +1,151 @@
+---
+# Win11 25H2 gaming VM for Minecraft Bedrock (mostly idling in-game).
+# Windows rather than Linux because Bedrock's Linux routes (Wine/GDK builds,
+# the Android-based launcher) lag or break on game updates, and servers and
+# Realms refuse clients that aren't on the latest version.
+#
+# No GPU: Windows' software renderer (WARP) is enough for an idle player with
+# low render distance and a frame cap; the cost is CPU while the game runs.
+#
+# Bridged onto the home LAN (multus-vm-trusted) so it can be reached over RDP
+# from a PC at home. Tailscale is the longer-term access path.
+#
+# Cloned from the win11 template (../win11-golden). On first boot Windows
+# reads unattend.xml from the sysprep CD (rendered by externalsecret.yaml)
+# for its name and accounts, so there is no hand install.
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: netherite
+spec:
+  # Manual: powered on and off on request (virtctl, later the VM portal)
+  # without changing spec, so Flux never reverts a start or stop.
+  runStrategy: Manual
+  dataVolumeTemplates:
+    # RWX Block so the VM can live-migrate during node drains; RBD offers RWX
+    # only in Block mode.
+    - metadata:
+        name: netherite-root
+      spec:
+        storage:
+          accessModes: [ReadWriteMany]
+          storageClassName: ceph-block
+          volumeMode: Block
+          resources:
+            # Larger than the 40Gi template; unattend.xml extends C:.
+            requests:
+              storage: 64Gi
+        sourceRef:
+          kind: DataSource
+          name: win11
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: netherite
+        kubevirt.io/domain: netherite
+    spec:
+      # multus-vm-trusted's bridge only exists on home-lan-labelled nodes.
+      nodeSelector:
+        networks.freckle.systems/home-lan: present
+      terminationGracePeriodSeconds: 180
+      evictionStrategy: LiveMigrate
+      networks:
+        - name: lan
+          multus:
+            networkName: vms/multus-vm-trusted
+      domain:
+        ioThreadsPolicy: auto
+        cpu:
+          cores: 4
+          sockets: 1
+          threads: 1
+          model: host-model
+          features:
+            # No nested virtualization: Windows would turn on VBS and run its
+            # own hypervisor nested under KVM, costing CPU for nothing here.
+            - name: vmx
+              policy: disable
+        memory:
+          guest: 8Gi
+        machine:
+          # Pinned rather than the moving `q35` alias, so a QEMU upgrade never
+          # looks like a hardware swap to Windows (reactivation prompts).
+          type: pc-q35-rhel9.8.0
+        firmware:
+          # Fixed so activation survives the VM CR being deleted and recreated.
+          uuid: "6530b29a-95d3-4708-a1c4-cd5e366f21e0"
+          bootloader:
+            efi:
+              secureBoot: true
+              # Without persistent EFI vars Windows won't boot after the
+              # first shutdown.
+              persistent: true
+        features:
+          acpi: {}
+          apic: {}
+          # Secure Boot needs SMM.
+          smm:
+            enabled: true
+          hyperv:
+            relaxed: {}
+            vapic: {}
+            spinlocks:
+              spinlocks: 8191
+            vpindex: {}
+            runtime: {}
+            synic: {}
+            synictimer:
+              direct: {}
+            tlbflush: {}
+            frequencies: {}
+            reenlightenment: {}
+            ipi: {}
+            reset: {}
+        clock:
+          utc: {}
+          timer:
+            hpet:
+              present: false
+            pit:
+              tickPolicy: delay
+            rtc:
+              tickPolicy: catchup
+            hyperv: {}
+        devices:
+          tpm:
+            # vTPM is a Win11 requirement; persistence keeps it across restarts.
+            persistent: true
+          rng: {}
+          disks:
+            - name: root
+              # writeback + a dedicated iothread avoids the libceph CRC errors
+              # seen with qemu's default cache=none, and speeds up installs.
+              cache: writeback
+              dedicatedIOThread: true
+              disk:
+                bus: virtio
+              bootOrder: 1
+            # Read once, on first boot. Later boots ignore it, so it can
+            # stay attached.
+            - name: sysprep
+              cdrom:
+                bus: sata
+                readonly: true
+          interfaces:
+            - name: lan
+              bridge: {}
+              # Fixed so the home-LAN DHCP lease (and any reservation) is stable.
+              macAddress: "52:54:00:11:00:02"
+              model: virtio
+          inputs:
+            - name: tablet
+              type: tablet
+              bus: usb
+      volumes:
+        - name: root
+          dataVolume:
+            name: netherite-root
+        - name: sysprep
+          sysprep:
+            secret:
+              name: netherite-unattend
