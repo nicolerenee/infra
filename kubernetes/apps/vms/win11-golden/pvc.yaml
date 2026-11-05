@@ -1,0 +1,22 @@
+---
+# The Win11 template disk: written once by the builder VM, then only ever
+# cloned. Each rebuild gets a new versioned PVC (-v2, ...), and the
+# DataSource moves to it once that build has finished.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: win11-golden-v1
+  annotations:
+    # Removing this from git (or renaming the dir) must never delete the
+    # template that existing VMs were cloned from.
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  # Clones of RWX Block are RWX Block, which VMs need to live-migrate.
+  accessModes: [ReadWriteMany]
+  storageClassName: ceph-block
+  volumeMode: Block
+  resources:
+    requests:
+      # Kept small because every clone copies it; clones ask for more and
+      # extend C: on first boot.
+      storage: 40Gi

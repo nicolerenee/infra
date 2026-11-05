@@ -1,0 +1,14 @@
+---
+# What VMs clone from: `sourceRef: {kind: DataSource, name: win11}` in a
+# dataVolumeTemplate. Only add a VM that clones this after the builder has
+# finished; before that the PVC is blank or half-installed.
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataSource
+metadata:
+  name: win11
+spec:
+  source:
+    pvc:
+      # The CRD requires a namespace; the template only lives in vms.
+      namespace: vms
+      name: win11-golden-v1
