@@ -6,6 +6,7 @@ resources:
   - ./kubevirt-operator.yaml
   - ./kubevirt-cr.yaml
   - ./kubevirt-migration-policies.yaml
+  - ./kubevirt-priority-classes.yaml
   - ./cdi-operator.yaml
   - ./cdi-cr.yaml
 components:

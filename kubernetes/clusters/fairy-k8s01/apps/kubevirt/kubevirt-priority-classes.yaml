@@ -1,0 +1,23 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app kubevirt-priority-classes
+  namespace: kubevirt
+spec:
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./kubernetes/apps/kubevirt/priority-classes
+  interval: 30m
+  retryInterval: 1m
+  timeout: 5m
+  # PriorityClass value is immutable and VMs reference it; never prune it away
+  # from under running launcher pods.
+  prune: false
+  wait: true

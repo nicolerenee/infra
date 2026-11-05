@@ -28,6 +28,9 @@ spec:
         kubevirt.io/vm: win11-golden-build
         kubevirt.io/domain: win11-golden-build
     spec:
+      # Above ordinary pods so the scheduler doesn't evict this VM to make room
+      # (see kubernetes/apps/kubevirt/priority-classes).
+      priorityClassName: vm-standard
       # A build interrupted by a drain is simply rerun.
       evictionStrategy: None
       terminationGracePeriodSeconds: 60

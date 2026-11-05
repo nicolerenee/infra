@@ -42,6 +42,9 @@ spec:
       labels:
         kubevirt.io/domain: infra-agent
     spec:
+      # Above ordinary pods so the scheduler doesn't evict this VM to make room
+      # (see kubernetes/apps/kubevirt/priority-classes).
+      priorityClassName: vm-standard
       # Node drains move the VM rather than stopping the sessions on it.
       evictionStrategy: LiveMigrate
       terminationGracePeriodSeconds: 120
