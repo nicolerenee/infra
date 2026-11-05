@@ -38,6 +38,13 @@ spec:
           sockets: 1
           threads: 1
           model: host-model
+          features:
+            # No nested virtualization for the guest. Windows 11 turns on
+            # VBS/Memory Integrity when it sees vmx, which runs its own
+            # hypervisor nested under KVM and makes everything crawl.
+            # Nothing these VMs run needs it.
+            - name: vmx
+              policy: disable
         memory:
           guest: 8Gi
         machine:

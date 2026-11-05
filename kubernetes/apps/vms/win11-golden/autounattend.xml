@@ -17,16 +17,31 @@
       <UILanguage>en-US</UILanguage>
       <UserLocale>en-US</UserLocale>
     </component>
+    <!-- Setup can't see a virtio disk without viostor. DriverPaths (unlike
+         drvload) also adds the driver to the installed Windows, which
+         otherwise can't find its own disk (INACCESSIBLE_BOOT_DEVICE). The
+         CD drive letters aren't fixed, so every likely letter is listed;
+         Setup skips the ones that don't exist. -->
+    <component name="Microsoft-Windows-PnpCustomizationsWinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+      <DriverPaths>
+        <PathAndCredentials wcm:action="add" wcm:keyValue="1">
+          <Path>D:\viostor\w11\amd64</Path>
+        </PathAndCredentials>
+        <PathAndCredentials wcm:action="add" wcm:keyValue="2">
+          <Path>E:\viostor\w11\amd64</Path>
+        </PathAndCredentials>
+        <PathAndCredentials wcm:action="add" wcm:keyValue="3">
+          <Path>F:\viostor\w11\amd64</Path>
+        </PathAndCredentials>
+        <PathAndCredentials wcm:action="add" wcm:keyValue="4">
+          <Path>G:\viostor\w11\amd64</Path>
+        </PathAndCredentials>
+        <PathAndCredentials wcm:action="add" wcm:keyValue="5">
+          <Path>H:\viostor\w11\amd64</Path>
+        </PathAndCredentials>
+      </DriverPaths>
+    </component>
     <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
-      <RunSynchronous>
-        <!-- Setup can't see a virtio disk without viostor. The CD drive
-             letters aren't stable across boots, so look for the driver
-             on each instead of hardcoding one. -->
-        <RunSynchronousCommand wcm:action="add">
-          <Order>1</Order>
-          <Path>cmd.exe /c "for %d in (D E F G H I) do if exist %d:\viostor\w11\amd64\viostor.inf drvload %d:\viostor\w11\amd64\viostor.inf"</Path>
-        </RunSynchronousCommand>
-      </RunSynchronous>
       <DiskConfiguration>
         <Disk wcm:action="add">
           <DiskID>0</DiskID>
