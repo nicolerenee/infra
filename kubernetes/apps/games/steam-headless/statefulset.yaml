@@ -9,12 +9,9 @@ kind: StatefulSet
 metadata:
   name: steam-headless
 spec:
-  # Hold replacements while preparing the input startup gate in a later change.
+  # Preserve the running pod; the startup gate applies on a later replacement.
   updateStrategy:
-    type: RollingUpdate
-    rollingUpdate:
-      partition: 2147483647
-      maxUnavailable: 1
+    type: OnDelete
   serviceName: steam-headless
   replicas: 1
   selector:
@@ -35,6 +32,30 @@ spec:
             "mac": "ae:98:3e:5a:7e:42"
           }]
     spec:
+      imagePullSecrets:
+        - name: ghcr-pull
+      initContainers:
+        - name: install-input-check
+          image: ghcr.io/freckleapps/nri-device-rules:1.1.0@sha256:7286af8bcc36b9c36871768d494f69fe3edcfec744c775dd06ef7bc9c8b5eeca
+          command: [/steam-input-check]
+          args: [-install, /nri-tools/steam-input-check]
+          securityContext:
+            runAsUser: 0
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            requests:
+              cpu: 5m
+              memory: 8Mi
+            limits:
+              memory: 32Mi
+          volumeMounts:
+            - name: nri-tools
+              mountPath: /nri-tools
       hostname: steam-headless
       automountServiceAccountToken: false
       enableServiceLinks: false
@@ -56,7 +77,7 @@ spec:
           command:
             - /bin/sh
             - -c
-            - mount -o remount,rw /sys/fs/cgroup && exec /usr/local/bin/steam-headless-init
+            - mount -o remount,rw /sys/fs/cgroup && /nri-tools/steam-input-check && exec /usr/local/bin/steam-headless-init
           securityContext:
             # The capabilities the image documents: systemd and FUSE
             # (SYS_ADMIN), low-latency audio (SYS_NICE), and finding its own
@@ -106,6 +127,9 @@ spec:
               devic.es/uhid: "1"
               devic.es/fuse: "1"
           volumeMounts:
+            - name: nri-tools
+              mountPath: /nri-tools
+              readOnly: true
             - name: data
               mountPath: /var/lib/steam-headless
               subPath: state
@@ -134,6 +158,8 @@ spec:
             - name: dshm
               mountPath: /dev/shm
       volumes:
+        - name: nri-tools
+          emptyDir: {}
         - name: data
           persistentVolumeClaim:
             claimName: steam-headless-home
