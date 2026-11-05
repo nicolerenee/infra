@@ -1,6 +1,7 @@
 ---
-# Steam's home directory, including the default game library. Games are
-# re-downloadable and saves sync to Steam Cloud, so this isn't backed up.
+# Steam Headless state, home and game library (subPaths state/, home/,
+# games/). Games are re-downloadable and saves sync to Steam Cloud, so this
+# isn't backed up.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

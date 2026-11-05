@@ -4,9 +4,9 @@ kind: Namespace
 metadata:
   name: steam
   labels:
-    # Steam Headless runs privileged on the host network: Xorg finds Sunshine's
-    # virtual controllers through udev, and the new /dev/input/event* nodes
-    # need a device-cgroup allowance Kubernetes can only grant as privileged.
+    # Steam Headless runs privileged: systemd needs a writable cgroup and the
+    # virtual controllers' /dev/input/event* nodes need a device allowance,
+    # which Kubernetes only grants to privileged pods.
     pod-security.kubernetes.io/enforce: privileged
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled

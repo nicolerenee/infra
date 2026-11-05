@@ -1,9 +1,9 @@
 ---
-# Steam + a virtual X display + Sunshine in one pod; Moonlight clients on the
-# home LAN connect to the node's IP. Host networking and privileged mode follow
-# the image's own Kubernetes setup: Xorg hot-plugs Sunshine's virtual
-# controllers via udev events, and their /dev/input/event* nodes appear after
-# the pod starts, which only a privileged container may open.
+# Steam Headless 2.x: KDE Plasma (Wayland), Steam and Sunshine under systemd in
+# one pod. Moonlight clients and the web UI (https://<ip>:8483) reach it on its
+# own home-LAN address. Privileged because systemd needs a writable cgroup and
+# the virtual controllers' /dev/input/event* minors need a device allowance,
+# neither of which Kubernetes grants any other way.
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -18,57 +18,49 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/instance: steam-headless
+      annotations:
+        # A static home-LAN address below the UDM's DHCP pool (.50+), so
+        # Moonlight clients find it at a fixed IP. The pointer can override it.
+        k8s.v1.cni.cncf.io/networks: |
+          [{
+            "name": "multus-trusted",
+            "namespace": "networking",
+            "ips": ["10.189.10.42/24"],
+            "mac": "ae:98:3e:5a:7e:42"
+          }]
     spec:
-      hostNetwork: true
-      dnsPolicy: ClusterFirstWithHostNet
+      hostname: steam-headless
+      automountServiceAccountToken: false
+      enableServiceLinks: false
       terminationGracePeriodSeconds: 30
-      securityContext:
-        fsGroup: 1000
-        fsGroupChangePolicy: OnRootMismatch
+      nodeSelector:
+        networks.freckle.systems/home-lan: present
       resourceClaims:
         - name: gpu
           resourceClaimTemplateName: steam-headless
       containers:
         - name: steam-headless
           image: mirror.gcr.io/josh5/steam-headless:2.44.20261019.1@sha256:c60f4d7243a4d94515f722441fff90b752413bf6a45bb221c9a4ed55bc4d9108
+          tty: true
           securityContext:
             privileged: true
+          lifecycle:
+            # systemd as PID 1 treats SIGTERM as "re-exec", not shutdown, and
+            # the API drops lifecycle.stopSignal (feature gate off). Send its
+            # halt signal before the kubelet's SIGTERM so games and services
+            # close cleanly within the grace period.
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "kill -s RTMIN+3 1; sleep 25"]
           env:
-            - name: NAME
-              value: steam-headless
             - name: TZ
               value: America/Chicago
-            - name: USER_LOCALES
-              value: en_US.UTF-8 UTF-8
-            - name: DISPLAY
-              value: ":55"
             - name: PUID
               value: "1000"
             - name: PGID
               value: "1000"
-            - name: UMASK
-              value: "000"
-            - name: MODE
-              value: primary
-            # Moonlight is the only way in; no noVNC/neko web desktop.
-            - name: WEB_UI_MODE
-              value: none
-            - name: ENABLE_VNC_AUDIO
-              value: "false"
-            - name: ENABLE_STEAM
-              value: "true"
-            - name: STEAM_ARGS
-              value: -silent
-            - name: ENABLE_SUNSHINE
-              value: "true"
-            - name: ENABLE_EVDEV_INPUTS
-              value: "true"
-            # No monitor is attached to the iGPU, so Xorg needs the dummy config.
-            - name: FORCE_X11_DUMMY_CONFIG
-              value: "true"
-          envFrom:
-            - secretRef:
-                name: steam-headless
+            - name: SUNSHINE_NAME
+              value: Steam
           resources:
             claims:
               - name: gpu
@@ -85,20 +77,59 @@ spec:
               devic.es/uinput: "1"
               devic.es/uhid: "1"
           volumeMounts:
-            - name: home
-              mountPath: /home/default
-            - name: input
+            - name: data
+              mountPath: /var/lib/steam-headless
+              subPath: state
+            - name: data
+              mountPath: /home/steamheadless
+              subPath: home
+            - name: data
+              mountPath: /mnt/games
+              subPath: games
+            - name: journal
+              mountPath: /var/log/journal
+            - name: provisioning
+              mountPath: /steam-headless-provisioning-password
+              subPath: provisioning-password
+              readOnly: true
+            # Private, in-memory mounts the image expects. /dev/input keeps
+            # the host's real input devices out of the desktop.
+            - name: dev-input
               mountPath: /dev/input
+            - name: run
+              mountPath: /run
+            - name: run-lock
+              mountPath: /run/lock
+            - name: tmp
+              mountPath: /tmp
             - name: dshm
               mountPath: /dev/shm
       volumes:
-        - name: home
+        - name: data
           persistentVolumeClaim:
             claimName: steam-headless-home
-        - name: input
-          hostPath:
-            path: /dev/input
-            type: Directory
+        - name: provisioning
+          secret:
+            secretName: steam-headless
+            defaultMode: 0400
+        - name: journal
+          emptyDir: {}
+        - name: dev-input
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Mi
+        - name: run
+          emptyDir:
+            medium: Memory
+            sizeLimit: 256Mi
+        - name: run-lock
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Mi
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
         - name: dshm
           emptyDir:
             medium: Memory
