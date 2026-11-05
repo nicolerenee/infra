@@ -1,0 +1,15 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/scheduling.k8s.io/priorityclass_v1.json
+# VM launcher pods otherwise run at priority 0, so when a node runs out of CPU
+# the scheduler evicts a VM as readily as any throwaway pod (netherite was shut
+# down this way on 2026-11-05 to make room for a Rook OSD-prepare job). This puts
+# VMs above ordinary workloads but below system-*-critical. preemptionPolicy
+# Never: a starting VM waits for room rather than evicting other pods.
+# Originally created by hand by kubevirt-manager; adopted here unchanged.
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: vm-standard
+description: Priority class for VMs which should not be preempted.
+value: 999999999
+preemptionPolicy: Never

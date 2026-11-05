@@ -44,6 +44,9 @@ spec:
         kubevirt.io/vm: netherite
         kubevirt.io/domain: netherite
     spec:
+      # Above ordinary pods so the scheduler doesn't evict this VM to make room
+      # (see kubernetes/apps/kubevirt/priority-classes).
+      priorityClassName: vm-standard
       # multus-vm-trusted's bridge only exists on home-lan-labelled nodes.
       nodeSelector:
         networks.freckle.systems/home-lan: present
