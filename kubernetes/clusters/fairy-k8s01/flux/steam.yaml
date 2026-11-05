@@ -4,9 +4,9 @@ kind: Namespace
 metadata:
   name: steam
   labels:
-    # Steam Headless runs privileged: systemd needs a writable cgroup and the
-    # virtual controllers' /dev/input/event* nodes need a device allowance,
-    # which Kubernetes only grants to privileged pods.
+    # Steam Headless isn't privileged, but it adds SYS_ADMIN/NET_ADMIN and runs
+    # seccomp-unconfined for systemd and Steam's sandboxes, which the baseline
+    # Pod Security level forbids.
     pod-security.kubernetes.io/enforce: privileged
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled

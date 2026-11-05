@@ -1,18 +1,16 @@
 ---
 # Steam Headless 2.x: KDE Plasma (Wayland), Steam and Sunshine under systemd in
 # one pod. Moonlight clients and the web UI (https://<ip>:8483) reach it on its
-# own home-LAN address. Privileged because systemd needs a writable cgroup and
-# the virtual controllers' /dev/input/event* minors need a device allowance,
-# neither of which Kubernetes grants any other way.
+# own home-LAN address. Deliberately not privileged: people install software
+# from the internet here, so it gets the image's documented capabilities and
+# individually handed-in devices, never the host's /dev, /sys or kernel log.
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: steam-headless
 spec:
   serviceName: steam-headless
-  # Parked (C-779): cn01's RBD mounts wedged while this first ran there;
-  # bring it back once cn01 is healthy and it can be watched.
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/instance: steam-headless
@@ -45,7 +43,20 @@ spec:
           image: mirror.gcr.io/josh5/steam-headless:2.44.20261019.1@sha256:c60f4d7243a4d94515f722441fff90b752413bf6a45bb221c9a4ed55bc4d9108
           tty: true
           securityContext:
-            privileged: true
+            # The capabilities the image documents: systemd and FUSE
+            # (SYS_ADMIN), low-latency audio (SYS_NICE), and finding its own
+            # virtual input devices (SYS_PTRACE, DAC_READ_SEARCH, NET_ADMIN).
+            capabilities:
+              add:
+                - SYS_ADMIN
+                - NET_ADMIN
+                - SYS_NICE
+                - SYS_PTRACE
+                - DAC_READ_SEARCH
+            # Steam's and Flatpak's own sandboxes need syscalls the runtime
+            # default profile blocks.
+            seccompProfile:
+              type: Unconfined
           lifecycle:
             # systemd as PID 1 treats SIGTERM as "re-exec", not shutdown, and
             # the API drops lifecycle.stopSignal (feature gate off). Send its
@@ -78,6 +89,7 @@ spec:
               # uinput/uhid extensions.
               devic.es/uinput: "1"
               devic.es/uhid: "1"
+              devic.es/fuse: "1"
           volumeMounts:
             - name: data
               mountPath: /var/lib/steam-headless
