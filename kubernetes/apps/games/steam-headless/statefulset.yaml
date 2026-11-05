@@ -10,7 +10,9 @@ metadata:
   name: steam-headless
 spec:
   serviceName: steam-headless
-  replicas: 1
+  # Parked (C-779): cn01's RBD mounts wedged while this first ran there;
+  # bring it back once cn01 is healthy and it can be watched.
+  replicas: 0
   selector:
     matchLabels:
       app.kubernetes.io/instance: steam-headless
