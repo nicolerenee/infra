@@ -10,21 +10,17 @@
 # Bridged onto the home LAN (multus-vm-trusted) so it can be reached over RDP
 # from a PC at home. Tailscale is the longer-term access path.
 #
-# Install workflow:
-#   1. Start:    virtctl start netherite -n vms
-#   2. Console:  virtctl vnc netherite -n vms
-#   3. "Load driver" -> virtio-win CD -> viostor\w11\amd64 so setup sees the
-#      root disk, then NetKVM\w11\amd64 for the network.
-#   4. After install run virtio-win-gt-x64.msi from the virtio-win CD, then
-#      drop the two cdrom disks and volumes from this file.
+# Cloned from the win11 template (../win11-golden). On first boot Windows
+# reads unattend.xml from the sysprep CD (rendered by externalsecret.yaml)
+# for its name and accounts, so there is no hand install.
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
   name: netherite
 spec:
-  # Halted until the install is done; switch to Always (or start on demand)
-  # once Windows is set up.
-  runStrategy: Halted
+  # Manual: powered on and off on request (virtctl, later the VM portal)
+  # without changing spec, so Flux never reverts a start or stop.
+  runStrategy: Manual
   dataVolumeTemplates:
     # RWX Block so the VM can live-migrate during node drains; RBD offers RWX
     # only in Block mode.
@@ -36,10 +32,12 @@ spec:
           storageClassName: ceph-block
           volumeMode: Block
           resources:
+            # Larger than the 40Gi template; unattend.xml extends C:.
             requests:
               storage: 64Gi
-        source:
-          blank: {}
+        sourceRef:
+          kind: DataSource
+          name: win11
   template:
     metadata:
       labels:
@@ -122,12 +120,9 @@ spec:
               disk:
                 bus: virtio
               bootOrder: 1
-            - name: win11-iso
-              cdrom:
-                bus: sata
-                readonly: true
-              bootOrder: 2
-            - name: virtio-iso
+            # Read once, on first boot. Later boots ignore it, so it can
+            # stay attached.
+            - name: sysprep
               cdrom:
                 bus: sata
                 readonly: true
@@ -145,9 +140,7 @@ spec:
         - name: root
           dataVolume:
             name: netherite-root
-        - name: win11-iso
-          persistentVolumeClaim:
-            claimName: iso-win11-25h2
-        - name: virtio-iso
-          persistentVolumeClaim:
-            claimName: iso-virtio-win
+        - name: sysprep
+          sysprep:
+            secret:
+              name: netherite-unattend
