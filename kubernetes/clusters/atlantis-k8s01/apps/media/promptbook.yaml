@@ -14,23 +14,40 @@ spec:
   dependsOn:
     - name: rook-ceph-cluster
       namespace: rook-ceph
+    - name: volsync
+      namespace: volsync-system
+    - name: truenas-csi
+      namespace: truenas-csi
   interval: 1h
   path: ./kubernetes/apps/media/promptbook
-  # UID 0 makes the restricted rsync daemon attempt setgid without capability.
-  # Keep the working restic backup until the root-owned stub can migrate safely.
   components:
-    - ../../../components/volsync
-  # The application PVC is already populated; retire its failed bootstrap restore.
+    - ../../../components/volsync-rsync-tls
   patches:
-    - target:
-        group: volsync.backube
-        kind: ReplicationDestination
-      patch: |-
+    # Preserve the bound PVC's immutable bootstrap reference without recreating it.
+    - patch: |-
+        apiVersion: v1
+        kind: PersistentVolumeClaim
+        metadata:
+          name: ${APP}${VOLSYNC_PVC_SUFFIX:=}
+        spec:
+          dataSourceRef:
+            apiGroup: volsync.backube
+            kind: ReplicationDestination
+            name: ${APP}${VOLSYNC_PVC_SUFFIX:=}-bootstrap
+    # Root rsync tries setgid with dropped capabilities. A non-root receiver
+    # owns its backup files; the source stays root to read the app snapshot.
+    - patch: |-
         apiVersion: volsync.backube/v1alpha1
         kind: ReplicationDestination
         metadata:
-          name: unused
-        $patch: delete
+          name: ${APP}${VOLSYNC_PVC_SUFFIX:=}
+        spec:
+          rsyncTLS:
+            moverSecurityContext:
+              runAsUser: 1000
+              runAsGroup: 1000
+              fsGroup: 1000
+              runAsNonRoot: true
   prune: true
   retryInterval: 2m
   sourceRef:
