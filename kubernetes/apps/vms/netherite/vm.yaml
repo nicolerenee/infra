@@ -1,0 +1,153 @@
+---
+# Win11 25H2 gaming VM for Minecraft Bedrock (mostly idling in-game).
+# Windows rather than Linux because Bedrock's Linux routes (Wine/GDK builds,
+# the Android-based launcher) lag or break on game updates, and servers and
+# Realms refuse clients that aren't on the latest version.
+#
+# No GPU: Windows' software renderer (WARP) is enough for an idle player with
+# low render distance and a frame cap; the cost is CPU while the game runs.
+#
+# Bridged onto the home LAN (multus-vm-trusted) so it can be reached over RDP
+# from a PC at home. Tailscale is the longer-term access path.
+#
+# Install workflow:
+#   1. Start:    virtctl start netherite -n vms
+#   2. Console:  virtctl vnc netherite -n vms
+#   3. "Load driver" -> virtio-win CD -> viostor\w11\amd64 so setup sees the
+#      root disk, then NetKVM\w11\amd64 for the network.
+#   4. After install run virtio-win-gt-x64.msi from the virtio-win CD, then
+#      drop the two cdrom disks and volumes from this file.
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: netherite
+spec:
+  # Halted until the install is done; switch to Always (or start on demand)
+  # once Windows is set up.
+  runStrategy: Halted
+  dataVolumeTemplates:
+    # RWX Block so the VM can live-migrate during node drains; RBD offers RWX
+    # only in Block mode.
+    - metadata:
+        name: netherite-root
+      spec:
+        storage:
+          accessModes: [ReadWriteMany]
+          storageClassName: ceph-block
+          volumeMode: Block
+          resources:
+            requests:
+              storage: 64Gi
+        source:
+          blank: {}
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: netherite
+        kubevirt.io/domain: netherite
+    spec:
+      # multus-vm-trusted's bridge only exists on home-lan-labelled nodes.
+      nodeSelector:
+        networks.freckle.systems/home-lan: present
+      terminationGracePeriodSeconds: 180
+      evictionStrategy: LiveMigrate
+      networks:
+        - name: lan
+          multus:
+            networkName: vms/multus-vm-trusted
+      domain:
+        ioThreadsPolicy: auto
+        cpu:
+          cores: 4
+          sockets: 1
+          threads: 1
+          model: host-model
+        memory:
+          guest: 8Gi
+        machine:
+          # Pinned rather than the moving `q35` alias, so a QEMU upgrade never
+          # looks like a hardware swap to Windows (reactivation prompts).
+          type: pc-q35-rhel9.8.0
+        firmware:
+          # Fixed so activation survives the VM CR being deleted and recreated.
+          uuid: "6530b29a-95d3-4708-a1c4-cd5e366f21e0"
+          bootloader:
+            efi:
+              secureBoot: true
+              # Without persistent EFI vars Windows won't boot after the
+              # first shutdown.
+              persistent: true
+        features:
+          acpi: {}
+          apic: {}
+          # Secure Boot needs SMM.
+          smm:
+            enabled: true
+          hyperv:
+            relaxed: {}
+            vapic: {}
+            spinlocks:
+              spinlocks: 8191
+            vpindex: {}
+            runtime: {}
+            synic: {}
+            synictimer:
+              direct: {}
+            tlbflush: {}
+            frequencies: {}
+            reenlightenment: {}
+            ipi: {}
+            reset: {}
+        clock:
+          utc: {}
+          timer:
+            hpet:
+              present: false
+            pit:
+              tickPolicy: delay
+            rtc:
+              tickPolicy: catchup
+            hyperv: {}
+        devices:
+          tpm:
+            # vTPM is a Win11 requirement; persistence keeps it across restarts.
+            persistent: true
+          rng: {}
+          disks:
+            - name: root
+              # writeback + a dedicated iothread avoids the libceph CRC errors
+              # seen with qemu's default cache=none, and speeds up installs.
+              cache: writeback
+              dedicatedIOThread: true
+              disk:
+                bus: virtio
+              bootOrder: 1
+            - name: win11-iso
+              cdrom:
+                bus: sata
+                readonly: true
+              bootOrder: 2
+            - name: virtio-iso
+              cdrom:
+                bus: sata
+                readonly: true
+          interfaces:
+            - name: lan
+              bridge: {}
+              # Fixed so the home-LAN DHCP lease (and any reservation) is stable.
+              macAddress: "52:54:00:11:00:02"
+              model: virtio
+          inputs:
+            - name: tablet
+              type: tablet
+              bus: usb
+      volumes:
+        - name: root
+          dataVolume:
+            name: netherite-root
+        - name: win11-iso
+          persistentVolumeClaim:
+            claimName: iso-win11-25h2
+        - name: virtio-iso
+          persistentVolumeClaim:
+            claimName: iso-virtio-win

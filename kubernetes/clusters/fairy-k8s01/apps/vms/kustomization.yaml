@@ -6,3 +6,4 @@ resources:
   - ./multus-vm-trusted.yaml
   - ./lutron-designer.yaml
   - ./win11-golden.yaml
+  - ./netherite.yaml
