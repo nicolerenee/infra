@@ -242,6 +242,17 @@ defaultRules:
             and on (namespace, statefulset, job, cluster)
               (kube_leaderworkerset_rollout_partition{job="kube-state-metrics"} > 0)
           )
+    # These targets scrape every 20s. A retired target can leave one up=0
+    # sample in instant-query lookback without a staleness marker. Require
+    # a sample younger than 60s so it clears before the unchanged 2m hold.
+    # Continuously scraped failures stay eligible; missing discovery targets
+    # remain covered separately by ScrapePoolHasNoTargets.
+    ServiceDown:
+      spec:
+        expr: |-
+          (up{job=~".*(victoriametrics|vmselect|vminsert|vmstorage|vmagent|vmalert|vmsingle|vmalertmanager|vmauth).*"} == 0)
+          and
+          (time() - timestamp(up{job=~".*(victoriametrics|vmselect|vminsert|vmstorage|vmagent|vmalert|vmsingle|vmalertmanager|vmauth).*"}) < 60)
     # vmagent logs one warning per failed scrape (lib/promscrape/scrapework.go).
     # A replaced pod's old IP fails one scrape before service discovery drops
     # it, so a few rollouts were enough to fire this with no real problem.
