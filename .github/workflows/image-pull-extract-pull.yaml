@@ -84,43 +84,53 @@ jobs:
       # summary below reports the shortfall rather than hiding it.
       - name: Gather Images
         run: |
-          rc=0
-          # --api-versions declares APIs the real clusters serve but an offline
-          # render cannot discover. Charts that gate on API availability fail
-          # closed otherwise: the GPU Operator refuses to render a GPUCluster CR
-          # with "no resource.k8s.io DeviceClass API is served" unless told
-          # DRA exists. Both clusters run Kubernetes 1.37 and use DRA in anger
-          # (nvidia and intel GPU drivers), so asserting it here matches reality
-          # rather than papering over a gap.
-          flate get images \
-            --path kubernetes/clusters/${{ inputs.cluster }}/flux \
-            --allow-missing-secrets \
-            --api-versions resource.k8s.io/v1/DeviceClass \
-            --output json \
-            --no-progress > images.json 2> flate.err || rc=$?
+          # Fetching schemas and charts can fail transiently. Retry the complete
+          # render so cached downloads can be reused, replacing partial output.
+          # Persistent render errors still fail the check after bounded backoff.
+          for attempt in 1 2 3; do
+            rc=0
+            # --api-versions declares APIs the real clusters serve but an offline
+            # render cannot discover. Charts that gate on API availability fail
+            # closed otherwise: the GPU Operator refuses to render a GPUCluster CR
+            # with "no resource.k8s.io DeviceClass API is served" unless told
+            # DRA exists. Both clusters run Kubernetes 1.37 and use DRA in anger
+            # (nvidia and intel GPU drivers), so asserting it here matches reality
+            # rather than papering over a gap.
+            flate get images \
+              --path kubernetes/clusters/${{ inputs.cluster }}/flux \
+              --allow-missing-secrets \
+              --api-versions resource.k8s.io/v1/DeviceClass \
+              --output json \
+              --no-progress > images.json 2> flate.err || rc=$?
 
-          cat flate.err
+            cat flate.err
 
-          if [ "${rc}" -ne 0 ]; then
-            # Fail closed: an empty capture means flate died for some reason
-            # other than a reconcile summary (bad flag, download failure, ...).
-            failures=$(grep -oE 'reconcile completed with [0-9]+ failure' flate.err \
-              | grep -oE '[0-9]+' | head -1)
-            if [ -z "${failures}" ] || [ "${failures}" -ne 0 ]; then
-              echo "::error::flate reported render failures for ${{ inputs.cluster }}"
-              exit 1
+            if [ "${rc}" -ne 0 ]; then
+              failures=$(grep -oE 'reconcile completed with [0-9]+ failure' flate.err \
+                | grep -oE '[0-9]+' | head -1 || true)
+              if [ -z "${failures}" ] || [ "${failures}" -ne 0 ]; then
+                if [ "${attempt}" -eq 3 ]; then
+                  echo "::error::flate reported render failures after 3 attempts for ${{ inputs.cluster }}"
+                  exit 1
+                fi
+                delay=$((10 * (2 * attempt - 1)))
+                echo "::warning::Render attempt ${attempt} failed; retrying in ${delay}s"
+                sleep "${delay}"
+                continue
+              fi
+              blocked=$(grep -oE '\(\+[0-9]+ blocked' flate.err | grep -oE '[0-9]+' | head -1 || true)
+              note="${blocked:-an unknown number of} Kustomizations blocked on runtime-only"
+              note="${note} dependencies (Reflector-replicated k8s-cluster-info);"
+              note="${note} their images are not pre-pulled"
+              echo "::warning::${{ inputs.cluster }} (${{ matrix.branch }}): 0 render failures, ${note}"
+              echo "> ⚠️ ${note}" >> $GITHUB_STEP_SUMMARY
             fi
-            blocked=$(grep -oE '\(\+[0-9]+ blocked' flate.err | grep -oE '[0-9]+' | head -1)
-            note="${blocked:-an unknown number of} Kustomizations blocked on runtime-only"
-            note="${note} dependencies (Reflector-replicated k8s-cluster-info);"
-            note="${note} their images are not pre-pulled"
-            echo "::warning::${{ inputs.cluster }} (${{ matrix.branch }}): 0 render failures, ${note}"
-            echo "> ⚠️ ${note}" >> $GITHUB_STEP_SUMMARY
-          fi
 
-          # Downstream jobs jq over this — a truncated/invalid file must not
-          # silently become an empty diff.
-          jq -e 'type == "array"' images.json > /dev/null
+            # Downstream jobs jq over this — a truncated/invalid file must not
+            # silently become an empty diff.
+            jq -e -s 'length == 1 and (.[0] | type == "array")' images.json > /dev/null
+            break
+          done
 
       - name: Extract Images
         id: extract
