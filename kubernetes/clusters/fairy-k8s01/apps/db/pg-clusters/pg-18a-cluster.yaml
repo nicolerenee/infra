@@ -143,6 +143,44 @@ spec:
         passwordSecret:
           name: bookorbit-read-db-role
 
+      - name: windmill_user
+        ensure: present
+        login: false
+        inherit: true
+        superuser: false
+        bypassrls: false
+        createdb: false
+        createrole: false
+        replication: false
+        connectionLimit: -1
+      - name: windmill_admin
+        ensure: present
+        login: false
+        inherit: true
+        superuser: false
+        bypassrls: true
+        createdb: false
+        createrole: false
+        replication: false
+        connectionLimit: -1
+        inRoles:
+        - windmill_user
+      - name: windmill
+        ensure: present
+        login: true
+        inherit: true
+        superuser: false
+        bypassrls: false
+        createdb: false
+        createrole: false
+        replication: false
+        connectionLimit: -1
+        inRoles:
+        - windmill_admin
+        - windmill_user
+        passwordSecret:
+          name: windmill-db-role
+
   plugins:
     - name: barman-cloud.cloudnative-pg.io
       isWALArchiver: true
