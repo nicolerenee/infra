@@ -1,0 +1,21 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMPodScrape
+metadata:
+  name: ai-gateway-extproc
+spec:
+  selector:
+    matchLabels:
+      gateway.envoyproxy.io/owning-gateway-name: ai
+      gateway.envoyproxy.io/owning-gateway-namespace: inference
+  podMetricsEndpoints:
+    # Ext-proc uses a separate admin endpoint from Envoy's proxy metrics.
+    - port: aigw-admin
+      scheme: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      metricRelabelConfigs:
+        - sourceLabels: [__name__]
+          regex: gen_ai_.*
+          action: keep

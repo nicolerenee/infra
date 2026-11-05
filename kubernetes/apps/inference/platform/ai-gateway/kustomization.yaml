@@ -6,3 +6,4 @@ resources:
   - ./externalsecret.yaml
   - ./gateway.yaml
   - ./route.yaml
+  - ./vmpodscrape.yaml
