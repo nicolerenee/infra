@@ -48,6 +48,15 @@ spec:
                 - count: 10
                   paths:
                     - path: /dev/uhid
+            # FUSE for unprivileged pods that mount AppImages and similar
+            # (Steam Headless).
+            - --device
+            - |
+              name: fuse
+              groups:
+                - count: 10
+                  paths:
+                    - path: /dev/fuse
             - --device
             - |
               name: dvb-t
