@@ -1,0 +1,52 @@
+---
+# A separate basename keeps scheduled saves from replacing this recovery set.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nautobot-queue-pre-v2-1-save-c629
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 120
+  template:
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: save
+          image: docker.io/library/redis:8.2.2-alpine
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              cli() { redis-cli -e --raw -h nautobot-queue "$@"; }
+              identity() { cli INFO server | tr -d '\r' | sed -n 's/^run_id://p'; }
+              before=$(identity)
+              test -n "$before"
+              test "$(cli ROLE | head -n 1 | tr -d '\r')" = master
+              test "$(cli SAVE DF c629-pre-v2-1 | tr -d '\r')" = OK
+              test "$(identity)" = "$before"
+              test "$(cli ROLE | head -n 1 | tr -d '\r')" = master
+              echo 'Named recovery save completed; verify source pod logs and PVC before volume capture.'
+          env:
+            - name: REDISCLI_AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: nautobot-queue-secrets
+                  key: password
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
