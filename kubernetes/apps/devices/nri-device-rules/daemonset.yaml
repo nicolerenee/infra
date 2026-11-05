@@ -1,0 +1,62 @@
+---
+# Adds device-cgroup rules to containers in an allow-listed set of namespaces,
+# so pods that create devices after they start don't need to be privileged.
+# Today that's Steam Headless: Sunshine's virtual controllers appear as
+# /dev/input/event* (major 13) after start. The namespaces and rules are fixed
+# here in the args; pods can't ask the plugin for anything.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nri-device-rules
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: nri-device-rules
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: nri-device-rules
+    spec:
+      # Only where steam-headless can run (cn nodes with the home-LAN bridge).
+      nodeSelector:
+        networks.freckle.systems/home-lan: present
+      # A rule only applies to containers created while the plugin is
+      # connected, so keep it running ahead of ordinary workloads.
+      priorityClassName: system-node-critical
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      imagePullSecrets:
+        - name: ghcr-pull
+      containers:
+        - name: nri-device-rules
+          image: ghcr.io/freckleapps/nri-device-rules:1.0.0@sha256:7a868d7616eb9b1d11b64fedd8dcab420173c13b42cbc9590e1201bbf01eb910
+          args:
+            - -namespace=steam
+            - -rule=c 13:* rwm
+          # Root only to own the root-owned 0700 NRI socket directory; no
+          # capabilities at all.
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+          volumeMounts:
+            - name: nri
+              mountPath: /var/run/nri
+      volumes:
+        - name: nri
+          hostPath:
+            path: /var/run/nri
+            type: Directory
