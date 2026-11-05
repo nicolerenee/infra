@@ -1,5 +1,5 @@
 ---
-# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/scheduling.k8s.io/priorityclass_v1.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.26.1-standalone-strict/priorityclass-scheduling-v1.json
 # VM launcher pods otherwise run at priority 0, so when a node runs out of CPU
 # the scheduler evicts a VM as readily as any throwaway pod (netherite was shut
 # down this way on 2026-11-05 to make room for a Rook OSD-prepare job). This puts
