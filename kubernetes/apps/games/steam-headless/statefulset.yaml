@@ -1,0 +1,105 @@
+---
+# Steam + a virtual X display + Sunshine in one pod; Moonlight clients on the
+# home LAN connect to the node's IP. Host networking and privileged mode follow
+# the image's own Kubernetes setup: Xorg hot-plugs Sunshine's virtual
+# controllers via udev events, and their /dev/input/event* nodes appear after
+# the pod starts, which only a privileged container may open.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: steam-headless
+spec:
+  serviceName: steam-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: steam-headless
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: steam-headless
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      resourceClaims:
+        - name: gpu
+          resourceClaimTemplateName: steam-headless
+      containers:
+        - name: steam-headless
+          image: mirror.gcr.io/josh5/steam-headless:2.44.20261019.1@sha256:c60f4d7243a4d94515f722441fff90b752413bf6a45bb221c9a4ed55bc4d9108
+          securityContext:
+            privileged: true
+          env:
+            - name: NAME
+              value: steam-headless
+            - name: TZ
+              value: America/Chicago
+            - name: USER_LOCALES
+              value: en_US.UTF-8 UTF-8
+            - name: DISPLAY
+              value: ":55"
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: UMASK
+              value: "000"
+            - name: MODE
+              value: primary
+            # Moonlight is the only way in; no noVNC/neko web desktop.
+            - name: WEB_UI_MODE
+              value: none
+            - name: ENABLE_VNC_AUDIO
+              value: "false"
+            - name: ENABLE_STEAM
+              value: "true"
+            - name: STEAM_ARGS
+              value: -silent
+            - name: ENABLE_SUNSHINE
+              value: "true"
+            - name: ENABLE_EVDEV_INPUTS
+              value: "true"
+            # No monitor is attached to the iGPU, so Xorg needs the dummy config.
+            - name: FORCE_X11_DUMMY_CONFIG
+              value: "true"
+          envFrom:
+            - secretRef:
+                name: steam-headless
+          resources:
+            claims:
+              - name: gpu
+            requests:
+              cpu: "2"
+              memory: 4Gi
+            limits:
+              # These run on control-plane and Ceph nodes; cap a game so it
+              # can't starve etcd or the OSDs.
+              cpu: "6"
+              memory: 12Gi
+              # Schedules only onto nodes whose Talos schematic ships the
+              # uinput/uhid extensions.
+              devic.es/uinput: "1"
+              devic.es/uhid: "1"
+          volumeMounts:
+            - name: home
+              mountPath: /home/default
+            - name: input
+              mountPath: /dev/input
+            - name: dshm
+              mountPath: /dev/shm
+      volumes:
+        - name: home
+          persistentVolumeClaim:
+            claimName: steam-headless-home
+        - name: input
+          hostPath:
+            path: /dev/input
+            type: Directory
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 2Gi
