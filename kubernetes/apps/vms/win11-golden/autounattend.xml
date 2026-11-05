@@ -146,16 +146,17 @@
           <Order>1</Order>
           <Path>cmd.exe /c "for %d in (D E F G H I) do if exist %d:\virtio-win-guest-tools.exe start /wait %d:\virtio-win-guest-tools.exe /install /quiet /norestart"</Path>
         </RunSynchronousCommand>
-        <!-- Windows caches this answer file under Panther, and a cached
-             copy outranks the one each clone brings on its own CD. Remove
-             it so clones read theirs. -->
+        <!-- Windows caches this answer file as Panther\unattend.xml, and that
+             cached copy outranks the one each clone brings on its CD, so it
+             has to go before sysprep. Deleting it inside this pass doesn't
+             stick: the pass rewrites the cache when it finishes. So a
+             detached step waits for the pass to end, closes the Sysprep
+             window audit mode opens on its own (two can't run at once),
+             deletes the cache and generalizes. Kept terse: Path is capped
+             at 259 characters, and a longer one invalidates the pass. -->
         <RunSynchronousCommand wcm:action="add">
           <Order>2</Order>
-          <Path>cmd.exe /c "del /f /q C:\Windows\Panther\unattend.xml C:\Windows\Panther\Unattend\unattend.xml 2&gt;nul &amp; exit /b 0"</Path>
-        </RunSynchronousCommand>
-        <RunSynchronousCommand wcm:action="add">
-          <Order>3</Order>
-          <Path>C:\Windows\System32\Sysprep\sysprep.exe /generalize /oobe /shutdown /quiet</Path>
+          <Path>cmd /c start "" cmd /c "ping -n 31 127.1&gt;nul&amp;taskkill /f /im sysprep.exe&amp;del /f /q %WINDIR%\Panther\unattend*.xml&amp;%WINDIR%\System32\Sysprep\sysprep.exe /generalize /oobe /shutdown /quiet"</Path>
         </RunSynchronousCommand>
       </RunSynchronous>
     </component>
