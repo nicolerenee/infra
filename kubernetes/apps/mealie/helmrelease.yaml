@@ -5,8 +5,6 @@ kind: HelmRelease
 metadata:
   name: mealie
 spec:
-  # Keep Helm stopped until the offline database restore is validated.
-  suspend: true
   interval: 1h
   chartRef:
     kind: OCIRepository
