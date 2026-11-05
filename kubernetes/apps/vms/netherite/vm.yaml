@@ -60,6 +60,11 @@ spec:
           sockets: 1
           threads: 1
           model: host-model
+          features:
+            # No nested virtualization: Windows would turn on VBS and run its
+            # own hypervisor nested under KVM, costing CPU for nothing here.
+            - name: vmx
+              policy: disable
         memory:
           guest: 8Gi
         machine:
