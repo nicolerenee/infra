@@ -4,6 +4,7 @@ kind: Namespace
 metadata:
   name: steam
   labels:
+    freckle.systems/ghcr-pull: "true"
     # Steam Headless isn't privileged, but it adds SYS_ADMIN/NET_ADMIN and runs
     # seccomp-unconfined for systemd and Steam's sandboxes, which the baseline
     # Pod Security level forbids.

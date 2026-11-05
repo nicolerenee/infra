@@ -9,6 +9,12 @@ kind: StatefulSet
 metadata:
   name: steam-headless
 spec:
+  # Hold replacements while preparing the input startup gate in a later change.
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 2147483647
+      maxUnavailable: 1
   serviceName: steam-headless
   replicas: 1
   selector:
