@@ -8,4 +8,4 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
-  - ./lldap.yaml
+  - ./lldap-data.yaml
