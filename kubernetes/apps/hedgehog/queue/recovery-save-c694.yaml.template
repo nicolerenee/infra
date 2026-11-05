@@ -1,0 +1,79 @@
+---
+# Manual template only: not included in kustomization.yaml. See docs-notes/dragonfly-recovery-save.md.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hedgehog-queue-pre-v2-1-save-c694
+  namespace: hedgehog
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 120
+  template:
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: save
+          image: docker.io/library/redis:8.2.2-alpine
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              stage=configuration
+              fail() { echo "Recovery save failed at $stage: $1" >&2; exit 1; }
+              trap 'code=$?; if [ "$code" -ne 0 ]; then echo "Recovery save stopped at $stage (exit $code); inspect before retrying." >&2; fi' EXIT
+              # A direct pod address prevents separate CLI connections following a Service failover.
+              case "$RECOVERY_HOST" in
+                ''|*[!0-9.]*) fail 'set RECOVERY_HOST to the approved primary pod IPv4 address' ;;
+              esac
+              cli() { redis-cli -e --raw -h "$RECOVERY_HOST" "$@" 2>/dev/null; }
+              uptime() {
+                info=$(cli INFO server) || fail 'INFO server command failed'
+                value=$(printf '%s\n' "$info" | tr -d '\r' | sed -n 's/^uptime_in_seconds://p')
+                case "$value" in ''|*[!0-9]*) fail 'missing or invalid uptime_in_seconds' ;; esac
+                printf '%s\n' "$value"
+              }
+              primary() {
+                role=$(cli ROLE) || fail 'ROLE command failed'
+                test "$(printf '%s\n' "$role" | tr -d '\r' | head -n 1)" = master || fail 'target is not master'
+              }
+              stage=preflight
+              echo 'Checking pinned primary and uptime.'
+              primary
+              before=$(uptime)
+              # With a 120-second Job deadline, a restart must reduce an uptime this large.
+              test "$before" -ge 180 || fail 'primary uptime must be at least 180 seconds'
+              stage=save
+              echo 'Issuing one named SAVE; do not retry automatically if interrupted.'
+              result=$(cli SAVE DF c694-pre-v2-1) || fail 'SAVE command failed or outcome is unknown'
+              test "$(printf '%s' "$result" | tr -d '\r')" = OK || fail 'SAVE did not return OK'
+              stage=verification
+              after=$(uptime)
+              test "$after" -ge "$before" || fail 'primary restarted during SAVE'
+              primary
+              echo 'SAVE returned OK and primary checks passed; named files on the selected PVC still require laptop verification.'
+          env:
+            - name: RECOVERY_HOST
+              value: ""
+            - name: REDISCLI_AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: hedgehog-queue-secrets
+                  key: password
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
