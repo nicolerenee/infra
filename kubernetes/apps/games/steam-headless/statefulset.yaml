@@ -42,6 +42,15 @@ spec:
         - name: steam-headless
           image: mirror.gcr.io/josh5/steam-headless:2.44.20261019.1@sha256:c60f4d7243a4d94515f722441fff90b752413bf6a45bb221c9a4ed55bc4d9108
           tty: true
+          # systemd needs a writable cgroup, and Kubernetes mounts it read-only
+          # for unprivileged containers. Remount only this container's view
+          # (a private cgroup namespace, so just its own subtree) read-write,
+          # as Docker's writable-cgroups does, then exec the image's init as
+          # PID 1. The pod-level cgroup above it still enforces the limits.
+          command:
+            - /bin/sh
+            - -c
+            - mount -o remount,rw /sys/fs/cgroup && exec /usr/local/bin/steam-headless-init
           securityContext:
             # The capabilities the image documents: systemd and FUSE
             # (SYS_ADMIN), low-latency audio (SYS_NICE), and finding its own
