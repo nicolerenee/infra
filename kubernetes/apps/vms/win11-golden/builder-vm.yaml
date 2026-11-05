@@ -1,0 +1,129 @@
+---
+# One-shot VM that builds the Win11 template onto win11-golden-v1 from the
+# answer file in autounattend.xml: unattended install, virtio drivers and
+# guest agent, then sysprep /generalize and power off. The disk is then the
+# template and this VM must not boot it again (that would consume the
+# generalized image).
+#
+# Build:
+#   virtctl start win11-golden-build -n vms
+#   then within ~5 s, tap a key for the Windows CD's "Press any key to boot
+#   from CD" prompt (it has no unattended bypass):
+#   kubectl -n vms exec <virt-launcher pod> -c compute -- virsh -c \
+#     'qemu+unix:///session?socket=/var/run/libvirt/virtqemud-sock' \
+#     send-key vms_win11-golden-build KEY_ENTER
+# The build takes ~20-30 min and ends with the VMI stopped on its own.
+# Watch with: virtctl vnc win11-golden-build -n vms
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: win11-golden-build
+spec:
+  # Manual: started and stopped only on request, and Flux never fights a
+  # start/stop because spec.runStrategy doesn't change.
+  runStrategy: Manual
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: win11-golden-build
+        kubevirt.io/domain: win11-golden-build
+    spec:
+      # A build interrupted by a drain is simply rerun.
+      evictionStrategy: None
+      terminationGracePeriodSeconds: 60
+      domain:
+        ioThreadsPolicy: auto
+        cpu:
+          cores: 4
+          sockets: 1
+          threads: 1
+          model: host-model
+        memory:
+          guest: 8Gi
+        machine:
+          # Same pinned type the clones use, so the template's hardware
+          # matches theirs.
+          type: pc-q35-rhel9.8.0
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: true
+              # No persistent EFI/TPM: guest reboots during setup keep the
+              # VMI, and the template must not carry state bound to this VM.
+              persistent: false
+        features:
+          acpi: {}
+          apic: {}
+          smm:
+            enabled: true
+          hyperv:
+            relaxed: {}
+            vapic: {}
+            spinlocks:
+              spinlocks: 8191
+            vpindex: {}
+            runtime: {}
+            synic: {}
+            synictimer:
+              direct: {}
+            tlbflush: {}
+            frequencies: {}
+            reenlightenment: {}
+            ipi: {}
+            reset: {}
+        clock:
+          utc: {}
+          timer:
+            hpet:
+              present: false
+            pit:
+              tickPolicy: delay
+            rtc:
+              tickPolicy: catchup
+            hyperv: {}
+        devices:
+          # No network: Windows can't pull updates or Store app upgrades
+          # mid-build, which are the usual reasons sysprep /generalize fails.
+          autoattachPodInterface: false
+          tpm: {}
+          rng: {}
+          disks:
+            - name: root
+              # Same as every Windows VM here: writeback + an iothread
+              # avoids the libceph CRC errors seen with cache=none.
+              cache: writeback
+              dedicatedIOThread: true
+              disk:
+                bus: virtio
+              bootOrder: 1
+            - name: win11-iso
+              cdrom:
+                bus: sata
+                readonly: true
+              bootOrder: 2
+            - name: virtio-iso
+              cdrom:
+                bus: sata
+                readonly: true
+            - name: sysprep
+              cdrom:
+                bus: sata
+                readonly: true
+          inputs:
+            - name: tablet
+              type: tablet
+              bus: usb
+      volumes:
+        - name: root
+          persistentVolumeClaim:
+            claimName: win11-golden-v1
+        - name: win11-iso
+          persistentVolumeClaim:
+            claimName: iso-win11-25h2
+        - name: virtio-iso
+          persistentVolumeClaim:
+            claimName: iso-virtio-win
+        - name: sysprep
+          sysprep:
+            configMap:
+              name: win11-golden-autounattend
