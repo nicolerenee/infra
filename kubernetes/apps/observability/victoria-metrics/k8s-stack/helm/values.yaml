@@ -385,6 +385,24 @@ alertmanager:
     # `namespace="<config's namespace>"` into each merged route and nothing
     # outside that namespace ever matches.
     disableNamespaceMatcher: true
+    # Two peered replicas (C-380), so one pod restarting (a chart bump, a node
+    # drain) no longer takes Alertmanager down. With replicaCount > 1 the
+    # operator peers the pods (--cluster.peer, port 9094) and the chart lists
+    # every replica as a vmalert notifier; the peers gossip silences and the
+    # notification log, so each alert still reaches cockpit once, and a single
+    # pod restart no longer wipes silences (C-378). Data stays on emptyDir on
+    # purpose: no Ceph dependency for Alertmanager.
+    replicaCount: 2
+    podDisruptionBudget:
+      maxUnavailable: 1
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: vmalertmanager
+            app.kubernetes.io/instance: vm
 
 kubeControllerManager:
   enabled: true
