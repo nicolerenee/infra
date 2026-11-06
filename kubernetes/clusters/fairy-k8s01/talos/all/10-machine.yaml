@@ -127,12 +127,14 @@ machine:
             errnoRet: 1
     # Steam's bubblewrap (pressure-vessel) under a pod user namespace, C-895.
     # containerd 2.3.7's RuntimeDefault for a container that dropped every
-    # capability, plus the namespace syscalls (clone, clone3, setns, unshare)
-    # and the mount operations bubblewrap performs inside the user namespace
-    # it creates (mount, umount2, pivot_root, sethostname). Nothing else moved;
-    # the kernel's capability checks still gate those syscalls, which is why
-    # this is only safe together with hostUsers: false and drop ALL. Source,
-    # derivation and the equality check: ../seccomp/README.md.
+    # capability, plus the namespace syscalls (clone, clone3, setns, unshare),
+    # the mount operations bubblewrap performs inside the user namespace it
+    # creates (mount, umount2, pivot_root, sethostname) and chroot, which
+    # Chromium's sandbox zygote (Steam's web helper) uses inside the user
+    # namespace it creates. Nothing else moved; the kernel's capability checks
+    # still gate those syscalls, which is why this is only safe together with
+    # hostUsers: false and drop ALL. Source, derivation and the equality check:
+    # ../seccomp/README.md.
     - name: runtime-default-userns.json
       value:
         defaultAction: SCMP_ACT_ERRNO
@@ -158,6 +160,7 @@ machine:
               - chmod
               - chown
               - chown32
+              - chroot
               - clock_adjtime
               - clock_adjtime64
               - clock_getres
