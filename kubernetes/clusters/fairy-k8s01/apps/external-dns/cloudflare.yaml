@@ -25,3 +25,12 @@ spec:
     namespace: flux-system
   interval: 30m
   timeout: 5m
+  patches:
+    # Only fairy publishes the games portal's tailnet hostname.
+    - target:
+        kind: HelmRelease
+        name: external-dns-cloudflare
+      patch: |-
+        - op: add
+          path: /spec/values/domainFilters/-
+          value: freckle.games
