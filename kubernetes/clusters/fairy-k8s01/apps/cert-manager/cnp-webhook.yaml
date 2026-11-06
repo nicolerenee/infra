@@ -1,0 +1,48 @@
+---
+# Ingress boundary for the cert-manager admission webhook on fairy (C-1217,
+# first staged listener). Selecting the pod puts it in ingress default-deny;
+# egress has no section here and stays unrestricted.
+#
+# Sources come from receiver-side Hubble flows captured 2026-11-06 during
+# server-side dry-runs against each control-plane apiserver: the same-node
+# apiserver arrives as the host identity carrying reserved:kube-apiserver,
+# remote apiservers as their node InternalIP classified kube-apiserver +
+# remote-node (no SNAT). kube-apiserver covers both wherever the pod lands, so
+# don't narrow it to host or remote-node. Accepted limit: on a control-plane
+# node, other host-network processes share that identity.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: cert-manager-webhook
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/component: webhook
+      app.kubernetes.io/instance: cert-manager
+      app.kubernetes.io/name: webhook
+  ingress:
+    # Admission (Service 443 -> container https).
+    - fromEntities:
+        - kube-apiserver
+      toPorts:
+        - ports:
+            - port: "10250"
+              protocol: TCP
+    # Kubelet liveness/readiness probes come from the local node.
+    - fromEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "6080"
+              protocol: TCP
+    # Metrics scrape.
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/component: monitoring
+            app.kubernetes.io/instance: vm
+            app.kubernetes.io/name: vmagent
+            k8s:io.kubernetes.pod.namespace: observability
+      toPorts:
+        - ports:
+            - port: "9402"
+              protocol: TCP
