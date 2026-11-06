@@ -33,3 +33,20 @@ patches:
           name: package-proxy-hook
           configMap:
             name: package-proxy-hook
+      # Read-only GHCR credential for the Image Pull check, which verifies
+      # private ghcr.io/freckleapps images with it (talosctl image pull has
+      # no way to pass one). Optional so runners still start if the Secret
+      # is missing; the check then fails on private images only.
+      - op: add
+        path: /spec/values/template/spec/containers/0/volumeMounts/-
+        value:
+          name: ghcr-pull
+          mountPath: /var/run/secrets/ghcr-pull
+          readOnly: true
+      - op: add
+        path: /spec/values/template/spec/volumes/-
+        value:
+          name: ghcr-pull
+          secret:
+            secretName: ghcr-pull
+            optional: true

@@ -10,3 +10,13 @@ components:
 resources:
   - ./actions-runner-controller.yaml
   - ./actions-infra-runner.yaml
+patches:
+  # Opt in to the cluster-wide GHCR pull secret (ClusterExternalSecret
+  # ghcr-pull), for the infra runner's private-image check.
+  - target:
+      kind: Namespace
+    patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          freckle.systems/ghcr-pull: "true"
