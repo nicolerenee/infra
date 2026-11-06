@@ -19,7 +19,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: save
-          image: docker.io/library/redis:8.2.2-alpine
+          image: docker.io/library/redis:8.10.3-alpine
           command:
             - /bin/sh
             - -ec
