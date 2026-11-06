@@ -1,0 +1,11 @@
+---
+apiVersion: tailscale.com/v1alpha1
+kind: Connector
+metadata:
+  name: atlantis-subnet-rtr02
+spec:
+  proxyClass: subnet-router-addition
+  hostname: atlantis-subnet-rtr02
+  exitNode: false
+  tags:
+  - tag:atlantis-k8s01-subnet-rtr

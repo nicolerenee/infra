@@ -1,0 +1,17 @@
+---
+# Game-streaming containers (Sunshine) create virtual controllers, keyboards and
+# mice through uinput/uhid, and joydev adds the legacy /dev/input/js* nodes some
+# older games and emulators still look for. Talos's base image strips all three
+# modules; the matching siderolabs extensions in schematics/cn.yaml ship them,
+# and these documents load them at boot.
+apiVersion: v1alpha1
+kind: KernelModuleConfig
+name: uinput
+---
+apiVersion: v1alpha1
+kind: KernelModuleConfig
+name: uhid
+---
+apiVersion: v1alpha1
+kind: KernelModuleConfig
+name: joydev

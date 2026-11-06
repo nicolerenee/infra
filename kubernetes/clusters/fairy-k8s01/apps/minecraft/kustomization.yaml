@@ -8,5 +8,18 @@ components:
   - ../../../../components/common
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./external-secrets.yaml
   - ./minecraft-base.yaml
   - ./minecraft-servers.yaml
+patches:
+  # A required private source prevents reconciling a pin without its address.
+  - target:
+      kind: Kustomization
+      name: minecraft-hogwarts
+    patch: |-
+      - op: add
+        path: /spec/postBuild/substituteFrom/-
+        value:
+          kind: ConfigMap
+          name: site-public-values
+          optional: false

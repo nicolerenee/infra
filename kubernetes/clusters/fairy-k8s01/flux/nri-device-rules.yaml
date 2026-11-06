@@ -1,0 +1,18 @@
+---
+# nri-device-rules, an NRI plugin that adds device-cgroup rules for
+# allow-listed namespaces (freckleapps/nri-device-rules). Its DaemonSet and
+# Kustomization live in the private repo with the other private freckleapps
+# images; the namespace is created here because the private root Kustomization
+# targets flux-system and would rename a Namespace declared there.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nri-device-rules
+  labels:
+    # The pod mounts the NRI socket via hostPath, which baseline forbids; it
+    # runs with every capability dropped.
+    pod-security.kubernetes.io/enforce: privileged
+    # Opt in to the cluster-wide GHCR pull secret, for the private image.
+    freckle.systems/ghcr-pull: "true"
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled

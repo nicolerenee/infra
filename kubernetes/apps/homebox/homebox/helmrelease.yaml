@@ -78,6 +78,9 @@ spec:
                 memory: 256Mi
 
     defaultPodOptions:
+      annotations:
+        # Restart both consumers after the verified credential-source migration.
+        infra.freckle.systems/secret-migration: "C-71-v1"
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534

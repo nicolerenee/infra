@@ -14,5 +14,8 @@ customization:
       - siderolabs/i915
       - siderolabs/intel-ucode
       - siderolabs/iscsi-tools
+      - siderolabs/joydev
       - siderolabs/lldpd
       - siderolabs/mei
+      - siderolabs/uhid
+      - siderolabs/uinput

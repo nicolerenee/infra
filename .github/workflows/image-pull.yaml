@@ -23,8 +23,23 @@ jobs:
           patterns: |-
             .github/workflows/image-pull.yaml
             .github/workflows/image-pull-extract-pull.yaml
+            scripts/test-image-pull-retry.py
+            scripts/prepare-image-pull-root.py
+            scripts/test-image-pull-scope.py
             kubernetes/**/*
             apps/**/*
+
+  retry-tests:
+    name: Image Pull - Retry Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: python3 scripts/test-image-pull-retry.py
+      - uses: home-operations/flate/action@2e5aa3f729477baa631486ce9b92a5df197286c2 # main
+        with:
+          base: ""
+          version: "0.4.12"
+      - run: python3 scripts/test-image-pull-scope.py
 
   clusters:
     if: ${{ needs.filter.outputs.changed-files != '[]' }}
@@ -56,7 +71,7 @@ jobs:
 
   success:
     if: ${{ !cancelled() }}
-    needs: pull
+    needs: [pull, retry-tests]
     name: Image Pull - Success
     runs-on: ubuntu-latest
     steps:

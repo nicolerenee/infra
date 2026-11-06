@@ -23,6 +23,8 @@ spec:
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cert-manager.io/certificate_v1.json
 apiVersion: cert-manager.io/v1
 kind: Certificate
+# Keep the apex certificate separate: a certificate covering both listeners
+# lets browsers coalesce Matrix requests onto the Element TLS connection.
 metadata:
   name: chat-tls
 spec:
@@ -33,4 +35,18 @@ spec:
   commonName: "freckle.chat"
   dnsNames:
     - freckle.chat
+
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: chat-wildcard-tls
+spec:
+  secretName: chat-wildcard-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "*.freckle.chat"
+  dnsNames:
     - "*.freckle.chat"

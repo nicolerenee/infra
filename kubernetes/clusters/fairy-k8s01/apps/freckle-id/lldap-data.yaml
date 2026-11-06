@@ -4,6 +4,9 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: lldap-data
+  annotations:
+    # Retain the database independently of the retired application configuration.
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   accessModes:
     - ReadWriteOnce

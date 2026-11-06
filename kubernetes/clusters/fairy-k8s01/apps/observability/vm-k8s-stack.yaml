@@ -15,6 +15,47 @@ spec:
     - name: grafana-operator
   targetNamespace: *namespace
   path: ./kubernetes/apps/observability/victoria-metrics/k8s-stack
+  patches:
+    - target:
+        kind: HelmRelease
+        name: vm-k8s-stack
+      patch: |-
+        apiVersion: helm.toolkit.fluxcd.io/v2
+        kind: HelmRelease
+        metadata:
+          name: vm-k8s-stack
+        spec:
+          values:
+            kube-state-metrics:
+              rbac:
+                extraRules:
+                  - apiGroups: [leaderworkerset.x-k8s.io]
+                    resources: [leaderworkersets]
+                    verbs: [list, watch]
+              customResourceState:
+                enabled: true
+                config:
+                  kind: CustomResourceStateMetrics
+                  spec:
+                    resources:
+                      # The LWS and its leader StatefulSet share a name. Worker
+                      # StatefulSets have a group suffix and do not join here.
+                      - groupVersionKind:
+                          group: leaderworkerset.x-k8s.io
+                          version: v1
+                          kind: LeaderWorkerSet
+                        metricNamePrefix: kube_leaderworkerset
+                        labelsFromPath:
+                          namespace: [metadata, namespace]
+                          statefulset: [metadata, name]
+                        metrics:
+                          - name: rollout_partition
+                            help: Desired number of LWS groups retained on the previous revision.
+                            each:
+                              type: Gauge
+                              gauge:
+                                path: [spec, rolloutStrategy, rollingUpdateConfiguration, partition]
+                                nilIsZero: true
   postBuild:
     substituteFrom:
       - kind: ConfigMap

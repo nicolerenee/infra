@@ -43,22 +43,88 @@ vmsingle:
 
 defaultRules:
   rules:
+    # These expressions discard cluster or synthesize a series with absent()/vector().
+    # Label only their alerts: vmalert externalLabels also rewrites historical
+    # recording results and can collapse distinct series onto the same labelset.
+    Watchdog:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    InfoInhibitor:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    AlertmanagerClusterFailedToSendAlerts:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    AlertmanagerConfigInconsistent:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    AlertmanagerClusterCrashlooping:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    TooHighGoroutineSchedulingLatency:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    PersistentQueueRunsOutOfSpaceIn12Hours:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    PersistentQueueRunsOutOfSpaceIn4Hours:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    DiskRunsOutOfSpace:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    TooHighChurnRate:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    TooHighChurnRate24h:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    TooHighSlowInsertsRate:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    KubeAPIDown:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    KubeControllerManagerDown:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
+    KubeSchedulerDown:
+      spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
     # A node that is serving a model is *supposed* to sit near full memory —
     # vLLM pins most of a DGX Spark's unified memory up front — so skip the
     # alert on nodes that currently run a vllm container. Node identity comes
     # from the node-exporter pod's kube_pod_info; model presence from any
     # inference pod whose container is named vllm (leaders and workers alike).
+    # Collapse overlapping scrape targets while retaining the pod-to-node mapping.
     NodeMemoryHighUtilization:
       spec:
         expr: |-
           (
             (100 - ((node_memory_MemAvailable_bytes{job="node-exporter"} / node_memory_MemTotal_bytes{job="node-exporter"}) * 100)) > 90
           )
-          * on (namespace, pod) group_left (node) kube_pod_info{job="kube-state-metrics"}
+          * on (namespace, pod) group_left (node)
+            max by (namespace, pod, node) (kube_pod_info{job="kube-state-metrics"})
           unless on (node)
             count by (node) (
               kube_pod_container_info{namespace="inference", container="vllm"}
-              * on (namespace, pod) group_left (node) kube_pod_info{job="kube-state-metrics"}
+              * on (namespace, pod) group_left (node)
+                max by (namespace, pod, node) (kube_pod_info{job="kube-state-metrics"})
             )
     # Duration is the discriminator for node-level alerts: a Talos upgrade or
     # reboot takes a node (and its kubelet, exporters and scrape targets) away
@@ -80,6 +146,47 @@ defaultRules:
     TooManyScrapeErrors:
       spec:
         for: 30m
+    # rsync-TLS destinations wait for the next source connection, which can
+    # legitimately be daily. Exempt only ready, controller-owned listeners
+    # whose matching source AND destination report in-sync. Missing telemetry
+    # or an out-of-sync peer keeps the age check; source Jobs never qualify.
+    # KubeJobFailed, VolsyncVolumeOutOfSync, VolsyncMissedSchedule and
+    # VolsyncMoverContainerCreating still cover failed/stale/stuck movers.
+    KubeJobNotCompleted:
+      spec:
+        expr: |-
+          (
+            (time() - max by (namespace, job_name, cluster) (
+              kube_job_status_start_time{job="kube-state-metrics",namespace=~".*"}
+              and (kube_job_status_active{job="kube-state-metrics",namespace=~".*"} > 0)
+            )) > 43200
+          )
+          unless on (namespace, job_name, cluster)
+            max by (namespace, job_name, cluster) (
+              kube_job_labels{job="kube-state-metrics",label_excluded_from_alerts="true",namespace=~".*"} == 1
+            )
+          unless on (cluster, namespace, job_name)
+            (
+              max by (cluster, namespace, job_name, owner_name) (
+                kube_job_owner{job="kube-state-metrics",job_name=~"volsync-rsync-tls-dst-.*",owner_kind="ReplicationDestination",owner_is_controller="true"} == 1
+              )
+              and on (cluster, namespace, job_name)
+                (max by (cluster, namespace, job_name) (kube_job_status_ready{job="kube-state-metrics"}) > 0)
+              and on (cluster, namespace, owner_name)
+                label_copy(
+                  max by (cluster, obj_namespace, obj_name) (
+                    volsync_volume_out_of_sync{job="volsync-metrics",method="rsync-tls",role="source"}
+                  ) == 0,
+                  "obj_namespace", "namespace", "obj_name", "owner_name"
+                )
+              and on (cluster, namespace, owner_name)
+                label_copy(
+                  max by (cluster, obj_namespace, obj_name) (
+                    volsync_volume_out_of_sync{job="volsync-metrics",method="rsync-tls",role="destination"}
+                  ) == 0,
+                  "obj_namespace", "namespace", "obj_name", "owner_name"
+                )
+            )
     # A failed Job lingers until its TTL (recyclarr keeps one for 24h), so the
     # stock rule kept alerting long after the CronJob had recovered. Skip a
     # failed CronJob-owned Job once its CronJob has succeeded since that Job
@@ -102,6 +209,53 @@ defaultRules:
                   label_copy(kube_cronjob_status_last_successful_time{job="kube-state-metrics"}, "cronjob", "owner_name")
                 )
             )
+    # LWS leaders deliberately retain old groups below the canary partition.
+    # Suppress only a settled canary with every leader ready and enough updated
+    # groups; missing partition telemetry fails open to the stock alert. Worker
+    # StatefulSets and ordinary StatefulSets keep the upstream behavior.
+    KubeStatefulSetUpdateNotRolledOut:
+      spec:
+        expr: |-
+          (
+            (
+              max by (namespace, statefulset, job, cluster) (
+                kube_statefulset_status_current_revision{job="kube-state-metrics"}
+                unless kube_statefulset_status_update_revision{job="kube-state-metrics"}
+              )
+              * on (namespace, statefulset, job, cluster)
+                (kube_statefulset_replicas{job="kube-state-metrics"} != kube_statefulset_status_replicas_updated{job="kube-state-metrics"})
+            )
+            and on (namespace, statefulset, job, cluster)
+              (changes(kube_statefulset_status_replicas_updated{job="kube-state-metrics"}[5m]) == 0)
+          )
+          unless on (namespace, statefulset, job, cluster)
+          (
+            (kube_statefulset_status_replicas_ready{job="kube-state-metrics"} == kube_statefulset_replicas{job="kube-state-metrics"})
+            and on (namespace, statefulset, job, cluster)
+            (
+              kube_statefulset_status_replicas_updated{job="kube-state-metrics"}
+              >= on (namespace, statefulset, job, cluster)
+                clamp_min(
+                  kube_statefulset_replicas{job="kube-state-metrics"}
+                  - on (namespace, statefulset, job, cluster)
+                    kube_leaderworkerset_rollout_partition{job="kube-state-metrics"},
+                  0
+                )
+            )
+            and on (namespace, statefulset, job, cluster)
+              (kube_leaderworkerset_rollout_partition{job="kube-state-metrics"} > 0)
+          )
+    # These targets scrape every 20s. A retired target can leave one up=0
+    # sample in instant-query lookback without a staleness marker. Require
+    # a sample younger than 60s so it clears before the unchanged 2m hold.
+    # Continuously scraped failures stay eligible; missing discovery targets
+    # remain covered separately by ScrapePoolHasNoTargets.
+    ServiceDown:
+      spec:
+        expr: |-
+          (up{job=~".*(victoriametrics|vmselect|vminsert|vmstorage|vmagent|vmalert|vmsingle|vmalertmanager|vmauth).*"} == 0)
+          and
+          (time() - timestamp(up{job=~".*(victoriametrics|vmselect|vminsert|vmstorage|vmagent|vmalert|vmsingle|vmalertmanager|vmauth).*"}) < 60)
     # vmagent logs one warning per failed scrape (lib/promscrape/scrapework.go).
     # A replaced pod's old IP fails one scrape before service discovery drops
     # it, so a few rollouts were enough to fire this with no real problem.
@@ -121,6 +275,8 @@ defaultRules:
     # unchanged; the namespace matcher is dropped, the grouping keeps it.
     AlertmanagerClusterDown:
       spec:
+        labels:
+          cluster: "${CLUSTER_NAME}"
         expr: |-
           (
             count by (namespace, service) (
@@ -168,6 +324,15 @@ vmagent:
 vmalert:
   enabled: true
   spec:
+    # CDI generates rules outside its component customization path. Use the native
+    # cdi-cluster-rules VMRule instead, with identical recordings and labelled alerts.
+    # Explicitly retain all namespaces when adding a rule selector.
+    ruleNamespaceSelector: {}
+    ruleSelector:
+      matchExpressions:
+        - key: prometheus.cdi.kubevirt.io
+          operator: NotIn
+          values: ["true"]
     extraArgs:
       external.url: "https://vmalert.${CLUSTER_DOMAIN}"
 

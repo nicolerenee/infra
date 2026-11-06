@@ -24,6 +24,14 @@ spec:
     parameters:
       max_connections: "400"
       shared_buffers: 512MB
+    # CNPG puts these between its fixed rules (local peer, replication
+    # certs) and its default `host all all all scram-sha-256`, first match
+    # wins. A read-only role with pg_read_all_data may connect only to its
+    # own database: CONNECT is granted to PUBLIC, so without this it would
+    # read every database here (C-414).
+    pg_hba:
+      - host bookorbit bookorbit_read all scram-sha-256
+      - host all bookorbit_read all reject
   nodeMaintenanceWindow:
     inProgress: false
     reusePVC: true
@@ -40,6 +48,17 @@ spec:
   # in <tenant>-db.yaml in this directory.
   managed:
     roles:
+      - name: mealie
+        ensure: present
+        login: true
+        inherit: true
+        superuser: false
+        bypassrls: false
+        createdb: false
+        createrole: false
+        replication: false
+        passwordSecret:
+          name: mealie-db-role
       - name: paperless
         ensure: present
         login: true
@@ -109,6 +128,20 @@ spec:
         connectionLimit: 40
         passwordSecret:
           name: package-proxy-db-role
+      # db-read (C-414): read-only SQL on BookOrbit's database for agents
+      # (each query approved by Nicole) and people. pg_read_all_data reads
+      # every database the role can connect to, so pg_hba below holds it to
+      # bookorbit. Its settings (read-only by default, timeouts) and its
+      # secret are in the private repo (apps/db/db-read).
+      - name: bookorbit_read
+        ensure: present
+        login: true
+        superuser: false
+        connectionLimit: 3
+        inRoles:
+          - pg_read_all_data
+        passwordSecret:
+          name: bookorbit-read-db-role
 
   plugins:
     - name: barman-cloud.cloudnative-pg.io

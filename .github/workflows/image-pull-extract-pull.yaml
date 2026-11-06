@@ -35,6 +35,14 @@ jobs:
         with:
           ref: ${{ matrix.branch == 'default' && github.event.repository.default_branch || '' }}
 
+      # Use the workflow revision's helper on both comparison legs. The base
+      # checkout may predate the helper; it remains the manifest input.
+      - name: Checkout CI Tools
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: .image-pull-tools
+          sparse-checkout: scripts
+
       # flate, not flux-local: the latter is deprecated and sunsetted, and it
       # broke here anyway — it followed the infra-private GitRepository it
       # cannot fetch, resolved that Kustomization's path against THIS checkout,
@@ -82,45 +90,63 @@ jobs:
       # Kustomization are NOT enumerated, so they are not pre-pulled. The
       # render gate keeps its full value; the pre-pull is best-effort. The
       # summary below reports the shortfall rather than hiding it.
+      # External-source ./ paths must not expose the other cluster during
+      # discovery. The generated root package contains this cluster's entry
+      # resources; application rendering and source authentication stay intact.
+      - name: Scope Discovery Root
+        env:
+          CLUSTER: ${{ inputs.cluster }}
+        run: python3 .image-pull-tools/scripts/prepare-image-pull-root.py "${CLUSTER}"
+
       - name: Gather Images
         run: |
-          rc=0
-          # --api-versions declares APIs the real clusters serve but an offline
-          # render cannot discover. Charts that gate on API availability fail
-          # closed otherwise: the GPU Operator refuses to render a GPUCluster CR
-          # with "no resource.k8s.io DeviceClass API is served" unless told
-          # DRA exists. Both clusters run Kubernetes 1.37 and use DRA in anger
-          # (nvidia and intel GPU drivers), so asserting it here matches reality
-          # rather than papering over a gap.
-          flate get images \
-            --path kubernetes/clusters/${{ inputs.cluster }}/flux \
-            --allow-missing-secrets \
-            --api-versions resource.k8s.io/v1/DeviceClass \
-            --output json \
-            --no-progress > images.json 2> flate.err || rc=$?
+          # Fetching schemas and charts can fail transiently. Retry the complete
+          # render so cached downloads can be reused, replacing partial output.
+          # Persistent render errors still fail the check after bounded backoff.
+          for attempt in 1 2 3; do
+            rc=0
+            # --api-versions declares APIs the real clusters serve but an offline
+            # render cannot discover. Charts that gate on API availability fail
+            # closed otherwise: the GPU Operator refuses to render a GPUCluster CR
+            # with "no resource.k8s.io DeviceClass API is served" unless told
+            # DRA exists. Both clusters run Kubernetes 1.37 and use DRA in anger
+            # (nvidia and intel GPU drivers), so asserting it here matches reality
+            # rather than papering over a gap.
+            flate get images \
+              --path kubernetes/clusters/${{ inputs.cluster }}/flux \
+              --allow-missing-secrets \
+              --api-versions resource.k8s.io/v1/DeviceClass \
+              --output json \
+              --no-progress > images.json 2> flate.err || rc=$?
 
-          cat flate.err
+            cat flate.err
 
-          if [ "${rc}" -ne 0 ]; then
-            # Fail closed: an empty capture means flate died for some reason
-            # other than a reconcile summary (bad flag, download failure, ...).
-            failures=$(grep -oE 'reconcile completed with [0-9]+ failure' flate.err \
-              | grep -oE '[0-9]+' | head -1)
-            if [ -z "${failures}" ] || [ "${failures}" -ne 0 ]; then
-              echo "::error::flate reported render failures for ${{ inputs.cluster }}"
-              exit 1
+            if [ "${rc}" -ne 0 ]; then
+              failures=$(grep -oE 'reconcile completed with [0-9]+ failure' flate.err \
+                | grep -oE '[0-9]+' | head -1 || true)
+              if [ -z "${failures}" ] || [ "${failures}" -ne 0 ]; then
+                if [ "${attempt}" -eq 3 ]; then
+                  echo "::error::flate reported render failures after 3 attempts for ${{ inputs.cluster }}"
+                  exit 1
+                fi
+                delay=$((10 * (2 * attempt - 1)))
+                echo "::warning::Render attempt ${attempt} failed; retrying in ${delay}s"
+                sleep "${delay}"
+                continue
+              fi
+              blocked=$(grep -oE '\(\+[0-9]+ blocked' flate.err | grep -oE '[0-9]+' | head -1 || true)
+              note="${blocked:-an unknown number of} Kustomizations blocked on runtime-only"
+              note="${note} dependencies (Reflector-replicated k8s-cluster-info);"
+              note="${note} their images are not pre-pulled"
+              echo "::warning::${{ inputs.cluster }} (${{ matrix.branch }}): 0 render failures, ${note}"
+              echo "> ⚠️ ${note}" >> $GITHUB_STEP_SUMMARY
             fi
-            blocked=$(grep -oE '\(\+[0-9]+ blocked' flate.err | grep -oE '[0-9]+' | head -1)
-            note="${blocked:-an unknown number of} Kustomizations blocked on runtime-only"
-            note="${note} dependencies (Reflector-replicated k8s-cluster-info);"
-            note="${note} their images are not pre-pulled"
-            echo "::warning::${{ inputs.cluster }} (${{ matrix.branch }}): 0 render failures, ${note}"
-            echo "> ⚠️ ${note}" >> $GITHUB_STEP_SUMMARY
-          fi
 
-          # Downstream jobs jq over this — a truncated/invalid file must not
-          # silently become an empty diff.
-          jq -e 'type == "array"' images.json > /dev/null
+            # Downstream jobs jq over this — a truncated/invalid file must not
+            # silently become an empty diff.
+            jq -e -s 'length == 1 and (.[0] | type == "array")' images.json > /dev/null
+            break
+          done
 
       - name: Extract Images
         id: extract

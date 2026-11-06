@@ -1,0 +1,16 @@
+---
+# yaml-language-server: $schema=https://www.schemastore.org/kustomization.json
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./pvc.yaml
+  - ./datasource.yaml
+  - ./builder-vm.yaml
+configMapGenerator:
+  - name: win11-golden-autounattend
+    files:
+      - autounattend.xml
+generatorOptions:
+  # KubeVirt's sysprep volume names the ConfigMap directly, and kustomize
+  # doesn't know that field, so a hashed name wouldn't be rewritten there.
+  disableNameSuffixHash: true

@@ -1,0 +1,24 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hogwarts-minecraft-public
+  labels:
+    ipam.freckle.systems/lb-pool: public
+    release: hogwarts
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: hogwarts-public.${CLUSTER_DOMAIN}
+    lbipam.cilium.io/ips: ${SITE_FAIRY_PUBLIC_V4_MINECRAFT}
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Cluster
+  ipFamilyPolicy: SingleStack
+  ipFamilies:
+    - IPv4
+  ports:
+    - name: minecraft
+      port: 25565
+      protocol: TCP
+      targetPort: minecraft
+  selector:
+    app: hogwarts-minecraft

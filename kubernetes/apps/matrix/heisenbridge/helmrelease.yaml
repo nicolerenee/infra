@@ -11,6 +11,10 @@ spec:
     name: app-template
     namespace: default
   values:
+    defaultPodOptions:
+      annotations:
+        # Reload the verified GSM credentials even though their rendered bytes match.
+        kubectl.kubernetes.io/restartedAt: "2026-11-04T09:01:00Z"
     controllers:
       heisenbridge:
         containers:
