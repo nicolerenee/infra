@@ -36,9 +36,10 @@ spec:
             # read-only rootfs. Library is mounted read-only: books are
             # hardlinked in from seeding torrents; BookOrbit only reads and
             # keeps its state in /data.
+            # Local article-sort patch preserves displayed names and metadata.
             image:
-              repository: ghcr.io/bookorbit/bookorbit
-              tag: 3.6.0@sha256:bbb5da52e96dbbff1dd36f55454f9845e6cde264b4b3428a3ea783124a4ca62e
+              repository: ghcr.io/freckleapps/bookorbit
+              tag: 3.6.0-1@sha256:858c084c61328620e66acb92a56d8338fb9ef896f3957396c6453d6431d5674f
             env:
               NODE_ENV: production
               PORT: &port 3000
@@ -94,6 +95,10 @@ spec:
                 memory: 3Gi
     defaultPodOptions:
       automountServiceAccountToken: false
+      # The patched image is private; media opts in to the cluster's
+      # ghcr-pull credential.
+      imagePullSecrets:
+        - name: ghcr-pull
       securityContext:
         runAsNonRoot: true
         runAsUser: ${VOLSYNC_UID}
