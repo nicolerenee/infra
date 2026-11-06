@@ -5,3 +5,19 @@ kind: Kustomization
 resources:
   - ./exit01.yaml
   - ./subnet-rtr01.yaml
+  - ./subnet-rtr02.yaml
+  - ./subnet-router-addition.yaml
+# Inherit the existing router's whole route set to prevent prefix drift.
+replacements:
+  - source:
+      kind: Connector
+      name: atlantis-subnet-rtr01
+      fieldPath: spec.subnetRouter
+    targets:
+      - select:
+          kind: Connector
+          name: atlantis-subnet-rtr02
+        fieldPaths:
+          - spec.subnetRouter
+        options:
+          create: true
