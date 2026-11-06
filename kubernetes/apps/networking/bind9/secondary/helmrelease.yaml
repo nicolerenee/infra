@@ -28,7 +28,9 @@ spec:
         replicas: 2
         strategy: RollingUpdate
         rollingUpdate:
-          unavailable: 1
+          # Keep a verified copy serving while a fresh pod transfers its zones.
+          unavailable: 0
+          surge: 1
         pod:
           securityContext:
             runAsUser: 1000
@@ -56,7 +58,7 @@ spec:
               capabilities:
                 drop: ["ALL"]
             probes:
-              liveness: &probe
+              liveness:
                 enabled: true
                 custom: true
                 spec:
@@ -64,7 +66,16 @@ spec:
                     port: 5353
                   initialDelaySeconds: 5
                   periodSeconds: 10
-              readiness: *probe
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: ["/bin/sh", "/readiness/readiness.sh"]
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                  timeoutSeconds: 10
+                  failureThreshold: 1
               startup:
                 enabled: false
             resources:
@@ -143,6 +154,14 @@ spec:
             scrapeTimeout: 10s
 
     persistence:
+      readiness:
+        type: configMap
+        name: bind9-secondary-readiness
+        advancedMounts:
+          bind9-secondary:
+            app:
+              - path: /readiness
+                readOnly: true
       config:
         type: configMap
         name: bind9-secondary-config
