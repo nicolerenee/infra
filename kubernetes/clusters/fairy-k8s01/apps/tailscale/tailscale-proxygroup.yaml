@@ -18,7 +18,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/networking/tailscale-operator/proxygroup
+  path: ./kubernetes/apps/networking/tailscale-operator/proxygroup-ha
   interval: 30s
   retryInterval: 1m
   timeout: 5m

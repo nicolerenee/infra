@@ -1,0 +1,36 @@
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyClass
+metadata:
+  name: proxygroup-ha
+spec:
+  metrics:
+    enable: true
+    serviceMonitor:
+      enable: true
+  statefulSet:
+    pod:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  tailscale.com/parent-resource-type: proxygroup
+              # Match each group independently so ingress and egress can share nodes.
+              matchLabelKeys:
+                - tailscale.com/parent-resource
+      nodeSelector:
+        beta.kubernetes.io/os: "linux"
+      tailscaleContainer:
+        resources:
+          limits:
+            devic.es/tun: "1"
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+            add:
+              - NET_ADMIN
+              - NET_RAW
