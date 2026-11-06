@@ -49,6 +49,16 @@
   },
   packageRules: [
     {
+      // These fixed one-shot recovery Jobs preserve evidence from a specific run.
+      // Image changes mutate immutable pod templates; recreating the Jobs could
+      // rerun data-saving commands. Keep changes deliberate and manually reviewed.
+      matchFileNames: [
+        'kubernetes/apps/hedgehog/queue/pre-upgrade-save.yaml',
+        'kubernetes/apps/nautobot/queue/pre-upgrade-save.yaml',
+      ],
+      enabled: false,
+    },
+    {
       // Renovate PRs are the infra agent's to handle (cockpit C-194), so
       // nobody is requested by default. The one exception is GitHub Actions
       // updates under .github/, which need Nicole's review anyway: ask her
