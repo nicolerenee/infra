@@ -1,0 +1,82 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/operator.victoriametrics.com/vmrule_v1beta1.json
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  name: node-storage-health
+spec:
+  groups:
+    - name: node-storage-health
+      interval: 30s
+      rules:
+        # Keep pod identity through the hold period so a succession of short-lived
+        # pods on one node cannot accumulate into a false sustained wait.
+        - alert: KubePodContainerCreating
+          expr: |-
+            (
+              max by (cluster, namespace, pod) (
+                kube_pod_container_status_waiting_reason{
+                  job="kube-state-metrics", reason="ContainerCreating"
+                }
+                or
+                kube_pod_init_container_status_waiting_reason{
+                  job="kube-state-metrics", reason="ContainerCreating"
+                }
+              ) == 1
+            )
+            * on (cluster, namespace, pod) group_left(node)
+            max by (cluster, namespace, pod, node) (
+              kube_pod_info{job="kube-state-metrics", node!=""}
+            )
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} cannot start on {{ $labels.node }}'
+            description: >-
+              A container has remained in ContainerCreating for more than two
+              minutes. Check Pod events for FailedMount and node storage health.
+              Image pulls and other setup failures can also cause this state;
+              it does not establish a storage failure.
+
+        # A nonzero queue alone is normal under load. Require a continuously
+        # nonempty queue and no read, write or discard completions. Scope to the
+        # cluster DaemonSet so other node-exporter targets cannot trigger this.
+        - alert: NodeRBDIOStalled
+          expr: |-
+            (
+              max by (cluster, instance, device) (
+                min_over_time(node_disk_io_now{
+                  service="vm-k8s-stack-prometheus-node-exporter",
+                  device=~"rbd[0-9]+"
+                }[2m])
+              ) > 0
+              and on (cluster, instance, device)
+              (
+                sum by (cluster, instance, device) (
+                  increase({
+                    __name__=~"node_disk_(reads|writes|discards)_completed_total",
+                    service="vm-k8s-stack-prometheus-node-exporter",
+                    device=~"rbd[0-9]+"
+                  }[2m])
+                ) == 0
+              )
+            )
+            * on (cluster, instance) group_left(node)
+            max by (cluster, instance, node) (
+              label_replace(
+                node_uname_info{service="vm-k8s-stack-prometheus-node-exporter"},
+                "node", "$1", "nodename", "(.+)"
+              )
+            )
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'RBD I/O is not progressing on {{ $labels.node }} / {{ $labels.device }}'
+            description: >-
+              This mapped RBD device has outstanding I/O throughout a two-minute
+              window with no read, write or discard completions, sustained for
+              another minute. Check kernel Ceph handshakes, udevd health and CSI
+              mount events. This block-device signal does not measure Ceph osdc
+              requests and cannot detect a map blocked before a device exists.

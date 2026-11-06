@@ -3,10 +3,9 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app steam-headless
-  namespace: &namespace steam
+  name: &app kubevirt-priority-classes
+  namespace: kubevirt
 spec:
-  targetNamespace: *namespace
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
@@ -14,9 +13,11 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./kubernetes/apps/games/steam-headless
+  path: ./kubernetes/apps/kubevirt/priority-classes
   interval: 30m
   retryInterval: 1m
   timeout: 5m
-  prune: true
-  wait: false
+  # PriorityClass value is immutable and VMs reference it; never prune it away
+  # from under running launcher pods.
+  prune: false
+  wait: true
