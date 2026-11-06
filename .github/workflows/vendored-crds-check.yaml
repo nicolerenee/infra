@@ -10,6 +10,9 @@ on:
       - "scripts/vendor-gateway-api-crds.sh"
       - ".github/workflows/vendored-crds-check.yaml"
 
+permissions:
+  contents: read
+
 jobs:
   gateway-api:
     name: gateway-api matches pinned tag

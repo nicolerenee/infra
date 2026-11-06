@@ -7,10 +7,17 @@ on:
   push:
     branches: ["main"]
 
+permissions:
+  contents: read
+
 jobs:
   filter:
     name: Schema Validation - Filter
     runs-on: ubuntu-latest
+    # action-changed-files lists the PR's files through the API.
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
       changed-files: ${{ steps.changed-files.outputs.changed_files }}
     steps:
