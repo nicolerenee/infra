@@ -393,6 +393,13 @@ alertmanager:
     # pod restart no longer wipes silences (C-378). Data stays on emptyDir on
     # purpose: no Ceph dependency for Alertmanager.
     replicaCount: 2
+    # A rollout replaces each pod with a new gossip member; the survivor keeps
+    # the old one as a failed peer for --cluster.reconnect-timeout (6h by
+    # default), so AlertmanagerClusterFailedPeers fired for hours after every
+    # rollout (C-1291). The --cluster.peer DNS names are re-resolved on each
+    # refresh, so a peer that really comes back still rejoins after 5m.
+    extraArgs:
+      cluster.reconnect-timeout: 5m
     podDisruptionBudget:
       maxUnavailable: 1
     topologySpreadConstraints:
