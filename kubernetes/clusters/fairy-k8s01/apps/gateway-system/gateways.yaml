@@ -40,3 +40,25 @@ spec:
           path: /spec/infrastructure/annotations
           value:
             lbipam.cilium.io/ips: ${SITE_FAIRY_PUBLIC_V4_GATEWAY}
+    # Restrict the apex to games routes without changing existing listeners.
+    - target:
+        kind: Gateway
+        name: tailnet
+      patch: |-
+        - op: add
+          path: /spec/listeners/-
+          value:
+            name: https-games
+            protocol: HTTPS
+            port: 443
+            hostname: freckle.games
+            allowedRoutes:
+              namespaces:
+                from: Selector
+                selector:
+                  matchLabels:
+                    kubernetes.io/metadata.name: games
+            tls:
+              certificateRefs:
+                - kind: Secret
+                  name: games-tls

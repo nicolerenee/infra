@@ -20,7 +20,7 @@ kept hosts on `freckle.systems`.
 | `freckle.chat` | Matrix | — |
 | `freckle.id` | identity provider | — |
 | `freckle.family` | public-facing family things | — |
-| `freckle.games` | game servers | environment |
+| `freckle.games` | games portal at the apex (tailnet only); game servers | apex for portal; environment for servers |
 | `freckle.rocks` | personal public sites | — |
 | `freckle.systems` | **retired** — draining to empty; no new names | — |
 | `freckle.vision`, `freckle.build`, `freckle.email`, `freckle.community`, `freckle.management` | parked; registered because available | — |
