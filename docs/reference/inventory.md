@@ -16,6 +16,13 @@ device name.
 
 | Name | Site | Rack | Function | Model | Status |
 |------|------|------|------|-------|--------|
+| dgx01 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | GPU inference | [DGX Spark](../compute/dgx-spark.md) | active |
+| dgx02 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | GPU inference | [DGX Spark](../compute/dgx-spark.md) | active |
+| dgx03 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | GPU inference | [DGX Spark](../compute/dgx-spark.md) | active |
+| dgx04 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | GPU inference | [DGX Spark](../compute/dgx-spark.md) | active |
+| dgx05 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | GPU inference | [DGX Spark](../compute/dgx-spark.md) | active |
+| dgx06 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | GPU inference | [DGX Spark](../compute/dgx-spark.md) | active |
+| dgx07 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | GPU inference | [DGX Spark](../compute/dgx-spark.md) | active |
 | fairy-ap-backdoor | [Fairy](../sites/fairy/) | — | WiFi AP | Firewalla Access Point 7 - Ceiling | active |
 | fairy-ap-foyer | [Fairy](../sites/fairy/) | — | WiFi AP | Firewalla Access Point 7 - Ceiling | active |
 | fairy-ap-upstairs | [Fairy](../sites/fairy/) | — | WiFi AP | Firewalla Access Point 7 - Ceiling | active |
@@ -30,13 +37,6 @@ device name.
 | fairy-r02-cn04 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Worker | [Freckle Node Gen 3.1](../compute/freckle-node.md) | planned |
 | fairy-r02-cn05 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Worker | [Freckle Node Gen 3.1](../compute/freckle-node.md) | planned |
 | fairy-r02-cn06 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Worker | [Freckle Node Gen 3.1](../compute/freckle-node.md) | planned |
-| fairy-r02-dgx01 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | GPU inference | [DGX Spark](../compute/dgx-spark.md) | active |
-| fairy-r02-dgx01-mgmt | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Management (KVM) | JetKVM | active |
-| fairy-r02-dgx02 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | GPU inference | [DGX Spark](../compute/dgx-spark.md) | active |
-| fairy-r02-dgx02-mgmt | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Management (KVM) | JetKVM | active |
-| fairy-r02-dgx03 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | GPU inference | [DGX Spark](../compute/dgx-spark.md) | active |
-| fairy-r02-dgx03-mgmt | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Management (KVM) | JetKVM | active |
-| fairy-r02-fsw01 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | GPU fabric switch | MikroTik CRS804-4DDQ | active |
 | fairy-r02-msw01 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Out-of-band management | Cisco Catalyst C1300-24T-4G | active |
 | fairy-r02-pdu01 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Power distribution unit | CyberPower PDU81005 | active |
 | fairy-r02-pdu02 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Power distribution unit | CyberPower PDU81005 | active |
@@ -45,6 +45,7 @@ device name.
 | fairy-r02-tor01 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Top-of-rack switch | Netgear XS724EMv2 | active |
 | fairy-r02-ups01 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | UPS | CyberPower PR3000RTXL2UHVACN | active |
 | fairy-store01 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | Bulk media storage | [TrueNAS Mini-R](../storage/truenas-mini-r.md) | active |
+| r01-fsw01 | [Fairy](../sites/fairy/) | [r02](../sites/fairy/#r02) | GPU fabric switch | MikroTik CRS804-4DDQ | active |
 
 ---
 
