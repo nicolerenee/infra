@@ -1,0 +1,16 @@
+---
+# CI's Image Pull check pre-pulls new images onto a node. Talos pulls
+# anonymously, so private freckleapps images are pulled by kubelet instead,
+# from a short-lived Pod here that mounts the image as an image volume and
+# never runs it (scripts/pull-private-image.sh). This namespace holds only
+# those Pods, so the existing ghcr-pull Secret it opts in to is readable only
+# by identities that can already read it in every other opted-in namespace.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: image-pull-check
+  labels:
+    freckle.systems/ghcr-pull: "true"
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/warn: restricted

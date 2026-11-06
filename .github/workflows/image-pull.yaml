@@ -26,6 +26,8 @@ jobs:
             scripts/test-image-pull-retry.py
             scripts/prepare-image-pull-root.py
             scripts/test-image-pull-scope.py
+            scripts/pull-private-image.sh
+            scripts/test-private-image-pull.py
             kubernetes/**/*
             apps/**/*
 
@@ -35,6 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: python3 scripts/test-image-pull-retry.py
+      - run: python3 scripts/test-private-image-pull.py
       - uses: home-operations/flate/action@2e5aa3f729477baa631486ce9b92a5df197286c2 # main
         with:
           base: ""
