@@ -202,6 +202,12 @@ jobs:
       #         gh attestation verify --owner home-operations oci://${{ matrix.image }} ;;
       #     esac
 
+      - name: Checkout CI Tools
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: .image-pull-tools
+          sparse-checkout: scripts
+
       - name: Install talosctl
         run: curl -fsSL https://talos.dev/install | sh
 
@@ -226,5 +232,16 @@ jobs:
                   | .status.addresses[] | select(.type == "InternalIP") | .address] | .[0] // ""')
             [[ -n "${arm}" ]] && target="${arm}"
           fi
-          echo "Pulling ${IMAGE} on ${target}"
-          talosctl --nodes "${target}" image pull "${IMAGE}"
+          # Talos pulls anonymously (registry auth would be a machine-config
+          # change), so private freckleapps packages go through kubelet on
+          # the same node with the cluster's existing ghcr-pull Secret. The
+          # helper fails closed; nothing is skipped.
+          case "${IMAGE}" in
+            ghcr.io/freckleapps/*)
+              ./.image-pull-tools/scripts/pull-private-image.sh "${IMAGE}" "${target}"
+              ;;
+            *)
+              echo "Pulling ${IMAGE} on ${target}"
+              talosctl --nodes "${target}" image pull "${IMAGE}"
+              ;;
+          esac
