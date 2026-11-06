@@ -213,10 +213,41 @@ jobs:
       # instead; spegel spreads it from there. Everything else is small enough
       # that the runner-node pull is fine. Clusters with no arm64 node fall
       # back to the runner's node.
+      #
+      # Private images (ghcr.io/freckleapps/*, whose source is internal) can't
+      # be pulled anonymously, and talosctl image pull takes no credentials.
+      # For those, check the exact reference resolves with the same ghcr-pull
+      # credential the workloads use (mounted on the fairy runner only). They
+      # are not pre-pulled; the kubelet pulls them at rollout.
       - name: Pull Image
         env:
           IMAGE: ${{ matrix.image }}
+          GHCR_PULL_CONFIG: /var/run/secrets/ghcr-pull/.dockerconfigjson
         run: |
+          if [[ "${IMAGE}" == ghcr.io/freckleapps/* ]]; then
+            set -o pipefail
+            if [[ ! -r "${GHCR_PULL_CONFIG}" ]]; then
+              echo "::error::${IMAGE} is private and this runner has no ghcr-pull credential"
+              exit 1
+            fi
+            ref="${IMAGE#ghcr.io/}"
+            repo="${ref%%[:@]*}"
+            case "${ref}" in
+              *@*) reference="${ref##*@}" ;;
+              "${repo}":*) reference="${ref#"${repo}":}" ;;
+              *) reference=latest ;;
+            esac
+            auth=$(yq -p json '.auths."ghcr.io".auth' "${GHCR_PULL_CONFIG}")
+            echo "::add-mask::${auth}"
+            token=$(curl -fsS -H "Authorization: Basic ${auth}" \
+              "https://ghcr.io/token?service=ghcr.io&scope=repository:${repo}:pull" | yq -p json '.token')
+            echo "::add-mask::${token}"
+            curl -fsS -o /dev/null --head -H "Authorization: Bearer ${token}" \
+              -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.docker.distribution.manifest.v2+json" \
+              "https://ghcr.io/v2/${repo}/manifests/${reference}"
+            echo "Verified ${IMAGE} with the ghcr-pull credential (private: not pre-pulled)"
+            exit 0
+          fi
           target="${NODE}"
           if [[ "${IMAGE}" == *vllm* ]]; then
             sa=/var/run/secrets/kubernetes.io/serviceaccount
