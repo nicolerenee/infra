@@ -1,0 +1,15 @@
+---
+# Pre-issue before attaching the apex hostname to the tailnet listener.
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: games-tls
+spec:
+  secretName: games-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: freckle.games
+  dnsNames:
+    - freckle.games
