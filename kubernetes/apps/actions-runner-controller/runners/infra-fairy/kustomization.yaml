@@ -33,3 +33,18 @@ patches:
           name: package-proxy-hook
           configMap:
             name: package-proxy-hook
+  - target:
+      kind: ExternalSecret
+      name: infra-runner-github-creds
+    patch: |-
+      - op: replace
+        path: /spec/secretStoreRef
+        value:
+          kind: SecretStore
+          name: gcp-sm
+      - op: replace
+        path: /spec/dataFrom
+        value:
+          - extract:
+              key: ${CLUSTER_NAME}-actions-runner-system-github-app
+              version: "1"
