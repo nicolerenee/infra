@@ -1,0 +1,39 @@
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyClass
+metadata:
+  name: subnet-router-addition
+spec:
+  metrics:
+    enable: true
+    serviceMonitor:
+      enable: true
+  statefulSet:
+    pod:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchLabels:
+                tailscale.com/parent-resource-type: connector
+              matchExpressions:
+              - key: tailscale.com/parent-resource
+                operator: In
+                values:
+                - atlantis-subnet-rtr01
+                - atlantis-subnet-rtr02
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+      tailscaleContainer:
+        resources:
+          limits:
+            devic.es/tun: '1'
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - NET_ADMIN
+            - NET_RAW
