@@ -42,6 +42,11 @@ spec:
         # A nonzero queue alone is normal under load. Require a continuously
         # nonempty queue and no read, write or discard completions. Scope to the
         # cluster DaemonSet so other node-exporter targets cannot trigger this.
+        # At the 20s scrape cadence require six samples of all four diskstats,
+        # >=90s coverage without gaps >30s, last samples <40s old, and all four
+        # instant series present. A single sample followed by staleness otherwise
+        # survives the 2m rollups long enough to pass the 1m hold. Check coverage
+        # per raw series before aggregating so replacement exporters cannot pool it.
         - alert: NodeRBDIOStalled
           expr: |-
             (
@@ -61,6 +66,38 @@ spec:
                   }[2m])
                 ) == 0
               )
+              and on (cluster, instance, device)
+              (min by (cluster, instance, device) (
+                count_over_time({
+                    __name__=~"node_disk_(io_now|(reads|writes|discards)_completed_total)",
+                    service="vm-k8s-stack-prometheus-node-exporter",
+                    device=~"rbd[0-9]+"
+                  }[2m])
+              ) >= 6)
+              and on (cluster, instance, device)
+              (min by (cluster, instance, device) (
+                duration_over_time({
+                    __name__=~"node_disk_(io_now|(reads|writes|discards)_completed_total)",
+                    service="vm-k8s-stack-prometheus-node-exporter",
+                    device=~"rbd[0-9]+"
+                  }[2m], 30)
+              ) >= 90)
+              and on (cluster, instance, device)
+              (time() - min by (cluster, instance, device) (
+                tlast_over_time({
+                    __name__=~"node_disk_(io_now|(reads|writes|discards)_completed_total)",
+                    service="vm-k8s-stack-prometheus-node-exporter",
+                    device=~"rbd[0-9]+"
+                  }[2m])
+              ) < 40)
+              and on (cluster, instance, device)
+              (count by (cluster, instance, device) (
+                {
+                    __name__=~"node_disk_(io_now|(reads|writes|discards)_completed_total)",
+                    service="vm-k8s-stack-prometheus-node-exporter",
+                    device=~"rbd[0-9]+"
+                  }
+              ) == 4)
             )
             * on (cluster, instance) group_left(node)
             max by (cluster, instance, node) (
@@ -77,6 +114,6 @@ spec:
             description: >-
               This mapped RBD device has outstanding I/O throughout a two-minute
               window with no read, write or discard completions, sustained for
-              another minute. Check kernel Ceph handshakes, udevd health and CSI
-              mount events. This block-device signal does not measure Ceph osdc
+              another minute, with fresh and adequately sampled diskstats. Check kernel
+              Ceph handshakes, udevd health and CSI mount events. This block-device signal does not measure Ceph osdc
               requests and cannot detect a map blocked before a device exists.
