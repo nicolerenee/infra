@@ -14,7 +14,9 @@ spec:
   storageClassName: ceph-block
   resources:
     requests:
-      storage: 5Gi
+      # ~150k posters need about 2.8 GB and the cache keeps 10% free, so 5Gi
+      # left little headroom for library growth. ceph-block expands online.
+      storage: 10Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
