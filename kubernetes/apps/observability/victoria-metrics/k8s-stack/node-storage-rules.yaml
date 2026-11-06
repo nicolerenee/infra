@@ -80,3 +80,115 @@ spec:
               another minute. Check kernel Ceph handshakes, udevd health and CSI
               mount events. This block-device signal does not measure Ceph osdc
               requests and cannot detect a map blocked before a device exists.
+
+    # Only pods whose spec requests resources for the sidecar are expected to
+    # publish queue telemetry. Existing pods remain outside the OnDelete pilot.
+    - name: node-udev-queue
+      interval: 30s
+      rules:
+        - record: node:udev_queue_expected:info
+          expr: |-
+            group by (cluster, namespace, pod) (
+              kube_pod_container_resource_requests{
+                job="kube-state-metrics", namespace="observability",
+                container="udev-queue-collector", resource="memory",
+                pod=~"vm-k8s-stack-prometheus-node-exporter-.+"
+              }
+            )
+            * on (cluster, namespace, pod) group_left(node)
+            max by (cluster, namespace, pod, node) (
+              kube_pod_info{job="kube-state-metrics", node!=""}
+            )
+        - record: node:udev_queue_fresh:info
+          expr: |-
+            node:udev_queue_expected:info
+            and on (cluster, namespace, pod)
+            (
+              node_udev_queue_collection_timestamp_seconds{
+                service="vm-k8s-stack-prometheus-node-exporter"
+              } >= time() - 60
+              and
+              node_udev_queue_collection_timestamp_seconds{
+                service="vm-k8s-stack-prometheus-node-exporter"
+              } <= time()
+            )
+            and on (cluster, namespace, pod)
+            (
+              node_udev_queue_last_success_timestamp_seconds{
+                service="vm-k8s-stack-prometheus-node-exporter"
+              } >= time() - 60
+              and
+              node_udev_queue_last_success_timestamp_seconds{
+                service="vm-k8s-stack-prometheus-node-exporter"
+              } <= time()
+            )
+            and on (cluster, namespace, pod)
+            (node_textfile_scrape_error{service="vm-k8s-stack-prometheus-node-exporter"} == 0)
+            and on (cluster, namespace, pod)
+            (node_udev_queue_collection_success{service="vm-k8s-stack-prometheus-node-exporter"} >= 0)
+        - alert: NodeUdevQueueCollectionFailed
+          expr: |-
+            node:udev_queue_expected:info
+            and on (cluster, namespace, pod)
+            (node_udev_queue_collection_success{service="vm-k8s-stack-prometheus-node-exporter"} == 0)
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Cannot inspect the udev queue on {{ $labels.node }}'
+            description: >-
+              The unprivileged queue inspection is failing. Queue state is unknown;
+              check collector logs and existing host-view access without widening
+              privileges. This does not establish a udevd service failure.
+        - alert: NodeUdevQueueTelemetryUnavailable
+          expr: |-
+            (
+              node:udev_queue_expected:info
+              unless on (cluster, namespace, pod) node:udev_queue_fresh:info
+            )
+            or
+            (
+              node:udev_queue_expected:info
+              and on (cluster, namespace, pod)
+              (node_udev_queue_collection_success{service="vm-k8s-stack-prometheus-node-exporter"} == 1)
+              unless on (cluster, namespace, pod)
+              (
+                node_udev_queue_present{service="vm-k8s-stack-prometheus-node-exporter"} >= 0
+                and node_udev_queue_age_seconds{service="vm-k8s-stack-prometheus-node-exporter"} >= 0
+                and node_udev_queue_mtime_seconds{service="vm-k8s-stack-prometheus-node-exporter"} >= 0
+                and node_udev_queue_mtime_seconds{service="vm-k8s-stack-prometheus-node-exporter"} <= time()
+              )
+            )
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Udev queue telemetry is unavailable on {{ $labels.node }}'
+            description: >-
+              An exporter pod with the queue sidecar has missing, stale (over 60s),
+              future-dated or unreadable textfile telemetry for two minutes.
+              Check exporter scrape health, textfile errors and collector timestamps.
+              Missing telemetry means unknown, never an idle queue. Expected-pod
+              inventory depends on kube-state-metrics availability.
+        - alert: NodeUdevQueuePersistent
+          expr: |-
+            node:udev_queue_fresh:info
+            and on (cluster, namespace, pod)
+            (node_udev_queue_collection_success{service="vm-k8s-stack-prometheus-node-exporter"} == 1)
+            and on (cluster, namespace, pod)
+            (node_udev_queue_present{service="vm-k8s-stack-prometheus-node-exporter"} == 1)
+            and on (cluster, namespace, pod)
+            (node_udev_queue_age_seconds{service="vm-k8s-stack-prometheus-node-exporter"} > 120)
+            and on (cluster, namespace, pod)
+            (node_udev_queue_mtime_seconds{service="vm-k8s-stack-prometheus-node-exporter"} <= time())
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Udev queue persists on {{ $labels.node }}'
+            description: >-
+              A pending-event queue with mtime age over two minutes has persisted
+              for another minute with successful, fresh inspections. Check udevd,
+              kernel Ceph handshakes and CSI events. Queue presence and mtime are
+              proxies, not exact Talos service health or individual event latency;
+              normal sustained activity can also keep the queue present.

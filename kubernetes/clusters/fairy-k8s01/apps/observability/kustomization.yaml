@@ -37,3 +37,4 @@ patches:
         path: /metadata/labels
         value:
           pod-security.kubernetes.io/enforce: privileged
+          freckle.systems/ghcr-pull: "true"

@@ -25,6 +25,76 @@ spec:
         metadata:
           name: vm-k8s-stack
         spec:
+          # The default poller waits for every updated DaemonSet pod. Legacy
+          # readiness permits the deliberate OnDelete pilot; verify it separately.
+          waitStrategy:
+            name: legacy
+          postRenderers:
+            - kustomize:
+                patches:
+                  - target:
+                      group: apps
+                      version: v1
+                      kind: DaemonSet
+                      name: vm-k8s-stack-prometheus-node-exporter
+                    patch: |-
+                      - op: test
+                        path: /spec/template/spec/containers/0/name
+                        value: node-exporter
+                      - op: replace
+                        path: /spec/updateStrategy
+                        value:
+                          type: OnDelete
+                      - op: add
+                        path: /spec/template/spec/imagePullSecrets
+                        value:
+                        - name: ghcr-pull
+                      - op: add
+                        path: /spec/template/spec/containers/0/args/-
+                        value: --collector.textfile.directory=/textfile
+                      - op: add
+                        path: /spec/template/spec/containers/0/volumeMounts/-
+                        value:
+                          name: udev-textfile
+                          mountPath: /textfile
+                          readOnly: true
+                      - op: add
+                        path: /spec/template/spec/volumes/-
+                        value:
+                          name: udev-textfile
+                          emptyDir:
+                            sizeLimit: 1Mi
+                      - op: add
+                        path: /spec/template/spec/containers/-
+                        value:
+                          name: udev-queue-collector
+                          image: ghcr.io/freckleapps/udev-queue-collector@sha256:49abd1af2b8e1cb30bf402c96e340264e92ce38357af95b8c47577a2f6339b8c
+                          args:
+                          - --udev-dir=/host/root/run/udev
+                          - --output=/textfile/udev_queue.prom
+                          - --interval=15s
+                          securityContext:
+                            runAsUser: 65534
+                            runAsGroup: 65534
+                            runAsNonRoot: true
+                            readOnlyRootFilesystem: true
+                            allowPrivilegeEscalation: false
+                            capabilities:
+                              drop:
+                              - ALL
+                          resources:
+                            requests:
+                              cpu: 5m
+                              memory: 8Mi
+                            limits:
+                              memory: 32Mi
+                          volumeMounts:
+                          - name: root
+                            mountPath: /host/root
+                            readOnly: true
+                            mountPropagation: HostToContainer
+                          - name: udev-textfile
+                            mountPath: /textfile
           values:
             kube-state-metrics:
               rbac:
