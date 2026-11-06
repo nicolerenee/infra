@@ -7,6 +7,7 @@ components:
   - ../_shared/cluster-info
   - ../../../../components/flux-post-build-variables
 resources:
+  - ./certificates.yaml
   - ./gateways.yaml
   - ./mcp-gateway.yaml
 patches:
