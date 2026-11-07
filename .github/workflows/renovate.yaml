@@ -30,6 +30,10 @@ on:
         default: latest
         required: true
 
+# Writes go through the bot app token, not GITHUB_TOKEN.
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
   cancel-in-progress: true
