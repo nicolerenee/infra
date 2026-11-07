@@ -41,9 +41,9 @@ spec:
       # qui's id for this cluster's qbt-reel (the seeded-search CronJob).
       QUI_REEL_INSTANCE_ID: "5"
       QUI_SEEDED_SEARCH_DAYS: "12,27"
-      # One search every 2 min: at 60 s, a run lost ~600 torrents to indexer
-      # rate limits. A full pass still finishes in ~3.5 days.
-      QUI_SEEDED_SEARCH_INTERVAL_SECONDS: "120"
+      # One search every 3 min: at 60 s, a run lost ~600 torrents to indexer
+      # rate limits. A full pass (~2500 torrents) still finishes in ~5 days.
+      QUI_SEEDED_SEARCH_INTERVAL_SECONDS: "180"
   patches:
     # The live PVC was created by the restic component, which restores from a
     # bootstrap ReplicationDestination via dataSourceRef. The rsync-tls PVC has
