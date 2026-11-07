@@ -8,3 +8,9 @@ resources:
   - helmrelease.yaml
   - cnp.yaml
   - pdb.yaml
+configMapGenerator:
+  - name: bind9-secondary-readiness
+    files:
+      - readiness.sh
+generatorOptions:
+  disableNameSuffixHash: true
