@@ -5,6 +5,7 @@ kind: Kustomization
 resources:
   - helmrelease.yaml
   - node-storage-rules.yaml
+  - spark-memory-rules.yaml
   - httproute.yaml
   - oidc.yaml
   - service-tailnet.yaml

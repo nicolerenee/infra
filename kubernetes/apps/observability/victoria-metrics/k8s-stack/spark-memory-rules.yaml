@@ -1,0 +1,82 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/operator.victoriametrics.com/vmrule_v1beta1.json
+# Host memory alerts for the DGX Sparks (dgx01-07, fairy only; nothing matches
+# on atlantis). High utilization is the goal on these nodes, so
+# NodeMemoryHighUtilization keeps its vLLM exemption; these rules only catch
+# real exhaustion. Kubelet eviction can't: about 64 GiB of driver memory per
+# loaded Spark sits outside the cgroup working set, so kubelet's
+# memory.available reads ~77 GiB free while MemAvailable is ~11 GiB. Host
+# MemAvailable and memory PSI are the only reliable signals. Thresholds and
+# their backtest are in agent-context docs/environment/spark-memory-accounting.md.
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  name: spark-host-memory
+spec:
+  groups:
+    - name: spark-host-memory
+      interval: 30s
+      rules:
+        # Lowest loaded-node MemAvailable since GMU 0.75 is ~6.6 GiB, so 2 GiB
+        # is exhaustion, not normal steady state.
+        - alert: SparkHostMemoryExhausted
+          expr: |-
+            max by (cluster, node) (
+              node_memory_MemAvailable_bytes{job="node-exporter"}
+              * on (namespace, pod) group_left (node)
+                max by (namespace, pod, node) (
+                  kube_pod_info{job="kube-state-metrics", node=~"dgx[0-9]+"}
+                )
+            ) < 2 * 1024^3
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: 'Spark {{ $labels.node }} has {{ $value | humanize1024 }}B MemAvailable'
+            description: >-
+              Host MemAvailable on this DGX Spark has been under 2 GiB for two
+              minutes. Kubelet eviction will not act (it cannot see driver
+              memory); the next step is the kernel OOM killer, most likely on
+              vLLM. Check the inference pods on this node and memory PSI.
+
+        # Full memory stall: the fraction of time every non-idle task waited on
+        # memory. PSI rises before MemAvailable runs out (2026-10-26 dgx07
+        # stalled with ~10 GiB still available).
+        - alert: SparkHostMemoryPressure
+          expr: |-
+            max by (cluster, node) (
+              rate(node_pressure_memory_stalled_seconds_total{job="node-exporter"}[5m])
+              * on (namespace, pod) group_left (node)
+                max by (namespace, pod, node) (
+                  kube_pod_info{job="kube-state-metrics", node=~"dgx[0-9]+"}
+                )
+            ) > 0.05
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Spark {{ $labels.node }} memory full-stall at {{ $value | humanizePercentage }}'
+            description: >-
+              All non-idle tasks on this DGX Spark have been stalled on memory
+              more than 5% of the time for 15 minutes. Check MemAvailable and
+              whether a model is starting, restarting or loading.
+
+        - alert: SparkHostMemoryPressureCritical
+          expr: |-
+            max by (cluster, node) (
+              rate(node_pressure_memory_stalled_seconds_total{job="node-exporter"}[5m])
+              * on (namespace, pod) group_left (node)
+                max by (namespace, pod, node) (
+                  kube_pod_info{job="kube-state-metrics", node=~"dgx[0-9]+"}
+                )
+            ) > 0.25
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: 'Spark {{ $labels.node }} memory full-stall at {{ $value | humanizePercentage }}'
+            description: >-
+              All non-idle tasks on this DGX Spark have been stalled on memory
+              more than 25% of the time for five minutes: the node is
+              thrashing. On 2026-10-14 this preceded repeated Flash-Next pod
+              recreation. Check MemAvailable and the inference pods on this node.
