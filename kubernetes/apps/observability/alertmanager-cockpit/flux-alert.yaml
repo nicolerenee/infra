@@ -7,7 +7,7 @@
 # An Alert can't select all namespaces, so each one is listed. The list is
 # shared by both clusters (a namespace a cluster doesn't have never matches):
 # add a namespace here when a new app gets its own. Namespaces that only
-# freckleapps/infra creates get their Alert from that repo.
+# frecklelabs/k8s-private creates get their Alert from that repo.
 apiVersion: notification.toolkit.fluxcd.io/v1
 kind: Alert
 metadata:

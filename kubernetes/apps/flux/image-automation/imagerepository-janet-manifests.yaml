@@ -10,7 +10,7 @@
 # git-sourced manifest dirs were retired by the OCI-artifact cutover.
 #
 # Reuses harvest-ghcr-login: the same shared GHCR read PAT (1Password
-# hedgehog-ghcr) reads both freckleapps org packages and the personal
+# hedgehog-ghcr) reads both frecklelabs org packages and the personal
 # nicolerenee packages, so one docker-config secret covers all flux-system
 # scanners.
 # yaml-language-server: $schema=https://k8s-schemas.freckle.systems/image.toolkit.fluxcd.io/imagerepository_v1.json
@@ -19,7 +19,7 @@ kind: ImageRepository
 metadata:
   name: janet-manifests
 spec:
-  image: ghcr.io/freckleapps/janet-manifests
+  image: ghcr.io/frecklelabs/janet-manifests
   interval: 5m
   secretRef:
     name: harvest-ghcr-login

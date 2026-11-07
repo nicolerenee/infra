@@ -6,6 +6,6 @@ metadata:
   name: github-status
 spec:
   type: github
-  address: https://github.com/nicolerenee/infra
+  address: https://github.com/frecklelabs/k8s
   secretRef:
     name: github-status-token

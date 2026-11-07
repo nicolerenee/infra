@@ -6,8 +6,8 @@ metadata:
 data:
   GOPROXY: "http://package-proxy.dev-platform.svc.cluster.local:8080/go"
   GOSUMDB: "sum.golang.org http://package-proxy.dev-platform.svc.cluster.local:8080/go/sumdb/sum.golang.org"
-  GOPRIVATE: "github.com/freckleapps/*"
-  GONOPROXY: "github.com/freckleapps/*"
+  GOPRIVATE: "github.com/frecklelabs/*"
+  GONOPROXY: "github.com/frecklelabs/*"
   NPM_CONFIG_REGISTRY: "http://package-proxy.dev-platform.svc.cluster.local:8080/npm/"
   PIP_INDEX_URL: "http://package-proxy.dev-platform.svc.cluster.local:8080/pypi/simple/"
   UV_INDEX_URL: "http://package-proxy.dev-platform.svc.cluster.local:8080/pypi/simple/"

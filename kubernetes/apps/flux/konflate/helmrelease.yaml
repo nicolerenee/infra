@@ -30,7 +30,7 @@ spec:
     mode: enabled
   values:
     config:
-      repo: github://nicolerenee/infra
+      repo: github://frecklelabs/k8s
       # The cluster's Flux entry point. Paths inside our Kustomizations are
       # root-relative (`./kubernetes/apps/...`) and still resolve correctly —
       # flate resolves them from the git root, not from this directory.

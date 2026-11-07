@@ -14,7 +14,7 @@ instance:
     - image-automation-controller
   sync:
     kind: GitRepository
-    url: https://github.com/nicolerenee/infra.git
+    url: https://github.com/frecklelabs/k8s.git
     ref: refs/heads/main
     path: kubernetes/clusters/${CLUSTER_NAME}/flux
     interval: 5m
@@ -108,3 +108,17 @@ instance:
         target:
           kind: Deployment
           name: helm-controller
+      - # Rebuild a separate push branch from the checkout branch on every
+        # run. With GitAllBranchReferences on (the default), an automation
+        # whose push branch differs from its checkout branch commits on top
+        # of the remote push branch, so a branch that is merged by squash
+        # keeps its old commits and soon conflicts with main. Off, the push
+        # branch is always the checkout branch plus one commit, force-pushed.
+        # Automations that push to their checkout branch are unaffected.
+        patch: |
+          - op: add
+            path: /spec/template/spec/containers/0/args/-
+            value: --feature-gates=GitAllBranchReferences=false
+        target:
+          kind: Deployment
+          name: image-automation-controller

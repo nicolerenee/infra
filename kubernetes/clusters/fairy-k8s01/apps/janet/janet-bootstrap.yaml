@@ -1,7 +1,7 @@
 ---
 # The single bootstrap Kustomization: applies the app-owned Flux TOPOLOGY from
 # the janet OCI bundle (deploy/flux/). Everything about WHICH janet components
-# deploy and in WHAT order now lives in the app repo (freckleapps/janet) — the
+# deploy and in WHAT order now lives in the app repo (frecklelabs/janet) — the
 # child KSs this creates (janet-migrate, janet-api, janet-controller, and
 # janet-scheduler when it lands) source the same OCIRepository and reconcile the
 # workload subpaths. Adding/moving a component is an app-side change, never an

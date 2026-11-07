@@ -1,5 +1,5 @@
 ---
-# Second Flux source for fairy-k8s01: the PRIVATE freckleapps/infra repo.
+# Second Flux source for fairy-k8s01: the PRIVATE frecklelabs/k8s-private repo.
 # Mirrors the atlantis-k8s01 setup exactly — see that cluster's copy of this
 # file. Private workloads and site-specific network-device scrape configs live
 # there instead of in this public repo. See that repo's CLAUDE.md.
@@ -16,7 +16,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 5m
-  url: ssh://git@github.com/freckleapps/infra.git
+  url: ssh://git@github.com/frecklelabs/k8s-private.git
   ref:
     branch: main
   secretRef:

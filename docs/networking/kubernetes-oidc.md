@@ -36,7 +36,7 @@ are, and so do the Talos admin kubeconfigs.
 freckle.id runs Pocket ID **v2.19.1** on atlantis (`freckle-id` namespace),
 served at `https://freckle.id` on the `public` gateway with a publicly
 trusted certificate. OIDC clients and groups are managed in OpenTofu
-(freckleapps/tofu `platform/`) with the `trozz/pocketid` provider 2.5.0;
+(frecklelabs/tofu `platform/`) with the `trozz/pocketid` provider 2.5.0;
 group membership is set in the Pocket ID admin UI.
 
 What sign-in needs from Pocket ID is all standard OIDC, already used by other
@@ -205,7 +205,7 @@ contexts:
 
 ## Rollout (after approval)
 
-1. **Pocket ID** (freckleapps/tofu PR, Nicole reviews): group `k8s-admins`,
+1. **Pocket ID** (frecklelabs/tofu PR, Nicole reviews): group `k8s-admins`,
    clients `kubernetes-fairy` and `kubernetes-atlantis`. After apply, Nicole
    adds `nicole` and `alt-nicole` to the group in the admin UI.
 2. **Probe the kubectl login on fairy** before the API server trusts

@@ -7,21 +7,21 @@ on:
   pull_request_target:
     branches: ["main"]
 
+# GITHUB_TOKEN, scoped to this repo and run: the labeler only labels this
+# repo's own PRs, and nothing here triggers on label events (C-1326).
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   main:
     name: Labeler - Labeler
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     steps:
-      - name: Generate Token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
-        id: app-token
-        with:
-          app-id: "${{ vars.BOT_APP_ID }}"
-          private-key: "${{ secrets.BOT_APP_PRIVATE_KEY }}"
-
       - name: Labeler
         uses: actions/labeler@bf12e9b00b37c5c0ca2b87b79b2daf7891dbda13 # v7.0.0
         with:
-          repo-token: "${{ steps.app-token.outputs.token }}"
+          repo-token: "${{ github.token }}"
           configuration-path: .github/labeler.yaml
