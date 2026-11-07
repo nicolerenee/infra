@@ -51,6 +51,12 @@ metadata:
   name: qwen38-flash-next
 spec:
   replicas: 2
+  # Canary: only group 1 picks up the new template; group 0 keeps serving
+  # until group 1 is verified, then the partition is removed.
+  rolloutStrategy:
+    type: RollingUpdate
+    rollingUpdateConfiguration:
+      partition: 1
   leaderWorkerTemplate:
     size: 2
     restartPolicy: RecreateGroupOnPodRestart
@@ -249,8 +255,15 @@ spec:
             resources:
               claims:
                 - name: gpu-rdma
+              # Request what the rank really holds, not its cgroup working set:
+              # the GPU budget (GMU 0.75 = ~91 GiB) lives outside pod accounting
+              # on unified memory, so a 16Gi request let the scheduler think a
+              # loaded Spark had ~100 GiB free. 112Gi + ~2.4Gi of DaemonSet
+              # requests fits the 121.2Gi allocatable and keeps every other
+              # memory-requesting pod off a model node (C-1255). Scheduler
+              # bookkeeping only; it isolates nothing at runtime.
               requests:
-                memory: 16Gi
+                memory: 112Gi
               limits:
                 memory: 112Gi
             volumeMounts:
@@ -436,8 +449,15 @@ spec:
             resources:
               claims:
                 - name: gpu-rdma
+              # Request what the rank really holds, not its cgroup working set:
+              # the GPU budget (GMU 0.75 = ~91 GiB) lives outside pod accounting
+              # on unified memory, so a 16Gi request let the scheduler think a
+              # loaded Spark had ~100 GiB free. 112Gi + ~2.4Gi of DaemonSet
+              # requests fits the 121.2Gi allocatable and keeps every other
+              # memory-requesting pod off a model node (C-1255). Scheduler
+              # bookkeeping only; it isolates nothing at runtime.
               requests:
-                memory: 16Gi
+                memory: 112Gi
               limits:
                 memory: 112Gi
             volumeMounts:
