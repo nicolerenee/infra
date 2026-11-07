@@ -42,7 +42,7 @@ spec:
               type: RuntimeDefault
           containers:
             - name: rclone
-              image: rclone/rclone:1.75.2
+              image: rclone/rclone:1.76.0
               command: [/bin/sh, -ec]
               args:
                 - |
