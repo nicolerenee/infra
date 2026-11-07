@@ -1,0 +1,33 @@
+// Global (self-hosted) Renovate config for the "Freckle Renovate" GitHub
+// App (cockpit C-9). Per-run values come from env: RENOVATE_TOKEN (run.mjs),
+// RENOVATE_HOST_RULES (ExternalSecret renovate-host-rules),
+// RENOVATE_AUTODISCOVER_FILTER and RENOVATE_DRY_RUN (cronjob.yaml). Repo-level settings belong in each repo's
+// .renovaterc.json5 and the shared presets in frecklelabs/k8s//.renovate/,
+// not here.
+{
+  platform: 'github',
+  autodiscover: true,
+  // Only repos that carry a Renovate config of their own; no onboarding PRs.
+  onboarding: false,
+  requireConfig: 'required',
+  // Commit through the GitHub API, so commits are signed as the App.
+  platformCommit: 'enabled',
+  // Commands repos may run as postUpgradeTasks (anchored regexes).
+  // frecklelabs/k8s re-vendors the gateway-api CRDs after a tag bump.
+  allowedCommands: [
+    '^scripts/vendor-gateway-api-crds\\.sh$',
+  ],
+  // npm and PyPI lookups through the cluster's package proxy (Go lookups
+  // follow GOPROXY from cronjob.yaml). The npmrc also drives npm lockfile
+  // updates; a repo's own .npmrc is ignored while this is set.
+  npmrc: 'registry=http://package-proxy.dev-platform.svc.cluster.local:8080/npm/',
+  packageRules: [
+    {
+      matchDatasources: ['pypi'],
+      registryUrls: ['http://package-proxy.dev-platform.svc.cluster.local:8080/pypi/simple/'],
+    },
+  ],
+  binarySource: 'install',
+  repositoryCache: 'enabled',
+  baseDir: '/tmp/renovate',
+}
