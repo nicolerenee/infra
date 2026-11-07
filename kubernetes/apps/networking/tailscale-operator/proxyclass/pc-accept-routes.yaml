@@ -14,6 +14,11 @@ spec:
       nodeSelector:
         beta.kubernetes.io/os: "linux"
       tailscaleContainer:
+        env:
+          # No UPnP/NAT-PMP gateway is reachable from a pod, so the port
+          # mapper only sends SSDP multicast that Cilium drops (TTL_EXCEEDED).
+          - name: TS_DISABLE_PORTMAPPER
+            value: "true"
         resources:
           limits:
             devic.es/tun: "1"
