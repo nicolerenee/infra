@@ -8,7 +8,7 @@ metadata:
   name: paperless-queue
 spec:
   # renovate: datasource=docker depName=docker.dragonflydb.io/dragonflydb/dragonfly
-  image: docker.dragonflydb.io/dragonflydb/dragonfly:v2.0.2
+  image: docker.dragonflydb.io/dragonflydb/dragonfly:v2.1.0
   replicas: 1
   authentication:
     passwordFromSecret:
