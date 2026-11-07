@@ -19,7 +19,7 @@ kind: ImageRepository
 metadata:
   name: janet-manifests
 spec:
-  image: ghcr.io/freckleapps/janet-manifests
+  image: ghcr.io/frecklelabs/janet-manifests
   interval: 5m
   secretRef:
     name: harvest-ghcr-login

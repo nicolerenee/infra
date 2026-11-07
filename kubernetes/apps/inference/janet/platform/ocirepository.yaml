@@ -29,7 +29,7 @@ metadata:
   namespace: janet
 spec:
   interval: 5m
-  url: oci://ghcr.io/freckleapps/janet-manifests
+  url: oci://ghcr.io/frecklelabs/janet-manifests
   ref:
     tag: main-20261103T103754Z-13f0603 # {"$imagepolicy": "flux-system:janet-manifests:tag"}
   secretRef:

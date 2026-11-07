@@ -25,7 +25,7 @@ metadata:
   namespace: hedgehog
 spec:
   interval: 5m
-  url: oci://ghcr.io/freckleapps/hedgehog-manifests
+  url: oci://ghcr.io/frecklelabs/hedgehog-manifests
   ref:
     tag: main-20261106T045929Z-c038c61 # {"$imagepolicy": "flux-system:hedgehog:tag"}
   secretRef:
