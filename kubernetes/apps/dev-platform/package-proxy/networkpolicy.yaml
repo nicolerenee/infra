@@ -27,6 +27,11 @@ spec:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: actions-runner-system
             dev-platform.freckle.tools/package-proxy-client: 'true'
+        # Self-hosted Renovate's lookups and lockfile updates (fairy).
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: renovate
+            app.kubernetes.io/name: renovate
+            dev-platform.freckle.tools/package-proxy-client: 'true'
       toPorts:
         - ports:
             - port: '8080'

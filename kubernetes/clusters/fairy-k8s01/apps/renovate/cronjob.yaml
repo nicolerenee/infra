@@ -1,0 +1,108 @@
+---
+# Self-hosted Renovate as the "Freckle Renovate" GitHub App (cockpit C-9),
+# for every frecklelabs repo. run.mjs mints the installation token and runs
+# Renovate. Global config is in ./config.
+#
+# Every 30 minutes over every repo the App is installed on. Forbid keeps a
+# slow sweep from overlapping the next. Event-driven one-repo runs (cockpit
+# C-1344) are planned to clone this jobTemplate, overriding only
+# RENOVATE_AUTODISCOVER_FILTER, so keep the whole definition of a run here.
+#
+# Renovate keeps its own image current through the kubernetes manager.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: renovate
+  namespace: renovate
+spec:
+  schedule: "7,37 * * * *"
+  timeZone: America/Chicago
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 900
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      # The installation token lasts an hour from the start of the run.
+      activeDeadlineSeconds: 3300
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: renovate
+            # Admitted by the package-proxy's network policy (dev-platform).
+            dev-platform.freckle.tools/package-proxy-client: "true"
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 12021
+            fsGroup: 12021
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: renovate
+              image: ghcr.io/renovatebot/renovate:44.205.1@sha256:5a192fb2e0e9601aa8fc953d33101a7157954c9dfbd4483d8885de671897eaad
+              command: ["/usr/local/sbin/renovate-entrypoint.sh"]
+              args: ["node", "/config/run.mjs"]
+              env:
+                - name: RENOVATE_CONFIG_FILE
+                  value: /config/config.json5
+                # Every repo the App is installed on.
+                - name: RENOVATE_AUTODISCOVER_FILTER
+                  value: frecklelabs/*
+                # Dry run until the cutover review (C-9): "full" does the
+                # lookups and logs what it would do, without writing.
+                - name: RENOVATE_DRY_RUN
+                  value: full
+                # Go, npm and PyPI go through the cluster's package proxy,
+                # for lookups and lockfile updates alike, as agent runs do.
+                # run.mjs passes these on to Renovate's child processes; npm
+                # and PyPI lookups are pointed at it in config.json5.
+                # Private frecklelabs modules go direct, with the App token.
+                - name: GOPROXY
+                  value: http://package-proxy.dev-platform.svc.cluster.local:8080/go
+                - name: GOSUMDB
+                  value: sum.golang.org http://package-proxy.dev-platform.svc.cluster.local:8080/go/sumdb/sum.golang.org
+                - name: GOPRIVATE
+                  value: github.com/frecklelabs/*
+                - name: NPM_CONFIG_REGISTRY
+                  value: http://package-proxy.dev-platform.svc.cluster.local:8080/npm/
+                - name: PIP_INDEX_URL
+                  value: http://package-proxy.dev-platform.svc.cluster.local:8080/pypi/simple/
+                - name: UV_INDEX_URL
+                  value: http://package-proxy.dev-platform.svc.cluster.local:8080/pypi/simple/
+                - name: LOG_LEVEL
+                  value: debug
+                - name: LOG_FORMAT
+                  value: json
+              envFrom:
+                - secretRef:
+                    name: renovate-github-app
+                - secretRef:
+                    name: renovate-host-rules
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 1Gi
+                limits:
+                  memory: 4Gi
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+                  readOnly: true
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: config
+              configMap:
+                name: renovate-config
+            - name: tmp
+              emptyDir:
+                sizeLimit: 10Gi

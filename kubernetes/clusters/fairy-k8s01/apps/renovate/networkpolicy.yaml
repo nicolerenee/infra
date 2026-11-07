@@ -1,0 +1,55 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.freckle.systems/cilium.io/ciliumnetworkpolicy_v2.json
+# Renovate runs repo tooling (go mod tidy, npm and uv locks) on repo content,
+# so its pods reach only DNS, the package proxy and the public internet on
+# 443 (GitHub, GHCR, registries, release downloads), never in-cluster or
+# private addresses. Nothing connects to it.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: renovate
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: renovate
+  enableDefaultDeny:
+    ingress: true
+    egress: true
+  ingress: []
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY
+          rules:
+            dns:
+              - matchPattern: "*"
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: dev-platform
+            app.kubernetes.io/name: proxy
+            app.kubernetes.io/instance: package-proxy
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+  egressDeny:
+    - toCIDRSet:
+        # Private, tailnet (CGNAT) and link-local (cloud metadata).
+        - cidr: 10.0.0.0/8
+        - cidr: 172.16.0.0/12
+        - cidr: 192.168.0.0/16
+        - cidr: 100.64.0.0/10
+        - cidr: 169.254.0.0/16
+        - cidr: fc00::/7
+        - cidr: fe80::/10
