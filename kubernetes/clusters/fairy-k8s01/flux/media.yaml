@@ -6,7 +6,7 @@ kind: Namespace
 metadata:
   name: media
   labels:
-    # Opt in to the cluster-wide GHCR pull secret, for private freckleapps
+    # Opt in to the cluster-wide GHCR pull secret, for private frecklelabs
     # images. Only workloads that reference `ghcr-pull` use it.
     freckle.systems/ghcr-pull: "true"
   annotations:

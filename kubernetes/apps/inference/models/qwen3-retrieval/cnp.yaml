@@ -32,7 +32,7 @@ spec:
               protocol: TCP
             - port: "8001"
               protocol: TCP
-    # inference-mcp (ai-mcp, freckleapps/infra; C-452): agents' read-only
+    # inference-mcp (ai-mcp, frecklelabs/k8s-private; C-452): agents' read-only
     # model_status / model_probe, straight to a group's leader so a canary
     # group can be checked alone (the gateway round-robins). /version,
     # /v1/models and one short capped request per call.

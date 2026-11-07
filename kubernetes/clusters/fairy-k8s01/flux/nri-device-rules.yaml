@@ -1,7 +1,7 @@
 ---
 # nri-device-rules, an NRI plugin that adds device-cgroup rules for
-# allow-listed namespaces (freckleapps/nri-device-rules). Its DaemonSet and
-# Kustomization live in the private repo with the other private freckleapps
+# allow-listed namespaces (frecklelabs/nri-device-rules). Its DaemonSet and
+# Kustomization live in the private repo with the other private frecklelabs
 # images; the namespace is created here because the private root Kustomization
 # targets flux-system and would rename a Namespace declared there.
 apiVersion: v1
