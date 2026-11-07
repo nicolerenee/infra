@@ -16,7 +16,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 5m
-  url: ssh://git@github.com/frecklelabs/infra.git
+  url: ssh://git@github.com/frecklelabs/k8s-private.git
   ref:
     branch: main
   secretRef:
