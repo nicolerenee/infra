@@ -4,6 +4,10 @@ name: Image Pull
 on:
   pull_request:
     branches: ["main"]
+  # The merge queue tests each group (main plus the PRs ahead of it) before
+  # merging. "Image Pull - Success" is a required check, so it must report on
+  # the group's commit or the queue waits forever.
+  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
@@ -14,10 +18,11 @@ jobs:
     name: Image Pull - Filter
     runs-on: ubuntu-latest
     outputs:
-      changed-files: ${{ steps.changed-files.outputs.changed_files }}
+      changed-files: ${{ steps.changed-files.outputs.changed_files || steps.merge-group-files.outputs.changed_files }}
     steps:
       - name: Get Changed Files
         id: changed-files
+        if: ${{ github.event_name == 'pull_request' }}
         uses: bjw-s-labs/action-changed-files@147be9638332cf68fd60714a610509d7a9360d60 # v0.7.0
         with:
           patterns: |-
@@ -28,6 +33,28 @@ jobs:
             scripts/test-image-pull-scope.py
             kubernetes/**/*
             apps/**/*
+
+      # action-changed-files only knows pull_request and push: on merge_group
+      # it warns and returns [], which would skip the render and pull for
+      # every group. Diff the group against the main it was built on instead,
+      # with the same patterns as above (keep the two lists in step).
+      - name: Get Changed Files (merge queue)
+        id: merge-group-files
+        if: ${{ github.event_name == 'merge_group' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event.merge_group.base_sha }}
+          HEAD: ${{ github.event.merge_group.head_sha }}
+        run: |
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/compare/${BASE}...${HEAD}" \
+              --jq '.files[] | select(.status != "removed") | .filename' > files.txt
+          cat files.txt
+          pattern='^(kubernetes/|apps/|\.github/workflows/image-pull(-extract-pull)?\.yaml$'
+          pattern="${pattern}|scripts/(test-image-pull-retry|prepare-image-pull-root|test-image-pull-scope)\.py$)"
+          # grep exits 1 on no match, which pipefail would turn into a failure.
+          files=$({ grep -E "${pattern}" files.txt || true; } \
+              | jq --raw-input --slurp --compact-output 'split("\n")[:-1]')
+          echo "changed_files=${files}" >> "${GITHUB_OUTPUT}"
 
   retry-tests:
     name: Image Pull - Retry Tests

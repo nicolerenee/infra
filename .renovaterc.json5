@@ -20,7 +20,10 @@
     'github>home-operations/renovate-presets//apps/talosFactory.json5#11.0.0',
     'github>frecklelabs/k8s//.renovate/infraPackages.json5',
   ],
-  rebaseWhen: 'behind-base-branch',
+  // The merge queue tests each PR against the latest main before merging, so
+  // a PR that is merely behind main is fine. Rebase only on conflicts instead
+  // of re-running CI on every open Renovate PR each time main moves.
+  rebaseWhen: 'conflicted',
   dependencyDashboardTitle: 'Renovate Dashboard 🤖',
   // mise.toml: the kubectl, flux and kustomize that CI and agent sessions use.
   mise: {
