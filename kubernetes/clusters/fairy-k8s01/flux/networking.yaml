@@ -29,4 +29,11 @@ spec:
   retryInterval: 1m
   timeout: 5m
   prune: true
-  wait: true
+  # The staged multus-dmz-qbt child is suspended; wait only for active children.
+  # Add future active children here and include multus-dmz-qbt when enabled.
+  wait: false
+  healthChecks:
+    - apiVersion: kustomize.toolkit.fluxcd.io/v1
+      kind: Kustomization
+      name: multus-trusted
+      namespace: networking
