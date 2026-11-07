@@ -1,5 +1,5 @@
 ---
-# Cluster Mesh export: lets fairy's nautobot-mcp (freckleapps/infra
+# Cluster Mesh export: lets fairy's nautobot-mcp (frecklelabs/k8s-private
 # kubernetes/apps/ai-mcp/nautobot-mcp, C-433) reach Nautobot's API by
 # identity, without a tailnet path from fairy's pods. A copy of the
 # nautobot-default Service with a cluster suffix, so the global merge only

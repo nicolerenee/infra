@@ -1,5 +1,5 @@
 ---
-# Second Flux source for atlantis-k8s01: the PRIVATE freckleapps/infra repo.
+# Second Flux source for atlantis-k8s01: the PRIVATE frecklelabs/k8s-private repo.
 # Business-sensitive workloads (WHMCS, etc.) that must not be publicly visible
 # live there instead of in this public repo. See that repo's CLAUDE.md.
 #

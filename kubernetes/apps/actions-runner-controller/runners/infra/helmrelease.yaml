@@ -31,7 +31,7 @@ spec:
     remediation:
       retries: 3
   values:
-    githubConfigUrl: https://github.com/nicolerenee/infra
+    githubConfigUrl: https://github.com/frecklelabs/k8s
     githubConfigSecret: infra-runner-github-creds
     minRunners: 1
     maxRunners: 3

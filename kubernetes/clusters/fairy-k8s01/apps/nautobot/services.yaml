@@ -1,7 +1,7 @@
 ---
 # Cluster Mesh import: selector-less, unshared global Service whose backends
 # come from atlantis-k8s01's Nautobot web pods. nautobot-mcp in ai-mcp
-# (freckleapps/infra, C-433) calls http://nautobot-atlantis.nautobot.svc.cluster.local.
+# (frecklelabs/k8s-private, C-433) calls http://nautobot-atlantis.nautobot.svc.cluster.local.
 apiVersion: v1
 kind: Service
 metadata:

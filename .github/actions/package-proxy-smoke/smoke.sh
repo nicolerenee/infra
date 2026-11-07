@@ -10,8 +10,8 @@ base = "http://package-proxy.dev-platform.svc.cluster.local:8080"
 expected = {
     "GOPROXY": base + "/go",
     "GOSUMDB": "sum.golang.org " + base + "/go/sumdb/sum.golang.org",
-    "GOPRIVATE": "github.com/freckleapps/*",
-    "GONOPROXY": "github.com/freckleapps/*",
+    "GOPRIVATE": "github.com/frecklelabs/*",
+    "GONOPROXY": "github.com/frecklelabs/*",
     "NPM_CONFIG_REGISTRY": base + "/npm/",
     "PIP_INDEX_URL": base + "/pypi/simple/",
     "UV_INDEX_URL": base + "/pypi/simple/",

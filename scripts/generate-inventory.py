@@ -148,7 +148,7 @@ device name.
 
 ---
 
-*Generated from [`docs/_data/devices.yaml`](https://github.com/nicolerenee/infra/blob/main/docs/_data/devices.yaml).
+*Generated from [`docs/_data/devices.yaml`](https://github.com/frecklelabs/k8s/blob/main/docs/_data/devices.yaml).
 Last updated {last_modified}.*
 """
 

@@ -103,7 +103,7 @@ spec:
         bypassrls: false
         passwordSecret:
           name: lore-db-role
-      # switchboard, the people's MCP hub (freckleapps/switchboard, C-357):
+      # switchboard, the people's MCP hub (frecklelabs/switchboard, C-357):
       # users, per-user backend enablement and the calls audit. The secret
       # and the Database CR are in the private repo (apps/db/switchboard).
       - name: switchboard
