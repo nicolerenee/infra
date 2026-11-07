@@ -9,7 +9,7 @@ import sys
 import urllib.request
 
 CONTEXT = "Public leak backstop"
-REPO = "nicolerenee/infra"
+REPO = "frecklelabs/k8s"
 
 
 def main():
