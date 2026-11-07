@@ -20,3 +20,25 @@ spec:
       # Kept small because every clone copies it; clones ask for more and
       # extend C: on first boot.
       storage: 40Gi
+---
+# v2: Setup's own Recovery partition removed so clones can extend C: (v1
+# needed it done by hand). The DataSource moves here once v2's build is
+# verified; v1 stays until Nicole OKs deleting it.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: win11-golden-v2
+  annotations:
+    # Removing this from git (or renaming the dir) must never delete the
+    # template that existing VMs were cloned from.
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  # Clones of RWX Block are RWX Block, which VMs need to live-migrate.
+  accessModes: [ReadWriteMany]
+  storageClassName: ceph-block
+  volumeMode: Block
+  resources:
+    requests:
+      # Kept small because every clone copies it; clones ask for more and
+      # extend C: on first boot.
+      storage: 40Gi

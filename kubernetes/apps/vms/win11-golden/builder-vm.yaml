@@ -1,5 +1,5 @@
 ---
-# One-shot VM that builds the Win11 template onto win11-golden-v1 from the
+# One-shot VM that builds the Win11 template onto win11-golden-v2 from the
 # answer file in autounattend.xml: unattended install, virtio drivers and
 # guest agent, then sysprep /generalize and power off. The disk is then the
 # template and this VM must not boot it again (that would consume the
@@ -129,7 +129,7 @@ spec:
       volumes:
         - name: root
           persistentVolumeClaim:
-            claimName: win11-golden-v1
+            claimName: win11-golden-v2
         - name: win11-iso
           persistentVolumeClaim:
             claimName: iso-win11-25h2
