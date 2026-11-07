@@ -50,7 +50,7 @@ spec:
           app:
             image:
               repository: ghcr.io/connorgallopo/tracearr
-              tag: 3.1.3@sha256:0a3ca6dba8a7d9f89124207255f5d6580a2b89d9b9c88c408dfe0f288bb6dbf6
+              tag: 3.1.5@sha256:bf8c9e3ea2f2c70247f312e1bfcf7b2b5d66f366b24e301a4dddf692e933b389
             env:
               NODE_ENV: production
               # Dual-stack Service: Envoy hands requests to the pod's v6
