@@ -7,7 +7,7 @@ description: Overview of the fairy site — primary homelab with compute rack, G
 Fairy is the primary homelab site, with a 32U compute rack and a
 wall-mounted MDF rack. It runs a single Kubernetes cluster (fairy-k8s01) across
 custom-built AMD64 [Freckle Node](../../compute/freckle-node.md) compute nodes
-and three [NVIDIA DGX Spark](../../compute/dgx-spark.md) ARM64 GPU nodes, all on
+and seven [NVIDIA DGX Spark](../../compute/dgx-spark.md) ARM64 GPU nodes, all on
 Talos Linux. The compute nodes handle everything from home automation and media
 services to monitoring and storage controllers, while the DGX Sparks run LLM
 inference via vLLM. Storage is split between Ceph (distributed across the compute
@@ -65,9 +65,10 @@ fabric for the fairy-k8s01 cluster.
 
 ![Rack r02 diagram](rack-r02.svg)
 
-The DGX Spark units are mounted in
+The DGX Spark units sit on an 8-bay DGX shelf behind a front fan panel. They
+originally sat in
 [Racknex UM-NVI-202](https://racknex.com/nvidia-dgx-spark-rack-mount-kit-um-nvi-202/)
-rack mount kits. Each tray holds two units and occupies ~1.33U.
+trays of two; the shelf replaced those in October 2026.
 
 ### Hardware { #r02-hardware }
 
@@ -76,7 +77,7 @@ rack mount kits. Each tray holds two units and occupies ~1.33U.
 | Device | Model | Function |
 |--------|-------|----------|
 | fairy-r02-tor01 | Netgear XS724EMv2 | Top-of-rack switch (24x 10GBase-T, 4x 10G SFP+) |
-| fairy-r02-fsw01 | MikroTik CRS804-4DDQ | GPU fabric switch (4x 400G QSFP-DD) |
+| r01-fsw01 | MikroTik CRS804-4DDQ | GPU fabric switch (4x 400G QSFP-DD, one 200G breakout leg per Spark) |
 | fairy-r02-msw01 | Cisco Catalyst C1300-24T-4G | Out-of-band management (IPMI, JetKVM, PDU, vPro) |
 
 See [Fairy Network Topology](../../networking/fairy-network.md) for port
@@ -84,17 +85,25 @@ allocations and IP addressing.
 
 #### Compute { #r02-compute }
 
-| Device | IP | Function | Type |
-|--------|----|----------|------|
-| fairy-r02-cn01 | 192.168.227.16 | Control plane + worker | [Freckle Node Gen 3.0](../../compute/freckle-node.md#gen-30) |
-| fairy-r02-cn02 | 192.168.227.17 | Control plane + worker | [Freckle Node Gen 3.0](../../compute/freckle-node.md#gen-30) |
-| fairy-r02-cn03 | 192.168.227.18 | Control plane + worker | [Freckle Node Gen 3.0](../../compute/freckle-node.md#gen-30) |
-| fairy-r02-cn04 | TBD | Worker (planned) | [Freckle Node Gen 3.1](../../compute/freckle-node.md#gen-31-changes) |
-| fairy-r02-cn05 | TBD | Worker (planned) | [Freckle Node Gen 3.1](../../compute/freckle-node.md#gen-31-changes) |
-| fairy-r02-cn06 | TBD | Worker (planned) | [Freckle Node Gen 3.1](../../compute/freckle-node.md#gen-31-changes) |
-| fairy-r02-dgx01 | 192.168.227.19 | GPU inference | [DGX Spark](../../compute/dgx-spark.md) |
-| fairy-r02-dgx02 | 192.168.227.20 | GPU inference | [DGX Spark](../../compute/dgx-spark.md) |
-| fairy-r02-dgx03 | 192.168.227.21 | GPU inference | [DGX Spark](../../compute/dgx-spark.md) |
+The Sparks use the bare host names they carry as Kubernetes nodes. Other
+device names and the rack label on this page predate that naming and are
+due a refresh.
+
+| Device | Function | Type |
+|--------|----------|------|
+| fairy-r02-cn01 | Control plane + worker | [Freckle Node Gen 3.0](../../compute/freckle-node.md#gen-30) |
+| fairy-r02-cn02 | Control plane + worker | [Freckle Node Gen 3.0](../../compute/freckle-node.md#gen-30) |
+| fairy-r02-cn03 | Control plane + worker | [Freckle Node Gen 3.0](../../compute/freckle-node.md#gen-30) |
+| fairy-r02-cn04 | Worker (planned) | [Freckle Node Gen 3.1](../../compute/freckle-node.md#gen-31-changes) |
+| fairy-r02-cn05 | Worker (planned) | [Freckle Node Gen 3.1](../../compute/freckle-node.md#gen-31-changes) |
+| fairy-r02-cn06 | Worker (planned) | [Freckle Node Gen 3.1](../../compute/freckle-node.md#gen-31-changes) |
+| dgx01 | GPU inference | [DGX Spark](../../compute/dgx-spark.md) |
+| dgx02 | GPU inference | [DGX Spark](../../compute/dgx-spark.md) |
+| dgx03 | GPU inference | [DGX Spark](../../compute/dgx-spark.md) |
+| dgx04 | GPU inference | [DGX Spark](../../compute/dgx-spark.md) |
+| dgx05 | GPU inference | [DGX Spark](../../compute/dgx-spark.md) |
+| dgx06 | GPU inference | [DGX Spark](../../compute/dgx-spark.md) |
+| dgx07 | GPU inference | [DGX Spark](../../compute/dgx-spark.md) |
 
 #### Storage { #r02-storage }
 

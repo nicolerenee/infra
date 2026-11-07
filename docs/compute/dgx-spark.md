@@ -4,7 +4,7 @@ description: NVIDIA DGX Spark (GB10) configuration on Talos Linux — driver sel
 
 # DGX Spark (GB10)
 
-The fairy site runs three NVIDIA DGX Spark nodes (fairy-r02-dgx01 through fairy-r02-dgx03)
+The fairy site runs seven NVIDIA DGX Spark nodes (`dgx01` through `dgx07`)
 as GPU worker nodes in the fairy-k8s01 Kubernetes cluster, providing inference
 and model loading capabilities.
 
@@ -94,11 +94,13 @@ Each DGX Spark has 2 physical ConnectX-7 QSFP56 ports and 1 Realtek RTL8127
 10G copper port. Each physical CX-7 port is split across two PCIe lanes,
 presenting as two OS interfaces per physical port.
 
-### Physical Port 0 — GPU fabric via fairy-r02-fsw01
+### Physical Port 0 — GPU fabric via r01-fsw01
 
-Connected via a 400G to 2x200G DAC breakout cable to the GPU fabric switch
-(MikroTik CRS804-4DDQ, fairy-r02-fsw01) for inter-node GPU communication
-(GPUDirect RDMA, tensor/pipeline parallelism).
+Each Spark takes one 200G leg of a 400G to 2x200G DAC breakout cable from the
+GPU fabric switch (MikroTik CRS804-4DDQ, `r01-fsw01`), so the switch's four
+400G ports serve up to eight Sparks. The fabric carries inter-node GPU
+communication only (NCCL over RoCE: GPUDirect RDMA, tensor/pipeline
+parallelism). The leg's two PCIe halves appear as the two interfaces below.
 
 | Interface | MTU |
 |-----------|-----|
@@ -118,5 +120,5 @@ Connected via a 400G to 2x200G DAC breakout cable to the GPU fabric switch
 |-----------|-------|-----|
 | enP7s7 | 10G | 1500 |
 
-Handles all Kubernetes and management traffic via fairy-r02-tor01 (Netgear
-XS724EMv2).
+Handles all Kubernetes and management traffic via the top-of-rack switch
+`r01-tor01` (UniFi USW EnterpriseXG 24).

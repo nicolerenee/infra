@@ -76,7 +76,7 @@ devices:
     function: Top-of-rack switch
     model: Netgear XS724EMv2
 
-  - name: fairy-r02-fsw01
+  - name: r01-fsw01
     site: fairy
     rack: r02
     function: GPU fabric switch
@@ -134,45 +134,54 @@ devices:
     model_doc: ../compute/freckle-node.md
     status: planned
 
-  - name: fairy-r02-dgx01
+  - name: dgx01
     site: fairy
     rack: r02
     function: GPU inference
     model: DGX Spark
     model_doc: ../compute/dgx-spark.md
 
-  - name: fairy-r02-dgx02
+  - name: dgx02
     site: fairy
     rack: r02
     function: GPU inference
     model: DGX Spark
     model_doc: ../compute/dgx-spark.md
 
-  - name: fairy-r02-dgx03
+  - name: dgx03
     site: fairy
     rack: r02
     function: GPU inference
     model: DGX Spark
     model_doc: ../compute/dgx-spark.md
 
-  # ── Fairy r02 — Management ─────────────────────────────────────────
-  - name: fairy-r02-dgx01-mgmt
+  - name: dgx04
     site: fairy
     rack: r02
-    function: Management (KVM)
-    model: JetKVM
+    function: GPU inference
+    model: DGX Spark
+    model_doc: ../compute/dgx-spark.md
 
-  - name: fairy-r02-dgx02-mgmt
+  - name: dgx05
     site: fairy
     rack: r02
-    function: Management (KVM)
-    model: JetKVM
+    function: GPU inference
+    model: DGX Spark
+    model_doc: ../compute/dgx-spark.md
 
-  - name: fairy-r02-dgx03-mgmt
+  - name: dgx06
     site: fairy
     rack: r02
-    function: Management (KVM)
-    model: JetKVM
+    function: GPU inference
+    model: DGX Spark
+    model_doc: ../compute/dgx-spark.md
+
+  - name: dgx07
+    site: fairy
+    rack: r02
+    function: GPU inference
+    model: DGX Spark
+    model_doc: ../compute/dgx-spark.md
 
   # ── Fairy r02 — Storage ────────────────────────────────────────────
   - name: fairy-store01
