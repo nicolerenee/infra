@@ -9,5 +9,6 @@ components:
   - ../../../../components/flux-post-build-variables
 resources:
   - ./cert-manager.yaml
+  - ./cnp-webhook.yaml
   - ./external-secrets.yaml
   - ./issuers.yaml
