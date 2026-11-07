@@ -1,0 +1,22 @@
+---
+# tsdns, the tailnet DNS recursor (C-1290). Its Deployment and Kustomization
+# live in the private repo; the namespace is created here, like lore's,
+# because the private root Kustomization targets flux-system and would rename
+# a Namespace declared there. Pod Security "restricted" is enforced: tsdns is
+# a userspace tsnet node (no TUN, no NET_ADMIN) and its Unbound sidecar
+# listens on a high loopback port, so neither needs a capability.
+# The namespace and ServiceAccount names are load-bearing: the Tailscale
+# federated identity (frecklelabs/tofu cloud-instances/tsdns.tf) trusts only
+# the subject system:serviceaccount:tsdns:tsdns.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tsdns
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/warn: restricted
+    # Opt in to the cluster-wide GHCR pull secret, for the private tsdns
+    # image. Only workloads that reference `ghcr-pull` use it.
+    freckle.systems/ghcr-pull: "true"
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
